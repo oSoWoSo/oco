@@ -1,0 +1,35 @@
+name: tooling validation
+
+on:
+  push:
+    branches: [OCO]
+    paths:
+      - 'ocoman'
+      - '.gitignore'
+      - 'src/build.yml.in'
+      - 'src/*.sh'
+      - 'src/*.py'
+      - 'tests/**'
+      - '.github/workflows/**'
+  pull_request:
+    paths:
+      - 'ocoman'
+      - '.gitignore'
+      - 'src/build.yml.in'
+      - 'src/*.sh'
+      - 'src/*.py'
+      - 'tests/**'
+      - '.github/workflows/**'
+
+permissions:
+  contents: read
+
+jobs:
+  helper-tests:
+    name: helper and tooling tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run helper tests
+        run: sh tests/run.sh

@@ -1,5 +1,6 @@
 # Exclude everything except needed
 /*
+.slim/deepwork/
 !/.editorconfig
 !/.gitattributes
 !/.gitignore

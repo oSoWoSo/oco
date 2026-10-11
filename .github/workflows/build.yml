@@ -55,17 +55,11 @@ on:
         -
         - android-sdk
         - aquamarine
-        - aquamarine-devel
         - better-sqlite3
-        - better-sqlite3-devel
         - blocaled
         - BoxBuddy
         - brave-browser-bin
-        - brave-browser-bin-qt5
-        - brave-browser-bin-qt6
         - brave-origin-bin
-        - brave-origin-bin-qt5
-        - brave-origin-bin-qt6
         - brow6el
         - btrfs-progs
         - bulletty
@@ -110,24 +104,6 @@ on:
         - cosmic-viewer
         - cosmic-wallpapers
         - cosmic-workspaces-epoch
-        - CRC-black-hole
-        - CRC-brgvos
-        - CRC-cereus-core
-        - CRC-cereus-extra
-        - CRC-cosmic
-        - CRC-d77void
-        - CRC-hyprland
-        - CRC-jake
-        - CRC-lazy
-        - CRC-librewolf
-        - CRC-noid
-        - CRC-odyssey
-        - CRC-sofijacom
-        - CRC-sonicde
-        - CRC-split
-        - CRC-voiders
-        - CRC-vostock
-        - CRC-xlibre
         - crush
         - cwal
         - dankcalendar
@@ -139,23 +115,15 @@ on:
         - diskwatch
         - distrobox
         - dragonfly-reverb
-        - dragonfly-reverb-clap
-        - dragonfly-reverb-doc
-        - dragonfly-reverb-lv2
-        - dragonfly-reverb-standalone
-        - dragonfly-reverb-vst
-        - dragonfly-reverb-vst3
         - drako
         - easybashgui
         - faugus-launcher
         - fcitx5-lotus
-        - fcitx5-lotus-settings
         - floorp-bin
         - flyline
         - forgejo-runner
         - FreeTube
         - ftxui
-        - ftxui-devel
         - gama
         - gh-dash
         - gh-lazy
@@ -165,21 +133,6 @@ on:
         - gofer
         - gradle9
         - graphite-gtk-theme
-        - graphite-gtk-theme-all
-        - graphite-gtk-theme-black
-        - graphite-gtk-theme-black-compact
-        - graphite-gtk-theme-compact
-        - graphite-gtk-theme-compact-all
-        - graphite-gtk-theme-dark
-        - graphite-gtk-theme-dark-compact
-        - graphite-gtk-theme-light
-        - graphite-gtk-theme-light-compact
-        - graphite-gtk-theme-nord
-        - graphite-gtk-theme-nord-compact
-        - graphite-gtk-theme-nord-dark
-        - graphite-gtk-theme-nord-dark-compact
-        - graphite-gtk-theme-nord-light
-        - graphite-gtk-theme-nord-light-compact
         - gum-panel
         - helium-browser-bin
         - hister
@@ -188,7 +141,6 @@ on:
         - hyprgraphics
         - hypridle
         - hyprland
-        - hyprland-devel
         - hyprland-guiutils
         - hyprland-protocols
         - hyprland-qt-support
@@ -201,12 +153,9 @@ on:
         - hyprsunset
         - hyprsysteminfo
         - hyprtoolkit
-        - hyprtoolkit-devel
         - hyprutils
-        - hyprutils-devel
         - hyprwayland-scanner
         - hyprwire
-        - hyprwire-devel
         - iruka-xbps
         - kairo
         - kando
@@ -215,23 +164,15 @@ on:
         - lazyrsync
         - lemonade-server
         - lgogdownloader
-        - libbtrfs
-        - libbtrfs-devel
-        - libbtrfsutil
-        - libbtrfsutil-devel
         - libcprime
         - libheif
-        - libheif-devel
         - librewolf-bin
         - libspng
         - libtsm
-        - libtsm-devel
         - linuxcommandlibrary
-        - linuxcommandlibrary-desktop
         - llama.cpp
         - llmfit
         - lunasvg
-        - lunasvg-devel
         - ly
         - lycan
         - menu-themes
@@ -259,11 +200,6 @@ on:
         - nwg-shell-wallpapers
         - oco-removed-packages
         - odin2
-        - odin2-clap
-        - odin2-common
-        - odin2-lv2
-        - odin2-standalone
-        - odin2-vst3
         - omniroute
         - opencode
         - opencode2
@@ -301,23 +237,13 @@ on:
         - rustdesk
         - sdkmanager
         - seamonkey-bin
-        - sfizz-cli
         - sfizz-git
-        - sfizz-lib
-        - sfizz-lv2
-        - sfizz-vst3
         - shaderc
         - shattered-pixel-dungeon
         - simplex-chat
-        - simplex-chat-desktop
         - surfer-cli
         - surfer-server
         - surge-xt
-        - surge-xt-clap
-        - surge-xt-common
-        - surge-xt-lv2
-        - surge-xt-standalone
-        - surge-xt-vst3
         - sv-helper
         - svi
         - svlog
@@ -398,6 +324,9 @@ jobs:
           # (multi-commit pushes, force-pushes, PR bases).
           fetch-depth: 23
 
+      - name: Fetch OCO base
+        run: git fetch --no-tags --depth=1 origin "+refs/heads/OCO:refs/remotes/origin/OCO" || true
+
       - name: Detect changed packages
         id: detect
         env:
@@ -423,8 +352,6 @@ jobs:
           echo "DEBUG: CURRENT_BRANCH=$CURRENT_BRANCH"
           echo "DEBUG: PUSH_BEFORE=$PUSH_BEFORE"
           echo "DEBUG: PUSH_AFTER=$PUSH_AFTER"
-          echo "DEBUG: BASE_SHA=$BASE_SHA"
-          echo "DEBUG: HEAD_SHA=$HEAD_SHA"
 
           ZERO_SHA="0000000000000000000000000000000000000000"
           all_packages() {
@@ -454,6 +381,8 @@ jobs:
                 BASE_SHA="$ZERO_SHA"
               fi
             fi
+            echo "DEBUG: BASE_SHA=$BASE_SHA"
+            echo "DEBUG: HEAD_SHA=$HEAD_SHA"
             if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "$ZERO_SHA" ] \
                 || ! git cat-file -e "$BASE_SHA" 2>/dev/null; then
               echo "No direct diff base; reading origin/OCO .gitignore for package list"
@@ -479,7 +408,7 @@ jobs:
                 packages=$(all_packages)
               fi
             else
-              _diff=$(git diff --name-status "$BASE_SHA" "$HEAD_SHA" -- 'srcpkgs/*/template')
+              _diff=$(git diff --name-status "$BASE_SHA" "$HEAD_SHA" -- 'srcpkgs/*')
               packages=$(printf '%s\n' "$_diff" \
                 | awk '$1 ~ /^[ACMR]/ { if (substr($1,1,1)=="R") print $3; else print $2 }' \
                 | cut -d/ -f2 | sort -u | tr '\n' ' ' | sed 's/ $//')
@@ -490,6 +419,16 @@ jobs:
           else
             packages=$(all_packages)
           fi
+
+          _filtered=""
+          for _pkg in $packages; do
+            if [ -L "srcpkgs/$_pkg" ]; then
+              echo "::warning::$_pkg is an alias for $(basename "$(readlink "srcpkgs/$_pkg")"), skipping"
+              continue
+            fi
+            _filtered="$_filtered $_pkg"
+          done
+          packages="${_filtered# }"
 
           echo "Packages: ${packages:-<none>}"
           echo "Removed: ${removed:-<none>}"
@@ -690,6 +629,7 @@ jobs:
     needs: detect
     if: github.event_name == 'pull_request' && needs.detect.outputs.packages != ''
     runs-on: ${{ matrix.config.runner }}
+    timeout-minutes: 240
     container:
       image: ghcr.io/osowoso/oco-builder-${{ matrix.config.host }}:latest
       credentials:
@@ -724,6 +664,7 @@ jobs:
           echo "==> Copying templates..."
           for template in extra/srcpkgs/*; do
             template_name=$(basename "$template")
+            [ -L "$template" ] && continue
             rm -rf "/void-packages/srcpkgs/$template_name"
             cp -rv "$template" /void-packages/srcpkgs/
           done
@@ -731,27 +672,33 @@ jobs:
 
       - name: Lint templates
         if: matrix.config.arch == 'x86_64'
-        continue-on-error: true
         env:
           PACKAGES: ${{ needs.detect.outputs.packages }}
         run: |
           export PATH="/opt/xbps/usr/bin/:$PATH"
           packages="$PACKAGES"
           cd /void-packages
+          failed=0
 
           for template_name in $packages; do
             echo "==> Linting ${template_name}"
-            OUTPUT=$(sudo -Eu builder xlint "${template_name}" 2>&1) || true
-            if [ -n "$OUTPUT" ]; then
+            if OUTPUT=$(sudo -Eu builder xlint "${template_name}" 2>&1); then
+              LINT_RC=0
+            else
+              LINT_RC=$?
+            fi
+            if [ "$LINT_RC" -ne 0 ] || [ -n "$OUTPUT" ]; then
+              failed=1
               echo "❌ ${template_name} lint failed:" >> $GITHUB_STEP_SUMMARY
               echo '```' >> $GITHUB_STEP_SUMMARY
-              echo "$OUTPUT" >> $GITHUB_STEP_SUMMARY
+              echo "${OUTPUT:-xlint exited with status $LINT_RC and produced no output}" >> $GITHUB_STEP_SUMMARY
               echo '```' >> $GITHUB_STEP_SUMMARY
-              echo "❌ ${template_name}: $OUTPUT"
+              echo "❌ ${template_name} (exit $LINT_RC): ${OUTPUT:-no output}"
             else
               echo "✅ ${template_name} lint passed"
             fi
           done
+          exit "$failed"
 
       - name: Build packages
         env:
@@ -763,6 +710,7 @@ jobs:
     needs: detect
     if: (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch') && (needs.detect.outputs.packages != '' || needs.detect.outputs.removed != '')
     runs-on: ${{ matrix.config.runner }}
+    timeout-minutes: 330
     container:
       image: ghcr.io/osowoso/oco-builder-${{ matrix.config.host }}:latest
       credentials:
@@ -797,6 +745,7 @@ jobs:
           echo "==> Copying templates..."
           for template in extra/srcpkgs/*; do
             template_name=$(basename "$template")
+            [ -L "$template" ] && continue
             rm -rf "/void-packages/srcpkgs/$template_name"
             cp -rv "$template" /void-packages/srcpkgs/
           done
@@ -927,7 +876,6 @@ jobs:
 
       - name: Close resolved update issues
         if: always()
-        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.BOT }}
           GH_REPO: ${{ github.repository }}

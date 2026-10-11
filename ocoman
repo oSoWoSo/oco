@@ -98,6 +98,34 @@ _re() {
 	fatal "${RED}${*}${NC}"
 }
 
+# --- GitHub authentication, optional ---
+_gh_token() {
+	if [ -n "${GITHUB_TOKEN:-}" ]; then
+		printf '%s' "$GITHUB_TOKEN"
+	elif [ -n "${GH_TOKEN:-}" ]; then
+		printf '%s' "$GH_TOKEN"
+	elif command -v gh >/dev/null 2>&1; then
+		gh auth token 2>/dev/null || true
+	fi
+}
+
+_gh_auth_setup() {
+	_tok=$(_gh_token)
+	[ -n "$_tok" ] || return 0
+
+	_home=$(mktemp -d "${TMPDIR:-/tmp}/ocoman-curl.XXXXXX")
+	chmod 700 "$_home"
+	{
+		for _h in github.com api.github.com codeload.github.com \
+			objects.githubusercontent.com raw.githubusercontent.com; do
+			printf 'machine %s login x-access-token password %s\n' "$_h" "$_tok"
+		done
+	} >"$_home/_netrc"
+	chmod 600 "$_home/_netrc"
+	printf 'netrc-file = "%s"\n' "$_home/_netrc" >"$_home/.curlrc"
+	export CURL_HOME="$_home"
+}
+
 # --- Surfer transport helpers ---
 
 # We talk to Surfer exclusively through the @cloudron/surfer CLI
@@ -546,8 +574,8 @@ delete_orphan_files() {
 		if grep -qx "$_pkg" "$_orphans_list"; then
 			# surfer del talks to the REST API (fsPromises.rm), not
 			# webdav-server, so these deletes cannot crash Surfer.
-			delete_remote "/${_remote_pkg}"
-			delete_remote "/${_remote_pkg}.sig2"
+			delete_remote "/${ARCH}/${_remote_pkg}"
+			delete_remote "/${ARCH}/${_remote_pkg}.sig2"
 		fi
 	done
 }
@@ -655,6 +683,7 @@ generate_build_yml() {
 	_opts=$(mktemp)
 	while IFS= read -r _pkg; do
 		[ -z "$_pkg" ] && continue
+		[ -L "${SCRIPT_DIR}/${SRCPKGS}/${_pkg}" ] && continue
 		printf '        - %s\n' "$_pkg"
 	done < "$TEMPLATES_LIST" > "$_opts"
 
@@ -1065,29 +1094,6 @@ do_upload() {
 		if ls "${_builddir}"/*."${ARCH}".xbps >/dev/null 2>&1; then
 			cp "${_builddir}"/*."${ARCH}".xbps . 2>/dev/null || true
 			cp "${_builddir}"/*."${ARCH}".xbps.sig2 . 2>/dev/null || true
-
-			echo '==> Cleaning old package versions from remote'
-			for _new_pkg in ./*."${ARCH}".xbps; do
-				[ -f "$_new_pkg" ] || continue
-				_new_basename=$(basename "$_new_pkg")
-				_name=$(pkg_name "${_new_basename%.xbps}")
-
-				# Shell glob match treats '+', '.', etc. literally -- unlike grep.
-				printf '%s\n' "$_remote_list" | while IFS= read -r _old_pkg; do
-					case "$_old_pkg" in
-						"${_name}-"[0-9]*) ;;
-						*) continue ;;
-					esac
-					# Also reject names that share a common prefix
-					# (e.g. "foo-3.0" must not match for _name="fo").
-					_old_pkg_name=$(pkg_name "${_old_pkg%.xbps}")
-					[ "$_old_pkg_name" = "$_name" ] || continue
-					[ "$_old_pkg" = "$_new_basename" ] && continue
-					echo "  Deleting old: $_old_pkg"
-					delete_remote "${_arch_dir}/${_old_pkg}"
-					delete_remote "${_arch_dir}/${_old_pkg}.sig2"
-				done
-			done
 		else
 			echo '==> No new packages to upload'
 		fi
@@ -1138,15 +1144,17 @@ do_upload() {
 
 		if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
 			echo '==> Updating repository index'
-			xbps-rindex -a ./*."${ARCH}".xbps 2>/dev/null || true
+			xbps-rindex -a ./*."${ARCH}".xbps 2>/dev/null \
+				|| fatal '==> Error: xbps-rindex failed to add packages to repodata'
 		fi
 
 		echo '==> Signing repository'
 		# Restrictive umask before write avoids a world-readable window
 		# between create-with-default-umask and chmod 600.
 		. "${SCRIPT_DIR}/src/oco-key.sh"
-		oco_key_write private.pem
-		xbps-rindex -s --signedby "$SIGNED_BY" --privkey private.pem "$PWD"
+		oco_key_write private.pem || fatal '==> Error: failed to write signing key'
+		xbps-rindex -s --signedby "$SIGNED_BY" --privkey private.pem "$PWD" \
+			|| fatal '==> Error: xbps-rindex failed to sign repository'
 
 
 		echo '==> Uploading packages'
@@ -1171,6 +1179,29 @@ do_upload() {
 			upload_file "$_file" "${_arch_dir}" \
 				|| fatal "==> Error: failed to upload ${_fname}"
 		done
+
+		# Garbage-collect old versions only after every replacement package and
+		# the updated index have been successfully published.
+		if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+			echo '==> Cleaning old package versions from remote'
+			for _new_pkg in ./*."${ARCH}".xbps; do
+				[ -f "$_new_pkg" ] || continue
+				_new_basename=$(basename "$_new_pkg")
+				_name=$(pkg_name "${_new_basename%.xbps}")
+				printf '%s\n' "$_remote_list" | while IFS= read -r _old_pkg; do
+					case "$_old_pkg" in
+						"${_name}-"[0-9]*) ;;
+						*) continue ;;
+					esac
+					_old_pkg_name=$(pkg_name "${_old_pkg%.xbps}")
+					[ "$_old_pkg_name" = "$_name" ] || continue
+					[ "$_old_pkg" = "$_new_basename" ] && continue
+					echo "  Deleting old: $_old_pkg"
+					delete_remote "${_arch_dir}/${_old_pkg}"
+					delete_remote "${_arch_dir}/${_old_pkg}.sig2"
+				done
+			done
+		fi
 
 		# Safe only now: the index no longer references these files.
 		delete_orphan_files "${PWD}/orphans.txt" "$_remote_list"
@@ -1354,9 +1385,45 @@ _clone_repo() {
 	fi
 }
 
+init_destination_guard() {
+	_init_force=${OCOMAN_INIT_FORCE:-}
+	_init_dest=$(realpath -m -- "$CLONE_DEST") || fatal "cannot resolve CLONE_DEST: $CLONE_DEST"
+	case "$_init_dest" in
+		/|"$HOME"|/home|/root)
+			[ "$_init_force" = 1 ] || fatal "refusing dangerous CLONE_DEST '$_init_dest' (set OCOMAN_INIT_FORCE=1 to override)"
+			;;
+	esac
+	case "${HOME}/" in
+		"${_init_dest}/"*)
+			[ "$_init_force" = 1 ] || fatal "refusing CLONE_DEST that contains HOME: $_init_dest (set OCOMAN_INIT_FORCE=1 to override)"
+			;;
+	esac
+	case "${PWD}/" in
+		"${_init_dest}/"*)
+			[ "$_init_force" = 1 ] || fatal "refusing CLONE_DEST that contains the current directory: $_init_dest (set OCOMAN_INIT_FORCE=1 to override)"
+			;;
+	esac
+	if [ -d "$CLONE_DEST" ]; then
+		_init_entries=$(mktemp) || fatal 'cannot create temporary file to inspect CLONE_DEST'
+		if ! find "$CLONE_DEST" -mindepth 1 -print -quit > "$_init_entries" 2>/dev/null; then
+			rm -f "$_init_entries"
+			[ "$_init_force" = 1 ] || fatal "cannot inspect CLONE_DEST '$CLONE_DEST' (set OCOMAN_INIT_FORCE=1 to override)"
+		elif [ -s "$_init_entries" ] && [ "$_init_force" != 1 ]; then
+			rm -f "$_init_entries"
+			fatal "refusing to delete non-empty CLONE_DEST '$CLONE_DEST' (set OCOMAN_INIT_FORCE=1 to override)"
+		fi
+		rm -f "$_init_entries"
+	fi
+}
+
 do_init() {
+	init_destination_guard
+	_gh_auth_setup
+
 	# Clone void-packages directly to destination
-	rm -rf "$CLONE_DEST"
+	if [ -e "$CLONE_DEST" ] || [ -L "$CLONE_DEST" ]; then
+		rm -rf -- "$CLONE_DEST" || fatal "failed to clear CLONE_DEST '$CLONE_DEST'"
+	fi
 	_clone_repo 'void-packages' "$VOID_URL" "$CLONE_DEST"
 
 	# Set up remotes
@@ -1679,6 +1746,7 @@ main() {
 		generate_arch_pages
 	fi
 	if [ "$_do_check" = 1 ]; then
+		_gh_auth_setup
 		check_upstream
 	fi
 	if [ "$_do_packages" = 1 ]; then

@@ -102,11 +102,29 @@ jobs:
 
           workflow_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/workflows/scan.yml"
 
+          # Read the current open package-update issues once. Repeated scans
+          # must not create another issue for the same package/version.
+          gh issue list --repo "$GITHUB_REPOSITORY" --state open \
+            --label package-update --limit 1000 --json body,title >out/open-issues.json
+
           while read -r pkg old new; do
+            if jq -e --arg pkg "$pkg" --arg ver "$new" \
+              --arg old "$old" \
+              '.[] | (.body // "") as $body | (.title // "") as $title | select(($body | contains("<!-- package-update:" + $pkg + " -->") or contains("**Package:** `" + $pkg + "`")) and ($body | contains("<!-- upstream-version:" + $ver + " -->") or contains("**Upstream version:** `" + $ver + "`") or ($title | contains($pkg + " " + $old + " -> " + $ver))))' \
+              out/open-issues.json >/dev/null; then
+              echo "$pkg $new: matching issue already open"
+              continue
+            fi
+
             # One issue per package: autobump.yml is triggered per issue, so a
             # shared table would make every issue bump every package.
             cat >out/issue.md <<EOF
           **Package:** \`$pkg\`
+
+          **Upstream version:** \`$new\`
+
+          <!-- package-update:$pkg -->
+          <!-- upstream-version:$new -->
 
           A newer upstream release is available.
 
@@ -120,18 +138,11 @@ jobs:
           _Opened by [\`scan.yml\`]($workflow_url)._
           EOF
 
-            # Label after creation, not with --label: if the label is missing
-            # `gh issue create --label` fails and a retry would file a second
-            # copy of the same issue.
             issue=$(gh issue create \
               --repo "$GITHUB_REPOSITORY" \
               --title "package-update: $pkg $old -> $new" \
+              --label package-update \
               --body-file out/issue.md)
-
-            if ! gh issue edit "$issue" --repo "$GITHUB_REPOSITORY" \
-              --add-label package-update 2>/dev/null; then
-              echo "::warning::$pkg: could not apply the package-update label"
-            fi
 
             echo "$pkg -> ${issue:-FAILED}"
           done <out/found

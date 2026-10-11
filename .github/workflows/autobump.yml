@@ -2,10 +2,6 @@ name: autobump
 
 # Rewrites a template's version= / revision= / checksum= and opens a PR.
 #
-# This is triggered by the `package-update` issues filed by scan.yml (or
-# manually via workflow_dispatch) and does nothing else: no container, no
-# oco-prepare, no binary-bootstrap, no template copying into a second
-# checkout. Both halves of the work live in .github/scripts:
 #
 #   detect-update.sh  candidate version, from the template's `update` file
 #   bump-template.sh  version=/revision=/checksum= rewrite
@@ -18,7 +14,7 @@ name: autobump
 
 on:
   issues:
-    types: [opened, edited]
+    types: [opened, labeled, edited]
   workflow_dispatch:
     inputs:
       pkg:
@@ -67,10 +63,10 @@ jobs:
           else
             PKG=$(printf '%s\n' "$ISSUE_BODY" |
               sed -n 's|.*\*\*Package:\*\*[^`]*`\([^`]*\)`.*|\1|p' |
-              head -1)
+              sed -n '1p')
             [ -n "$PKG" ] || PKG=$(printf '%s\n' "$ISSUE_BODY" |
               sed -n 's|.*<!-- package-update:\([^>]*\) -->.*|\1|p' |
-              head -1)
+              sed -n '1p')
             PKG=$(printf '%s' "$PKG" | tr -d '[:space:]')
             [ -n "$PKG" ] || {
               echo "::error::could not extract package name from issue body"
@@ -105,16 +101,37 @@ jobs:
 
           handled=false
 
+          request_ver=$(printf '%s\n' "$ISSUE_BODY" |
+            sed -n 's|.*<!-- upstream-version:\([^>]*\) -->.*|\1|p' | sed -n '1p')
+          [ -n "$request_ver" ] || request_ver=$(printf '%s\n' "$ISSUE_BODY" |
+            sed -n 's|.*\*\*Upstream version:\*\*[^`]*`\([^`]*\)`.*|\1|p' | sed -n '1p')
+          echo "request_ver=$request_ver" >>"$GITHUB_OUTPUT"
+
+          if [ -n "$ISSUE_BODY" ] && printf '%s\n' "$ISSUE_BODY" | grep -q '<!-- autobump:no -->'; then
+            echo "Feed-only issue ($TEMPLATE is not in src/autobump-pkgs): nothing to do"
+            echo "handled=true" >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -n "$ISSUE_NUMBER" ] && [ -z "$request_ver" ]; then
+            echo "::error::package-update issue is missing an upstream version marker/heading"
+            exit 1
+          fi
+
           if [ -n "$ISSUE_NUMBER" ]; then
-            comments=$(gh api "repos/${GH_REPO}/issues/${ISSUE_NUMBER}/comments?per_page=100" --jq '.[].body')
+            comments=$(gh api "repos/${GH_REPO}/issues/${ISSUE_NUMBER}/comments?per_page=100" \
+              --jq '.[] | select(.author_association == "OWNER" or .author_association == "MEMBER" or .author_association == "COLLABORATOR") | .body')
 
             # A `nobump` comment is a deliberate "not this time": re-running
             # from an `edited` event must not undo that decision.
             if printf '%s\n' "$comments" | grep -qiE '^> *nobump *$|^nobump *$'; then
               echo "Issue dismissed with a nobump comment"
               handled=true
-            elif printf '%s\n' "$comments" | grep -q '<!-- autobump:'; then
-              echo "Already handled: skipping"
+            elif [ -n "$request_ver" ] &&
+              { printf '%s\n' "$comments" | grep -qF "<!-- autobump:skip for $request_ver -->" ||
+                printf '%s\n' "$comments" | grep -qF "<!-- autobump:done for $request_ver -->"; }
+            then
+              echo "Already handled for $request_ver: skipping"
               handled=true
             fi
           else
@@ -124,7 +141,7 @@ jobs:
             # proposed.
             existing=$(gh api "repos/${GH_REPO}/pulls?state=open&per_page=100" \
               --jq ".[] | select(.head.ref | startswith(\"autobump/${TEMPLATE}-\")) | .number" |
-              head -1)
+              sed -n '1p')
             if [ -n "$existing" ]; then
               echo "Autobump PR #$existing is already open"
               handled=true
@@ -138,6 +155,7 @@ jobs:
         if: steps.marker.outputs.handled == 'false'
         env:
           FORCE: ${{ inputs.force }}
+          REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
         run: |
           set -euo pipefail
 
@@ -149,8 +167,12 @@ jobs:
           echo "in_list=false" >>"$GITHUB_OUTPUT"
 
           if [ -n "$ISSUE_NUMBER" ]; then
-            printf 'Autobump skipped: **%s** is not listed in `src/autobump-pkgs`.\n\nAdd the template there to enable automatic updates.\n\n<!-- autobump:skip -->\n' \
-              "$TEMPLATE" >"$RUNNER_TEMP/comment.md"
+            if [ -z "$REQUEST_VER" ]; then
+              echo "::error::cannot post a version-scoped skip marker without REQUEST_VER"
+              exit 1
+            fi
+            printf 'Autobump skipped: **%s** is not listed in `src/autobump-pkgs`.\n\nAdd the template there to enable automatic updates.\n\n<!-- autobump:skip for %s -->\n' \
+              "$TEMPLATE" "$REQUEST_VER" >"$RUNNER_TEMP/comment.md"
             gh api "repos/${GH_REPO}/issues/${ISSUE_NUMBER}/comments" \
               --method POST -F body=@"$RUNNER_TEMP/comment.md" || true
           else
@@ -168,15 +190,15 @@ jobs:
         run: |
           set -euo pipefail
 
+          err=$(mktemp)
           set +e
-          out=$(.github/scripts/detect-update.sh "$TEMPLATE" "$GITHUB_WORKSPACE" 2>&1)
+          out=$(.github/scripts/detect-update.sh "$TEMPLATE" "$GITHUB_WORKSPACE" 2>"$err")
           rc=$?
           set -e
 
-          printf '%s\n' "$out"
-
-          if [ "$rc" = 2 ]; then
-            echo "::error::detection failed for $TEMPLATE"
+          cat "$err"
+          if [ "$rc" -ge 2 ]; then
+            echo "::error::detection failed for $TEMPLATE (rc=$rc)"
             exit 1
           fi
 
@@ -194,10 +216,13 @@ jobs:
         id: bump
         if: steps.whitelist.outputs.in_list == 'true' && steps.detect.outputs.new != ''
         timeout-minutes: 20
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT }}
+          NEW_VERSION: ${{ steps.detect.outputs.new }}
         run: |
           set -euo pipefail
 
-          .github/scripts/bump-template.sh "$TEMPLATE" "${{ steps.detect.outputs.new }}"
+          .github/scripts/bump-template.sh "$TEMPLATE" "$NEW_VERSION"
 
           version=$(sed -n 's|^version=||p' "srcpkgs/$TEMPLATE/template" | head -1 | tr -d '"')
           echo "version=$version" >>"$GITHUB_OUTPUT"
@@ -207,23 +232,25 @@ jobs:
         if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped != 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT }}
+          NEW_VERSION: ${{ steps.detect.outputs.new }}
+          REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
         run: |
           set -euo pipefail
 
-          # The previous version of this step passed ${{ steps.bump.outputs.rc }}
-          # through a same-named env var and then read ${bump_rc:-?}, which can
-          # never see the env var of the same name -- it always printed "?".
-          # The detect step owns the exit code now, and it has a real one.
           detail=""
-          if [ -n "${{ steps.detect.outputs.new }}" ]; then
-            detail="Already at ${{ steps.detect.outputs.new }}."
+          if [ -n "$NEW_VERSION" ]; then
+            detail="Already at $NEW_VERSION."
           else
             detail="No newer version found."
           fi
 
           if [ -n "$ISSUE_NUMBER" ]; then
-            printf 'Autobump: nothing to do for **%s**. %s\n\n<!-- autobump:skip -->\n' \
-              "$TEMPLATE" "$detail" >"$RUNNER_TEMP/comment.md"
+            if [ -z "$REQUEST_VER" ]; then
+              REQUEST_VER=$(sed -n 's|^version=||p' "srcpkgs/$TEMPLATE/template" | head -1 | tr -d '"')
+            fi
+            [ -n "$REQUEST_VER" ] || { echo "::error::cannot determine version for skip marker"; exit 1; }
+            printf 'Autobump: nothing to do for **%s**. %s\n\n<!-- autobump:skip for %s -->\n' \
+              "$TEMPLATE" "$detail" "$REQUEST_VER" >"$RUNNER_TEMP/comment.md"
             gh api "repos/${GH_REPO}/issues/${ISSUE_NUMBER}/comments" \
               --method POST -F body=@"$RUNNER_TEMP/comment.md" || true
           else
@@ -233,10 +260,11 @@ jobs:
       - name: Create branch + push
         id: branch
         if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
         run: |
           set -euo pipefail
 
-          VERSION="${{ steps.bump.outputs.version }}"
           BRANCH="autobump/${TEMPLATE}-${VERSION}"
           TPL="srcpkgs/$TEMPLATE/template"
 
@@ -279,6 +307,8 @@ jobs:
       - name: Open PR
         id: pr
         if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
         run: |
           set -euo pipefail
 
@@ -289,7 +319,7 @@ jobs:
 
           # An open PR for this exact branch is the retry case, not an error.
           if existing=$(gh api "repos/${GH_REPO}/pulls?state=open&per_page=100" \
-            --jq ".[] | select(.head.ref == \"${BRANCH}\") | .number" | head -1) &&
+            --jq ".[] | select(.head.ref == \"${BRANCH}\") | .number" | sed -n '1p') &&
             [ -n "$existing" ]; then
             echo "number=$existing" >>"$GITHUB_OUTPUT"
             echo "PR #${existing} already open"
@@ -312,12 +342,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.BOT }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
+          REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
         run: |
           set -euo pipefail
 
           if [ -n "$PR_NUMBER" ]; then
-            printf 'PR opened: **%s** -> #%s.\n\n<!-- autobump:done -->\n' \
-              "$TEMPLATE" "$PR_NUMBER" >"$RUNNER_TEMP/comment.md"
+            if [ -z "$REQUEST_VER" ]; then
+              REQUEST_VER=$VERSION
+            fi
+            [ -n "$REQUEST_VER" ] || { echo "::error::cannot determine version for done marker"; exit 1; }
+            printf 'PR opened: **%s** -> #%s.\n\n<!-- autobump:done for %s -->\n' \
+              "$TEMPLATE" "$PR_NUMBER" "$REQUEST_VER" >"$RUNNER_TEMP/comment.md"
             gh api "repos/${GH_REPO}/issues/${ISSUE_NUMBER}/comments" \
               --method POST -F body=@"$RUNNER_TEMP/comment.md" || true
           fi

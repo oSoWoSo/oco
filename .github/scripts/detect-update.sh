@@ -8,29 +8,6 @@
 # Prints "<pkgname> <old> <new>" when a newer version exists, prints nothing
 # when the template is up to date and exits 2 on error. RC_FIND_NEW=0 means
 # "found nothing new".
-#
-# srcpkgs/<pkg>/update is the single source of truth for what "latest" means
-# (site/pattern/ignore plus the sort -V + xbps-uhelper cmpver ordering), so we
-# delegate to ./xbps-src update-check instead of reimplementing that logic.
-# The prerelease policy therefore stays exactly the one the templates ask
-# for: "latest" endpoints and the ignore= globs, never a guess based on
-# release flags.
-#
-# xbps-src update-check needs the xbps-* tools on the host. A stock GitHub
-# Actions runner has none and voidlinux/void-glibc ships only xbps-uhelper --
-# which happens to be the only tool update-check actually executes:
-#
-#   * xbps-uhelper cmpver (a pure version comparison, no network) is answered
-#     by that container. update-check calls it once per candidate version and
-#     prints "pkg-old -> pkg-new" when it returns 255, so the shim records the
-#     pairs and returns 255 for every one of them; the recorded pairs are then
-#     resolved in a single container run.
-#   * xbps-uhelper -V (xbps-src's own version gate) is delegated as well.
-#   * the remaining tools are only probed with `command -v`, so stubs suffice.
-#
-# When a real xbps-uhelper is installed (a Void host) it is used directly,
-# which makes the script testable outside CI. Set FORCE_CMPVER_CONTAINER=1 to
-# exercise the container path anyway.
 
 set -euo pipefail
 
@@ -39,7 +16,7 @@ RC_ERROR=2
 
 pkg=${1:?usage: detect-update.sh <pkgname> [repo-root]}
 root=${2:-$(git rev-parse --show-toplevel)}
-image=${VOID_IMAGE:-ghcr.io/void-linux/void-glibc:20261001R1}
+image=${VOID_IMAGE:-ghcr.io/osowoso/oco-builder-x86_64@sha256:6aa90d348e60e53879b61c13298af7590329fd4c40f41c8a39a4bcbf1fa03ac1}
 
 cd "$root"
 
@@ -61,6 +38,21 @@ fail() {
 	exit "$RC_ERROR"
 }
 
+if ! command -v xbps-uhelper >/dev/null 2>&1; then
+	command -v docker >/dev/null 2>&1 ||
+		fail "neither xbps-uhelper nor docker is available; install xbps or run this on a Void host"
+	exec docker run --rm -i \
+		--user 1000:1000 \
+		--volume "$root:/repo" \
+		--volume "$root/srcpkgs:/void-packages/srcpkgs:ro" \
+		--workdir /repo \
+		--env HOME=/tmp \
+		--env XBPS_USE_BUILD_MTIME=1 \
+		--env GITHUB_TOKEN="${GITHUB_TOKEN:-}" \
+		"$image" \
+		bash .github/scripts/detect-update.sh "$pkg" /repo
+fi
+
 # Symlinked template directories (the -devel aliases) are never bumped.
 if [ -L "srcpkgs/$pkg" ]; then
 	fail "srcpkgs/$pkg is a symlink, refusing to bump it"
@@ -69,101 +61,69 @@ fi
 tpl="srcpkgs/$pkg/template"
 [ -f "$tpl" ] || fail "template not found: $tpl"
 
+if [ -n "${XBPS_SRC:-}" ]; then
+	engine=$XBPS_SRC
+elif [ -x ./xbps-src ]; then
+	engine=./xbps-src
+elif [ -x /void-packages/xbps-src ]; then
+	engine=/void-packages/xbps-src
+else
+	fail "xbps-src not found; expected ./xbps-src or /void-packages/xbps-src"
+fi
+
+export XBPS_USE_BUILD_MTIME=1
+
+export XBPS_VERBOSE=1
+
 old=$(sed -n 's/^version=//p' "$tpl" | head -1 | tr -d '"')
 [ -n "$old" ] || fail "could not read version from $tpl"
 
-# llama.cpp & friends point `site` at api.github.com, which allows only 60
-# unauthenticated requests per hour and per runner IP.
 if [ -n "${GITHUB_TOKEN:-}" ]; then
-	printf 'machine api.github.com login x-access-token password %s\n' \
-		"$GITHUB_TOKEN" >"$HOME/.netrc"
-	chmod 600 "$HOME/.netrc"
+	_curlhome=$(mktemp -d)
+	# Holds GITHUB_TOKEN in cleartext; remove it however we leave.
+	trap 'chmod -R u+rwX "$_curlhome" 2>/dev/null; rm -rf "$_curlhome"' EXIT
+	chmod 700 "$_curlhome"
+	{
+		for _host in api.github.com github.com raw.githubusercontent.com; do
+			printf 'machine %s login x-access-token password %s\n' \
+				"$_host" "$GITHUB_TOKEN"
+		done
+	} >"$_curlhome/_netrc"
+	chmod 600 "$_curlhome/_netrc"
+	printf 'netrc-file = "%s"\n' "$_curlhome/_netrc" >"$_curlhome/.curlrc"
+	export CURL_HOME="$_curlhome"
 fi
 
-if [ "${FORCE_CMPVER_CONTAINER:-0}" = 1 ] || ! command -v xbps-uhelper >/dev/null 2>&1; then
-	shim=$(mktemp -d)
-	trap 'rm -rf "$shim"' EXIT
+set +e
+out=$("$engine" update-check "$pkg" 2>&1)
+rc=$?
+set -e
 
-	for tool in xbps-install xbps-query xbps-rindex xbps-reconfigure \
-		xbps-remove xbps-create xbps-uchroot xbps-uunshare; do
-		printf '#!/bin/sh\nexit 0\n' >"$shim/$tool"
-		chmod +x "$shim/$tool"
-	done
+if [ "$rc" -ne 0 ]; then
+	msg "$out"
+	fail "$pkg: update-check exited $rc"
+fi
 
-	pairs="$shim/cmpver-pairs"
-	: >"$pairs"
+if ! printf '%s\n' "$out" | grep -q "^found version "; then
+	msg "$out"
+	printf '::warning::%s: no version candidates found\n' "$pkg" >&2
+	exit "$RC_FIND_NEW"
+fi
 
-	cat >"$shim/xbps-uhelper" <<EOF
-#!/usr/bin/env bash
-# Package comparisons always carry a pkgver ("<pkg>-<version>_1"); anything
-# else (xbps-src's own "xbps-uhelper cmpver <xbps version> <required>" gate)
-# is answered by the real tool.
-case "\${3:-}" in
-*_1)
-	want=\${3#"$pkg-"}
-	want=\${want%_1}
-	want=\${want//-/_}
-	want=\${want//_/.}
-	printf '%s\t%s\n' "\$2" "${pkg}-\${want}_1" >>"$pairs"
-	exit 255
-	;;
-esac
-exec docker run --rm -i "$image" xbps-uhelper "\$@"
-EOF
-	chmod +x "$shim/xbps-uhelper"
-
-	PATH="$shim:$PATH" ./xbps-src update-check "$pkg" >"$shim/out" 2>&1 || true
-
-	if [ ! -s "$pairs" ]; then
-		msg "$(<"$shim/out")"
-		printf '::warning::%s: no version candidates found (site unreachable or update file broken?)\n' "$pkg" >&2
-		exit "$RC_FIND_NEW"
+candidates=$(printf '%s\n' "$out" |
+	sed -n "s|^${pkg}-[^ ]* -> ${pkg}-\(.*\)\$|\1|p")
+new=
+while IFS= read -r candidate; do
+	[ -n "$candidate" ] || continue
+	candidate=$(normalize "$candidate")
+	if [ -z "$new" ]; then
+		new=$candidate
+		continue
 	fi
-
-	# Resolve the recorded comparisons in one container run: cmpver returns
-	# 255 when the second version is the newer one. The highest candidate
-	# wins, not simply the last one -- "sort -V" and xbps version ordering
-	# disagree often enough to matter (157.0.1-1 vs 157.0.1.1).
-	docker run --rm -i -v "$shim:/w" "$image" sh -uc '
-		tab=$(printf "\t")
-		max=
-		while IFS="$tab" read -r have want; do
-			rc=0
-			xbps-uhelper cmpver "$have" "$want" || rc=$?
-			[ "$rc" = 255 ] || continue
-			if [ -z "$max" ]; then
-				max=$want
-				continue
-			fi
-			rc=0
-			xbps-uhelper cmpver "$max" "$want" || rc=$?
-			[ "$rc" = 255 ] && max=$want
-		done < /w/cmpver-pairs
-		if [ -n "$max" ]; then printf "%s\n" "$max"; fi
-		exit 0
-	' >"$shim/newer" || fail "cmpver batch failed"
-
-	new=$(tail -n1 "$shim/newer")
-	new=${new#"$pkg-"}
-	new=${new%_1}
-	new=$(normalize "$new")
-else
-	out=$(./xbps-src update-check "$pkg" 2>&1) || true
-	candidates=$(printf '%s\n' "$out" |
-		sed -n "s|^${pkg}-[^ ]* -> ${pkg}-\(.*\)\$|\1|p")
-	new=
-	while IFS= read -r candidate; do
-		[ -n "$candidate" ] || continue
-		candidate=$(normalize "$candidate")
-		if [ -z "$new" ]; then
-			new=$candidate
-			continue
-		fi
-		rc=0
-		xbps-uhelper cmpver "${pkg}-${new}_1" "${pkg}-${candidate}_1" || rc=$?
-		[ "$rc" = 255 ] && new=$candidate
-	done <<<"$candidates"
-fi
+	rc=0
+	xbps-uhelper cmpver "${pkg}-${new}_1" "${pkg}-${candidate}_1" || rc=$?
+	[ "$rc" = 255 ] && new=$candidate
+done <<<"$candidates"
 
 [ -n "$new" ] || exit "$RC_FIND_NEW"
 

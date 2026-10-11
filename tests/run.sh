@@ -61,6 +61,7 @@ eval "$(awk '
 	/^surf_diagnose\(\)/  {p=1}
 	/^surf_retry_loop\(\)/{p=1}
 	/^surf_retry\(\)/     {p=1}
+	/^repodata_looks_valid\(\)/ {p=1}
 	/^fetch_repodata\(\)/ {p=1}
 	/^delete_remote\(\)/   {p=1}
 	/^upload_file\(\)/   {p=1}
@@ -86,6 +87,8 @@ export SURFER_URL='https://repo.osowoso.org'
 # is missing here -- and 'set -u' turns reading it into a fatal "unbound
 # variable". Sections clear it to force a fresh credential check.
 _SURF_READY="${_SURF_READY:-}"
+
+REPODATA_STRIP_PY="$SCRIPT_DIR/src/repodata-strip.py"
 
 echo '== pkg_name =='
 it 'plain name';            assert_eq "$(pkg_name 'foo-1.0_1.x86_64')"          'foo'
@@ -329,9 +332,9 @@ it 'delete_orphan_files removes the binary and its signature'
 : > "$_DELETED"
 delete_orphan_files "$_orphans" "$(printf '%s\n' 'gone-1.0_1.x86_64.xbps')" >/dev/null 2>&1
 it 'deletes the .xbps'
-assert_eq "$(grep -c '^/gone-1\.0_1\.x86_64\.xbps$' "$_DELETED")" '1'
+assert_eq "$(grep -c '^/x86_64/gone-1\.0_1\.x86_64\.xbps$' "$_DELETED")" '1'
 it 'deletes the .sig2 alongside it'
-assert_eq "$(grep -c '^/gone-1\.0_1\.x86_64\.xbps\.sig2$' "$_DELETED")" '1'
+assert_eq "$(grep -c '^/x86_64/gone-1\.0_1\.x86_64\.xbps\.sig2$' "$_DELETED")" '1'
 
 it 'delete_orphan_files leaves packages that still have a template'
 assert_eq "$(grep -c 'keepme' "$_DELETED"; true)" '0'
@@ -399,8 +402,22 @@ else
 	assert_eq "packages at ${_pkg_line}, index at ${_idx_line}" 'ok'
 fi
 
+it 'old package versions are deleted only after index upload'
+_idx_upload_line=$(printf '%s' "$_DOUPLOAD" | grep -n 'upload_file "$_file" "${_arch_dir}"' | tail -n1 | cut -d: -f1)
+_old_delete_line=$(printf '%s' "$_DOUPLOAD" | grep -n 'Cleaning old package versions from remote' | cut -d: -f1)
+if [ -n "$_idx_upload_line" ] && [ -n "$_old_delete_line" ] && [ "$_old_delete_line" -gt "$_idx_upload_line" ]; then
+	assert_eq 'ok' 'ok'
+else
+	assert_eq "index upload at ${_idx_upload_line}, old-version GC at ${_old_delete_line}" 'ok'
+fi
+
 it 'a failed package upload aborts before the index is published'
 assert_eq "$(printf '%s' "$_DOUPLOAD" | grep -c 'remote repodata left untouched')" '1'
+
+it 'xbps-rindex add/sign and signing-key write failures are fatal'
+assert_eq "$(printf '%s' "$_DOUPLOAD" | grep -c 'xbps-rindex failed to add packages')" '1'
+assert_eq "$(printf '%s' "$_DOUPLOAD" | grep -c 'xbps-rindex failed to sign repository')" '1'
+assert_eq "$(printf '%s' "$_DOUPLOAD" | grep -c 'failed to write signing key')" '1'
 
 it 'a failed repodata-strip aborts the upload instead of republishing a stale index'
 # The old code swallowed a strip failure with a warning and kept uploading the
@@ -408,6 +425,34 @@ it 'a failed repodata-strip aborts the upload instead of republishing a stale in
 # stayed advertised (with the .xbps gone) and broke `xbps-src pkg hyprcursor`.
 assert_eq "$(printf '%s' "$_DOUPLOAD" | grep -c 'fatal "==> repodata-strip failed')" '1'
 assert_eq "$(printf '%s' "$_DOUPLOAD" | grep -c "|| echo '  Warning: repodata-strip failed")" '0'
+
+echo '== init destination safety =='
+eval "$(awk '
+	/^init_destination_guard\(\)/ {p=1}
+	p {print}
+	p && /^}$/ {p=0}
+' "$SCRIPT_DIR/ocoman")"
+
+_init_test_dir=$(mktemp -d)
+CLONE_DEST="$_init_test_dir/empty"
+mkdir "$CLONE_DEST"
+OCOMAN_INIT_FORCE=
+it 'init permits an empty destination without force'
+(init_destination_guard >/dev/null 2>&1); assert_rc $? 0
+
+mkdir "$CLONE_DEST/valuable"
+it 'init refuses to delete a non-empty destination by default'
+(init_destination_guard >/dev/null 2>&1); assert_rc $? 1
+
+OCOMAN_INIT_FORCE=1
+it 'init permits a non-empty destination with explicit force'
+(init_destination_guard >/dev/null 2>&1); assert_rc $? 0
+
+OCOMAN_INIT_FORCE=
+CLONE_DEST=/
+it 'init refuses a dangerous root destination by default'
+(init_destination_guard >/dev/null 2>&1); assert_rc $? 1
+rm -rf "$_init_test_dir"
 
 echo '== repodata-list.py =='
 
@@ -842,6 +887,37 @@ body = "**Package:** `zen-browser-bin`\n\n**Upstream version:** `1.22.1`\n\n<!--
 print(m.extract_pkg_version(body))
 ' "$SCRIPT_DIR/src/close-update-issues.py")" "('zen-browser-bin', '1.22.1')"
 
+	it 'issue body: scan format is parsed by both package/version marker and heading parsers'
+	assert_eq "$(python3 -c '
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("cui", sys.argv[1])
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+body = "**Package:** `foo`\n**Upstream version:** `2.0`\n<!-- package-update:foo -->\n<!-- upstream-version:2.0 -->"
+print(m.extract_pkg_version(body))
+' "$SCRIPT_DIR/src/close-update-issues.py")" "('foo', '2.0')"
+
+	it 'autobump skip/done marker is bound to requested version'
+	assert_eq "$(python3 -c '
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("cui", sys.argv[1])
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+comments = [{"body": "<!-- autobump:skip for 1.2 -->"}]
+print("%s,%s,%s" % (m.has_skip_marker(comments, "1.2"),
+                    m.has_skip_marker(comments, "1.3"),
+                    m.has_skip_marker(comments, "")))
+' "$SCRIPT_DIR/src/close-update-issues.py")" 'True,False,False'
+
+	it 'autobump:no marker remains version-independent'
+	assert_eq "$(python3 -c '
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("cui", sys.argv[1])
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+print(m.has_skip_marker([{"body": "<!-- autobump:no -->"}], "1.2"))
+' "$SCRIPT_DIR/src/close-update-issues.py")" 'True'
+
 	it 'issue body: no markers returns None,None'
 	assert_eq "$(python3 -c '
 import importlib.util, sys
@@ -863,6 +939,34 @@ print(m.collect_results(sys.argv[2]) == ({}, {}))
 	it 'cli: --help exits 0'
 	python3 "$SCRIPT_DIR/src/close-update-issues.py" --help >/dev/null 2>&1
 	assert_rc $? 0
+
+	it 'cli: results_dir required unless --list-stale'
+	python3 "$SCRIPT_DIR/src/close-update-issues.py" \
+		--repo o/r --list-stale >/dev/null 2>&1
+	assert_rc $? 2
+
+	it 'cmp_versions: dash revision, zero padding and rc suffix'
+	assert_eq "$(python3 -c '
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("cui", sys.argv[1])
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+cases = [("157.0.1.1", "157.0-1"), ("157.0.1.1", "157.0.1-1"),
+         ("1.0", "1.0.0"), ("1.0", "1.0.00"), ("1.0", "1.0-rc1"),
+         ("1.9", "1.10"), ("1.23.2", "1.23.1")]
+print(";".join(str(m.cmp_versions(a, b)) for a, b in cases))
+' "$SCRIPT_DIR/src/close-update-issues.py")" '1;0;0;0;1;-1;1'
+
+	it 'shipped_versions: keys on dir name, pkgname and symlink target'
+	assert_eq "$(python3 -c '
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("cui", sys.argv[1])
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+sv = m.shipped_versions(sys.argv[2])
+print(sorted(k for k in sv if k.startswith("fcitx5-lotus")))
+' "$SCRIPT_DIR/src/close-update-issues.py" "$SCRIPT_DIR/srcpkgs")" \
+		"['fcitx5-lotus', 'fcitx5-lotus-settings']"
 else
 	echo '  (skipped: python3 not on PATH)'
 fi
@@ -980,7 +1084,9 @@ _SSCRIPT=$(mktemp)
 _SCOUNT=$(mktemp)
 _LISTING=$(mktemp)
 _REPO_BODY=$(mktemp)
-printf 'PLAIN-PAYLOAD\n' > "$_REPO_BODY"
+_repodate_member="$_TEST_TMP/index.plist"
+printf '<plist version="1.0"><dict/></plist>' > "$_repodate_member"
+tar -cf "$_REPO_BODY" -C "$_TEST_TMP" index.plist
 
 # The fake reads its script and its invocation counter from these; keep them
 # exported for the whole section so no case has to remember to set them.
@@ -1100,9 +1206,22 @@ printf 'bytes:%s\n' "$_REPO_BODY" > "$_SSCRIPT"
 it 'fetch_repodata downloads the index'
 fetch_repodata '/x86_64/x86_64-repodata' "$_out" 2>/dev/null; _rc=$?
 assert_rc "$_rc" 0
-assert_eq "$(cat "$_out")" 'PLAIN-PAYLOAD'
+assert_eq "$(tar -tf "$_out" 2>/dev/null | head -n1)" 'index.plist'
 it '...from the API-relative path'
 assert_eq "$(tail -n 1 "$_SARGV")" 'get /x86_64/x86_64-repodata'
+
+_JUNK_BODY=$(mktemp)
+printf 'not an index at all\n' > "$_JUNK_BODY"
+printf 'bytes:%s\n' "$_JUNK_BODY" > "$_SSCRIPT"
+_cli_reset
+printf 'bytes:%s\n' "$_JUNK_BODY" > "$_SSCRIPT"
+it 'fetch_repodata rejects a payload that is not an index'
+SURF_DEADLINE=0 fetch_repodata '/x86_64/x86_64-repodata' "$_out" 2>/dev/null; _rc=$?
+SURF_DEADLINE=1500
+assert_rc "$_rc" 2
+it '...and leaves no payload behind'
+assert_eq "$([ -e "$_out" ] && echo present || echo absent)" 'absent'
+rm -f "$_JUNK_BODY"
 
 printf 'missing\n' > "$_SSCRIPT"
 _cli_reset
@@ -1164,7 +1283,7 @@ it 'delete_orphan_files removes orphan binaries through the CLI'
 delete_orphan_files "$_orphan_list" "$(printf '%s\n' \
 	'gone-1.0_1.x86_64.xbps' \
 	'keepme-1.0_1.x86_64.xbps')" >/dev/null 2>&1
-assert_eq "$(cat "$_SARGV")" "$(printf 'del -y /gone-1.0_1.x86_64.xbps\ndel -y /gone-1.0_1.x86_64.xbps.sig2')"
+assert_eq "$(cat "$_SARGV")" "$(printf 'del -y /x86_64/gone-1.0_1.x86_64.xbps\ndel -y /x86_64/gone-1.0_1.x86_64.xbps.sig2')"
 it '...leaving a package that still has a template alone'
 assert_eq "$(grep -c 'keepme' "$_SARGV"; true)" '0'
 rm -f "$_orphan_list"

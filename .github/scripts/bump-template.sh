@@ -34,9 +34,21 @@ fail() {
 	exit "$RC_ERROR"
 }
 
+case $new in
+*[!0-9.]*)
+	fail "refusing to bump $pkg to a non-version string: $new"
+	;;
+esac
+case $new in
+*.*) ;;
+*) fail "refusing to bump $pkg to a non-version string: $new" ;;
+esac
+
 tpl="srcpkgs/$pkg/template"
 [ -f "$tpl" ] || fail "template not found: $tpl"
-[ -L "srcpkgs/$pkg" ] && fail "srcpkgs/$pkg is a symlink, refusing to bump it"
+if [ -L "srcpkgs/$pkg" ]; then
+	fail "srcpkgs/$pkg is a symlink, refusing to bump it"
+fi
 
 if grep -q '^checksum_type=' "$tpl"; then
 	fail "$pkg uses checksum_type=$(sed -n 's/^checksum_type=//p' "$tpl"); xgensum is required"
@@ -44,6 +56,20 @@ fi
 
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
+
+if [ -n "${GITHUB_TOKEN:-}" ]; then
+	mkdir -m 700 "$tmp/curlhome"
+	{
+		for host in github.com api.github.com codeload.github.com \
+			objects.githubusercontent.com raw.githubusercontent.com; do
+			printf 'machine %s login x-access-token password %s\n' \
+				"$host" "$GITHUB_TOKEN"
+		done
+	} >"$tmp/curlhome/_netrc"
+	chmod 600 "$tmp/curlhome/_netrc"
+	printf 'netrc-file = "%s"\n' "$tmp/curlhome/_netrc" >"$tmp/curlhome/.curlrc"
+	export CURL_HOME="$tmp/curlhome"
+fi
 
 # Expand $distfiles with the template's own variable definitions. The template
 # is sourced with do_* and pkg_* functions neutered: the values we want are
@@ -151,11 +177,7 @@ grep -q '^checksum="' "$tpl" && quoted=true
 	fi
 } >"$tmp/checksum"
 
-# All distfiles are fetched and hashed; only now is the template touched, so a
-# failed download cannot leave a half-bumped template behind.
-cp "$tmp/template.new" "$tpl"
-
-python3 - "$tpl" "$tmp/checksum" <<'PY'
+python3 - "$tmp/template.new" "$tmp/checksum" <<'PY'
 import re, sys
 
 tpl, block_path = sys.argv[1:3]
@@ -166,5 +188,7 @@ if n != 1:
     sys.exit(f'could not rewrite the checksum block of {tpl}')
 open(tpl, 'w').write(src)
 PY
+
+mv "$tmp/template.new" "$tpl"
 
 printf '%s %s\n' "$pkg" "$new"

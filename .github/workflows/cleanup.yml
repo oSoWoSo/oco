@@ -23,6 +23,10 @@ permissions:
   contents: read
   packages: read
 
+concurrency:
+  group: cleanup-repodata
+  cancel-in-progress: false
+
 jobs:
   cleanup:
     name: ${{ matrix.arch }}

@@ -1,6 +1,6 @@
 # Template file for 'ly'
 pkgname=ly
-version=1.4.0
+version=1.5.0
 revision=1
 archs="i686 x86_64"
 build_style=zig-build
@@ -13,7 +13,7 @@ license="WTFPL-2.0"
 homepage="https://codeberg.org/fairyglade/ly"
 changelog="https://codeberg.org/fairyglade/ly/releases/"
 distfiles="https://codeberg.org/fairyglade/ly/archive/v${version}.tar.gz"
-checksum=3ee8f2f8c14a00437f7c3ec044bf5c95a6be45036c7ed5aa43c6f9eb91bf925a
+checksum=115a7f7fb281803ca7f9e0ddbdf76834a53f7fa6bc702d766d03772ce1976dc3
 nopie_files="/usr/bin/ly"
 
 do_install() {

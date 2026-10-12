@@ -37,5 +37,5 @@ jobs:
         run: |
           .github/scripts/lint-autobump-symlinks.sh 2>&1 | tee -a TMP
           status=${PIPESTATUS[0]}
-          grep -i 'error' TMP >> "$GITHUB_STEP_SUMMARY" || true
+          grep -i 'error:' TMP | cut -d' ' -f2 | cut -d'/' -f2 >> "$GITHUB_STEP_SUMMARY" || true
           exit "$status"

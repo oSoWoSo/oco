@@ -35,5 +35,7 @@ jobs:
 
       - name: Run symlink lint
         run: |
-          .github/scripts/lint-autobump-symlinks.sh | tee TMP
-          cat TMP | grep 'error' >> "$GITHUB_STEP_SUMMARY"
+          .github/scripts/lint-autobump-symlinks.sh 2>&1 | tee -a TMP
+          status=${PIPESTATUS[0]}
+          grep -i 'error' TMP >> "$GITHUB_STEP_SUMMARY" || true
+          exit "$status"

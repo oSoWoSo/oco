@@ -306,7 +306,7 @@ Create PR
 | omniroute | 3.8.24 | [home](https://github.com/diegosouzapw/OmniRoute) | zenobit |  | Universal AI gateway with smart routing for multiple LLM providers |
 | opencode | 1.19.0 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
 | opencode2 | 2.0.26 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
-| OpenShell | 0.1.2 | [home](https://github.com/NVIDIA/OpenShell) | zenobit |  | OpenShell is the safe, private runtime for autonomous AI agents |
+| OpenShell | 0.1.3 | [home](https://github.com/NVIDIA/OpenShell) | zenobit |  | OpenShell is the safe, private runtime for autonomous AI agents |
 | patchance | 1.4.0 | [home](https://raysession.tuxfamily.org/) | Trve_AY |  | Jack patchbay GUI |
 | pi | 1.1.0 | [home](https://github.com/earendil-works/pi) | zenobit |  | AI agent toolkit: unified LLM API, agent loop, TUI, coding agent CLI |
 | pinguintv-installer-git | 0.0.0 | [home](https://pinguin-tv.de/installer.html) | Bella109 | x86_64 | New GUI Installer for void |

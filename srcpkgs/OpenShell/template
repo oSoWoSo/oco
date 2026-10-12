@@ -1,7 +1,7 @@
 # Template file for 'OpenShell'
 pkgname=OpenShell
-version=0.1.2
-revision=3
+version=0.1.3
+revision=1
 build_style=cargo
 # Opening /proc/<tid>/mem for writing fails with EROFS
 make_check_args="-- --skip proc_mem_fallback_reads_and_writes_exact_memory"
@@ -13,7 +13,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="Apache-2.0"
 homepage="https://github.com/NVIDIA/OpenShell"
 distfiles="https://github.com/NVIDIA/OpenShell/archive/refs/tags/v${version}.tar.gz"
-checksum=0ea7e81c5980680d4e65ad292a77ed3fc992a3cf5414bb99669f5c57d9ceb551
+checksum=a49805055160ec19672542e91ae2432d2850dd5756bd113cbe51d38eaf24c180
 
 do_build() {
 	cargo build --release -p openshell-gateway --no-default-features --features defaults-without-telemetry

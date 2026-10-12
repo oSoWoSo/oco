@@ -1,6 +1,6 @@
 # Template file for 'bun'
 pkgname=bun
-version=1.4.2
+version=1.4.3
 revision=1
 archs="aarch64* x86_64*"
 hostmakedepends="bun-bootstrap cargo clang21 llvm21 lld21 rustup cmake ninja
@@ -12,7 +12,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://bun.sh"
 distfiles="https://github.com/oven-sh/bun/archive/refs/tags/bun-v${version}.tar.gz"
-checksum=e14670b117d69012d828514d657f0a3133d1c25d13d69461184d05b6a8e9a876
+checksum=2366bc56d092f8535bbe5827788e20d987fbc96798de4d683e0ca78ea286ebf4
 nopie_files="/usr/bin/bun"
 replaces="bun-bin>=0 bun-musl-bin>=0 bun-arm-bin>=0 bun-arm-musl-bin>=0"
 

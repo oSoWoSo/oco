@@ -1,6 +1,6 @@
 # Template file for 'llmfit'
 pkgname=llmfit
-version=1.1.15
+version=1.1.17
 revision=1
 build_style=cargo
 build_wrksrc="llmfit-tui"
@@ -11,7 +11,7 @@ maintainer="zenobit <zenobit@disroot.org>"
 license="MIT"
 homepage="https://github.com/AlexsJones/llmfit"
 distfiles="https://github.com/AlexsJones/llmfit/archive/refs/tags/v${version}.tar.gz"
-checksum=ddf3ddf1012005d7b56923ca1a29bbf0e65b2d241adb64f12e656f34b06b3e8d
+checksum=ed34ae489778dd8d14a304912531dc5cfc5d331c6dd55e3e3b47bc60629983b4
 
 pre_build() {
 	cd ../llmfit-web

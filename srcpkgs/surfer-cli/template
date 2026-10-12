@@ -1,6 +1,6 @@
 # Template file for 'surfer-cli'
 pkgname=surfer-cli
-version=7.2.7
+version=7.3.0
 revision=1
 hostmakedepends="nodejs python3"
 depends="nodejs"
@@ -9,7 +9,7 @@ maintainer="zenobit <zen@osoweso.org>"
 license="AGPL-3.0-only"
 homepage="https://github.com/cloudron-io/surfer"
 distfiles="https://github.com/cloudron-io/surfer/archive/refs/tags/v${version}.tar.gz"
-checksum=e1a5a7f611a6979b6f2ef1b3a27d6a1897c196fae44dffd33cdf23099b4990b2
+checksum=fc3617aed811d04900094ba3d5be4b4454bfde6169b8504436bf421257976e57
 
 export npm_config_audit=false
 export npm_config_fund=false

@@ -206,7 +206,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.BOT }}
           NEW_VERSION: ${{ steps.detect.outputs.new }}
-          REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
         run: |
           set -euo pipefail
 

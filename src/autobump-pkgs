@@ -9,6 +9,8 @@
 # To re-run the automation for an issue, edit the issue body (e.g. bump the
 # version) — the workflow re-triggers on `edited` events.
 aquamarine
+aquamarine-devel
+nonexistentone
 better-sqlite3
 blocaled
 BoxBuddy

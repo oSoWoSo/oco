@@ -1,4 +1,4 @@
-name: lint autobump symlinks
+name: Lint autobump-pkgs
 on:
   push:
     branches: [OCO]
@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   lint:
-    name: Lint src/autobump-pkgs
+    name: Lint autobump-pkgs
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

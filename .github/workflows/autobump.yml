@@ -217,19 +217,6 @@ jobs:
             detail="No newer version found."
           fi
 
-          if [ -n "$ISSUE_NUMBER" ]; then
-            if [ -z "$REQUEST_VER" ]; then
-              REQUEST_VER=$(sed -n 's|^version=||p' "srcpkgs/$TEMPLATE/template" | head -1 | tr -d '"')
-            fi
-            [ -n "$REQUEST_VER" ] || { echo "::error::cannot determine version for skip marker"; exit 1; }
-            printf 'Autobump: nothing to do for **%s**. %s\n\n<!-- autobump:skip for %s -->\n' \
-              "$TEMPLATE" "$detail" "$REQUEST_VER" >"$RUNNER_TEMP/comment.md"
-            gh api "repos/${GH_REPO}/issues/${ISSUE_NUMBER}/comments" \
-              --method POST -F body=@"$RUNNER_TEMP/comment.md" || true
-          else
-            echo "Autobump: nothing to do for ${TEMPLATE}. ${detail}"
-          fi
-
       - name: Create branch + push
         id: branch
         if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'

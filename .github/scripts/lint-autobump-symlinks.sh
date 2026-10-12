@@ -1,16 +1,5 @@
 #!/usr/bin/env bash
-#
-# Guard the templates listed in src/autobump-pkgs against symlink hazards.
-#
-# srcpkgs/ contains ~90 symlinked aliases (srcpkgs/libpng-devel ->
-# srcpkgs/libpng, srcpkgs/brave-browser-bin-qt5 -> srcpkgs/brave-browser-bin,
-# ...). A symlink is a *second name for the same directory*, so bumping
-# "libpng-devel" would rewrite libpng's template and open a PR titled
-# "libpng-devel <version>" that actually changes libpng -- and a second bump of
-# libpng itself would fight it. Both .github/scripts/detect-update.sh and
-# bump-template.sh refuse symlinked templates; this lint is what keeps such a
-# name from ever reaching src/autobump-pkgs in the first place.
-#
+# Keep symlinks from src/autobump-pkgs
 # Usage: lint-autobump-symlinks.sh [repo-root]
 # Exit:  0 clean (warnings allowed), 1 on error.
 
@@ -43,24 +32,24 @@ for pkg in "${pkgs[@]}"; do
   path="srcpkgs/$pkg"
 
   if [ -L "$path" ]; then
-    err "$path is a symlink to $(readlink "$path") -- an alias shares one directory with another template, so bumping it would rewrite that template"
+    err "$path symlink to $(readlink "$path")"
     continue
   fi
 
   if [ ! -d "$path" ]; then
-    err "$path does not exist (listed in $list)"
+    err "$path not exist (listed in $list)"
     continue
   fi
 
   if [ ! -f "$path/template" ]; then
-    err "$path has no template file"
+    err "$path no such template"
     continue
   fi
 
   # Two entries resolving to one directory means one bump file, two PRs.
   real=$(realpath "$path")
   if [ -n "${seen_dir[$real]:-}" ]; then
-    err "$path and ${seen_dir[$real]} resolve to the same directory ($real)"
+    err "$path and ${seen_dir[$real]} to the same dir ($real)"
   else
     seen_dir[$real]=$path
   fi

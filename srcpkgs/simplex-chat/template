@@ -1,6 +1,6 @@
 # Template file for 'simplex-chat'
 pkgname=simplex-chat
-version=7.0.0
+version=7.0.4
 revision=1
 archs="~i686"
 build_style=cabal
@@ -13,7 +13,7 @@ maintainer="rayfadh <rayfadh@duck.com>"
 license="AGPL-3.0-only"
 homepage="https://simplex.chat"
 distfiles="https://github.com/simplex-chat/simplex-chat/archive/refs/tags/v${version}.tar.gz"
-checksum=273e1db81aa5c4bf9f4c51010ae177c556bd0aa222562264894025b6ce5b4a3b
+checksum=2483b76e2a3325a5321eb33ca52824b980778291a3d1af7db239cd8d629e1133
 
 if [ "$XBPS_TARGET_LIBC" = "glibc" ]; then
 	hostmakedepends+=" openjdk17 openjdk17-jmods"

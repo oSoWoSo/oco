@@ -40,4 +40,6 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Run symlink lint
-        run: .github/scripts/lint-autobump-symlinks.sh
+        run: |
+          .github/scripts/lint-autobump-symlinks.sh | tee TMP
+          cat TMP | grep 'error' >> "$GITHUB_STEP_SUMMARY"

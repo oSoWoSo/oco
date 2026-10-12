@@ -1,4 +1,4 @@
-name: matrix build
+name: 🏗️
 run-name: >-
   ${{
     github.event_name == 'workflow_dispatch' &&
@@ -8,7 +8,7 @@ run-name: >-
     github.event_name == 'push' && github.event.head_commit.message ||
     github.event_name == 'pull_request' &&
     format('{0} (#{1})', github.event.pull_request.title, github.event.pull_request.number) ||
-    'matrix build'
+    '🏗️'
   }}
 
 on:

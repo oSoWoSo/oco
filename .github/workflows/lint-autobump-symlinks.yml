@@ -1,10 +1,4 @@
-name: lint-autobump-symlinks
-
-# srcpkgs/ carries ~90 symlinked aliases (libpng-devel -> libpng,
-# brave-browser-bin-qt5 -> brave-browser-bin, ...). One alias in
-# src/autobump-pkgs is enough to make autobump rewrite the wrong template, so
-# the whitelist is checked instead of trusted.
-
+name: lint autobump symlinks
 on:
   push:
     branches: [OCO]

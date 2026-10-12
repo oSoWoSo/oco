@@ -271,7 +271,7 @@ Create PR
 | llmfit | 1.1.15 | [home](https://github.com/AlexsJones/llmfit) | zenobit |  | Hundreds of models & providers, easy to find what fits your hardware |
 | lunasvg | 3.5.0 | [home](https://github.com/sammycage/lunasvg) | zenobit |  | SVG rendering and manipulation library in C++ |
 | lunasvg-devel | 3.5.0 | [home](https://github.com/sammycage/lunasvg) | zenobit |  | SVG rendering and manipulation library in C++ |
-| ly | 1.4.0 | [home](https://codeberg.org/fairyglade/ly) | zenobit | i686 x86_64 | Lightweight TUI (ncurses-like) display manager for Linux and BSD |
+| ly | 1.5.0 | [home](https://codeberg.org/fairyglade/ly) | zenobit | i686 x86_64 | Lightweight TUI (ncurses-like) display manager for Linux and BSD |
 | lycan | 0.1.2 | [home](https://github.com/tutkuofnight/lycan) | Bella109 | x86_64* | Lightweight PWA manager for Linux |
 | menu-themes | 0.9.0 | [home](https://github.com/kando-menu/menu-themes) | zenobit | x86_64 aarch64 | Collection of menu themes for Kando |
 | mesa-amber | 26.1.2 | [home](https://www.mesa3d.org/) | Bella109 |  | Mesa for older hardware (legacy driver build) |

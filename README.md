@@ -384,7 +384,7 @@ Create PR
 | void-src-builder-git | 0.0.0 | [home](https://codeberg.org/pinguin-void/void-src-builder) | zenobit |  | Build packages from the Void source code |
 | void-user-manager-git | 0.0.0 | [home](https://codeberg.org/pinguin-void/void-user-manager) | zenobit | x86_64 | Modern, lightweight user and service management application |
 | vote | 0.92 | [home](https://codeberg.org/oSoWoSo/vote) | zenobit |  | XBPS package management helper for VoidLinux |
-| vtm | 2026.10.05 | [home](https://github.com/directvt/vtm) | zenobit |  | Text-based desktop environment |
+| vtm | 2026.10.06 | [home](https://github.com/directvt/vtm) | zenobit |  | Text-based desktop environment |
 | waterfox-bin | 6.7.5 | [home](https://www.waterfox.net) | zenobit | x86_64 aarch64 | Fast and private web browser |
 | wpgtk | 6.7.1 | [home](https://github.com/deviantfero/wpgtk/) | zenobit |  | Colorscheme, wallpaper and template manager for *nix |
 | xdg-desktop-portal-cosmic | 1.10.0 | [home](https://github.com/pop-os/xdg-desktop-portal-cosmic) | zenobit |  | Backend implementation for xdg-desktop-portal for COSMIC |

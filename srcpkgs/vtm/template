@@ -1,6 +1,6 @@
 # Template file for 'vtm'
 pkgname=vtm
-version=2026.10.05
+version=2026.10.06
 revision=1
 build_style=cmake
 configure_args="-DBUILD_TESTING=ON -DFORCE_VENDORED_DEPS=OFF"
@@ -11,7 +11,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://github.com/directvt/vtm"
 distfiles="https://github.com/directvt/vtm/archive/refs/tags/v${version}.tar.gz"
-checksum=99c78ee6e81c95a16f69f59843901598fcf783bda87fc13576d74e3c56daf1d3
+checksum=babe91b189f4a0525bd0b1c57fcb0fba4a1903fac681aa48cdd9342ad6f07817
 
 pre_configure() {
 	if [ -n "$XBPS_CROSS_BUILD" ]; then

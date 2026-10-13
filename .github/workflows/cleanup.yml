@@ -48,7 +48,7 @@ jobs:
       image: ghcr.io/osowoso/oco-builder-x86_64:latest
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.BOT }}
     strategy:
       fail-fast: false
       matrix:
@@ -60,6 +60,7 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@v7
         with:
+          token: ${{ secrets.BOT }}
           fetch-depth: 0
 
       - name: Refuse production cleanup from non-OCO refs

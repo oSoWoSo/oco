@@ -47,7 +47,6 @@ jobs:
         env:
           SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
           SURFER_USER: ${{ secrets.SURFER_USER }}
-          TOKEN: ${{ secrets.WORKFLOWS }}
         run: |
           set -euo pipefail
           sudo apt-get install -y pandoc nodejs

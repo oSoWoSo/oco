@@ -7,7 +7,7 @@ Usage:
     close-update-issues.py --list-stale [--repo OWNER/REPO] [--token TOKEN]
                                       [--srcpkgs DIR]
 
---token defaults to $GITHUB_TOKEN, then $GH_TOKEN.
+--token defaults to $GH_TOKEN.
 
 Reads per-arch build result files (`build-results-<ARCH>/results.tsv`,
 lines `name<TAB>version<TAB>status`) produced by `build-packages.sh`,
@@ -307,8 +307,7 @@ def main() -> int:
     ap.add_argument(
         "--token",
         default=None,
-        help="GitHub token with issues:write; "
-             "defaults to $GITHUB_TOKEN or $GH_TOKEN",
+        help="GitHub token with issues:write; defaults to $GH_TOKEN",
     )
     ap.add_argument("--dry-run", action="store_true", help="list matches without closing")
     ap.add_argument(
@@ -324,10 +323,10 @@ def main() -> int:
     )
     args = ap.parse_args()
 
-    token = args.token or os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    token = args.token or os.environ.get("GH_TOKEN")
     if not token:
         sys.stderr.write(
-            "error: no GitHub token; pass --token or set GITHUB_TOKEN/GH_TOKEN\n")
+            "error: no GitHub token; pass --token or set GH_TOKEN\n")
         return 2
 
     if args.list_stale:

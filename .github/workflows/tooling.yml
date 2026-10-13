@@ -35,5 +35,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.BOT }}
       - name: Run helper tests
         run: sh tests/run.sh

@@ -38,9 +38,7 @@ fi
 post_install() {
 	vlicense LICENSE
 	vlicense third_party/fzy/LICENSE fzy.LICENSE
-	vlicense third_party/luau/LICENSE luau.LICENSE
 	vlicense third_party/wuffs/LICENSE-MIT wuffs.LICENSE
-	vlicense third_party/material_color_utilities/LICENSE material_color_utilities.LICENSE
 	vlicense third_party/luau/LICENSE.txt luau.LICENSE
 	vlicense third_party/luau/lua_LICENSE.txt luau.lua.LICENSE
 	vlicense assets/fonts/tabler-icons-license.txt tabler-icons.LICENSE

@@ -7,8 +7,8 @@ run-name: >-
     '🔬'
   }}
 on:
-  schedule:
-    - cron: '17 4 * * *'
+  #schedule:
+    #- cron: '17 4 * * *'
   workflow_dispatch:
     inputs:
       pkg:
@@ -32,11 +32,13 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.BOT }}
 
       - name: Detect newer versions
         id: scan
         env:
-          GITHUB_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.BOT }}
           SCAN_PKG: ${{ inputs.pkg }}
         run: |
           set -uo pipefail
@@ -85,7 +87,7 @@ jobs:
       - name: Open issues
         if: steps.scan.outputs.count != ''
         env:
-          GH_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
         run: |
           set -euo pipefail
 

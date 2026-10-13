@@ -48,7 +48,7 @@ if ! command -v xbps-uhelper >/dev/null 2>&1; then
 		--workdir /repo \
 		--env HOME=/tmp \
 		--env XBPS_USE_BUILD_MTIME=1 \
-		--env GITHUB_TOKEN="${GITHUB_TOKEN:-}" \
+		--env GH_TOKEN="${GH_TOKEN:-}" \
 		"$image" \
 		bash .github/scripts/detect-update.sh "$pkg" /repo
 fi
@@ -78,15 +78,15 @@ export XBPS_VERBOSE=1
 old=$(sed -n 's/^version=//p' "$tpl" | head -1 | tr -d '"')
 [ -n "$old" ] || fail "could not read version from $tpl"
 
-if [ -n "${GITHUB_TOKEN:-}" ]; then
+if [ -n "${GH_TOKEN:-}" ]; then
 	_curlhome=$(mktemp -d)
-	# Holds GITHUB_TOKEN in cleartext; remove it however we leave.
+	# Holds GH_TOKEN in cleartext; remove it however we leave.
 	trap 'chmod -R u+rwX "$_curlhome" 2>/dev/null; rm -rf "$_curlhome"' EXIT
 	chmod 700 "$_curlhome"
 	{
 		for _host in api.github.com github.com raw.githubusercontent.com; do
 			printf 'machine %s login x-access-token password %s\n' \
-				"$_host" "$GITHUB_TOKEN"
+				"$_host" "$GH_TOKEN"
 		done
 	} >"$_curlhome/_netrc"
 	chmod 600 "$_curlhome/_netrc"

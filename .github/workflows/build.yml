@@ -326,6 +326,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          token: ${{ secrets.BOT }}
           # Need full history so we can diff against arbitrary base SHAs
           # (multi-commit pushes, force-pushes, PR bases).
           fetch-depth: 23
@@ -668,7 +669,7 @@ jobs:
       image: ghcr.io/osowoso/oco-builder-${{ matrix.config.host }}:latest
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.BOT }}
       options: --platform ${{ matrix.config.platform }} --privileged
       volumes:
         - /dev:/dev
@@ -685,6 +686,7 @@ jobs:
       - name: Checkout repo (PR head)
         uses: actions/checkout@v7
         with:
+          token: ${{ secrets.BOT }}
           ref: ${{ github.event.pull_request.head.sha }}
           path: extra
 
@@ -761,7 +763,7 @@ jobs:
       image: ghcr.io/osowoso/oco-builder-${{ matrix.config.host }}:latest
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.BOT }}
       options: --platform ${{ matrix.config.platform }} --privileged
       volumes:
         - /dev:/dev
@@ -779,6 +781,7 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@v7
         with:
+          token: ${{ secrets.BOT }}
           path: extra
 
       - name: Prepare container
@@ -905,6 +908,7 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@v7
         with:
+          token: ${{ secrets.BOT }}
           path: extra
           fetch-depth: 0
 
@@ -937,7 +941,7 @@ jobs:
       - name: Close resolved update issues
         if: always()
         env:
-          GH_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
           GH_REPO: ${{ github.repository }}
         run: |
           python3 extra/src/close-update-issues.py extra/results \

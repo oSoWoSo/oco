@@ -57,13 +57,13 @@ fi
 tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT
 
-if [ -n "${GITHUB_TOKEN:-}" ]; then
+if [ -n "${GH_TOKEN:-}" ]; then
 	mkdir -m 700 "$tmp/curlhome"
 	{
 		for host in github.com api.github.com codeload.github.com \
 			objects.githubusercontent.com raw.githubusercontent.com; do
 			printf 'machine %s login x-access-token password %s\n' \
-				"$host" "$GITHUB_TOKEN"
+				"$host" "$GH_TOKEN"
 		done
 	} >"$tmp/curlhome/_netrc"
 	chmod 600 "$tmp/curlhome/_netrc"

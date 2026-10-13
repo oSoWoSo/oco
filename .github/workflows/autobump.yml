@@ -36,11 +36,13 @@ jobs:
     env:
       ISSUE_NUMBER: ${{ github.event.issue.number }}
       ISSUE_BODY: ${{ github.event.issue.body }}
-      OCO_TOKEN: ${{ secrets.BOT }}
+      OCO_TOKEN: ${{ secrets.WORKFLOWS }}
       GH_REPO: ${{ github.repository }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.BOT }}
 
       - name: Extract template from issue body
         id: template
@@ -159,7 +161,7 @@ jobs:
         if: steps.whitelist.outputs.in_list == 'true'
         timeout-minutes: 10
         env:
-          GITHUB_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.BOT }}
         run: |
           set -euo pipefail
 
@@ -190,7 +192,7 @@ jobs:
         if: steps.whitelist.outputs.in_list == 'true' && steps.detect.outputs.new != ''
         timeout-minutes: 20
         env:
-          GITHUB_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.BOT }}
           NEW_VERSION: ${{ steps.detect.outputs.new }}
         run: |
           set -euo pipefail
@@ -204,7 +206,6 @@ jobs:
       - name: Nothing to bump
         if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped != 'true'
         env:
-          GH_TOKEN: ${{ secrets.BOT }}
           NEW_VERSION: ${{ steps.detect.outputs.new }}
         run: |
           set -euo pipefail
@@ -258,7 +259,7 @@ jobs:
         id: pr
         if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
-          GH_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
         run: |
           set -euo pipefail
 
@@ -289,7 +290,7 @@ jobs:
       - name: Comment on issue
         if: github.event_name != 'workflow_dispatch' && steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
-          GH_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
           REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
         run: |

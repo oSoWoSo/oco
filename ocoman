@@ -102,9 +102,7 @@ _re() {
 
 # --- GitHub authentication, optional ---
 _gh_token() {
-	if [ -n "${GITHUB_TOKEN:-}" ]; then
-		printf '%s' "$GITHUB_TOKEN"
-	elif [ -n "${GH_TOKEN:-}" ]; then
+	if [ -n "${GH_TOKEN:-}" ]; then
 		printf '%s' "$GH_TOKEN"
 	elif command -v gh >/dev/null 2>&1; then
 		gh auth token 2>/dev/null || true

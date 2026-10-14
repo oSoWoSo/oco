@@ -157,7 +157,46 @@ def test_consumers_and_release_validation() -> None:
         rejects(["target\t1.2.3\tok", "orphan\t1.2.3\tok\tmissing-source"])
 
 
+def test_release_pr_author_validation() -> None:
+    plan = {
+        "pr_number": 42,
+        "head_ref": "autobump/target-1.2.3",
+        "head_sha": "a" * 40,
+        "base_sha": "b" * 40,
+        "packages": "target",
+    }
+    files = [{"filename": "srcpkgs/target/template", "status": "modified"}]
+
+    def pr_for(author):
+        return {
+            "number": 42,
+            "base": {"ref": "OCO", "sha": "b" * 40},
+            "head": {
+                "repo": {"full_name": "owner/repo"},
+                "ref": "autobump/target-1.2.3",
+                "sha": "a" * 40,
+            },
+            "user": {"login": author},
+            "merged": False,
+            "state": "open",
+            "changed_files": 1,
+        }
+
+    for author in ("oSoWoSo-bot", "zen0bit", "zenobit"):
+        assert release.check_pr(pr_for(author), files, repo="owner/repo",
+                                plan=plan, allow_merged=False) == "target"
+
+    try:
+        release.check_pr(pr_for("untrusted-user"), files, repo="owner/repo",
+                         plan=plan, allow_merged=False)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("PR from an untrusted author was accepted")
+
+
 if __name__ == "__main__":
     test_binary_collection()
     test_consumers_and_release_validation()
+    test_release_pr_author_validation()
     print("XBPS result tests passed")

@@ -71,7 +71,8 @@ def check_pr(pr: dict, files: list, *, repo: str, plan: dict, allow_merged: bool
     require(pr["number"] == number, "PR number mismatch")
     require(pr["base"]["ref"] == "OCO", "PR must target OCO")
     require(pr["head"]["repo"]["full_name"] == repo, "PR must come from this repository")
-    require(pr["user"]["login"] == "oSoWoSo-bot", "Only bot-created PRs may auto-merge")
+    require(pr["user"]["login"] in {"oSoWoSo-bot", "zen0bit", "zenobit"},
+            "Only trusted autobump authors may auto-merge")
     head_ref = pr["head"]["ref"]
     require(head_ref.startswith("autobump/"), "PR head must start with autobump/")
     require(head_ref == plan["head_ref"], "PR source branch has changed")

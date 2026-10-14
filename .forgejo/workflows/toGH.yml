@@ -38,5 +38,5 @@ jobs:
           chmod 700 "$askpass"
           GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 \
             git -c credential.helper= push \
-              https://github.com/oSoWoSo/vOid_Community_repOsitory.git \
+              https://github.com/oSoWoSo/oco.git \
               HEAD:refs/heads/OCO --force

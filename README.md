@@ -28,7 +28,7 @@ Pick your architecture there and you will see
 
 ## Structure
 - Main repository with templates on Codeberg https://codeberg.org/oSoWoSo/oco
-- mirror Github repository + CI https://github.com/oSoWoSo/Void_Community_Repository (Here we build binary packages)
+- mirror Github repository + CI https://github.com/oSoWoSo/oco (Here we build binary packages)
 - To make CI quicker we use daily updated Bootstrap Docker images from [oco-builder](https://github.com/oSoWoSo/oco-builder)
 - nocross templates build support (GitHub aarch runner)
 - Binary repository https://repo.osowoso.org/
@@ -51,7 +51,7 @@ be named `df:ec:10:ef:5c:03:e9:e0:9e:86:77:08:c2:b5:a8:cb.plist`.
 sudo mkdir -p /var/db/xbps/keys
 curl -fsSL "https://codeberg.org/oSoWoSo/oco/raw/branch/OCO/oco-repo-key.plist" \
   -o /tmp/oco-repo-key.plist 2>/dev/null || \
-curl -fsSL "https://raw.githubusercontent.com/oSoWoSo/Void_Community_Repository/OCO/oco-repo-key.plist" \
+curl -fsSL "https://raw.githubusercontent.com/oSoWoSo/oco/OCO/oco-repo-key.plist" \
   -o /tmp/oco-repo-key.plist
 sudo cp /tmp/oco-repo-key.plist /var/db/xbps/keys/df:ec:10:ef:5c:03:e9:e0:9e:86:77:08:c2:b5:a8:cb.plist
 ```

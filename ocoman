@@ -42,7 +42,7 @@ SURF_MAX_TIME="${SURF_MAX_TIME:-300}"
 SURF_BACKOFF_MAX="${SURF_BACKOFF_MAX:-30}"
 # Space-separated package names to strip from the repodata
 SURF_PURGE_PACKAGES="${SURF_PURGE_PACKAGES:-}"
-CI_URL="${CI_URL:-https://github.com/oSoWoSo/Void_Community_Repository}"
+CI_URL="${CI_URL:-https://github.com/oSoWoSo/oco}"
 SIGNED_BY='oSoWoSo <mail@osowoso.org>'
 ARCHES='x86_64 x86_64-musl aarch64 aarch64-musl'
 

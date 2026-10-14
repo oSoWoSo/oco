@@ -680,7 +680,7 @@ EOF
 	grep -q '<link>https://example.org/tor</link>' "$_gf_wd/feed.xml"; assert_rc $? 0
 	it 'codeberg is the only template link in description'
 	grep -q 'codeberg.org/oSoWoSo/oco/src/branch/OCO/srcpkgs/tor/template">template</a>' "$_gf_wd/feed.xml"; assert_rc $? 0
-	grep -vq 'github.com/oSoWoSo/Void_Community_Repository/blob/OCO/srcpkgs/tor/template' "$_gf_wd/feed.xml"; assert_rc $? 0
+	grep -vq 'github.com/oSoWoSo/oco/blob/OCO/srcpkgs/tor/template' "$_gf_wd/feed.xml"; assert_rc $? 0
 	it 'CI run link in description'
 	grep -q 'actions/runs/42' "$_gf_wd/feed.xml"; assert_rc $? 0
 	it 'output is valid XML'

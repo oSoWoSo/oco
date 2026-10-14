@@ -203,6 +203,19 @@ jobs:
           echo "version=$version" >>"$GITHUB_OUTPUT"
           echo "bumped=true" >>"$GITHUB_OUTPUT"
 
+      - name: Check OSV advisories (informational)
+        id: osv
+        if: steps.bump.outputs.bumped == 'true'
+        continue-on-error: true
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          python3 .github/scripts/osv-advisory.py "$TEMPLATE" "$VERSION" \
+            --mapping .github/osv-identities.json \
+            --output "$RUNNER_TEMP/osv-report.md"
+
       - name: Nothing to bump
         if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped != 'true'
         env:
@@ -266,6 +279,13 @@ jobs:
           printf '**%s** %s' "$TEMPLATE" "$VERSION" >"$RUNNER_TEMP/pr-body.md"
           if [ -n "$ISSUE_NUMBER" ]; then
             printf '\n\nCloses #%s' "$ISSUE_NUMBER" >>"$RUNNER_TEMP/pr-body.md"
+          fi
+          printf '\n\n' >>"$RUNNER_TEMP/pr-body.md"
+          if [ -s "$RUNNER_TEMP/osv-report.md" ]; then
+            cat "$RUNNER_TEMP/osv-report.md" >>"$RUNNER_TEMP/pr-body.md"
+          else
+            printf '### OSV advisory check: error\n\n**ERROR:** Advisory report could not be generated; no clean result is implied.\n' \
+              >>"$RUNNER_TEMP/pr-body.md"
           fi
 
           if existing=$(gh api "repos/${GH_REPO}/pulls?state=open&per_page=100" \

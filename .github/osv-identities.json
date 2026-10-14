@@ -1,0 +1,4 @@
+{
+  "$comment": "Only add explicitly reviewed package identities. Use {\"type\":\"package\",\"ecosystem\":\"PyPI\",\"name\":\"upstream-name\"} for registry packages, or {\"type\":\"git\",\"repo\":\"https://host/owner/repo.git\",\"version_tag\":\"release-{version}\"} for OSV GIT. version_tag must contain exactly one literal {version}; prefix/suffix are the reviewed upstream tag rule. No automatic v-prefix or CPE inference.",
+  "packages": {}
+}

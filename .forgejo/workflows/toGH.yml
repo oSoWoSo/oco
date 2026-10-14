@@ -17,42 +17,12 @@ jobs:
 # codeberg-medium  amd64  4   6G  10 min
     steps:
       - uses: actions/checkout@v7
-
-      - name: Copy output to pages
-        run: |
-          git config user.name "Forgejo Actions"
-          git config user.email "actions@codeberg.org"
-
-          git remote set-url origin https://x-token:${{ secrets.GITHUB_TOKEN }}@codeberg.org/${{ github.repository }}.git
-
-          cp -r web/output /tmp/pages_output
-
-          git fetch origin pages || true
-          git checkout pages 2>/dev/null || git checkout --orphan pages
-
-          git rm -rf . || true
-          cp -r /tmp/pages_output/. .
-
-          git add .
-          git diff --cached --quiet || git commit -m "Deploy pages from output [ci skip]"
-          git push origin pages --force
-
-on:
-  push:
-    branches:
-      - OCO
-
-jobs:
-  sync:
-    steps:
-      - name: Check out full history
-        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Push OCO to GitHub
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           set -eu
           askpass="$(mktemp)"
@@ -69,4 +39,4 @@ jobs:
           GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 \
             git -c credential.helper= push \
               https://github.com/oSoWoSo/Void_Community_Repository.git \
-              HEAD:refs/heads/OCO
+              HEAD:refs/heads/OCO --force

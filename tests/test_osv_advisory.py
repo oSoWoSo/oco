@@ -115,9 +115,68 @@ def test_report_escapes_untrusted_fields():
     assert r"\`code\`" in report
 
 
+def test_repository_mappings_have_template_evidence_and_valid_identity_schema():
+    mapping_path = ROOT / ".github/osv-identities.json"
+    data = json.loads(mapping_path.read_text(encoding="utf-8"))
+    packages = data["packages"]
+    counts = {kind: sum(entry.get("type") == kind for entry in packages.values())
+              for kind in ("git", "package")}
+    # Minimum inventory floors are not a claim that every package maps safely.
+    # Resolve package dirs explicitly: globbing */template follows symlinked dirs.
+    srcpkgs = ROOT / "srcpkgs"
+    real_template_count = sum(
+        1 for path in srcpkgs.iterdir()
+        if path.is_dir() and not path.is_symlink()
+        and (path / "template").is_file() and not (path / "template").is_symlink()
+    )
+    real_mappings = 0
+    for package, entry in packages.items():
+        package_dir = srcpkgs / package
+        assert not package_dir.is_symlink(), (package, "mapping targets symlink alias")
+        template = ROOT / entry["source_template"]
+        assert not template.parent.is_symlink(), (package, "template parent is symlink")
+        assert not template.is_symlink(), (package, "template is symlink")
+        real_mappings += 1
+
+    assert counts["git"] >= 100
+    assert counts["package"] >= 4
+    assert real_template_count == 227
+    assert real_mappings == len(packages) == 163
+    assert real_mappings >= 150
+    assert real_template_count >= real_mappings
+
+    for package, entry in packages.items():
+        template = ROOT / entry["source_template"]
+        assert template.is_file(), (package, entry["source_template"])
+        text = template.read_text(encoding="utf-8")
+        distfiles = []
+        lines = text.splitlines()
+        for index, line in enumerate(lines):
+            if not line.startswith("distfiles="):
+                continue
+            expression = line[len("distfiles="):]
+            while expression.rstrip().endswith("\\") and index + 1 < len(lines):
+                index += 1
+                expression += lines[index].rstrip().removesuffix("\\")
+            distfiles.append(expression)
+        assert distfiles, (package, "template has no distfiles assignment")
+        assert entry["source_url"] in " ".join(distfiles), (package, entry["source_url"])
+
+        # The same loader used by the advisory helper is the mapping schema
+        # validator; provenance keys must not alter the identity it produces.
+        query = osv.load_identity(mapping_path, package, "1.2.3")
+        assert query["package"]["ecosystem"] == ("GIT" if entry["type"] == "git"
+                                                   else entry["ecosystem"])
+        assert query["package"]["name"] == (entry["repo"] if entry["type"] == "git"
+                                               else entry["name"])
+        assert query["version"] == (entry["version_tag"].replace("{version}", "1.2.3")
+                                    if entry["type"] == "git" else "1.2.3")
+
+
 if __name__ == "__main__":
     for test in [test_findings_and_query_identity, test_no_matches_and_unmapped_are_distinct,
                  test_git_identity_uses_only_reviewed_tag_template,
-                 test_api_error_is_reported_not_clean, test_report_escapes_untrusted_fields]:
+                 test_api_error_is_reported_not_clean, test_report_escapes_untrusted_fields,
+                 test_repository_mappings_have_template_evidence_and_valid_identity_schema]:
         test()
     print("OSV advisory tests passed")

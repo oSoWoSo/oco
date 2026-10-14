@@ -1,4 +1,1146 @@
 {
-  "$comment": "Only add explicitly reviewed package identities. Use {\"type\":\"package\",\"ecosystem\":\"PyPI\",\"name\":\"upstream-name\"} for registry packages, or {\"type\":\"git\",\"repo\":\"https://host/owner/repo.git\",\"version_tag\":\"release-{version}\"} for OSV GIT. version_tag must contain exactly one literal {version}; prefix/suffix are the reviewed upstream tag rule. No automatic v-prefix or CPE inference.",
-  "packages": {}
+  "$comment": "Reviewed identities are derived only from each template distfiles URL. Provenance fields are informational and ignored by the advisory helper; absent identities remain explicitly unmapped.",
+  "packages": {
+    "BoxBuddy": {
+      "type": "git",
+      "repo": "https://github.com/Dvlv/BoxBuddyRS.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/BoxBuddy/template",
+      "source_url": "https://github.com/Dvlv/BoxBuddyRS/archive/refs/tags/${version}.tar.gz"
+    },
+    "DankMaterialShell": {
+      "type": "git",
+      "repo": "https://github.com/AvengeMedia/DankMaterialShell.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/DankMaterialShell/template",
+      "source_url": "https://github.com/AvengeMedia/DankMaterialShell/archive/refs/tags/v${version}.tar.gz"
+    },
+    "FreeTube": {
+      "type": "git",
+      "repo": "https://github.com/FreeTubeApp/FreeTube.git",
+      "version_tag": "v{version}-beta",
+      "source_template": "srcpkgs/FreeTube/template",
+      "source_url": "https://github.com/FreeTubeApp/FreeTube/archive/refs/tags/v${version}-beta.tar.gz"
+    },
+    "NuvioDesktop": {
+      "type": "git",
+      "repo": "https://github.com/blarns/NuvioForLinux.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/NuvioDesktop/template",
+      "source_url": "https://github.com/blarns/NuvioForLinux/archive/refs/tags/v${version}.tar.gz"
+    },
+    "OpenShell": {
+      "type": "git",
+      "repo": "https://github.com/NVIDIA/OpenShell.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/OpenShell/template",
+      "source_url": "https://github.com/NVIDIA/OpenShell/archive/refs/tags/v${version}.tar.gz"
+    },
+    "Trilium": {
+      "type": "git",
+      "repo": "https://github.com/TriliumNext/Trilium.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/Trilium/template",
+      "source_url": "https://github.com/TriliumNext/Trilium/archive/refs/tags/v${version}.tar.gz"
+    },
+    "Vish": {
+      "type": "git",
+      "repo": "https://github.com/Lluciocc/Vish.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/Vish/template",
+      "source_url": "https://github.com/Lluciocc/Vish/archive/refs/tags/v${version}.tar.gz"
+    },
+    "aquamarine": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/aquamarine.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/aquamarine/template",
+      "source_url": "https://github.com/hyprwm/aquamarine/archive/refs/tags/v${version}.tar.gz"
+    },
+    "better-sqlite3": {
+      "type": "git",
+      "repo": "https://github.com/WiseLibs/better-sqlite3.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/better-sqlite3/template",
+      "source_url": "https://github.com/WiseLibs/better-sqlite3/archive/refs/tags/v${version}.tar.gz"
+    },
+    "blocaled": {
+      "type": "git",
+      "repo": "https://github.com/lfs-book/blocaled.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/blocaled/template",
+      "source_url": "https://github.com/lfs-book/blocaled/archive/refs/tags/v${version}.tar.gz"
+    },
+    "bulletty": {
+      "type": "git",
+      "repo": "https://github.com/crocidb/bulletty.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/bulletty/template",
+      "source_url": "https://github.com/crocidb/bulletty/archive/refs/tags/v${version}.tar.gz"
+    },
+    "bun": {
+      "type": "git",
+      "repo": "https://github.com/oven-sh/bun.git",
+      "version_tag": "bun-v{version}",
+      "source_template": "srcpkgs/bun/template",
+      "source_url": "https://github.com/oven-sh/bun/archive/refs/tags/bun-v${version}.tar.gz"
+    },
+    "caerus": {
+      "type": "git",
+      "repo": "https://github.com/mendescotta/Caerus.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/caerus/template",
+      "source_url": "https://github.com/mendescotta/Caerus/archive/refs/tags/v${version}.tar.gz"
+    },
+    "cc-switch": {
+      "type": "git",
+      "repo": "https://github.com/farion1231/cc-switch.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/cc-switch/template",
+      "source_url": "https://github.com/farion1231/cc-switch/archive/refs/tags/v${version}.tar.gz"
+    },
+    "cliamp": {
+      "type": "git",
+      "repo": "https://github.com/bjarneo/cliamp.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/cliamp/template",
+      "source_url": "https://github.com/bjarneo/cliamp/archive/refs/tags/v${version}.tar.gz"
+    },
+    "clitest": {
+      "type": "git",
+      "repo": "https://github.com/aureliojargas/clitest.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/clitest/template",
+      "source_url": "https://github.com/aureliojargas/clitest/archive/refs/tags/${version}.tar.gz"
+    },
+    "cosign": {
+      "type": "git",
+      "repo": "https://github.com/sigstore/cosign.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/cosign/template",
+      "source_url": "https://github.com/sigstore/cosign/archive/refs/tags/v${version}.tar.gz"
+    },
+    "cosmic-applets": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-applets.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-applets/template",
+      "source_url": "https://github.com/pop-os/cosmic-applets/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-applibrary": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-app-library.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-applibrary/template",
+      "source_url": "https://github.com/pop-os/cosmic-app-library/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-bg": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-bg.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-bg/template",
+      "source_url": "https://github.com/pop-os/cosmic-bg/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-comp": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-comp.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-comp/template",
+      "source_url": "https://github.com/pop-os/cosmic-comp/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-edit": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-edit.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-edit/template",
+      "source_url": "https://github.com/pop-os/cosmic-edit/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-files": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-files.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-files/template",
+      "source_url": "https://github.com/pop-os/cosmic-files/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-greeter": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-greeter.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-greeter/template",
+      "source_url": "https://github.com/pop-os/cosmic-greeter/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-icons": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-icons.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-icons/template",
+      "source_url": "https://github.com/pop-os/cosmic-icons/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-idle": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-idle.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-idle/template",
+      "source_url": "https://github.com/pop-os/cosmic-idle/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-initial-setup": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-initial-setup.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-initial-setup/template",
+      "source_url": "https://github.com/pop-os/cosmic-initial-setup/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-launcher": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-launcher.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-launcher/template",
+      "source_url": "https://github.com/pop-os/cosmic-launcher/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-monitor": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-monitor.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-monitor/template",
+      "source_url": "https://github.com/pop-os/cosmic-monitor/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-notifications": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-notifications.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-notifications/template",
+      "source_url": "https://github.com/pop-os/cosmic-notifications/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-osd": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-osd.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-osd/template",
+      "source_url": "https://github.com/pop-os/cosmic-osd/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-osk": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-osk.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-osk/template",
+      "source_url": "https://github.com/pop-os/cosmic-osk/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-panel": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-panel.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-panel/template",
+      "source_url": "https://github.com/pop-os/cosmic-panel/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-player": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-player.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-player/template",
+      "source_url": "https://github.com/pop-os/cosmic-player/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-randr": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-randr.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-randr/template",
+      "source_url": "https://github.com/pop-os/cosmic-randr/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-screenshot": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-screenshot.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-screenshot/template",
+      "source_url": "https://github.com/pop-os/cosmic-screenshot/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-session": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-session.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-session/template",
+      "source_url": "https://github.com/pop-os/cosmic-session/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-settings": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-settings.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-settings/template",
+      "source_url": "https://github.com/pop-os/cosmic-settings/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-settings-daemon": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-settings-daemon.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-settings-daemon/template",
+      "source_url": "https://github.com/pop-os/cosmic-settings-daemon/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-sound-theme": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-sound-theme.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-sound-theme/template",
+      "source_url": "https://github.com/pop-os/cosmic-sound-theme/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-store": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-store.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-store/template",
+      "source_url": "https://github.com/pop-os/cosmic-store/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-term": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-term.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-term/template",
+      "source_url": "https://github.com/pop-os/cosmic-term/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-tweaks": {
+      "type": "git",
+      "repo": "https://github.com/cosmic-utils/cosmic-tweaks.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/cosmic-tweaks/template",
+      "source_url": "https://github.com/cosmic-utils/cosmic-tweaks/archive/refs/tags/${version}.tar.gz"
+    },
+    "cosmic-viewer": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-viewer.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-viewer/template",
+      "source_url": "https://github.com/pop-os/cosmic-viewer/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-wallpapers": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-wallpapers.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-wallpapers/template",
+      "source_url": "https://github.com/pop-os/cosmic-wallpapers/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "cosmic-workspaces-epoch": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/cosmic-workspaces-epoch.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/cosmic-workspaces-epoch/template",
+      "source_url": "https://github.com/pop-os/cosmic-workspaces-epoch/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "crush": {
+      "type": "git",
+      "repo": "https://github.com/charmbracelet/crush.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/crush/template",
+      "source_url": "https://github.com/charmbracelet/crush/archive/refs/tags/v${version}.tar.gz"
+    },
+    "cwal": {
+      "type": "git",
+      "repo": "https://github.com/nitinbhat972/cwal.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/cwal/template",
+      "source_url": "https://github.com/nitinbhat972/cwal/archive/refs/tags/v${version}.tar.gz"
+    },
+    "dankcalendar": {
+      "type": "git",
+      "repo": "https://github.com/AvengeMedia/dankcalendar.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/dankcalendar/template",
+      "source_url": "https://github.com/AvengeMedia/dankcalendar/archive/refs/tags/v${version}.tar.gz"
+    },
+    "dashy": {
+      "type": "git",
+      "repo": "https://github.com/Lissy93/dashy.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/dashy/template",
+      "source_url": "https://github.com/Lissy93/dashy/archive/refs/tags/${version}.tar.gz"
+    },
+    "desktop-tui": {
+      "type": "git",
+      "repo": "https://github.com/Julien-cpsn/desktop-tui.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/desktop-tui/template",
+      "source_url": "https://github.com/Julien-cpsn/desktop-tui/archive/refs/tags/v${version}.tar.gz"
+    },
+    "diskwatch": {
+      "type": "git",
+      "repo": "https://github.com/matthart1983/diskwatch.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/diskwatch/template",
+      "source_url": "https://github.com/matthart1983/diskwatch/archive/refs/tags/v${version}.tar.gz"
+    },
+    "dragonfly-reverb": {
+      "type": "git",
+      "repo": "https://github.com/michaelwillis/dragonfly-reverb.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/dragonfly-reverb/template",
+      "source_url": "https://github.com/michaelwillis/dragonfly-reverb/archive/refs/tags/${version}.tar.gz"
+    },
+    "drako": {
+      "type": "git",
+      "repo": "https://github.com/lucky7xz/drako.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/drako/template",
+      "source_url": "https://github.com/lucky7xz/drako/archive/refs/tags/v${version}.tar.gz"
+    },
+    "easybashgui": {
+      "type": "git",
+      "repo": "https://github.com/BashGui/easybashgui.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/easybashgui/template",
+      "source_url": "https://github.com/BashGui/easybashgui/archive/refs/tags/${version}.tar.gz"
+    },
+    "faugus-launcher": {
+      "type": "git",
+      "repo": "https://github.com/Faugus/faugus-launcher.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/faugus-launcher/template",
+      "source_url": "https://github.com/Faugus/faugus-launcher/archive/refs/tags/${version}.tar.gz"
+    },
+    "fcitx5-lotus": {
+      "type": "git",
+      "repo": "https://github.com/LotusInputMethod/fcitx5-lotus.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/fcitx5-lotus/template",
+      "source_url": "https://github.com/LotusInputMethod/fcitx5-lotus/archive/refs/tags/v${version}.tar.gz"
+    },
+    "flyline": {
+      "type": "git",
+      "repo": "https://github.com/HalFrgrd/flyline.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/flyline/template",
+      "source_url": "https://github.com/HalFrgrd/flyline/archive/refs/tags/v${version}.tar.gz"
+    },
+    "ftxui": {
+      "type": "git",
+      "repo": "https://github.com/ArthurSonzogni/FTXUI.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/ftxui/template",
+      "source_url": "https://github.com/ArthurSonzogni/FTXUI/archive/refs/tags/v${version}.tar.gz"
+    },
+    "gama": {
+      "type": "git",
+      "repo": "https://github.com/termkit/gama.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/gama/template",
+      "source_url": "https://github.com/termkit/gama/archive/refs/tags/v${version}.tar.gz"
+    },
+    "gh-dash": {
+      "type": "git",
+      "repo": "https://github.com/dlvhdr/gh-dash.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/gh-dash/template",
+      "source_url": "https://github.com/dlvhdr/gh-dash/archive/refs/tags/v${version}.tar.gz"
+    },
+    "gh-lazy": {
+      "type": "git",
+      "repo": "https://github.com/gizmo385/gh-lazy.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/gh-lazy/template",
+      "source_url": "https://github.com/gizmo385/gh-lazy/archive/refs/tags/v${version}.tar.gz"
+    },
+    "ghgrab": {
+      "type": "git",
+      "repo": "https://github.com/abhixdd/ghgrab.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/ghgrab/template",
+      "source_url": "https://github.com/abhixdd/ghgrab/archive/refs/tags/v${version}.tar.gz"
+    },
+    "glaze": {
+      "type": "git",
+      "repo": "https://github.com/stephenberry/glaze.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/glaze/template",
+      "source_url": "https://github.com/stephenberry/glaze/archive/refs/tags/v${version}.tar.gz"
+    },
+    "glaze7": {
+      "type": "git",
+      "repo": "https://github.com/stephenberry/glaze.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/glaze7/template",
+      "source_url": "https://github.com/stephenberry/glaze/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hister": {
+      "type": "git",
+      "repo": "https://github.com/asciimoo/hister.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hister/template",
+      "source_url": "https://github.com/asciimoo/hister/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprcursor": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprcursor.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprcursor/template",
+      "source_url": "https://github.com/hyprwm/hyprcursor/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprdynamicmonitors": {
+      "type": "git",
+      "repo": "https://github.com/fiffeek/hyprdynamicmonitors.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprdynamicmonitors/template",
+      "source_url": "https://github.com/fiffeek/hyprdynamicmonitors/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprgraphics": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprgraphics.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprgraphics/template",
+      "source_url": "https://github.com/hyprwm/hyprgraphics/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hypridle": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hypridle.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hypridle/template",
+      "source_url": "https://github.com/hyprwm/hypridle/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprland-guiutils": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprland-guiutils.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprland-guiutils/template",
+      "source_url": "https://github.com/hyprwm/hyprland-guiutils/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprland-protocols": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprland-protocols.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprland-protocols/template",
+      "source_url": "${homepage}/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprland-qt-support": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprland-qt-support.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprland-qt-support/template",
+      "source_url": "https://github.com/hyprwm/hyprland-qt-support/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprlang": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprlang.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprlang/template",
+      "source_url": "https://github.com/hyprwm/hyprlang/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprpaper": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprpaper.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprpaper/template",
+      "source_url": "${homepage}/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprpicker": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprpicker.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprpicker/template",
+      "source_url": "https://github.com/hyprwm/hyprpicker/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprpolkitagent": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprpolkitagent.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprpolkitagent/template",
+      "source_url": "https://github.com/hyprwm/hyprpolkitagent/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprsunset": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprsunset.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprsunset/template",
+      "source_url": "https://github.com/hyprwm/hyprsunset/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprsysteminfo": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprsysteminfo.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprsysteminfo/template",
+      "source_url": "https://github.com/hyprwm/hyprsysteminfo/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprtoolkit": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprtoolkit.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprtoolkit/template",
+      "source_url": "https://github.com/hyprwm/hyprtoolkit/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprutils": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprutils.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprutils/template",
+      "source_url": "https://github.com/hyprwm/hyprutils/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprwayland-scanner": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprwayland-scanner.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprwayland-scanner/template",
+      "source_url": "https://github.com/hyprwm/hyprwayland-scanner/archive/refs/tags/v${version}.tar.gz"
+    },
+    "hyprwire": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/hyprwire.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/hyprwire/template",
+      "source_url": "https://github.com/hyprwm/hyprwire/archive/refs/tags/v${version}.tar.gz"
+    },
+    "iruka-xbps": {
+      "type": "git",
+      "repo": "https://github.com/javiercplus/iruka-xbps.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/iruka-xbps/template",
+      "source_url": "https://github.com/javiercplus/iruka-xbps/archive/refs/tags/${version}.tar.gz"
+    },
+    "kairo": {
+      "type": "git",
+      "repo": "https://github.com/programmersd21/kairo.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/kairo/template",
+      "source_url": "https://github.com/programmersd21/kairo/archive/refs/tags/${version}.tar.gz"
+    },
+    "kando": {
+      "type": "git",
+      "repo": "https://github.com/kando-menu/kando.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/kando/template",
+      "source_url": "https://github.com/kando-menu/kando/archive/refs/tags/v${version}.tar.gz"
+    },
+    "kernwatch": {
+      "type": "git",
+      "repo": "https://github.com/matthart1983/kernwatch.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/kernwatch/template",
+      "source_url": "https://github.com/matthart1983/kernwatch/archive/refs/tags/v${version}.tar.gz"
+    },
+    "kmscon": {
+      "type": "git",
+      "repo": "https://github.com/kmscon/kmscon.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/kmscon/template",
+      "source_url": "https://github.com/kmscon/kmscon/archive/refs/tags/v${version}.tar.gz"
+    },
+    "lazyrsync": {
+      "type": "git",
+      "repo": "https://github.com/westpoint-io/lazyrsync.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/lazyrsync/template",
+      "source_url": "https://github.com/westpoint-io/lazyrsync/archive/refs/tags/v${version}.tar.gz"
+    },
+    "lemonade-server": {
+      "type": "git",
+      "repo": "https://github.com/lemonade-sdk/lemonade.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/lemonade-server/template",
+      "source_url": "${homepage}/archive/refs/tags/v${version}.tar.gz"
+    },
+    "lgogdownloader": {
+      "type": "git",
+      "repo": "https://github.com/Sude-/lgogdownloader.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/lgogdownloader/template",
+      "source_url": "https://github.com/Sude-/lgogdownloader/archive/refs/tags/v${version}.tar.gz"
+    },
+    "libspng": {
+      "type": "git",
+      "repo": "https://github.com/randy408/libspng.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/libspng/template",
+      "source_url": "https://github.com/randy408/libspng/archive/refs/tags/v${version}.tar.gz"
+    },
+    "libtsm": {
+      "type": "git",
+      "repo": "https://github.com/kmscon/libtsm.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/libtsm/template",
+      "source_url": "https://github.com/kmscon/libtsm/archive/refs/tags/v${version}.tar.gz"
+    },
+    "linuxcommandlibrary": {
+      "type": "git",
+      "repo": "https://github.com/SimonSchubert/LinuxCommandLibrary.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/linuxcommandlibrary/template",
+      "source_url": "https://github.com/SimonSchubert/LinuxCommandLibrary/archive/refs/tags/v${version}.tar.gz"
+    },
+    "llama.cpp": {
+      "type": "git",
+      "repo": "https://github.com/ggml-org/llama.cpp.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/llama.cpp/template",
+      "source_url": "https://github.com/ggml-org/llama.cpp/archive/refs/tags/v${version}.tar.gz"
+    },
+    "llmfit": {
+      "type": "git",
+      "repo": "https://github.com/AlexsJones/llmfit.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/llmfit/template",
+      "source_url": "https://github.com/AlexsJones/llmfit/archive/refs/tags/v${version}.tar.gz"
+    },
+    "lunasvg": {
+      "type": "git",
+      "repo": "https://github.com/sammycage/lunasvg.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/lunasvg/template",
+      "source_url": "https://github.com/sammycage/lunasvg/archive/refs/tags/v${version}.tar.gz"
+    },
+    "lycan": {
+      "type": "git",
+      "repo": "https://github.com/tutkuofnight/lycan.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/lycan/template",
+      "source_url": "https://github.com/tutkuofnight/lycan/archive/refs/tags/v${version}.tar.gz"
+    },
+    "menu-themes": {
+      "type": "git",
+      "repo": "https://github.com/kando-menu/menu-themes.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/menu-themes/template",
+      "source_url": "https://github.com/kando-menu/menu-themes/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nano-syntax-highlighting": {
+      "type": "git",
+      "repo": "https://github.com/galenguyer/nano-syntax-highlighting.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/nano-syntax-highlighting/template",
+      "source_url": "https://github.com/galenguyer/nano-syntax-highlighting/archive/refs/tags/${version}.tar.gz"
+    },
+    "nebula-gtk": {
+      "type": "git",
+      "repo": "https://github.com/Letdown2491/nebula-gtk.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nebula-gtk/template",
+      "source_url": "https://github.com/Letdown2491/nebula-gtk/archive/refs/tags/v${version}.tar.gz"
+    },
+    "noctalia": {
+      "type": "git",
+      "repo": "https://github.com/noctalia-dev/noctalia.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/noctalia/template",
+      "source_url": "https://github.com/noctalia-dev/noctalia/archive/refs/tags/v${version}.tar.gz"
+    },
+    "noctalia-greeter": {
+      "type": "git",
+      "repo": "https://github.com/noctalia-dev/noctalia-greeter.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/noctalia-greeter/template",
+      "source_url": "https://github.com/noctalia-dev/noctalia-greeter/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nvchecker": {
+      "type": "git",
+      "repo": "https://github.com/lilydjwg/nvchecker.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nvchecker/template",
+      "source_url": "https://github.com/lilydjwg/nvchecker/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-bar": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-bar.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-bar/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-bar/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-clipman": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-clipman.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-clipman/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-clipman/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-displays": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-displays.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-displays/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-displays/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-dock": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-dock.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-dock/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-dock/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-dock-hyprland": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-dock-hyprland.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-dock-hyprland/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-dock-hyprland/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-drawer": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-drawer.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-drawer/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-drawer/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-hello": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-hello.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-hello/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-hello/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-icon-picker": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-icon-picker.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-icon-picker/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-icon-picker/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-menu": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-menu.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-menu/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-menu/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-panel": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-panel.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-panel/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-panel/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-readme-browser": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-readme-browser.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-readme-browser/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-readme-browser/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-shell": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-shell.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-shell/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-shell/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-shell-config": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-shell-config.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-shell-config/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-shell-config/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nwg-shell-wallpapers": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/nwg-shell-wallpapers.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nwg-shell-wallpapers/template",
+      "source_url": "https://github.com/nwg-piotr/nwg-shell-wallpapers/archive/refs/tags/v${version}.tar.gz"
+    },
+    "odin2": {
+      "type": "git",
+      "repo": "https://github.com/TheWaveWarden/odin2.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/odin2/template",
+      "source_url": "https://github.com/TheWaveWarden/odin2/archive/refs/tags/v${version}.tar.gz"
+    },
+    "omniroute": {
+      "type": "git",
+      "repo": "https://github.com/diegosouzapw/OmniRoute.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/omniroute/template",
+      "source_url": "https://github.com/diegosouzapw/OmniRoute/archive/refs/tags/v${version}.tar.gz"
+    },
+    "opencode": {
+      "type": "git",
+      "repo": "https://github.com/anomalyco/opencode.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/opencode/template",
+      "source_url": "https://github.com/anomalyco/opencode/archive/refs/tags/v${version}.tar.gz"
+    },
+    "opencode2": {
+      "type": "git",
+      "repo": "https://github.com/anomalyco/opencode.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/opencode2/template",
+      "source_url": "https://github.com/anomalyco/opencode/archive/refs/tags/v${version}.tar.gz"
+    },
+    "patchance": {
+      "type": "git",
+      "repo": "https://github.com/Houston4444/Patchance.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/patchance/template",
+      "source_url": "https://github.com/Houston4444/Patchance/archive/refs/tags/v${version}.tar.gz"
+    },
+    "pi": {
+      "type": "package",
+      "ecosystem": "npm",
+      "name": "@earendil-works/pi-coding-agent",
+      "source_template": "srcpkgs/pi/template",
+      "source_url": "https://registry.npmjs.org/@earendil-works/pi-coding-agent/-/pi-coding-agent-${version}.tgz"
+    },
+    "pop-icons": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/icon-theme.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/pop-icons/template",
+      "source_url": "https://github.com/pop-os/icon-theme/archive/refs/tags/v${version}.tar.gz"
+    },
+    "pop-launcher": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/launcher.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/pop-launcher/template",
+      "source_url": "https://github.com/pop-os/launcher/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "pop-sounds-theme": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/gtk-theme.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/pop-sounds-theme/template",
+      "source_url": "https://github.com/pop-os/gtk-theme/archive/refs/tags/v${version}.tar.gz"
+    },
+    "proxelar": {
+      "type": "git",
+      "repo": "https://github.com/emanuele-em/proxelar.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/proxelar/template",
+      "source_url": "https://github.com/emanuele-em/proxelar/archive/refs/tags/v${version}.tar.gz"
+    },
+    "python3-PyGithub": {
+      "type": "package",
+      "ecosystem": "PyPI",
+      "name": "pygithub",
+      "source_template": "srcpkgs/python3-PyGithub/template",
+      "source_url": "${PYPI_SITE}/p/pygithub/pygithub-${version}.tar.gz"
+    },
+    "python3-anysqlite": {
+      "type": "git",
+      "repo": "https://github.com/karpetrosyan/anysqlite.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/python3-anysqlite/template",
+      "source_url": "https://github.com/karpetrosyan/anysqlite/archive/refs/tags/v${version}.tar.gz"
+    },
+    "python3-geographiclib": {
+      "type": "git",
+      "repo": "https://github.com/geographiclib/geographiclib-python.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/python3-geographiclib/template",
+      "source_url": "https://github.com/geographiclib/geographiclib-python/archive/refs/tags/v${version}.tar.gz"
+    },
+    "python3-geopy": {
+      "type": "git",
+      "repo": "https://github.com/geopy/geopy.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/python3-geopy/template",
+      "source_url": "https://github.com/geopy/geopy/archive/refs/tags/${version}.tar.gz"
+    },
+    "python3-hishel": {
+      "type": "git",
+      "repo": "https://github.com/karpetrosyan/hishel.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/python3-hishel/template",
+      "source_url": "https://github.com/karpetrosyan/hishel/archive/refs/tags/${version}.tar.gz"
+    },
+    "python3-inline-snapshot": {
+      "type": "git",
+      "repo": "https://github.com/15r10nk/inline-snapshot.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/python3-inline-snapshot/template",
+      "source_url": "https://github.com/15r10nk/inline-snapshot/archive/refs/tags/${version}.tar.gz"
+    },
+    "python3-linkify-it-py": {
+      "type": "package",
+      "ecosystem": "PyPI",
+      "name": "linkify-it-py",
+      "source_template": "srcpkgs/python3-linkify-it-py/template",
+      "source_url": "${PYPI_SITE}/l/linkify_it_py/linkify_it_py-${version}.tar.gz"
+    },
+    "python3-structlog": {
+      "type": "git",
+      "repo": "https://github.com/hynek/structlog.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/python3-structlog/template",
+      "source_url": "https://github.com/hynek/structlog/archive/refs/tags/${version}.tar.gz"
+    },
+    "python3-textual": {
+      "type": "package",
+      "ecosystem": "PyPI",
+      "name": "textual",
+      "source_template": "srcpkgs/python3-textual/template",
+      "source_url": "${PYPI_SITE}/t/textual/textual-${version}.tar.gz"
+    },
+    "quickbox-gtk4": {
+      "type": "git",
+      "repo": "https://github.com/musqz/quickbox.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/quickbox-gtk4/template",
+      "source_url": "https://github.com/musqz/quickbox/archive/refs/tags/v${version}.tar.gz"
+    },
+    "quickbox-qt": {
+      "type": "git",
+      "repo": "https://github.com/musqz/quickbox-qt.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/quickbox-qt/template",
+      "source_url": "https://github.com/musqz/quickbox-qt/archive/refs/tags/v${version}.tar.gz"
+    },
+    "quickemu": {
+      "type": "git",
+      "repo": "https://github.com/quickemu-project/quickemu.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/quickemu/template",
+      "source_url": "https://github.com/quickemu-project/quickemu/archive/refs/tags/${version}.tar.gz"
+    },
+    "quickosdl": {
+      "type": "git",
+      "repo": "https://github.com/lj3954/quickosdl.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/quickosdl/template",
+      "source_url": "https://github.com/lj3954/quickosdl/archive/refs/tags/v${version}.tar.gz"
+    },
+    "raysession": {
+      "type": "git",
+      "repo": "https://github.com/Houston4444/RaySession.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/raysession/template",
+      "source_url": "https://github.com/Houston4444/RaySession/archive/refs/tags/v${version}.tar.gz"
+    },
+    "rgc": {
+      "type": "git",
+      "repo": "https://github.com/flameshikari/rgc.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/rgc/template",
+      "source_url": "https://github.com/flameshikari/rgc/archive/refs/tags/v${version}.tar.gz"
+    },
+    "runkit": {
+      "type": "git",
+      "repo": "https://github.com/Letdown2491/runkit.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/runkit/template",
+      "source_url": "https://github.com/Letdown2491/runkit/archive/refs/tags/v${version}.tar.gz"
+    },
+    "rustdesk": {
+      "type": "git",
+      "repo": "https://github.com/rustdesk/rustdesk.git",
+      "version_tag": "{version}",
+      "source_template": "srcpkgs/rustdesk/template",
+      "source_url": "https://github.com/rustdesk/rustdesk/archive/refs/tags/${version}.tar.gz"
+    },
+    "simplex-chat": {
+      "type": "git",
+      "repo": "https://github.com/simplex-chat/simplex-chat.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/simplex-chat/template",
+      "source_url": "https://github.com/simplex-chat/simplex-chat/archive/refs/tags/v${version}.tar.gz"
+    },
+    "surfer-cli": {
+      "type": "git",
+      "repo": "https://github.com/cloudron-io/surfer.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/surfer-cli/template",
+      "source_url": "https://github.com/cloudron-io/surfer/archive/refs/tags/v${version}.tar.gz"
+    },
+    "surfer-server": {
+      "type": "git",
+      "repo": "https://github.com/cloudron-io/surfer.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/surfer-server/template",
+      "source_url": "https://github.com/cloudron-io/surfer/archive/refs/tags/v${version}.tar.gz"
+    },
+    "surge-xt": {
+      "type": "git",
+      "repo": "https://github.com/surge-synthesizer/surge.git",
+      "version_tag": "release_xt_{version}",
+      "source_template": "srcpkgs/surge-xt/template",
+      "source_url": "https://github.com/surge-synthesizer/surge/archive/refs/tags/release_xt_${version}.tar.gz"
+    },
+    "syswatch": {
+      "type": "git",
+      "repo": "https://github.com/matthart1983/syswatch.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/syswatch/template",
+      "source_url": "https://github.com/matthart1983/syswatch/archive/refs/tags/v${version}.tar.gz"
+    },
+    "tdf": {
+      "type": "git",
+      "repo": "https://github.com/itsjunetime/tdf.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/tdf/template",
+      "source_url": "https://github.com/itsjunetime/tdf/archive/refs/tags/v${version}.tar.gz"
+    },
+    "tiki": {
+      "type": "git",
+      "repo": "https://github.com/boolean-maybe/tiki.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/tiki/template",
+      "source_url": "https://github.com/boolean-maybe/tiki/archive/refs/tags/v${version}.tar.gz"
+    },
+    "tls-client": {
+      "type": "git",
+      "repo": "https://github.com/bogdanfinn/tls-client.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/tls-client/template",
+      "source_url": "https://github.com/bogdanfinn/tls-client/archive/refs/tags/v${version}.tar.gz"
+    },
+    "tufw": {
+      "type": "git",
+      "repo": "https://github.com/peltho/tufw.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/tufw/template",
+      "source_url": "https://github.com/peltho/tufw/archive/refs/tags/v${version}.tar.gz"
+    },
+    "tuios": {
+      "type": "git",
+      "repo": "https://github.com/Gaurav-Gosain/tuios.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/tuios/template",
+      "source_url": "https://github.com/Gaurav-Gosain/tuios/archive/refs/tags/v${version}.tar.gz"
+    },
+    "tuisic": {
+      "type": "git",
+      "repo": "https://github.com/Dark-Kernel/tuisic.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/tuisic/template",
+      "source_url": "https://github.com/Dark-Kernel/tuisic/archive/refs/tags/v${version}.tar.gz"
+    },
+    "typobuster": {
+      "type": "git",
+      "repo": "https://github.com/nwg-piotr/typobuster.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/typobuster/template",
+      "source_url": "https://github.com/nwg-piotr/typobuster/archive/refs/tags/v${version}.tar.gz"
+    },
+    "undelete-btrfs": {
+      "type": "git",
+      "repo": "https://github.com/danthem/undelete-btrfs.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/undelete-btrfs/template",
+      "source_url": "https://github.com/danthem/undelete-btrfs/archive/refs/tags/v${version}.tar.gz"
+    },
+    "vibepanel": {
+      "type": "git",
+      "repo": "https://github.com/prankstr/vibepanel.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/vibepanel/template",
+      "source_url": "https://github.com/prankstr/vibepanel/archive/refs/tags/v${version}.tar.gz"
+    },
+    "vm-curator": {
+      "type": "git",
+      "repo": "https://github.com/mroboff/vm-curator.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/vm-curator/template",
+      "source_url": "https://github.com/mroboff/vm-curator/archive/refs/tags/v${version}.tar.gz"
+    },
+    "vtm": {
+      "type": "git",
+      "repo": "https://github.com/directvt/vtm.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/vtm/template",
+      "source_url": "https://github.com/directvt/vtm/archive/refs/tags/v${version}.tar.gz"
+    },
+    "xdg-desktop-portal-cosmic": {
+      "type": "git",
+      "repo": "https://github.com/pop-os/xdg-desktop-portal-cosmic.git",
+      "version_tag": "epoch-{version}",
+      "source_template": "srcpkgs/xdg-desktop-portal-cosmic/template",
+      "source_url": "https://github.com/pop-os/xdg-desktop-portal-cosmic/archive/refs/tags/epoch-${version}.tar.gz"
+    },
+    "xdg-desktop-portal-hyprland": {
+      "type": "git",
+      "repo": "https://github.com/hyprwm/xdg-desktop-portal-hyprland.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/xdg-desktop-portal-hyprland/template",
+      "source_url": "${homepage}/archive/refs/tags/v${version}.tar.gz"
+    }
+  }
 }

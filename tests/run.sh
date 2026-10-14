@@ -1094,6 +1094,16 @@ else
 	echo '  (skipped: python3 not on PATH)'
 fi
 
+echo '== OSV autobump advisories =='
+if command -v python3 >/dev/null 2>&1; then
+	python3 "$SCRIPT_DIR/tests/test_osv_advisory.py"
+	_rc=$?
+	it 'OSV advisory identities, reports, and failure states'
+	assert_rc "$_rc" 0
+else
+	echo '  (skipped: python3 not on PATH)'
+fi
+
 echo '== XBPS binary build results =='
 if command -v python3 >/dev/null 2>&1; then
 	python3 "$SCRIPT_DIR/tests/test-xbps-results.py"

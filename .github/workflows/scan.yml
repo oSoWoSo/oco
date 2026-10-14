@@ -127,7 +127,7 @@ jobs:
 
             issue=$(gh issue create \
               --repo "$GITHUB_REPOSITORY" \
-              --title "package-update: $pkg $old -> $new" \
+              --title "$pkg $new" \
               --label package-update \
               --body-file out/issue.md)
 

@@ -1094,6 +1094,16 @@ else
 	echo '  (skipped: python3 not on PATH)'
 fi
 
+echo '== XBPS binary build results =='
+if command -v python3 >/dev/null 2>&1; then
+	python3 "$SCRIPT_DIR/tests/test-xbps-results.py"
+	_rc=$?
+	it 'metadata collection, result consumers, and autobump validation'
+	assert_rc "$_rc" 0
+else
+	echo '  (skipped: python3 not on PATH)'
+fi
+
 echo '== workflows: Surfer CLI only, no WebDAV =='
 
 for _workflow in "$SCRIPT_DIR/src/build.yml.in" "$SCRIPT_DIR/.github/workflows/build.yml"; do

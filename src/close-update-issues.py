@@ -10,7 +10,9 @@ Usage:
 --token defaults to $GH_TOKEN.
 
 Reads per-arch build result files (`build-results-<ARCH>/results.tsv`,
-lines `name<TAB>version<TAB>status`) produced by `build-packages.sh`,
+with source rows `name<TAB>version<TAB>status` and binary rows
+`name<TAB>source-version<TAB>status<TAB>source-template`) produced by
+`build-packages.sh`,
 lists open issues carrying the `package-update` label, and closes each
 one whose package was built successfully (an `ok` result with no `fail`
 on any arch) at exactly the upstream version requested in the issue body.
@@ -51,6 +53,7 @@ VER_BODY_RE = re.compile(r"\*\*Upstream version:\*\*\s*`([^`]+)`")
 SKIP_RE = re.compile(r"<!-- autobump:(?:skip|done) for (\S+) -->")
 API = "https://api.github.com/repos/{}"
 LABEL = "package-update"
+RESULT_PACKAGE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9+._-]*$")
 
 
 def collect_results(results_dir: str) -> tuple[dict[str, set[str]], dict[str, set[str]]]:
@@ -71,9 +74,13 @@ def collect_results(results_dir: str) -> tuple[dict[str, set[str]], dict[str, se
                 if not line:
                     continue
                 parts = line.split("\t")
-                if len(parts) != 3:
+                if len(parts) not in (3, 4):
                     continue
-                pkg, version, status = parts
+                pkg, version, status = parts[:3]
+                if (not RESULT_PACKAGE_RE.fullmatch(pkg) or not version
+                        or status not in ("ok", "fail", "skip")
+                        or (len(parts) == 4 and not RESULT_PACKAGE_RE.fullmatch(parts[3]))):
+                    continue
                 if status not in ("ok", "fail"):
                     continue
                 bucket = ok if status == "ok" else fail

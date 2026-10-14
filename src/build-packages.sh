@@ -2,8 +2,8 @@
 # Shared build loop used by both test-pr and build CI jobs.
 # Required env: PACKAGES, ARCH, BOOTSTRAP, TEST, NATIVE, FORCE
 # Writes built=true/false to GITHUB_OUTPUT when that variable is set.
-# When RESULT_FILE is set, appends `pkg<tab>version<tab>ok|fail|skip` per
-# package so the update-status job can refresh the README build table.
+# When RESULT_FILE is set, records source-template results and actual XBPS
+# outputs so the update feed and issue closer see binary subpackages too.
 . "${GITHUB_WORKSPACE}/extra/src/pkg-helpers.sh"
 export PATH="/opt/xbps/usr/bin/:$PATH"
 
@@ -77,6 +77,19 @@ for pkg in $PKGS; do
 	fi
 	echo
 done
+
+if [ -n "${RESULT_FILE:-}" ]; then
+	# Python 3/plistlib and tar are available in the build image. Inspect only
+	# current-architecture outputs whose filenames contain a successful source
+	# version; metadata ties each binary back to its source template.
+	if ! python3 "${GITHUB_WORKSPACE}/extra/src/collect-xbps-results.py" \
+		--results "$RESULT_FILE" \
+		--binpkgs /void-packages/hostdir/binpkgs \
+		--arch "$ARCH"; then
+		echo '==> ERROR: failed to collect XBPS package results'
+		exit 1
+	fi
+fi
 
 [ -n "${GITHUB_OUTPUT:-}" ] && printf 'built=%s\n' "$BUILT" >> "$GITHUB_OUTPUT"
 if [ "$FAILED" = true ]; then

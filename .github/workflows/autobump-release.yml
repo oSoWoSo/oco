@@ -1,0 +1,128 @@
+name: 🚀 autobump release
+
+on:
+  workflow_run:
+    workflows:
+      - 🏗️ build
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+
+# Same production lock as src/build.yml.in. The OCO push waits while this
+# workflow merges and publishes, so it cannot race the repository index.
+concurrency:
+  group: 'build: publish:production'
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  release:
+    name: 🚀 merge and publish
+    if: >-
+      ${{ github.event.workflow_run.event == 'pull_request' &&
+          github.event.workflow_run.conclusion == 'success' &&
+          startsWith(github.event.workflow_run.head_branch, 'autobump/') &&
+          github.event.workflow_run.head_repository.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    container:
+      image: ghcr.io/osowoso/oco-builder-x86_64:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.BOT }}
+    steps:
+      - name: Checkout trusted OCO source
+        uses: actions/checkout@v7
+        with:
+          ref: OCO
+          path: extra
+          fetch-depth: 2
+
+      - name: Download completed PR build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: autobump-*
+          merge-multiple: false
+          path: artifacts
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Validate PR and stage verified binaries
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 extra/src/autobump-release.py prepare \
+            --event "$GITHUB_EVENT_PATH" \
+            --repo "$GITHUB_REPOSITORY" \
+            --artifacts "$GITHUB_WORKSPACE/artifacts" \
+            --staging "$RUNNER_TEMP/autobump-staging"
+
+      - name: Merge exact tested PR revision
+        id: merge
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
+        run: |
+          python3 extra/src/autobump-release.py merge \
+            --event "$GITHUB_EVENT_PATH" \
+            --repo "$GITHUB_REPOSITORY" \
+            --staging "$RUNNER_TEMP/autobump-staging"
+
+      - name: Checkout merged OCO tree
+        env:
+          MERGE_SHA: ${{ steps.merge.outputs.merge_sha }}
+        run: |
+          set -eu
+          git -C extra fetch --no-tags origin "$MERGE_SHA"
+          git -C extra checkout --detach "$MERGE_SHA"
+
+      - name: Sign and publish existing XBPS binaries to production
+        env:
+          PRIV_KEY: ${{ secrets.PRIV_KEY }}
+          SURFER_USER: ${{ secrets.SURFER_USER }}
+          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
+          SURF_PATH_PREFIX: ''
+        run: |
+          set -eu
+          export PATH="/opt/xbps/usr/bin/:$PATH"
+          . extra/src/oco-key.sh
+          oco_key_write /tmp/private.pem
+
+          for arch in x86_64 x86_64-musl aarch64 aarch64-musl; do
+            dir="$RUNNER_TEMP/autobump-staging/$arch"
+            [ -d "$dir" ] || continue
+            set -- "$dir"/*."$arch".xbps
+            [ -f "$1" ] || { echo "::error::No $arch packages staged"; exit 1; }
+
+            echo "==> Signing and uploading $arch"
+            export ARCH="$arch" XBPS_ARCH="$arch" XBPS_TARGET_ARCH="$arch"
+            xbps-rindex -S --privkey /tmp/private.pem "$@"
+            (
+              cd extra
+              BUILDDIR="$dir" ./ocoman -p
+              ./ocoman -a
+            )
+          done
+
+      - name: Update feed and close resolved package issues
+        env:
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
+          SURFER_USER: ${{ secrets.SURFER_USER }}
+          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
+        run: |
+          set -eu
+          curl -sf -u "${SURFER_USER}:${SURFER_TOKEN}" -o extra/src/feed.xml \
+            'https://repo.osowoso.org/_webdav/feed.xml' || true
+          python3 extra/src/gen-feed.py update \
+            extra/src/feed.xml "$RUNNER_TEMP/autobump-staging/results" \
+            "$RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" extra/srcpkgs
+          curl -fsS -T extra/src/feed.xml \
+            'https://repo.osowoso.org/_webdav/feed.xml' \
+            -u "${SURFER_USER}:${SURFER_TOKEN}"
+          (cd extra && ./ocoman -u)
+          python3 extra/src/close-update-issues.py \
+            "$RUNNER_TEMP/autobump-staging/results" \
+            --repo "$GITHUB_REPOSITORY" --token "$GH_TOKEN"

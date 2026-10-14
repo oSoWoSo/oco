@@ -16,11 +16,12 @@ on:
       - '**'
       - '!WIP'
       - '!WIP/**'
+      - '!autobump/**'
     paths:
       - 'srcpkgs/**'
   pull_request:
-    paths:
-      - 'srcpkgs/**'
+    branches:
+      - OCO
   repository_dispatch:
     types: [build]
   workflow_dispatch:
@@ -315,6 +316,9 @@ concurrency:
 jobs:
   detect:
     name: detect
+    permissions:
+      contents: read
+      pull-requests: read
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -323,10 +327,11 @@ jobs:
       matrix: ${{ steps.detect.outputs.matrix }}
       publish_target: ${{ steps.detect.outputs.publish_target }}
       repository_prefix: ${{ steps.detect.outputs.repository_prefix }}
+      skip_autobump: ${{ steps.detect.outputs.skip_autobump }}
     steps:
       - uses: actions/checkout@v7
         with:
-          token: ${{ secrets.BOT }}
+          persist-credentials: false
           # Need full history so we can diff against arbitrary base SHAs
           # (multi-commit pushes, force-pushes, PR bases).
           fetch-depth: 23
@@ -343,6 +348,7 @@ jobs:
           INPUT_RUNNER: ${{ inputs.runner || 'auto' }}
           INPUT_PUBLISH_TARGET: ${{ inputs.publish_target || 'production' }}
           EVENT_NAME: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
           CURRENT_BRANCH: ${{ github.ref_name }}
           PUSH_BEFORE: ${{ github.event.before }}
           PUSH_AFTER: ${{ github.event.after }}
@@ -360,6 +366,30 @@ jobs:
           echo "DEBUG: CURRENT_BRANCH=$CURRENT_BRANCH"
           echo "DEBUG: PUSH_BEFORE=$PUSH_BEFORE"
           echo "DEBUG: PUSH_AFTER=$PUSH_AFTER"
+
+          # Auto-merged autobump PRs are published from their successful PR
+          # artifacts by autobump-release.yml. Never compile them again on OCO.
+          skip_autobump=false
+          if [ "$EVENT_NAME" = push ] && [ "$GITHUB_REF" = refs/heads/OCO ]; then
+            _message=$(git log -1 --format=%B "$PUSH_AFTER")
+            if printf '%s\n' "$_message" | grep -Eq '^OCO-Autobump-Run: [0-9]+$'; then
+              _associated=''
+              for _try in 1 2 3 4 5; do
+                _associated=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${PUSH_AFTER}/pulls?per_page=100" \
+                  | jq -r --arg repo "$GITHUB_REPOSITORY" \
+                    '.[] | select(.merged_at != null and .base.ref == "OCO" and .head.repo.full_name == $repo and .user.login == "oSoWoSo-bot" and (.head.ref | startswith("autobump/"))) | .number' \
+                  ) && [ -n "$_associated" ] && break
+                sleep 3
+              done
+              if [ -z "$_associated" ]; then
+                echo "::error::Autobump merge marker present, but no matching merged PR was verified"
+                exit 1
+              fi
+              echo "Autobump merge #${_associated} uses PR build artifacts; skip recompilation"
+              skip_autobump=true
+            fi
+          fi
+          echo "skip_autobump=$skip_autobump" >> "$GITHUB_OUTPUT"
 
           # Fail closed: only an exact OCO ref may publish production, and
           # only ordinary OCO pushes are implicitly production. Dispatch must
@@ -661,6 +691,9 @@ jobs:
 
   test-pr:
     name: ${{ matrix.config.arch }} on ${{ matrix.config.host }}
+    permissions:
+      contents: read
+      packages: read
     needs: detect
     if: github.event_name == 'pull_request' && needs.detect.outputs.packages != ''
     runs-on: ${{ matrix.config.runner }}
@@ -686,7 +719,7 @@ jobs:
       - name: Checkout repo (PR head)
         uses: actions/checkout@v7
         with:
-          token: ${{ secrets.BOT }}
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha }}
           path: extra
 
@@ -748,15 +781,115 @@ jobs:
           done
           exit "$failed"
 
+      - name: Snapshot existing binaries
+        if: startsWith(github.head_ref, 'autobump/') && github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          python3 extra/src/autobump-binaries.py snapshot \
+            --binpkgs /void-packages/hostdir/binpkgs \
+            --snapshot "$RUNNER_TEMP/autobump-before.json"
+
       - name: Build packages
         env:
           PACKAGES: ${{ needs.detect.outputs.packages }}
+          RESULT_FILE: ${{ runner.temp }}/results.tsv
         run: sh "${GITHUB_WORKSPACE}/extra/src/build-packages.sh"
+
+      - name: Collect new autobump binaries
+        if: success() && startsWith(github.head_ref, 'autobump/') && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          TARGET_ARCH: ${{ matrix.config.arch }}
+          TARGET_HOST: ${{ matrix.config.host }}
+        run: |
+          python3 extra/src/autobump-binaries.py collect \
+            --binpkgs /void-packages/hostdir/binpkgs \
+            --snapshot "$RUNNER_TEMP/autobump-before.json" \
+            --arch "$TARGET_ARCH" --host "$TARGET_HOST" \
+            --results "$RUNNER_TEMP/results.tsv" \
+            --output "$RUNNER_TEMP/autobump-out"
+
+      - name: Upload autobump binaries
+        if: success() && startsWith(github.head_ref, 'autobump/') && github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/upload-artifact@v7
+        with:
+          name: autobump-bin-${{ matrix.config.arch }}-${{ matrix.config.host }}
+          path: ${{ runner.temp }}/autobump-out/
+          if-no-files-found: error
+          retention-days: 7
+
+  build-gate:
+    name: 🏗️ build gate
+    permissions:
+      contents: read
+    needs: [detect, test-pr]
+    if: always() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify required autobump build
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          DETECT_RESULT: ${{ needs.detect.result }}
+          TEST_RESULT: ${{ needs.test-pr.result }}
+          PACKAGES: ${{ needs.detect.outputs.packages }}
+          REMOVED: ${{ needs.detect.outputs.removed }}
+        run: |
+          set -euo pipefail
+          if [[ "$BASE_REF" != OCO || "$HEAD_REF" != autobump/* ]]; then
+            echo "Build not required for this PR"
+            exit 0
+          fi
+          [[ "$DETECT_RESULT" == success && "$TEST_RESULT" == success && -n "$PACKAGES" && -z "$REMOVED" ]] || {
+            echo "::error::Autobump package build/detection failed or no packages were detected"
+            exit 1
+          }
+          echo "All autobump architecture builds passed"
+
+      - name: Write autobump release plan
+        if: >-
+          ${{ startsWith(github.event.pull_request.head.ref, 'autobump/') &&
+              github.event.pull_request.base.ref == 'OCO' &&
+              github.event.pull_request.head.repo.full_name == github.repository }}
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          MATRIX_JSON: ${{ needs.detect.outputs.matrix }}
+          PACKAGES: ${{ needs.detect.outputs.packages }}
+          REMOVED: ${{ needs.detect.outputs.removed }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          plan = {
+              'pr_number': int(os.environ['PR_NUMBER']),
+              'run_id': int(os.environ['GITHUB_RUN_ID']),
+              'head_sha': os.environ['PR_HEAD_SHA'],
+              'base_sha': os.environ['PR_BASE_SHA'],
+              'head_ref': os.environ['PR_HEAD_REF'],
+              'packages': os.environ['PACKAGES'],
+              'removed': os.environ['REMOVED'],
+              'matrix': json.loads(os.environ['MATRIX_JSON']),
+          }
+          Path('release.json').write_text(json.dumps(plan, indent=2) + '\n')
+          PY
+
+      - name: Upload autobump release plan
+        if: >-
+          ${{ startsWith(github.event.pull_request.head.ref, 'autobump/') &&
+              github.event.pull_request.base.ref == 'OCO' &&
+              github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: autobump-release-plan
+          path: release.json
+          if-no-files-found: error
+          retention-days: 7
 
   build:
     name: ${{ matrix.config.arch }} on ${{ matrix.config.host }}
     needs: detect
-    if: (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch') && (needs.detect.outputs.packages != '' || needs.detect.outputs.removed != '')
+    if: (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch') && needs.detect.outputs.skip_autobump != 'true' && (needs.detect.outputs.packages != '' || needs.detect.outputs.removed != '')
     runs-on: ${{ matrix.config.runner }}
     timeout-minutes: 330
     container:
@@ -891,7 +1024,7 @@ jobs:
   purge-removed:
     name: Purge removed packages (cleanup.yml)
     needs: [detect, build]
-    if: ${{ !cancelled() && (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch') && needs.detect.outputs.removed != '' }}
+    if: ${{ !cancelled() && (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch') && needs.detect.outputs.skip_autobump != 'true' && needs.detect.outputs.removed != '' }}
     uses: ./.github/workflows/cleanup.yml
     with:
       packages: ${{ needs.detect.outputs.removed }}
@@ -901,7 +1034,7 @@ jobs:
   update-status:
     name: update
     needs: [detect, build]
-    if: always() && needs.detect.outputs.publish_target == 'production' && (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch')
+    if: always() && needs.detect.outputs.publish_target == 'production' && needs.detect.outputs.skip_autobump != 'true' && (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

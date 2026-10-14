@@ -5,7 +5,9 @@ Usage:
     gen-feed.py update FEED_XML RESULTS_DIR RUN_ID [RUN_DATE] [SRCPKGS_DIR]
 
 Reads per-arch build result files (`build-results-<ARCH>/results.tsv`,
-lines `name<TAB>version<TAB>status`) produced by `build-packages.sh`,
+lines `name<TAB>version<TAB>status` or
+`binary<TAB>source-version<TAB>status<TAB>source-template`) produced by
+`build-packages.sh`,
 and for every package that built successfully (`ok`) in this run adds or
 updates one RSS item (guid = `name-version`), then writes an RSS 2.0 feed
 to FEED_XML.
@@ -16,7 +18,8 @@ place; a version bump creates a new item. The feed is sorted newest first
 and capped at MAX_ITEMS (1000) entries.
 
 Optional template metadata (homepage, short_desc) is read from
-SRCPKGS_DIR/<pkg>/template to fill the item link and description.
+SRCPKGS_DIR/<source-template>/template for binary rows (the fourth column);
+legacy three-column rows use the package name as their source template.
 
 RUN_DATE is the build instant as ISO-8601 UTC (`2026-09-27T00:16:08Z`) and
 becomes the item pubDate; a bare `2026-09-27` is still accepted and means
@@ -33,6 +36,7 @@ from email.utils import format_datetime, parsedate_to_datetime
 from xml.etree import ElementTree
 
 MAX_ITEMS = 1000
+PACKAGE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9+._-]*$")
 
 GH_REPO = "https://github.com/oSoWoSo/Void_Community_Repository"
 CB_REPO = "https://codeberg.org/oSoWoSo/oco"
@@ -87,13 +91,25 @@ def collect_results(results_dir: str) -> dict[str, dict]:
                 if not line:
                     continue
                 parts = line.split("\t")
-                if len(parts) != 3:
+                if len(parts) not in (3, 4):
                     sys.stderr.write(f"warning: bad line in {tsv}: {line!r}\n")
                     continue
-                pkg, version, status = parts
+                pkg, version, status = parts[:3]
+                sourcepkg = parts[3] if len(parts) == 4 else pkg
+                if (not PACKAGE_NAME.fullmatch(pkg) or not version
+                        or not PACKAGE_NAME.fullmatch(sourcepkg)
+                        or status not in ("ok", "fail", "skip")):
+                    sys.stderr.write(f"warning: bad line in {tsv}: {line!r}\n")
+                    continue
                 if status != "ok":
                     continue
-                rec = data.setdefault(pkg, {"version": version, "arches": set()})
+                rec = data.setdefault(pkg, {
+                    "version": version, "arches": set(), "sourcepkg": sourcepkg
+                })
+                if rec["sourcepkg"] != sourcepkg:
+                    sys.stderr.write(
+                        f"warning: conflicting source templates for {pkg} in {tsv}\n")
+                    continue
                 rec["version"] = version
                 rec["arches"].add(arch)
     return data
@@ -216,7 +232,8 @@ def update_feed(
         rec = results[pkg]
         version = rec["version"]
         guid = f"{pkg}-{version}"
-        homepage, short_desc = read_template(srcpkgs_dir, pkg)
+        sourcepkg = rec.get("sourcepkg", pkg)
+        homepage, short_desc = read_template(srcpkgs_dir, sourcepkg)
         run_url = f"{GH_REPO}/actions/runs/{run_id}"
         arches = " ".join(sorted(rec["arches"]))
         desc = (
@@ -224,7 +241,7 @@ def update_feed(
             f"Built on: {run_date}<br/>"
             f"Archs: {arches}<br/>"
             f'<a href="{run_url}">CI run</a>'
-            f' &middot; <a href="{CB_REPO}/src/branch/{BRANCH}/srcpkgs/{pkg}/template">template</a>'
+            f' &middot; <a href="{CB_REPO}/src/branch/{BRANCH}/srcpkgs/{sourcepkg}/template">template</a>'
         )
         item = items.get(guid)
         if item is None:

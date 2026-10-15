@@ -19,7 +19,7 @@ def markdown_text(value: object) -> str:
     return re.sub(r"([\\`*_{}\[\]()#+.!|>~-])", r"\\\1", text)
 
 
-def load_identity(mapping_path: Path, package: str, version: str):
+def load_identity(mapping_path: Path, package: str, version: str, include_version=True):
     data = json.loads(mapping_path.read_text(encoding="utf-8"))
     packages = data.get("packages", {})
     if not isinstance(packages, dict):
@@ -35,15 +35,20 @@ def load_identity(mapping_path: Path, package: str, version: str):
         ecosystem, name = entry.get("ecosystem"), entry.get("name")
         if not isinstance(ecosystem, str) or not ecosystem.strip() or not isinstance(name, str) or not name.strip():
             raise ValueError(f"{package}: package identity requires ecosystem and name")
-        return {"package": {"ecosystem": ecosystem, "name": name}, "version": version}
+        identity = {"package": {"ecosystem": ecosystem, "name": name}}
+        if include_version:
+            identity["version"] = version
+        return identity
     if kind == "git":
         repo, tag_template = entry.get("repo"), entry.get("version_tag")
         if not isinstance(repo, str) or not repo.strip() or not isinstance(tag_template, str):
             raise ValueError(f"{package}: GIT identity requires repo and reviewed version_tag")
         if tag_template.count("{version}") != 1 or re.sub(r"\{version\}", "", tag_template).find("{") >= 0 or re.sub(r"\{version\}", "", tag_template).find("}") >= 0:
             raise ValueError(f"{package}: version_tag must contain exactly one {{version}} placeholder and no other braces")
-        tag = tag_template.replace("{version}", version)
-        return {"package": {"ecosystem": "GIT", "name": repo}, "version": tag}
+        identity = {"package": {"ecosystem": "GIT", "name": repo}}
+        if include_version:
+            identity["version"] = tag_template.replace("{version}", version)
+        return identity
     raise ValueError(f"{package}: identity type must be package or git")
 
 
@@ -82,12 +87,52 @@ def query_osv(query: dict, opener=urlopen):
     return {"vulns": vulns}
 
 
-def make_report(package: str, version: str, status: str, findings=None, error=None) -> str:
+def affected_details(item) -> str:
+    """Render OSV affected versions and range boundaries without inferring status."""
+    affected = item.get("affected", [])
+    if not isinstance(affected, list):
+        return ""
+    details = []
+    for entry in affected:
+        if not isinstance(entry, dict):
+            continue
+        parts = []
+        versions = entry.get("versions", [])
+        if isinstance(versions, list) and versions:
+            parts.append("versions: " + ", ".join(markdown_text(v) for v in versions))
+        ranges = entry.get("ranges", [])
+        if isinstance(ranges, list):
+            for range_entry in ranges:
+                if not isinstance(range_entry, dict):
+                    continue
+                range_type = markdown_text(range_entry.get("type", "range"))
+                events = range_entry.get("events", [])
+                boundaries = []
+                if isinstance(events, list):
+                    for event in events:
+                        if isinstance(event, dict):
+                            boundaries.extend(
+                                f"{markdown_text(kind)} {markdown_text(value)}"
+                                for kind, value in event.items()
+                            )
+                if boundaries:
+                    parts.append(f"{range_type}: " + "; ".join(boundaries))
+        if parts:
+            details.append("; ".join(parts))
+    return "Affected: " + " | ".join(details) if details else ""
+
+
+def make_report(package: str, version: str, status: str, findings=None, error=None,
+                all_upstream=False) -> str:
     title = f"OSV advisory check: {markdown_text(package)} {markdown_text(version)}"
+    scope = ("Scope: **all upstream advisories** for the reviewed package identity; "
+             "the displayed bumped version is contextual only.\n\n" if all_upstream else "")
     if status == "unmapped":
         body = "No OSV identity is configured; this is **not** a clean bill of health."
     elif status == "no_matches":
-        body = "No matching OSV advisories were returned for the reviewed identity/version."
+        body = ("No OSV advisories were returned for the reviewed upstream identity."
+                if all_upstream else
+                "No matching OSV advisories were returned for the reviewed identity/version.")
     elif status == "error":
         body = f"**ERROR:** OSV lookup could not be completed: {markdown_text(error or 'unknown error')}"
     else:
@@ -97,26 +142,34 @@ def make_report(package: str, version: str, status: str, findings=None, error=No
             summary = markdown_text(item.get("summary") or "No summary provided.")
             aliases = sorted(str(alias) for alias in item.get("aliases", []) if alias)
             ids = [identifier] + [markdown_text(alias) for alias in aliases]
-            rows.append(f"- **{'**, **'.join(ids)}** — {summary}")
-        body = "Matching advisories (informational; this does not block autobump):\n\n" + "\n".join(rows)
-    return f"### {title}\n\n{body}\n"
+            withdrawn = item.get("withdrawn")
+            label = f" — **WITHDRAWN {markdown_text(withdrawn)}**" if withdrawn else ""
+            affected = affected_details(item)
+            detail = f"\n  {affected}" if affected else ""
+            rows.append(f"- **{'**, **'.join(ids)}**{label} — {summary}{detail}")
+        body = "Advisories (informational; this does not block autobump):\n\n" + "\n".join(rows)
+    return f"### {title}\n\n{scope}{body}\n"
 
 
-def check(mapping_path: Path, package: str, version: str, opener=urlopen) -> str:
+def check(mapping_path: Path, package: str, version: str, opener=urlopen,
+          all_upstream=False) -> str:
     try:
-        query = load_identity(mapping_path, package, version)
+        query = load_identity(mapping_path, package, version, include_version=not all_upstream)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
-        return make_report(package, version, "error", error=f"invalid identity mapping: {exc}")
+        return make_report(package, version, "error", error=f"invalid identity mapping: {exc}",
+                           all_upstream=all_upstream)
     if query is None:
-        return make_report(package, version, "unmapped")
+        return make_report(package, version, "unmapped", all_upstream=all_upstream)
     try:
         result = query_osv(query, opener=opener)
         vulns = result.get("vulns", [])
         if not isinstance(vulns, list):
             raise ValueError("OSV response field 'vulns' is not a list")
-        return make_report(package, version, "findings" if vulns else "no_matches", vulns)
+        return make_report(package, version, "findings" if vulns else "no_matches", vulns,
+                           all_upstream=all_upstream)
     except (HTTPError, URLError, TimeoutError, OSError, ValueError, json.JSONDecodeError) as exc:
-        return make_report(package, version, "error", error=str(exc))
+        return make_report(package, version, "error", error=str(exc),
+                           all_upstream=all_upstream)
 
 
 def main() -> int:
@@ -125,8 +178,10 @@ def main() -> int:
     parser.add_argument("version")
     parser.add_argument("--mapping", type=Path, required=True)
     parser.add_argument("--output", type=Path)
+    parser.add_argument("--all-upstream", action="store_true",
+                        help="report all advisories for the reviewed upstream identity, regardless of version")
     args = parser.parse_args()
-    report = check(args.mapping, args.package, args.version)
+    report = check(args.mapping, args.package, args.version, all_upstream=args.all_upstream)
     if args.output:
         args.output.write_text(report, encoding="utf-8")
     else:

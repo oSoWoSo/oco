@@ -217,7 +217,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          python3 .github/scripts/osv-advisory.py "$TEMPLATE" "$VERSION" \
+          python3 .github/scripts/osv-advisory.py "$TEMPLATE" "$VERSION" --all-upstream \
             --mapping .github/osv-identities.json \
             --output "$RUNNER_TEMP/osv-report.md"
 

@@ -605,7 +605,7 @@ _build_main_index() {
 	_svg_tmp=$(mktemp)
 
 	for _arch in $ARCHES; do
-		printf '  <li><a href="%s/">%s</a></li>\n' "$_arch" "$_arch" >> "$_nav_arch_tmp"
+		printf '  <li><a data-package-arch="%s" href="%s/">%s</a></li>\n' "$_arch" "$_arch" "$_arch" >> "$_nav_arch_tmp"
 	done
 	printf '  <li><a href="https://codeberg.org/osowoso/oco">&#x2934; source</a></li>\n' >> "$_nav_arch_tmp"
 	if [ -n "${CI_URL:-}" ]; then
@@ -921,9 +921,9 @@ generate_arch_pages() {
 
 		for _a in $ARCHES; do
 			if [ "$_a" = "$_arch" ]; then
-				printf '  <li><a href="." class="active">%s</a></li>\n' "$_arch" >> "$_nav_tmp"
+				printf '  <li><a data-package-arch="%s" href="./" class="active">%s</a></li>\n' "$_arch" "$_arch" >> "$_nav_tmp"
 			else
-				printf '  <li><a href="../%s/">%s</a></li>\n' "$_a" "$_a" >> "$_nav_tmp"
+				printf '  <li><a data-package-arch="%s" href="../%s/">%s</a></li>\n' "$_a" "$_a" "$_a" >> "$_nav_tmp"
 			fi
 		done
 

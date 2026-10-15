@@ -48,14 +48,38 @@ def load_identity(mapping_path: Path, package: str, version: str):
 
 
 def query_osv(query: dict, opener=urlopen):
-    request = Request(
-        OSV_QUERY_URL,
-        data=json.dumps(query, sort_keys=True).encode("utf-8"),
-        headers={"Content-Type": "application/json", "Accept": "application/json"},
-        method="POST",
-    )
-    with opener(request, timeout=15) as response:
-        return json.loads(response.read().decode("utf-8"))
+    vulns = []
+    page_token = None
+    seen_tokens = set()
+    while True:
+        page_query = dict(query)
+        if page_token is not None:
+            page_query["page_token"] = page_token
+        request = Request(
+            OSV_QUERY_URL,
+            data=json.dumps(page_query, sort_keys=True).encode("utf-8"),
+            headers={"Content-Type": "application/json", "Accept": "application/json"},
+            method="POST",
+        )
+        with opener(request, timeout=15) as response:
+            result = json.loads(response.read().decode("utf-8"))
+        if not isinstance(result, dict):
+            raise ValueError("OSV response is not an object")
+        page_vulns = result.get("vulns", [])
+        if not isinstance(page_vulns, list):
+            raise ValueError("OSV response field 'vulns' is not a list")
+        vulns.extend(page_vulns)
+
+        next_token = result.get("next_page_token")
+        if next_token is None:
+            break
+        if not isinstance(next_token, str) or not next_token:
+            raise ValueError("OSV response field 'next_page_token' is not a non-empty string")
+        if next_token in seen_tokens:
+            raise ValueError("OSV pagination returned a repeated page token")
+        seen_tokens.add(next_token)
+        page_token = next_token
+    return {"vulns": vulns}
 
 
 def make_report(package: str, version: str, status: str, findings=None, error=None) -> str:

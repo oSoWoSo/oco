@@ -53,6 +53,60 @@ def test_findings_and_query_identity():
     path.unlink()
 
 
+def test_pagination_finds_later_page_and_sends_token():
+    path = mapping_file({"packages": {"demo": {
+        "type": "package", "ecosystem": "PyPI", "name": "demo"
+    }}})
+    captured = []
+    pages = iter([
+        {"vulns": [], "next_page_token": "page-2"},
+        {"vulns": [{"id": "OSV-LATER", "summary": "later finding"}]},
+    ])
+
+    def opener(request, timeout):
+        captured.append(json.loads(request.data))
+        return Response(next(pages))
+
+    report = osv.check(path, "demo", "1.0", opener)
+    assert len(captured) == 2
+    assert "page_token" not in captured[0]
+    assert captured[1] == {
+        "package": {"ecosystem": "PyPI", "name": "demo"},
+        "version": "1.0",
+        "page_token": "page-2",
+    }
+    assert r"OSV\-LATER" in report
+    assert "later finding" in report
+    path.unlink()
+
+
+def test_pagination_rejects_malformed_and_repeated_tokens():
+    path = mapping_file({"packages": {"demo": {
+        "type": "package", "ecosystem": "PyPI", "name": "demo"
+    }}})
+    malformed = osv.check(
+        path, "demo", "1.0",
+        lambda *_a, **_k: Response({"vulns": [], "next_page_token": 42}),
+    )
+    assert "**ERROR:**" in malformed
+
+    pages = iter([
+        {"vulns": [], "next_page_token": "repeat"},
+        {"vulns": [], "next_page_token": "repeat"},
+    ])
+    requests = []
+
+    def repeated_token_opener(request, timeout):
+        requests.append(request)
+        return Response(next(pages))
+
+    repeated = osv.check(path, "demo", "1.0", repeated_token_opener)
+    assert len(requests) == 2
+    assert "**ERROR:**" in repeated
+    assert "No matching" not in repeated
+    path.unlink()
+
+
 def test_no_matches_and_unmapped_are_distinct():
     path = mapping_file({"packages": {"demo": {
         "type": "package", "ecosystem": "PyPI", "name": "demo"
@@ -174,7 +228,10 @@ def test_repository_mappings_have_template_evidence_and_valid_identity_schema():
 
 
 if __name__ == "__main__":
-    for test in [test_findings_and_query_identity, test_no_matches_and_unmapped_are_distinct,
+    for test in [test_findings_and_query_identity,
+                 test_pagination_finds_later_page_and_sends_token,
+                 test_pagination_rejects_malformed_and_repeated_tokens,
+                 test_no_matches_and_unmapped_are_distinct,
                  test_git_identity_uses_only_reviewed_tag_template,
                  test_api_error_is_reported_not_clean, test_report_escapes_untrusted_fields,
                  test_repository_mappings_have_template_evidence_and_valid_identity_schema]:

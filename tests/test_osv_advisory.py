@@ -53,6 +53,40 @@ def test_findings_and_query_identity():
     path.unlink()
 
 
+def test_all_upstream_omits_version_and_marks_scope():
+    path = mapping_file({"packages": {"demo": {
+        "type": "package", "ecosystem": "PyPI", "name": "demo-project"
+    }}})
+    captured = []
+
+    def opener(request, timeout):
+        captured.append(json.loads(request.data))
+        return Response({"vulns": []})
+
+    report = osv.check(path, "demo", "2.0", opener, all_upstream=True)
+    assert captured == [{"package": {"ecosystem": "PyPI", "name": "demo-project"}}]
+    assert "all upstream advisories" in report
+    assert "displayed bumped version is contextual only" in report
+    assert "No OSV advisories" in report
+    path.unlink()
+
+
+def test_affected_ranges_and_withdrawn_are_rendered():
+    report = osv.make_report("demo", "2.0", "findings", [{
+        "id": "OSV-1", "summary": "issue", "withdrawn": "2024-01-02T00:00:00Z",
+        "affected": [{
+            "versions": ["1.0", "1.1"],
+            "ranges": [{"type": "SEMVER", "events": [
+                {"introduced": "0"}, {"fixed": "1.2.0"}
+            ]}],
+        }],
+    }], all_upstream=True)
+    assert r"WITHDRAWN 2024\-01\-02T00:00:00Z" in report
+    assert r"versions: 1\.0, 1\.1" in report
+    assert r"SEMVER: introduced 0; fixed 1\.2\.0" in report
+    assert "currently open" not in report
+
+
 def test_pagination_finds_later_page_and_sends_token():
     path = mapping_file({"packages": {"demo": {
         "type": "package", "ecosystem": "PyPI", "name": "demo"
@@ -229,6 +263,8 @@ def test_repository_mappings_have_template_evidence_and_valid_identity_schema():
 
 if __name__ == "__main__":
     for test in [test_findings_and_query_identity,
+                 test_all_upstream_omits_version_and_marks_scope,
+                 test_affected_ranges_and_withdrawn_are_rendered,
                  test_pagination_finds_later_page_and_sends_token,
                  test_pagination_rejects_malformed_and_repeated_tokens,
                  test_no_matches_and_unmapped_are_distinct,

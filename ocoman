@@ -597,6 +597,16 @@ delete_orphan_files() {
 
 # --- Website helpers (from create-web) ---
 
+_build_manual() {
+	command -v python3 >/dev/null 2>&1 || fatal 'python3 not installed!'
+	# The generator synchronizes root Manual.md before rendering; errors abort
+	# before the publishing phase rather than silently publishing a stale manual.
+	python3 "${SCRIPT_DIR}/src/gen-manual.py" "${SCRIPT_DIR}" "${SCRIPT_DIR}/docs/manual.html" $ARCHES \
+		|| fatal 'Failed to synchronize/generate the XBPS manual!'
+	rm -f "${SCRIPT_DIR}/docs/manual-index-template.html"
+	_g 'Generated: docs/manual.html'
+}
+
 _build_main_index() {
 	_title="${1:-Void Community Repository}"
 
@@ -1011,6 +1021,7 @@ build_site() {
 	cp -r src/* docs/
 	rm -f docs/toggle.html docs/toc.html docs/svg-color.html docs/footer.html
 
+	_build_manual
 	_build_main_index "$_title"
 	generate_arch_pages
 	_g "Finished"
@@ -1040,6 +1051,7 @@ build_main() {
 	cp -r src/* docs/
 	rm -f docs/toggle.html docs/toc.html docs/svg-color.html docs/footer.html
 
+	_build_manual
 	_build_main_index "$_title"
 	_g "Finished"
 

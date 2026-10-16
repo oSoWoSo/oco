@@ -41,6 +41,17 @@ jobs:
             *) echo "::error::Unsupported publication destination: $DESTINATION"; exit 1 ;;
           esac
 
+      - name: Restrict production writes to trusted OCO runs
+        if: inputs.destination == 'production'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+        run: |
+          case "$EVENT_NAME:$REF" in
+            push:refs/heads/OCO|workflow_dispatch:refs/heads/OCO|repository_dispatch:refs/heads/OCO|workflow_run:refs/heads/OCO) ;;
+            *) echo "::error::Production writes are restricted to trusted OCO runs ($EVENT_NAME $REF)"; exit 1 ;;
+          esac
+
       - name: Download publication request
         uses: actions/download-artifact@v8
         with:

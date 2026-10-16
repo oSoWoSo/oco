@@ -99,9 +99,9 @@ Create PR
 | better-sqlite3-devel | 13.0.3 | [home](https://github.com/WiseLibs/better-sqlite3) | zenobit |  | Fastest and simplest SQLite library for Node.js |
 | blocaled | 0.7 | [home](https://github.com/lfs-book/blocaled) | zenobit |  | Standalone implementation of the localed D-Bus service |
 | BoxBuddy | 2.6.2 | [home](https://github.com/Dvlv/BoxBuddyRS) | zenobit | x86_64 | Graphical Interface for Distrobox |
-| brave-browser-bin | 1.97.57 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
-| brave-browser-bin-qt5 | 1.97.57 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
-| brave-browser-bin-qt6 | 1.97.57 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
+| brave-browser-bin | 1.97.59 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
+| brave-browser-bin-qt5 | 1.97.59 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
+| brave-browser-bin-qt6 | 1.97.59 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
 | brave-origin-bin | 1.97.59 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | Minimalist browser from the makers of Brave (binary) |
 | brave-origin-bin-qt5 | 1.97.59 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | Minimalist browser from the makers of Brave (binary) |
 | brave-origin-bin-qt6 | 1.97.59 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | Minimalist browser from the makers of Brave (binary) |

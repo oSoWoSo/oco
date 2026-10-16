@@ -70,7 +70,7 @@ jobs:
           DESTINATION: ${{ inputs.destination }}
         run: |
           python3 validator/src/surfer-publish.py publication --destination "$DESTINATION" > "$RUNNER_TEMP/manifest.json"
-          python3 -c 'import json,os; d=json.load(open(os.environ["RUNNER_TEMP"]+"/manifest.json")); print("source_sha="+d["source_sha"]); print("source_run_id="+d["source_run_id"]); print("package_arches="+" ".join(d["package_arches"])); print("purge_packages="+" ".join(d["purge_packages"])); print("update_arch_pages="+str(d["update_arch_pages"]).lower()); print("update_feed="+str(d["update_feed"]).lower()); print("update_main_index="+str(d["update_main_index"]).lower())' >> "$GITHUB_OUTPUT"
+          python3 -c 'import json,os; d=json.load(open(os.environ["RUNNER_TEMP"]+"/manifest.json")); print("source_sha="+d["source_sha"]); print("source_run_id="+d["source_run_id"]); print("package_arches="+" ".join(d["package_arches"])); print("purge_packages="+" ".join(d["purge_packages"])); print("auto_detect_purge="+str(not d["package_arches"] and not d["result_arches"] and not d["purge_packages"] and not d["update_arch_pages"] and not d["update_feed"] and not d["update_main_index"]).lower()); print("update_arch_pages="+str(d["update_arch_pages"]).lower()); print("update_feed="+str(d["update_feed"]).lower()); print("update_main_index="+str(d["update_main_index"]).lower())' >> "$GITHUB_OUTPUT"
 
       - name: Checkout publication source
         uses: actions/checkout@v7
@@ -85,10 +85,11 @@ jobs:
         run: python3 extra/src/surfer-publish.py publication --destination "$DESTINATION"
 
       - name: Publish package and purge operations
-        if: steps.request.outputs.package_arches != '' || steps.request.outputs.purge_packages != ''
+        if: steps.request.outputs.package_arches != '' || steps.request.outputs.purge_packages != '' || steps.request.outputs.auto_detect_purge == 'true'
         env:
           ARCHES: ${{ steps.request.outputs.package_arches }}
           PURGES: ${{ steps.request.outputs.purge_packages }}
+          AUTO_DETECT_PURGE: ${{ steps.request.outputs.auto_detect_purge }}
           DESTINATION: ${{ inputs.destination }}
           PRIV_KEY: ${{ secrets.PRIV_KEY }}
           SURFER_USER: ${{ secrets.SURFER_USER }}
@@ -106,7 +107,7 @@ jobs:
             xbps-rindex -S --privkey /tmp/private.pem "$dir"/*.xbps
             (cd extra && BUILDDIR="$dir" ./ocoman -p)
           done
-          if [ -n "$PURGES" ]; then
+          if [ -n "$PURGES" ] || [ "$AUTO_DETECT_PURGE" = true ]; then
             mkdir -p "$RUNNER_TEMP/empty"
             export SURF_PURGE_PACKAGES="$PURGES"
             for arch in x86_64 x86_64-musl aarch64 aarch64-musl; do

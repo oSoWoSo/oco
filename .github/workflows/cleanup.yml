@@ -1,93 +1,83 @@
 name: 🧹 cleanup
-run-name: >-
-  ${{
-    inputs.packages != '' && format('🧹 {0}', inputs.packages) ||
-    '🧹 auto-detect'
-  }}
+
 on:
   workflow_call:
     inputs:
       packages:
-        description: >-
-          Space-separated package names to strip from the repo index
-          Empty = auto-detect packages without a template
+        description: Space-separated package names to strip from the repository index
         required: false
         type: string
         default: ''
       repository_prefix:
-        description: 'Surfer API/public path prefix (empty for production)'
+        description: 'Surfer public path prefix (empty for production; testing for test repository)'
         required: false
         type: string
         default: ''
   workflow_dispatch:
     inputs:
       packages:
-        description: >-
-          Space-separated package names to strip from the repo index
-          Empty = auto-detect packages without a template
+        description: Space-separated package names to strip from the repository index
         required: false
         default: ''
       repository_prefix:
-        description: 'Surfer API/public path prefix (empty for production)'
+        description: 'Surfer public path prefix'
         required: false
         type: string
         default: testing
+
 permissions:
   contents: read
+  actions: write
   packages: read
-concurrency:
-  group: cleanup-repodata
-  cancel-in-progress: false
 
 jobs:
-  cleanup:
-    name: ${{ matrix.arch }}
+  request:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    container:
-      image: ghcr.io/osowoso/oco-builder-x86_64:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.BOT }}
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [x86_64, x86_64-musl, aarch64, aarch64-musl]
-    env:
-      ARCH: ${{ matrix.arch }}
-
+    timeout-minutes: 10
     steps:
-      - name: Checkout this repo
-        uses: actions/checkout@v7
-        with:
-          token: ${{ secrets.BOT }}
-          fetch-depth: 0
-
       - name: Refuse production cleanup from non-OCO refs
         if: inputs.repository_prefix == '' && github.ref != 'refs/heads/OCO'
         env:
           REF: ${{ github.ref }}
         run: |
-          if [ "$REF" != refs/heads/OCO ]; then
-            echo "::error::Production cleanup is only allowed on OCO (got: $REF)"
-            exit 1
-          fi
+          test "$REF" = refs/heads/OCO || { echo "::error::Production cleanup is only allowed on OCO (got: $REF)"; exit 1; }
 
-      - name: Purge removed packages from repodata
+      - name: Checkout request source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Create cleanup request
         env:
-          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
-          SURFER_USER: ${{ secrets.SURFER_USER }}
-          PRIV_KEY: ${{ secrets.PRIV_KEY }}
-          SURF_PURGE_PACKAGES: ${{ inputs.packages }}
-          SURF_PATH_PREFIX: ${{ inputs.repository_prefix }}
+          PACKAGES: ${{ inputs.packages }}
+          PREFIX: ${{ inputs.repository_prefix }}
+          SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
         run: |
           set -eu
-          export PATH="/opt/xbps/usr/bin/:$PATH"
-          command -v xbps-rindex >/dev/null 2>&1 || { echo "::error::xbps-rindex not found in builder image" >&2; exit 1; }
-          command -v surfer >/dev/null 2>&1 || { echo "::error::surfer CLI not found in builder image" >&2; exit 1; }
-          # ARCH comes from the job env; `ocoman -p` takes no argument and
-          # must run from the checkout so it finds src/ and srcpkgs/. It
-          # only reads BUILDDIR to pick up freshly built .xbps files; this
-          # job builds nothing, so point it at an empty directory.
-          mkdir -p "${RUNNER_TEMP}/empty"
-          BUILDDIR="${RUNNER_TEMP}/empty" ./ocoman -p
+          case "$PREFIX" in '' ) destination=production ;; testing ) destination=testing ;; *) echo "::error::Unsupported repository prefix"; exit 1 ;; esac
+          mkdir -p "$RUNNER_TEMP/surfer-publication"
+          python3 - "$RUNNER_TEMP/surfer-publication" "$destination" "$SHA" "$RUN_ID" "$PACKAGES" <<'PY'
+          import json, pathlib, sys
+          root = pathlib.Path(sys.argv[1])
+          packages = sys.argv[5].split()
+          manifest = {"schema_version": 1, "destination": sys.argv[2], "source_sha": sys.argv[3], "source_run_id": sys.argv[4], "package_arches": [], "result_arches": [], "purge_packages": packages, "update_arch_pages": False, "update_feed": False, "update_main_index": False}
+          (root / "manifest.json").write_text(json.dumps(manifest) + "\n")
+          if packages:
+              (root / "purge-packages.txt").write_text("\n".join(packages) + "\n")
+          PY
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: surfer-publication
+          path: ${{ runner.temp }}/surfer-publication
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    needs: request
+    uses: ./.github/workflows/write-surfer.yml
+    with:
+      destination: ${{ inputs.repository_prefix == 'testing' && 'testing' || 'production' }}
+      artifact_name: surfer-publication
+    secrets: inherit

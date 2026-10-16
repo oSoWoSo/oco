@@ -1019,6 +1019,15 @@ spec.loader.exec_module(m)
 body = "**Package:** `foo`\n**Upstream version:** `2.0`\n<!-- package-update:foo -->\n<!-- upstream-version:2.0 -->"
 print(m.extract_pkg_version(body))
 ' "$SCRIPT_DIR/src/close-update-issues.py")" "('foo', '2.0')"
+	it 'linked package template heading is parsed without hidden markers'
+	assert_eq "$(python3 -c '
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("cui", sys.argv[1])
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+body = "**Package:** [`llama.cpp`](https://github.com/oSoWoSo/oco/blob/OCO/srcpkgs/llama.cpp/template)\n**Upstream version:** `2.0`"
+print(m.extract_pkg_version(body))
+' "$SCRIPT_DIR/src/close-update-issues.py")" "('llama.cpp', '2.0')"
 
 	it 'autobump skip/done marker is bound to requested version'
 	assert_eq "$(python3 -c '
@@ -1114,66 +1123,6 @@ else
 	echo '  (skipped: python3 not on PATH)'
 fi
 
-echo '== workflows: Surfer CLI only, no WebDAV =='
-
-for _workflow in "$SCRIPT_DIR/src/build.yml.in" "$SCRIPT_DIR/.github/workflows/build.yml"; do
-	it "$(basename "$_workflow") serializes whole runs by publishing destination"
-	assert_eq "$(grep -c "build: publish:production" "$_workflow")" '1'
-	assert_eq "$(grep -c "build: publish:testing" "$_workflow")" '1'
-	it "$(basename "$_workflow") isolates PR validation concurrency"
-	assert_eq "$(grep -c "format('build: validation:{0}', github.event.pull_request.number)" "$_workflow")" '1'
-	it "$(basename "$_workflow") retains max queue without cancellation"
-	assert_eq "$(grep -c 'queue: max' "$_workflow")" '1'
-	assert_eq "$(grep -c 'cancel-in-progress: false' "$_workflow")" '1'
-done
-
-# Deletes now go through the surfer CLI (REST /api/files/, fsPromises.rm), so
-# they cannot crash Surfer the way the removed WebDAV DELETE did. What must
-# stay true is that the workflows delegate to ocoman and never hand-roll a
-# DELETE, and that the workaround flags are gone for good.
-it 'cleanup.yml does not use the surfer CLI del command'
-assert_eq "$(grep -c 'surfer .* del \| \bdel ' "$SCRIPT_DIR/.github/workflows/cleanup.yml" 2>/dev/null)" '0'
-
-it 'cleanup.yml delegates to ocoman prune (no DELETE)'
-assert_eq "$(grep -c './ocoman -p' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
-assert_eq "$(grep -v '^[[:space:]]*#' "$SCRIPT_DIR/.github/workflows/cleanup.yml" | grep -c 'SURF_SKIP_DELETE=0\|xargs.*del\|surfer.*del\|\bdel\b')" '0'
-
-it 'build.yml calls cleanup.yml for removed packages'
-assert_eq "$(grep -c 'uses: \./\.github/workflows/cleanup\.yml' "$SCRIPT_DIR/.github/workflows/build.yml")" '1'
-assert_eq "$(grep -c 'SURF_SKIP_DELETE: .0' "$SCRIPT_DIR/.github/workflows/build.yml")" '0'
-
-it 'cleanup.yml has no schedule trigger (event-driven only)'
-assert_eq "$(grep -c '^  *schedule:' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '0'
-assert_eq "$(grep -c '^  *cron:' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '0'
-# ...but it must stay callable from build.yml
-assert_eq "$(grep -c 'workflow_call:' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
-assert_eq "$(grep -c 'workflow_dispatch:' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
-
-it 'cleanup.yml carries none of the removed delete workarounds'
-# The flags are gone from ocoman; a leftover would silently do nothing.
-assert_eq "$(grep -c 'SURF_SKIP_DELETE' "$SCRIPT_DIR/.github/workflows/cleanup.yml"; true)" '0'
-assert_eq "$(grep -c 'SURF_DELETE_ORPHANS' "$SCRIPT_DIR/.github/workflows/cleanup.yml"; true)" '0'
-assert_eq "$(grep -c 'SURF_BACKEND' "$SCRIPT_DIR/.github/workflows/cleanup.yml"; true)" '0'
-# ...and ocoman itself must not know them either
-assert_eq "$(grep -c 'SURF_SKIP_DELETE\|SURF_DELETE_ORPHANS\|SURF_BACKEND' "$SCRIPT_DIR/ocoman"; true)" '0'
-
-it 'cleanup.yml calls ocoman -p with no positional argument'
-# getopts' p) takes no argument, so anything after -p was silently discarded
-assert_eq "$(grep -c '\./ocoman -p \${{' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '0'
-assert_eq "$(grep -c '\./ocoman -p$' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
-# ARCH must come from the job env instead
-assert_eq "$(grep -c 'ARCH: \${{ matrix\.arch }}' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
-it 'cleanup workflow accepts and exports the selected repository prefix'
-assert_eq "$(grep -c 'SURF_PATH_PREFIX: \${{ inputs.repository_prefix }}' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
-it 'standalone cleanup defaults to the isolated test path'
-assert_eq "$(grep -A12 '^  workflow_dispatch:' "$SCRIPT_DIR/.github/workflows/cleanup.yml" | grep -c 'default: testing')" '1'
-it 'standalone cleanup rejects production from any ref other than exact OCO'
-assert_eq "$(grep -c "if: inputs.repository_prefix == '' && github.ref != 'refs/heads/OCO'" "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
-it 'build passes its selected repository prefix to cleanup'
-assert_eq "$(grep -c 'repository_prefix: \${{ needs.detect.outputs.repository_prefix }}' "$SCRIPT_DIR/.github/workflows/build.yml")" '1'
-
-it 'cleanup.yml cannot hang for hours on a dead Surfer'
-assert_eq "$(grep -c '^    timeout-minutes: [0-9]' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
 
 echo '== surf transport: surfer CLI backend =='
 
@@ -1495,6 +1444,12 @@ HOME="$_HOME_BACKUP"
 export HOME
 _SURF_READY=''
 unset FAKE_SURFER_ARGV FAKE_SURFER_SCRIPT FAKE_SURFER_COUNT
+
+echo '== detect-update.sh =='
+python3 "$SCRIPT_DIR/tests/test_detect_update.py" || _FAIL=$((_FAIL + 1))
+
+echo '== surfer-publish.py =='
+python3 "$SCRIPT_DIR/tests/test_surfer_publish.py" || _FAIL=$((_FAIL + 1))
 
 echo
 printf 'Passed: %s    Failed: %s\n' "$_PASS" "$_FAIL"

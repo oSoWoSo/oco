@@ -99,12 +99,12 @@ Create PR
 | better-sqlite3-devel | 13.0.3 | [home](https://github.com/WiseLibs/better-sqlite3) | zenobit |  | Fastest and simplest SQLite library for Node.js |
 | blocaled | 0.7 | [home](https://github.com/lfs-book/blocaled) | zenobit |  | Standalone implementation of the localed D-Bus service |
 | BoxBuddy | 2.6.2 | [home](https://github.com/Dvlv/BoxBuddyRS) | zenobit | x86_64 | Graphical Interface for Distrobox |
-| brave-browser-bin | 1.97.57 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
-| brave-browser-bin-qt5 | 1.97.57 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
-| brave-browser-bin-qt6 | 1.97.57 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
-| brave-origin-bin | 1.97.57 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | Minimalist browser from the makers of Brave (binary) |
-| brave-origin-bin-qt5 | 1.97.57 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | Minimalist browser from the makers of Brave (binary) |
-| brave-origin-bin-qt6 | 1.97.57 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | Minimalist browser from the makers of Brave (binary) |
+| brave-browser-bin | 1.97.59 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
+| brave-browser-bin-qt5 | 1.97.59 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
+| brave-browser-bin-qt6 | 1.97.59 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
+| brave-origin-bin | 1.97.59 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | Minimalist browser from the makers of Brave (binary) |
+| brave-origin-bin-qt5 | 1.97.59 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | Minimalist browser from the makers of Brave (binary) |
+| brave-origin-bin-qt6 | 1.97.59 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | Minimalist browser from the makers of Brave (binary) |
 | brow6el | 0.3.5 | [home](https://brow6el.dev/) | zenobit | x86_64 | Minimalistic graphical terminal web browser using sixels |
 | btrfs-progs | 7.1 | [home](https://btrfs.wiki.kernel.org/index.php/Main_Page) | Enno Boland |  | Btrfs filesystem utilities |
 | bulletty | 0.3.0 | [home](https://github.com/crocidb/bulletty) | zenobit |  | Feed reader for the terminal that stores the articles as Markdown |
@@ -172,7 +172,7 @@ Create PR
 | cwal | 0.10.1 | [home](https://github.com/nitinbhat972/cwal) | zenobit |  | Blazing-fast pywal-like color palette generator written in C |
 | dankcalendar | 1.6.1 | [home](https://github.com/AvengeMedia/dankcalendar) | zenobit |  | Calendar app for the Dank Linux desktop (Local, Google, CalDAV, iCloud) |
 | DankMaterialShell | 1.6.3 | [home](https://github.com/AvengeMedia/DankMaterialShell) | zenobit |  | Desktop shell for wayland compositors built with Quickshell & GO |
-| dashy | 4.8.4 | [home](https://dashy.to) | zenobit |  | Feature-rich, self-hostable dashboard for your services |
+| dashy | 4.8.7 | [home](https://dashy.to) | zenobit |  | Feature-rich, self-hostable dashboard for your services |
 | default-cursors | 1 | [home](https://www.voidlinux.org) | zenobit |  | Default cursor set |
 | desktop-tui | 0.3.2 | [home](https://github.com/Julien-cpsn/desktop-tui) | zenobit |  | Desktop environment without graphics |
 | devedeng | 4.22.1 | [home](https://www.rastersoft.com/programas/devede.html) | Bella109 |  | Create video DVDs and CDs |
@@ -188,8 +188,8 @@ Create PR
 | drako | 0.4.1 | [home](https://github.com/lucky7xz/drako) | zenobit |  | Grid-based, customizable TUI-Deck launcher |
 | easybashgui | 15.0.2 | [home](https://github.com/BashGui/easybashgui) | zenobit |  | Bash functions library that aims to give simple GUI functions |
 | faugus-launcher | 2.5.0 | [home](https://github.com/Faugus/faugus-launcher) | zenobit |  | Simple and lightweight app for running Windows games using UMU-Launcher |
-| fcitx5-lotus | 5.0.3 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
-| fcitx5-lotus-settings | 5.0.3 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
+| fcitx5-lotus | 5.0.4 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
+| fcitx5-lotus-settings | 5.0.4 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
 | floorp-bin | 12.20.1 | [home](https://github.com/Floorp-Projects/Floorp) | zenobit | x86_64 aarch64 | Browser built for keeping the Open, Private and Sustainable Web alive |
 | flyline | 1.9.0 | [home](https://github.com/HalFrgrd/flyline) | zenobit |  | Bash plugin to replace readline for a modern line editing experience |
 | forgejo-runner | 13.2.0 | [home](https://code.forgejo.org/forgejo/runner) | zenobit |  | Continuous integration for Forgejo |
@@ -197,9 +197,9 @@ Create PR
 | ftxui | 7.0.3 | [home](https://github.com/ArthurSonzogni/FTXUI) | zenobit |  | C++ Functional Terminal User Interface |
 | ftxui-devel | 7.0.3 | [home](https://github.com/ArthurSonzogni/FTXUI) | zenobit |  | C++ Functional Terminal User Interface |
 | gama | 1.2.1 | [home](https://github.com/termkit/gama) | zenobit |  | Manage your GitHub Actions from Terminal with great UI |
-| gh-dash | 4.26.1 | [home](https://github.com/dlvhdr/gh-dash) | zenobit |  | Rich terminal UI for GitHub that doesn't break your flow |
+| gh-dash | 4.26.2 | [home](https://github.com/dlvhdr/gh-dash) | zenobit |  | Rich terminal UI for GitHub that doesn't break your flow |
 | gh-lazy | 0.6.6 | [home](https://github.com/gizmo385/gh-lazy) | zenobit |  | Terminal UI for interacting with GitHub |
-| ghgrab | 2.1.0 | [home](https://github.com/abhixdd/ghgrab) | zenobit |  | Terminal tool to browse and download files in git forges |
+| ghgrab | 2.2.0 | [home](https://github.com/abhixdd/ghgrab) | zenobit |  | Terminal tool to browse and download files in git forges |
 | glaze | 8.2.0 | [home](https://github.com/stephenberry/glaze) | zenobit |  | Extremely fast, in memory, JSON and interface library for modern C++ |
 | glaze7 | 7.2.0 | [home](https://github.com/stephenberry/glaze) | zenobit |  | Extremely fast, in memory, JSON and interface library for modern C++ |
 | gofer | 0.5.1 | [home](https://codeberg.org/JakeAtLinux/Gofer) | zenobit |  | Fast, minimal application launcher written in pure Go. Supports both Way |
@@ -230,7 +230,7 @@ Create PR
 | hyprland | 0.56.2 | [home](https://hyprland.org/) | zenobit |  | Dynamic tiling Wayland compositor that doesn't sacrifice on its looks |
 | hyprland-devel | 0.56.2 | [home](https://hyprland.org/) | zenobit |  | Dynamic tiling Wayland compositor that doesn't sacrifice on its looks |
 | hyprland-guiutils | 0.2.2 | [home](https://github.com/hyprwm/hyprland-guiutils) | zenobit |  | Qt/QML utility apps for Hyprland |
-| hyprland-protocols | 0.7.1 | [home](https://github.com/hyprwm/hyprland-protocols) | zenobit |  | Wayland protocol extensions for Hyprland |
+| hyprland-protocols | 0.8.0 | [home](https://github.com/hyprwm/hyprland-protocols) | zenobit |  | Wayland protocol extensions for Hyprland |
 | hyprland-qt-support | 0.1.0 | [home](https://github.com/hyprwm/hyprland-qt-support) | zenobit |  | QML style provider for Hypr* QT apps |
 | hyprlang | 0.6.8 | [home](https://github.com/hyprwm/hyprlang) | zenobit |  | Official implementation library for the hypr config language |
 | hyprlock | 0.9.6 | [home](https://github.com/hyprwm/hyprlock) | zenobit |  | Hyprland's GPU-accelerated screen locking utility |
@@ -268,7 +268,7 @@ Create PR
 | libtsm-devel | 4.8.0 | [home](https://github.com/kmscon/libtsm) | zenobit |  | Terminal-emulator State Machine |
 | linuxcommandlibrary | 4.9.0 | [home](http://linuxcommandlibrary.com/) | zenobit | x86_64 aarch64 | Linux reference app with basics, tips and formatted man pages |
 | linuxcommandlibrary-desktop | 4.9.0 | [home](http://linuxcommandlibrary.com/) | zenobit | x86_64 aarch64 | Linux reference app with basics, tips and formatted man pages |
-| llama.cpp | 0.6.0 | [home](https://github.com/ggml-org/llama.cpp) | zenobit |  | LLM inference in C/C++ |
+| llama.cpp | 0.7.0 | [home](https://github.com/ggml-org/llama.cpp) | zenobit |  | LLM inference in C/C++ |
 | llmfit | 1.1.15 | [home](https://github.com/AlexsJones/llmfit) | zenobit |  | Hundreds of models & providers, easy to find what fits your hardware |
 | lunasvg | 3.5.0 | [home](https://github.com/sammycage/lunasvg) | zenobit |  | SVG rendering and manipulation library in C++ |
 | lunasvg-devel | 3.5.0 | [home](https://github.com/sammycage/lunasvg) | zenobit |  | SVG rendering and manipulation library in C++ |
@@ -305,8 +305,8 @@ Create PR
 | odin2-standalone | 2.4.1 | [home](https://thewavewarden.com/pages/odin-2) | Trve_AY |  | 24 voice polyphinic synthesizer with modulation and FX |
 | odin2-vst3 | 2.4.1 | [home](https://thewavewarden.com/pages/odin-2) | Trve_AY |  | 24 voice polyphinic synthesizer with modulation and FX |
 | omniroute | 3.8.24 | [home](https://github.com/diegosouzapw/OmniRoute) | zenobit |  | Universal AI gateway with smart routing for multiple LLM providers |
-| opencode | 1.19.0 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
-| opencode2 | 2.0.30 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
+| opencode | 1.19.3 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
+| opencode2 | 2.0.31 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
 | OpenShell | 0.1.4 | [home](https://github.com/NVIDIA/OpenShell) | zenobit |  | OpenShell is the safe, private runtime for autonomous AI agents |
 | patchance | 1.4.0 | [home](https://raysession.tuxfamily.org/) | Trve_AY |  | Jack patchbay GUI |
 | pi | 1.3.0 | [home](https://github.com/earendil-works/pi) | zenobit |  | AI agent toolkit: unified LLM API, agent loop, TUI, coding agent CLI |

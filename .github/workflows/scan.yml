@@ -105,9 +105,9 @@ jobs:
               continue
             fi
 
+            template_url="https://github.com/$GITHUB_REPOSITORY/blob/OCO/srcpkgs/$pkg/template"
             cat >out/issue.md <<EOF
-          **Package:** \`$pkg\`
-
+          **Package:** [\`$pkg\`]($template_url)
           **Upstream version:** \`$new\`
 
           <!-- package-update:$pkg -->

@@ -48,7 +48,7 @@ import urllib.request
 
 PKG_RE = re.compile(r"<!-- package-update:(\S+?) -->")
 VER_RE = re.compile(r"<!-- upstream-version:(\S+?) -->")
-PKG_BODY_RE = re.compile(r"\*\*Package:\*\*\s*`([^`]+)`")
+PKG_BODY_RE = re.compile(r"\*\*Package:\*\*\s*(?:\[`([^`]+)`\]\([^)]*\)|`([^`]+)`)")
 VER_BODY_RE = re.compile(r"\*\*Upstream version:\*\*\s*`([^`]+)`")
 SKIP_RE = re.compile(r"<!-- autobump:(?:skip|done) for (\S+) -->")
 API = "https://api.github.com/repos/{}"
@@ -294,11 +294,16 @@ def list_stale(repo: str, token: str, srcpkgs: str) -> int:
 
 
 def extract_pkg_version(body: str) -> tuple[str | None, str | None]:
-    pkg = PKG_RE.search(body) or PKG_BODY_RE.search(body)
+    pkg = PKG_RE.search(body)
+    if pkg:
+        package = pkg.group(1).strip()
+    else:
+        pkg = PKG_BODY_RE.search(body)
+        package = (pkg.group(1) or pkg.group(2)).strip() if pkg else None
     ver = VER_RE.search(body) or VER_BODY_RE.search(body)
-    if not pkg or not ver:
+    if not package or not ver:
         return None, None
-    return pkg.group(1).strip(), ver.group(1).strip()
+    return package, ver.group(1).strip()
 
 
 def main() -> int:

@@ -306,8 +306,9 @@ concurrency:
       (github.event_name == 'push' ||
        (github.event_name == 'workflow_dispatch' && inputs.publish_target == 'production')) &&
       'build: publish:production' ||
-      format('build:{0}:{1}', github.event_name,
-        github.event_name == 'pull_request' && github.event.pull_request.number || github.ref)
+      github.event_name == 'pull_request' &&
+      format('build: validation:{0}', github.event.pull_request.number) ||
+      'build: publish:testing'
     }}
   cancel-in-progress: false
   queue: max

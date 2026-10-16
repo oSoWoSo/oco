@@ -1,4 +1,4 @@
-name: to Codeberg
+name: 🫸Codeberg
 on:
   workflow_dispatch:
 permissions:
@@ -6,7 +6,8 @@ permissions:
 
 jobs:
   push-to-codeberg:
-    name: Mirror branch to Codeberg
+    name: 🫸Codeberg
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout

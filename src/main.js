@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const version = row.cells[1].textContent.trim();
                     const description = row.cells[4].textContent.trim();
                     const key = JSON.stringify([name, version, description]);
-                    const homepage = row.cells[2].querySelector('a')?.href || '';
+                    const homepage = row.cells[2].querySelector('a')?.getAttribute('href') || '';
                     if (!entries.has(key)) entries.set(key, { name, version, description, homepage, architectures: [] });
                     const pkg = entries.get(key);
                     if (!pkg.homepage) pkg.homepage = homepage;

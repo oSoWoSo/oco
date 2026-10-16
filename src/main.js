@@ -122,10 +122,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     const version = row.cells[1].textContent.trim();
                     const description = row.cells[4].textContent.trim();
                     const key = JSON.stringify([name, version, description]);
-                    if (!entries.has(key)) entries.set(key, { name, version, description, architectures: [] });
+                    const homepage = row.cells[2].querySelector('a')?.href || '';
+                    if (!entries.has(key)) entries.set(key, { name, version, description, homepage, architectures: [] });
+                    const pkg = entries.get(key);
+                    if (!pkg.homepage) pkg.homepage = homepage;
                     const target = new URL(url);
                     target.searchParams.set('package', name);
-                    entries.get(key).architectures.push({ arch, url: target.href });
+                    pkg.architectures.push({ arch, url: target.href });
                 }
             } catch (_) {
                 unavailable.push(arch);
@@ -169,6 +172,23 @@ document.addEventListener('DOMContentLoaded', () => {
             heading.append(name, version);
             const description = document.createElement('p');
             description.textContent = pkg.description;
+            const references = document.createElement('div');
+            references.className = 'package-search-references';
+            const templateLink = document.createElement('a');
+            templateLink.href = `https://codeberg.org/osowoso/oco/src/branch/OCO/srcpkgs/${encodeURIComponent(pkg.name)}/template`;
+            templateLink.textContent = 'Template (Codeberg)';
+            references.append(templateLink);
+            const githubLink = document.createElement('a');
+            githubLink.href = `https://github.com/oSoWoSo/oco/blob/OCO/srcpkgs/${encodeURIComponent(pkg.name)}/template`;
+            githubLink.textContent = 'GitHub fallback';
+            references.append(githubLink);
+            if (pkg.homepage) {
+                const homepageLink = document.createElement('a');
+                homepageLink.href = pkg.homepage;
+                homepageLink.textContent = 'Project homepage';
+                homepageLink.rel = 'noopener noreferrer';
+                references.append(homepageLink);
+            }
             const links = document.createElement('div');
             links.className = 'package-search-architectures';
             for (const target of pkg.architectures) {
@@ -178,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 link.setAttribute('aria-label', `${pkg.name} ${pkg.version} on ${target.arch}`);
                 links.append(link);
             }
-            item.append(heading, description, links);
+            item.append(heading, description, references, links);
             fragment.append(item);
         }
         results.append(fragment);

@@ -503,6 +503,8 @@ footer a:hover {
 .package-search-results p { margin: 0.3em 0 0.6em; }
 .package-search-architectures { display: flex; flex-wrap: wrap; gap: 0.5em; }
 .package-search-architectures a { display: inline-block; padding: 0.5em 0.7em; border: 1px solid var(--link-color); border-radius: 3px; }
+.package-search-references { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0.5em 0; }
+.package-search-references a { display: inline-block; padding: 0.35em 0.5em; border: 1px solid var(--border-color); border-radius: 3px; }
 .package-search-target { outline: 2px solid var(--link-color); outline-offset: -2px; background: var(--bg-light); }
 
 @media (max-width: 480px) {

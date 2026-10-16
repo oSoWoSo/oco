@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   list-templates:
-    runs-on: ubuntu-latest
+    name: Regenerate and publish repository
     steps:
       - name: Refuse publishing from non-OCO refs
         if: github.event_name == 'workflow_dispatch'

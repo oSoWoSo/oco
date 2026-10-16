@@ -302,10 +302,12 @@ permissions:
 concurrency:
   group: >-
     ${{
-      github.event_name == 'pull_request' &&
-      format('#{0} {1}', github.event.pull_request.number, inputs.template || inputs.templates) ||
-      format('{0}', inputs.template || inputs.templates) ||
-      '🏗️'
+      github.ref == 'refs/heads/OCO' &&
+      (github.event_name == 'push' ||
+       (github.event_name == 'workflow_dispatch' && inputs.publish_target == 'production')) &&
+      'build: publish:production' ||
+      format('build:{0}:{1}', github.event_name,
+        github.event_name == 'pull_request' && github.event.pull_request.number || github.ref)
     }}
   cancel-in-progress: false
   queue: max

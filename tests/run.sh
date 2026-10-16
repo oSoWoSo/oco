@@ -1019,6 +1019,15 @@ spec.loader.exec_module(m)
 body = "**Package:** `foo`\n**Upstream version:** `2.0`\n<!-- package-update:foo -->\n<!-- upstream-version:2.0 -->"
 print(m.extract_pkg_version(body))
 ' "$SCRIPT_DIR/src/close-update-issues.py")" "('foo', '2.0')"
+	it 'linked package template heading is parsed without hidden markers'
+	assert_eq "$(python3 -c '
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("cui", sys.argv[1])
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+body = "**Package:** [\`llama.cpp\`](https://github.com/oSoWoSo/oco/blob/OCO/srcpkgs/llama.cpp/template)\n**Upstream version:** \`2.0\`"
+print(m.extract_pkg_version(body))
+' "$SCRIPT_DIR/src/close-update-issues.py")" "('llama.cpp', '2.0')"
 
 	it 'autobump skip/done marker is bound to requested version'
 	assert_eq "$(python3 -c '

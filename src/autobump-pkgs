@@ -3,6 +3,7 @@
 #
 # A template qualifies when both autobump halves work on it:
 #   * its `update` file yields a candidate version (.github/scripts/detect-update.sh)
+#   * its selected version follows `xxautobump` (update-check field 3, `sort -V`)
 #   * its distfiles URL derives from ${version} and every distfile is a plain
 #     sha256 download (.github/scripts/bump-template.sh)
 #

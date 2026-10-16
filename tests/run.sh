@@ -1445,6 +1445,9 @@ export HOME
 _SURF_READY=''
 unset FAKE_SURFER_ARGV FAKE_SURFER_SCRIPT FAKE_SURFER_COUNT
 
+echo '== detect-update.sh =='
+python3 "$SCRIPT_DIR/tests/test_detect_update.py" || _FAIL=$((_FAIL + 1))
+
 echo '== surfer-publish.py =='
 python3 "$SCRIPT_DIR/tests/test_surfer_publish.py" || _FAIL=$((_FAIL + 1))
 

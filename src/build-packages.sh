@@ -54,12 +54,6 @@ for pkg in $PKGS; do
 			x86_64/x86_64-musl)
 				arch_flag="-A $ARCH"
 				;;
-			aarch64/aarch64-musl)
-				# Build musl target in the aarch64 (glibc) masterdir: run natively
-				# on arm64 hardware with musl cross-toolchain (Node is unavailable
-				#in a aarch64-musl rootfs, so the musl host image can't host node deps).
-				arch_flag="-A aarch64 -a aarch64-musl"
-				;;
 			*)
 				# - Avoid '-A' (amd64 runners lack qemu binfmt -> 'Exec format error').
 				arch_flag="-a $ARCH"

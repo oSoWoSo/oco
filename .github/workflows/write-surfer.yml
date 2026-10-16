@@ -1,0 +1,145 @@
+name: 📝 write Surfer
+
+on:
+  workflow_call:
+    inputs:
+      destination:
+        description: Repository destination
+        required: true
+        type: string
+      artifact_name:
+        description: Publication request artifact
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  packages: read
+
+jobs:
+  publish:
+    name: Publish ${{ inputs.destination }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    concurrency:
+      group: surfer-write-${{ inputs.destination }}
+      cancel-in-progress: false
+      queue: max
+    container:
+      image: ghcr.io/osowoso/oco-builder-x86_64:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.BOT }}
+    steps:
+      - name: Reject unsupported destination
+        env:
+          DESTINATION: ${{ inputs.destination }}
+        run: |
+          case "$DESTINATION" in
+            production|testing) ;;
+            *) echo "::error::Unsupported publication destination: $DESTINATION"; exit 1 ;;
+          esac
+
+      - name: Download publication request
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: publication
+
+      - name: Checkout validator
+        uses: actions/checkout@v7
+        with:
+          path: validator
+          persist-credentials: false
+
+      - name: Validate request
+        id: request
+        env:
+          DESTINATION: ${{ inputs.destination }}
+        run: |
+          python3 validator/src/surfer-publish.py publication --destination "$DESTINATION" > "$RUNNER_TEMP/manifest.json"
+          python3 -c 'import json,os; d=json.load(open(os.environ["RUNNER_TEMP"]+"/manifest.json")); print("source_sha="+d["source_sha"]); print("source_run_id="+d["source_run_id"]); print("package_arches="+" ".join(d["package_arches"])); print("purge_packages="+" ".join(d["purge_packages"])); print("update_arch_pages="+str(d["update_arch_pages"]).lower()); print("update_feed="+str(d["update_feed"]).lower()); print("update_main_index="+str(d["update_main_index"]).lower())' >> "$GITHUB_OUTPUT"
+
+      - name: Checkout publication source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.request.outputs.source_sha }}
+          path: extra
+          persist-credentials: false
+
+      - name: Validate request against checked-out source
+        env:
+          DESTINATION: ${{ inputs.destination }}
+        run: python3 extra/src/surfer-publish.py publication --destination "$DESTINATION"
+
+      - name: Publish package and purge operations
+        if: steps.request.outputs.package_arches != '' || steps.request.outputs.purge_packages != ''
+        env:
+          ARCHES: ${{ steps.request.outputs.package_arches }}
+          PURGES: ${{ steps.request.outputs.purge_packages }}
+          DESTINATION: ${{ inputs.destination }}
+          PRIV_KEY: ${{ secrets.PRIV_KEY }}
+          SURFER_USER: ${{ secrets.SURFER_USER }}
+          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
+        run: |
+          set -eu
+          export PATH="/opt/xbps/usr/bin:$PATH"
+          case "$DESTINATION" in production) SURF_PATH_PREFIX='' ;; testing) SURF_PATH_PREFIX=testing ;; esac
+          . extra/src/oco-key.sh
+          oco_key_write /tmp/private.pem
+          for arch in $ARCHES; do
+            export ARCH="$arch" XBPS_ARCH="$arch" XBPS_TARGET_ARCH="$arch"
+            dir="$GITHUB_WORKSPACE/publication/packages/$arch"
+            xbps-rindex -S --privkey /tmp/private.pem "$dir"/*.xbps
+            (cd extra && BUILDDIR="$dir" ./ocoman -p)
+          done
+          if [ -n "$PURGES" ]; then
+            mkdir -p "$RUNNER_TEMP/empty"
+            export SURF_PURGE_PACKAGES="$PURGES"
+            for arch in x86_64 x86_64-musl aarch64 aarch64-musl; do
+              export ARCH="$arch" XBPS_ARCH="$arch" XBPS_TARGET_ARCH="$arch"
+              (cd extra && BUILDDIR="$RUNNER_TEMP/empty" ./ocoman -p)
+            done
+          fi
+
+      - name: Regenerate architecture pages
+        if: steps.request.outputs.update_arch_pages == 'true'
+        env:
+          DESTINATION: ${{ inputs.destination }}
+          SURFER_USER: ${{ secrets.SURFER_USER }}
+          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
+        run: |
+          set -eu
+          [ "$DESTINATION" = testing ] && export SURF_PATH_PREFIX=testing || export SURF_PATH_PREFIX=''
+          (cd extra && ./ocoman -a)
+
+      - name: Update RSS feed
+        if: steps.request.outputs.update_feed == 'true'
+        env:
+          DESTINATION: ${{ inputs.destination }}
+          RUN_ID: ${{ fromJSON(steps.request.outputs.source_run_id || '0') }}
+          SURFER_USER: ${{ secrets.SURFER_USER }}
+          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
+        run: |
+          set -eu
+          mkdir -p "$RUNNER_TEMP/feed-results"
+          for file in publication/results/*.tsv; do
+            arch=${file##*/}; arch=${arch%.tsv}
+            mkdir -p "$RUNNER_TEMP/feed-results/build-results-$arch"
+            cp "$file" "$RUNNER_TEMP/feed-results/build-results-$arch/results.tsv"
+          done
+          curl -sf -u "${SURFER_USER}:${SURFER_TOKEN}" -o extra/src/feed.xml https://repo.osowoso.org/_webdav/feed.xml || true
+          python3 extra/src/gen-feed.py update extra/src/feed.xml "$RUNNER_TEMP/feed-results" "$RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" extra/srcpkgs
+          curl -fsS -T extra/src/feed.xml https://repo.osowoso.org/_webdav/feed.xml -u "${SURFER_USER}:${SURFER_TOKEN}"
+
+      - name: Regenerate main index
+        if: steps.request.outputs.update_main_index == 'true'
+        env:
+          DESTINATION: ${{ inputs.destination }}
+          SURFER_USER: ${{ secrets.SURFER_USER }}
+          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
+        run: |
+          set -eu
+          [ "$DESTINATION" = testing ] && export SURF_PATH_PREFIX=testing || export SURF_PATH_PREFIX=''
+          (cd extra && ./ocoman -m)

@@ -4,6 +4,7 @@ version=5.3.0
 revision=1
 build_style=meson
 build_helper=qemu
+make_check_args="--print-errorlogs"
 hostmakedepends="pkgconf wayland-devel"
 makedepends="basu-devel cairo-devel fontconfig-devel freetype-devel glib-devel
  harfbuzz-devel json-c++ libcurl-devel libepoxy-devel libglvnd-devel
@@ -13,7 +14,7 @@ makedepends="basu-devel cairo-devel fontconfig-devel freetype-devel glib-devel
  sdbus-c++-devel stb tomlplusplus-devel libical-devel wayland-devel
  wayland-protocols wireplumber-devel"
 depends="git sound-theme-freedesktop"
-checkdepends="git dejavu-fonts-ttf dbus"
+checkdepends="git dejavu-fonts-ttf"
 short_desc="Sleek, customizable desktop shell crafted for Wayland"
 maintainer="Coolllyn <leanhduc673@gmail.com>"
 license="MIT AND Apache-2.0"

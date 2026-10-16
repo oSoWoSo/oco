@@ -1505,6 +1505,9 @@ export HOME
 _SURF_READY=''
 unset FAKE_SURFER_ARGV FAKE_SURFER_SCRIPT FAKE_SURFER_COUNT
 
+echo '== surfer-publish.py =='
+python3 "$SCRIPT_DIR/tests/test_surfer_publish.py" || _FAIL=$((_FAIL + 1))
+
 echo
 printf 'Passed: %s    Failed: %s\n' "$_PASS" "$_FAIL"
 [ "$_FAIL" -eq 0 ] || exit 1

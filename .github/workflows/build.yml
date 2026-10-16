@@ -166,6 +166,7 @@ on:
         - lgogdownloader
         - libcprime
         - libheif
+        - libkrun
         - librewolf-bin
         - libspng
         - libtsm

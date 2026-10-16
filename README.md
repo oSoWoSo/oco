@@ -262,6 +262,8 @@ Create PR
 | libcprime | 5.0.1 | [home](https://gitlab.com/cubocore/libcprime) | zenobit |  | Library for bookmarking, saving activities, sharing files and more |
 | libheif | 1.23.6 | [home](https://github.com/strukturag/libheif) | zenobit |  | HEIF file format decoder and encoder + Dav1d encoding |
 | libheif-devel | 1.23.6 | [home](https://github.com/strukturag/libheif) | zenobit |  | HEIF file format decoder and encoder + Dav1d encoding |
+| libkrun | 1.19.6 | [home](https://github.com/libkrun/libkrun) | zenobit |  | Library providing Virtualization-based process isolation capabilities |
+| libkrun-devel | 1.19.6 | [home](https://github.com/libkrun/libkrun) | zenobit |  | Library providing Virtualization-based process isolation capabilities |
 | librewolf-bin | 158.0.1 | [home](https://librewolf.net) | zenobit | x86_64 aarch64 | Community-maintained fork of Firefox focused on privacy and security |
 | libspng | 0.7.4 | [home](https://libspng.org/) | zenobit |  | Simple, modern libpng alternative |
 | libtsm | 4.8.0 | [home](https://github.com/kmscon/libtsm) | zenobit |  | Terminal-emulator State Machine |

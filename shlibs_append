@@ -39,3 +39,4 @@ libllama.so.0 llama.cpp-0.5.0_1
 libllama-completion-impl.so llama.cpp-0.5.0_1
 libggml-vulkan.so.0 llama.cpp-0.5.0_1
 libllama-common.so.0 llama.cpp-0.5.0_1
+libkrun.so.1 libkrun-1.19.6_1

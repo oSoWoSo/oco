@@ -202,6 +202,8 @@
 !/srcpkgs/libcprime
 !/srcpkgs/libheif
 !/srcpkgs/libheif-devel
+!/srcpkgs/libkrun
+!/srcpkgs/libkrun-devel
 !/srcpkgs/librewolf-bin
 !/srcpkgs/libspng
 !/srcpkgs/libtsm

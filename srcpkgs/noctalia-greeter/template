@@ -1,9 +1,8 @@
 # Template file for 'noctalia-greeter'
 pkgname=noctalia-greeter
 version=1.6.0
-revision=1
+revision=2
 build_style=meson
-configure_args="--buildtype=plain"
 hostmakedepends="pkgconf wayland-devel"
 makedepends="wlroots0.20-devel libinput-devel MesaLib-devel libglvnd-devel
  cairo-devel fontconfig-devel freetype-devel harfbuzz-devel pango-devel
@@ -25,4 +24,5 @@ post_patch() {
 
 post_install() {
 	vlicense LICENSE
+	vlicense assets/fonts/tabler-icons-license.txt tabler-icons.LICENSE
 }

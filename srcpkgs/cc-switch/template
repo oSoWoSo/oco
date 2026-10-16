@@ -1,6 +1,6 @@
 # Template file for 'cc-switch'
 pkgname=cc-switch
-version=3.20.4
+version=4.0.14
 revision=1
 archs="x86_64* aarch64*"
 hostmakedepends="nodejs cargo python3 xdg-utils pnpm pkg-config"
@@ -11,7 +11,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://github.com/farion1231/cc-switch"
 distfiles="https://github.com/farion1231/cc-switch/archive/refs/tags/v${version}.tar.gz"
-checksum=6d86cbafddd41299a2be364fe8ad2457941a8c33202ba252fbeeae8b6057b207
+checksum=6ac1d1b5b85f211258e41f6d6b539def4e4993bad1b927d04b5515beb74d6a30
 
 _setup_env() {
 	if [ -n "$CROSS_BUILD" ]; then

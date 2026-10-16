@@ -85,7 +85,8 @@ jobs:
         run: |
           set -eu
           export PATH="/opt/xbps/usr/bin:$PATH"
-          case "$DESTINATION" in production) SURF_PATH_PREFIX='' ;; testing) SURF_PATH_PREFIX=testing ;; esac
+          case "$DESTINATION" in production) export SURF_PATH_PREFIX='' ;; testing) export SURF_PATH_PREFIX=testing ;; esac
+          export SURF_PURGE_PACKAGES="$PURGES"
           . extra/src/oco-key.sh
           oco_key_write /tmp/private.pem
           for arch in $ARCHES; do

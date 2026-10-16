@@ -69,6 +69,7 @@ on:
 # Apply changes in src/build.yml.in instead.
 # .github/workflows/build.yml is generated from this file by `ocoman -u`.
 permissions:
+  actions: read
   contents: write
   pull-requests: read
   packages: read

@@ -167,6 +167,7 @@ on:
         - libcprime
         - libheif
         - libkrun
+        - libkrunfw
         - librewolf-bin
         - libspng
         - libtsm

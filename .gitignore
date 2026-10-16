@@ -204,6 +204,7 @@
 !/srcpkgs/libheif-devel
 !/srcpkgs/libkrun
 !/srcpkgs/libkrun-devel
+!/srcpkgs/libkrunfw
 !/srcpkgs/librewolf-bin
 !/srcpkgs/libspng
 !/srcpkgs/libtsm

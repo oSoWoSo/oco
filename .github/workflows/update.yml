@@ -17,6 +17,7 @@ on:
 permissions:
   contents: write
   actions: write
+  packages: read
 concurrency:
   group: update-files-${{ github.ref }}
   cancel-in-progress: false

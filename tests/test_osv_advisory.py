@@ -87,6 +87,22 @@ def test_affected_ranges_and_withdrawn_are_rendered():
     assert "currently open" not in report
 
 
+def test_fixed_and_open_advisories_are_highlighted():
+    report = osv.make_report("demo", "2.0", "findings", [
+        {
+            "id": "CVE-2024-0001",
+            "summary": "fixed issue",
+            "affected": [{"ranges": [{"events": [{"introduced": "0"}, {"fixed": "1.2.0"}]}]}],
+        },
+        {
+            "id": "CVE-2024-0002",
+            "summary": "unfixed issue",
+            "affected": [{"ranges": [{"events": [{"introduced": "0"}]}]}],
+        },
+    ], all_upstream=True)
+    assert "- 🟢 **FIXED** — **CVE\\-2024\\-0001**" in report
+    assert "- 🔴 **OPEN** — **CVE\\-2024\\-0002**" in report
+
 def test_pagination_finds_later_page_and_sends_token():
     path = mapping_file({"packages": {"demo": {
         "type": "package", "ecosystem": "PyPI", "name": "demo"
@@ -264,7 +280,7 @@ def test_repository_mappings_have_template_evidence_and_valid_identity_schema():
 if __name__ == "__main__":
     for test in [test_findings_and_query_identity,
                  test_all_upstream_omits_version_and_marks_scope,
-                 test_affected_ranges_and_withdrawn_are_rendered,
+                 test_fixed_and_open_advisories_are_highlighted,
                  test_pagination_finds_later_page_and_sends_token,
                  test_pagination_rejects_malformed_and_repeated_tokens,
                  test_no_matches_and_unmapped_are_distinct,

@@ -122,6 +122,28 @@ def affected_details(item) -> str:
     return "Affected: " + " | ".join(details) if details else ""
 
 
+def advisory_status(item) -> str:
+    """Classify advisories by whether OSV records a fixed range boundary."""
+    affected = item.get("affected", [])
+    if isinstance(affected, list):
+        for entry in affected:
+            if not isinstance(entry, dict):
+                continue
+            ranges = entry.get("ranges", [])
+            if not isinstance(ranges, list):
+                continue
+            for range_entry in ranges:
+                if not isinstance(range_entry, dict):
+                    continue
+                events = range_entry.get("events", [])
+                if isinstance(events, list) and any(
+                    isinstance(event, dict) and event.get("fixed")
+                    for event in events
+                ):
+                    return "🟢 **FIXED**"
+    return "🔴 **OPEN**"
+
+
 def make_report(package: str, version: str, status: str, findings=None, error=None,
                 all_upstream=False) -> str:
     title = f"OSV advisory check: {markdown_text(package)} {markdown_text(version)}"
@@ -146,7 +168,7 @@ def make_report(package: str, version: str, status: str, findings=None, error=No
             label = f" — **WITHDRAWN {markdown_text(withdrawn)}**" if withdrawn else ""
             affected = affected_details(item)
             detail = f"\n  {affected}" if affected else ""
-            rows.append(f"- **{'**, **'.join(ids)}**{label} — {summary}{detail}")
+            rows.append(f"- {advisory_status(item)} — **{'**, **'.join(ids)}**{label} — {summary}{detail}")
         body = "Advisories (informational; this does not block autobump):\n\n" + "\n".join(rows)
     return f"### {title}\n\n{scope}{body}\n"
 

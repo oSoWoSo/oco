@@ -1,6 +1,6 @@
 # Template file for 'llama.cpp'
 pkgname=llama.cpp
-version=0.6.0
+version=0.7.0
 revision=1
 build_style=cmake
 configure_args="-DGGML_NATIVE=OFF -DGGML_VULKAN=ON -DGGML_BLAS=ON
@@ -15,7 +15,7 @@ license="MIT"
 homepage="https://github.com/ggml-org/llama.cpp"
 distfiles="https://github.com/ggml-org/llama.cpp/archive/refs/tags/v${version}.tar.gz
  https://huggingface.co/ggml-org/models/resolve/main/tinyllamas/stories15M-q4_0.gguf"
-checksum="09b36dba235fcac180efff18514da7038e65d8e5b9e4aefa59238468abfdec12
+checksum="55d67acf3ad2ad747a9bbeb75f9f0e173dbcc0d1753a471038a90c819421c5e1
  66967fbece6dbe97886593fdbb73589584927e29119ec31f08090732d1861739"
 # The test fixtures download this model over HTTP, but cmake's file(DOWNLOAD)
 # cannot follow the redirect huggingface.co replies with. Pre-seed it instead,

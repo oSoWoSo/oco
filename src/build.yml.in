@@ -139,7 +139,7 @@ jobs:
               for _try in 1 2 3 4 5; do
                 _associated=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${PUSH_AFTER}/pulls?per_page=100" \
                   | jq -r --arg repo "$GITHUB_REPOSITORY" \
-                    '.[] | select(.merged_at != null and .base.ref == "OCO" and .head.repo.full_name == $repo and .user.login == "oSoWoSo-bot" and (.head.ref | startswith("autobump/"))) | .number' \
+                    '.[] | select(.merged_at != null and .base.ref == "OCO" and .head.repo.full_name == $repo and (.user.login == "oSoWoSo-bot" or .user.login == "zen0bit" or .user.login == "zenobit") and (.head.ref | startswith("autobump/"))) | .number' \
                   ) && [ -n "$_associated" ] && break
                 sleep 3
               done

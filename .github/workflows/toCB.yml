@@ -31,4 +31,4 @@ jobs:
           BRANCH: ${{ github.ref_name }}
         run: |
           git remote add codeberg "$CODEBERG_REPO"
-          git push codeberg "HEAD:refs/heads/$BRANCH" --force
+          git push codeberg "HEAD:refs/heads/$BRANCH"

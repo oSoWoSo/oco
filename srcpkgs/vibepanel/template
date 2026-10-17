@@ -1,6 +1,6 @@
 # Template file for 'vibepanel'
 pkgname=vibepanel
-version=0.16.1
+version=0.17.0
 revision=1
 build_style=cargo
 hostmakedepends="pkg-config"
@@ -12,7 +12,7 @@ license="MIT"
 homepage="https://github.com/prankstr/vibepanel"
 changelog="https://github.com/prankstr/vibepanel/releases"
 distfiles="https://github.com/prankstr/vibepanel/archive/refs/tags/v${version}.tar.gz"
-checksum=31afa52fb692db7a12c26462cdca29c4df218ae520a36d7aa01f6a735cc7e610
+checksum=d64032b48e04254ab5ef92bc9a15af021faa1b394331eed66ca3b908080537e7
 
 do_install() {
 	vbin target/${RUST_TARGET}/release/vibepanel

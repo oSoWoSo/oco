@@ -46,6 +46,16 @@ class PublicationRequestTests(unittest.TestCase):
         with self.assertRaises(validator.RequestError):
             validator.validate(self.root, destination)
 
+
+    def test_all_supplied_packages_are_accepted(self):
+        for name in (
+            "hyprland-protocols-0.8.0_2.x86_64.xbps",
+            "package-1.0~rc1_2.x86_64.xbps",
+        ):
+            (self.root / "packages/x86_64" / name).write_bytes(b"binary")
+
+        self.assertEqual(validator.validate(self.root, "production"), self.manifest)
+
     def test_valid_production_and_testing(self):
         self.assertEqual(validator.validate(self.root, "production"), self.manifest)
         self.manifest["destination"] = "testing"

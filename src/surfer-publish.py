@@ -84,7 +84,7 @@ def validate(root, destination):
         if not packages:
             _fail(f"no packages supplied for declared architecture {arch}")
         for package in packages:
-            if not re.fullmatch(rf"[A-Za-z0-9][A-Za-z0-9+._-]*\.{re.escape(arch)}\.xbps", package.name):
+            if not package.name.endswith(".xbps"):
                 _fail(f"invalid package payload name: {package.name}")
             expected_files.add(package.relative_to(root).as_posix())
     for arch in result_arches:

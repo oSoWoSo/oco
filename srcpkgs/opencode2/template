@@ -1,6 +1,6 @@
 # Template file for 'opencode2'
 pkgname=opencode2
-version=2.0.31
+version=2.0.32
 revision=1
 archs="x86_64 aarch64"
 hostmakedepends="bun nodejs python3 git"
@@ -10,7 +10,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://github.com/anomalyco/opencode"
 distfiles="https://github.com/anomalyco/opencode/archive/refs/tags/v${version}.tar.gz"
-checksum=6abb0c5189e5e2a37ed6be8dd032cea17d8518917bb7452bcc63b837b8bae200
+checksum=d9e080eae0965104dfe3857aabbc8ce976e9aeaa62110ce101bc1a107d243d97
 nostrip_files="/usr/bin/opencode"
 nopie_files="/usr/bin/opencode"
 nocross="opencode build uses process.arch"

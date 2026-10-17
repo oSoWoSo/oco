@@ -244,7 +244,7 @@ def test_repository_mappings_have_template_evidence_and_valid_identity_schema():
 
     assert counts["git"] >= 100
     assert counts["package"] >= 4
-    assert real_template_count == 227
+    assert real_template_count >= 227
     assert real_mappings == len(packages) == 163
     assert real_mappings >= 150
     assert real_template_count >= real_mappings

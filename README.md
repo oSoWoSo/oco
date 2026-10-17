@@ -187,7 +187,7 @@ Create PR
 | dragonfly-reverb-vst3 | 3.2.10 | [home](https://michaelwillis.github.io/dragonfly-reverb) | Trve_AY |  | Collection of reverbs |
 | drako | 0.4.1 | [home](https://github.com/lucky7xz/drako) | zenobit |  | Grid-based, customizable TUI-Deck launcher |
 | easybashgui | 15.0.2 | [home](https://github.com/BashGui/easybashgui) | zenobit |  | Bash functions library that aims to give simple GUI functions |
-| faugus-launcher | 2.5.0 | [home](https://github.com/Faugus/faugus-launcher) | zenobit |  | Simple and lightweight app for running Windows games using UMU-Launcher |
+| faugus-launcher | 2.5.0.1 | [home](https://github.com/Faugus/faugus-launcher) | zenobit |  | Simple and lightweight app for running Windows games using UMU-Launcher |
 | fcitx5-lotus | 5.0.5 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
 | fcitx5-lotus-settings | 5.0.5 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
 | floorp-bin | 12.20.2 | [home](https://github.com/Floorp-Projects/Floorp) | zenobit | x86_64 aarch64 | Browser built for keeping the Open, Private and Sustainable Web alive |

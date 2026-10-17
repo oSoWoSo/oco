@@ -1,4 +1,4 @@
-name: Sync OCO to GitHub
+name: 🫸GitHub
 on:
   push:
     branches: OCO
@@ -39,4 +39,4 @@ jobs:
           GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 \
             git -c credential.helper= push \
               https://github.com/oSoWoSo/oco.git \
-              HEAD:refs/heads/OCO --force
+              HEAD:refs/heads/OCO

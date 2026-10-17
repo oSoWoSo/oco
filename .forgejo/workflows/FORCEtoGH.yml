@@ -1,0 +1,39 @@
+name: ✂️GitHub
+on:
+  workflow_dispatch:
+jobs:
+  deploy:
+    #runs-on: ubuntu-latest
+    runs-on: codeberg-tiny
+    #runs-on: codeberg-small
+    #runs-on: codeberg-medium
+# Available runners
+# Label            Arch  CPU  RAM Runtime  Notes
+# codeberg-tiny    amd64  1   2G  2 min    Intended for very lightweight jobs like linters and other helpers
+# codeberg-small   amd64  2   4G  5 min
+# codeberg-medium  amd64  4   6G  10 min
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Push OCO to GitHub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          set -eu
+          askpass="$(mktemp)"
+          trap 'rm -f "$askpass"' EXIT
+          cat > "$askpass" <<'EOF'
+          #!/bin/sh
+          case "$1" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "$GITHUB_TOKEN" ;;
+            *) exit 1 ;;
+          esac
+          EOF
+          chmod 700 "$askpass"
+          GIT_ASKPASS="$askpass" GIT_TERMINAL_PROMPT=0 \
+            git -c credential.helper= push \
+              https://github.com/oSoWoSo/oco.git \
+              HEAD:refs/heads/OCO --force

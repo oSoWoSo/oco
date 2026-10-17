@@ -3,6 +3,7 @@ pkgname=syswatch
 version=0.14.4
 revision=1
 build_style=cargo
+build_helper=rust
 hostmakedepends="pkg-config nasm"
 makedepends="libzstd-devel"
 short_desc="Single-host system diagnostics TUI"

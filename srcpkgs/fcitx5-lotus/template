@@ -1,6 +1,6 @@
 # Template file for 'fcitx5-lotus'
 pkgname=fcitx5-lotus
-version=5.0.4
+version=5.0.5
 revision=1
 build_style=cmake
 configure_args="-DLOTUS_UINPUT_PROXY_USER=_uinput_proxy -DINSTALL_RUNIT=ON -DRUNIT_SV_DIR=/usr/share/examples/sv -DLOTUS_BYTECOMPILE_PYTHON=OFF"
@@ -13,7 +13,7 @@ license="GPL-3.0-or-later AND MIT"
 homepage="https://github.com/LotusInputMethod/fcitx5-lotus"
 changelog="https://github.com/LotusInputMethod/fcitx5-lotus/releases"
 distfiles="https://github.com/LotusInputMethod/fcitx5-lotus/archive/refs/tags/v${version}.tar.gz>fcitx5-lotus-${version}.tar.gz"
-checksum="08ea8478f8aa5a40cd36236655e58941c95700acc2554ba242b1690cc3c3eb86"
+checksum="cf233fc53bd36cb96b361833469b1ad856bd6178d69bd4faa8ef13cd6d0ca8af"
 system_accounts="_uinput_proxy"
 _uinput_proxy_groups="input"
 

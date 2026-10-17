@@ -5,6 +5,7 @@ revision=1
 build_style=go
 go_import_path="github.com/lucky7xz/drako"
 depends="git"
+checkdepends="${depends}"
 short_desc="Grid-based, customizable TUI-Deck launcher"
 maintainer="zenobit <zen@osowoso.org>"
 license="AGPL-3.0-only"

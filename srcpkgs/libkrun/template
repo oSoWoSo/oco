@@ -10,6 +10,7 @@ license="Apache-2.0"
 homepage="https://github.com/libkrun/libkrun"
 distfiles="https://github.com/libkrun/libkrun/archive/refs/tags/v${version}.tar.gz"
 checksum=7025d72208172dc06f791ad5af7ccaafeabdac9869f74ccb45fb6d4f6e5991cd
+nocross="TODO?"
 
 libkrun-devel_package() {
 	depends="libkrun>=${version}_${revision}"

@@ -151,7 +151,9 @@ jobs:
           if download_result=$(curl --silent --show-error --connect-timeout 15 --max-time 120 \
             --user "${SURFER_USER}:${SURFER_TOKEN}" --output "$download_body" \
             --write-out '%{http_code} %{time_total}' "$feed_url"); then
-            read -r http_code elapsed <<< "$download_result"
+            set -- $download_result
+            http_code=$1
+            elapsed=$2
             echo "WebDAV GET returned HTTP $http_code in ${elapsed}s"
           else
             curl_rc=$?
@@ -181,7 +183,9 @@ jobs:
           if upload_result=$(curl --silent --show-error --fail-with-body --connect-timeout 15 --max-time 120 \
             --user "${SURFER_USER}:${SURFER_TOKEN}" --output "$upload_body" \
             --write-out '%{http_code} %{time_total}' --upload-file "$feed_file" "$feed_url"); then
-            read -r http_code elapsed <<< "$upload_result"
+            set -- $upload_result
+            http_code=$1
+            elapsed=$2
           else
             curl_rc=$?
             echo "::error::RSS feed WebDAV PUT failed (curl exit $curl_rc)"

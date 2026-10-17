@@ -365,7 +365,7 @@ Create PR
 | svi | 0.2.2 | [home](https://codeberg.org/LinuxNation/svi) | zenobit |  | Graphical installer for Void Linux, built with GTK4 and Python |
 | svlog | 0.6.3 | [home](https://github.com/pascal-huber/svlog) | Coolllyn |  | Display, filter and follow socklog log files on Void Linux |
 | SysMan | 0.020 | [home](https://codeberg.org/oSoWoSo/SysMan) | zenobit |  | System Manager |
-| syswatch | 0.14.3 | [home](https://www.netwatchlabs.com) | zenobit |  | Single-host system diagnostics TUI |
+| syswatch | 0.14.4 | [home](https://www.netwatchlabs.com) | zenobit |  | Single-host system diagnostics TUI |
 | tdf | 0.5.0 | [home](https://github.com/itsjunetime/tdf) | zenobit |  | TUI PDF viewer |
 | tiki | 0.6.1 | [home](https://github.com/boolean-maybe/tiki) | zenobit |  | Terminal Markdown-based shapeless workflow builder |
 | tls-client | 1.16.0 | [home](https://github.com/bogdanfinn/tls-client) | zenobit |  | Net/http.Client like HTTP Client |

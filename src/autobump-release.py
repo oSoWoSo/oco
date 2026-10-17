@@ -284,6 +284,15 @@ def prepare(args):
     print(f"Validated PR #{pr_number}, head {plan['head_sha']}, {count} XBPS binaries")
 
 
+def merge_commit_message(info: dict) -> tuple[str, str]:
+    title = f"{info['package']} {info['version']}"
+    body = (
+        f"OCO-Autobump-Run: {info['run_id']}\n"
+        f"OCO-Autobump-Head: {info['head_sha']}"
+    )
+    return title, body
+
+
 def merge(args):
     info = read_json(args.staging / "release-info.json")
     repo = args.repo
@@ -303,12 +312,7 @@ def merge(args):
                 "Merged PR is not associated with this build run")
         print(f"PR #{number} already merged as {sha}; retrying publication")
     else:
-        title = f"{pr['title']} (#{number})"
-        body = (pr.get("body") or "").strip()
-        body += ("\n\n" if body else "") + (
-            f"OCO-Autobump-Run: {info['run_id']}\n"
-            f"OCO-Autobump-Head: {info['head_sha']}"
-        )
+        title, body = merge_commit_message(info)
         result = github_api(repo, f"pulls/{number}/merge", token, method="PUT", data={
             "sha": info["head_sha"],
             "merge_method": "squash",

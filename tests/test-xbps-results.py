@@ -157,6 +157,20 @@ def test_consumers_and_release_validation() -> None:
         rejects(["target\t1.2.3\tok", "orphan\t1.2.3\tok\tmissing-source"])
 
 
+def test_autobump_merge_commit_message() -> None:
+    title, body = release.merge_commit_message({
+        "package": "opencode2",
+        "version": "2.0.32",
+        "run_id": 38993480199,
+        "head_sha": "a" * 40,
+    })
+    assert title == "opencode2 2.0.32"
+    assert body == (
+        "OCO-Autobump-Run: 38993480199\n"
+        f"OCO-Autobump-Head: {'a' * 40}"
+    )
+
+
 def test_release_pr_author_validation() -> None:
     plan = {
         "pr_number": 42,
@@ -198,5 +212,6 @@ def test_release_pr_author_validation() -> None:
 if __name__ == "__main__":
     test_binary_collection()
     test_consumers_and_release_validation()
+    test_autobump_merge_commit_message()
     test_release_pr_author_validation()
     print("XBPS result tests passed")

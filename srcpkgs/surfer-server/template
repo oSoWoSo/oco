@@ -4,6 +4,7 @@ version=7.3.0
 revision=1
 hostmakedepends="nodejs"
 depends="nodejs better-sqlite3"
+checkdepends="shared-mime-info"
 short_desc="Simple static file server with web interface and resumable uploads"
 maintainer="zenobit <zen@osoweso.org>"
 license="AGPL-3.0-only"

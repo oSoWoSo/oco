@@ -123,6 +123,7 @@ on:
         - flyline
         - forgejo-runner
         - FreeTube
+        - fresh
         - ftxui
         - gama
         - gh-dash

@@ -1,6 +1,6 @@
 # Template file for 'waterfox-bin'
 pkgname=waterfox-bin
-version=6.7.5
+version=6.7.6
 revision=1
 archs="x86_64 aarch64"
 short_desc="Fast and private web browser"
@@ -10,8 +10,8 @@ homepage="https://www.waterfox.net"
 changelog="https://www.waterfox.net/docs/releases/${version}/"
 distfiles="https://cdn.waterfox.com/waterfox/releases/${version}/Linux_x86_64/waterfox-${version}.tar.bz2>waterfox-${version}-x64.tar.bz2
  https://cdn.waterfox.com/waterfox/releases/${version}/Linux_aarch64/waterfox-${version}.tar.bz2>waterfox-${version}-arm64.tar.bz2"
-checksum="9f8329ef1f94b60f291281f9da8f35a0ee9d5872c3a1fef9dba7629eca24a0b1
- 82e34cbf3a5d42a460e6adcb779e00a712cf75204ab3790fa4133148c5e870ac"
+checksum="93163b68351a58a4d66457219b95ef86fe7066a6524d81bb6cabd747de7a9056
+ c340e145f9d4e80ced09b9f5b2eaabf08b769887d447b16e058280c2e8a3e6ca"
 nopie=yes
 
 do_extract() {

@@ -59,3 +59,13 @@ pkg_arch_ok() (
 	case "$_pao_last" in ~*) return 0 ;; esac
 	return 1
 )
+
+# Print package directory names, including symlinks to existing directories.
+# Dangling symlinks are excluded because `[ -d ]` follows the link.
+list_srcpkgs() {
+	_lsp_dir=$1
+	for _lsp_entry in "$_lsp_dir"/*; do
+		[ -d "$_lsp_entry" ] || continue
+		printf '%s\n' "${_lsp_entry##*/}"
+	done | sort -f
+}

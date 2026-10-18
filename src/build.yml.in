@@ -1,4 +1,4 @@
-name: 🏗️
+name: 🏗️ build
 run-name: >-
   ${{
     github.event_name == 'workflow_dispatch' &&
@@ -16,11 +16,12 @@ on:
       - '**'
       - '!WIP'
       - '!WIP/**'
+      - '!autobump/**'
     paths:
       - 'srcpkgs/**'
   pull_request:
-    paths:
-      - 'srcpkgs/**'
+    branches:
+      - OCO
   repository_dispatch:
     types: [build]
   workflow_dispatch:
@@ -57,40 +58,42 @@ on:
         description: 'Multi build'
         required: false
         type: string
+      publish_target:
+        description: 'Repository destination (OCO push is always production)'
+        required: false
+        type: choice
+        default: production
+        options:
+        - production
+        - testing
 # Apply changes in src/build.yml.in instead.
 # .github/workflows/build.yml is generated from this file by `ocoman -u`.
 permissions:
+  actions: read
   contents: write
   pull-requests: read
   packages: read
   issues: write
-concurrency:
-  group: >-
-    ${{
-      github.event_name == 'workflow_dispatch' &&
-      (inputs.all == 'true' && 'build: all packages' ||
-       inputs.template != '' && format('build: {0}', inputs.template) ||
-       inputs.templates != '' && format('build: {0}', inputs.templates)) ||
-      github.event_name == 'push' && github.event.head_commit.message ||
-      github.event_name == 'pull_request' &&
-      format('{0} (#{1})', github.event.pull_request.title, github.event.pull_request.number) ||
-      'matrix build'
-    }}
-  cancel-in-progress: false
-  queue: max
 
 jobs:
   detect:
     name: detect
+    permissions:
+      contents: read
+      pull-requests: read
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
       packages: ${{ steps.detect.outputs.packages }}
       removed: ${{ steps.detect.outputs.removed }}
       matrix: ${{ steps.detect.outputs.matrix }}
+      publish_target: ${{ steps.detect.outputs.publish_target }}
+      repository_prefix: ${{ steps.detect.outputs.repository_prefix }}
+      skip_autobump: ${{ steps.detect.outputs.skip_autobump }}
     steps:
       - uses: actions/checkout@v7
         with:
+          persist-credentials: false
           # Need full history so we can diff against arbitrary base SHAs
           # (multi-commit pushes, force-pushes, PR bases).
           fetch-depth: 23
@@ -105,7 +108,9 @@ jobs:
           INPUT_TEMPLATE: ${{ inputs.template }}
           INPUT_TEMPLATES: ${{ inputs.templates }}
           INPUT_RUNNER: ${{ inputs.runner || 'auto' }}
+          INPUT_PUBLISH_TARGET: ${{ inputs.publish_target || 'production' }}
           EVENT_NAME: ${{ github.event_name }}
+          GH_TOKEN: ${{ github.token }}
           CURRENT_BRANCH: ${{ github.ref_name }}
           PUSH_BEFORE: ${{ github.event.before }}
           PUSH_AFTER: ${{ github.event.after }}
@@ -124,9 +129,48 @@ jobs:
           echo "DEBUG: PUSH_BEFORE=$PUSH_BEFORE"
           echo "DEBUG: PUSH_AFTER=$PUSH_AFTER"
 
+          # Auto-merged autobump PRs are published from their successful PR
+          # artifacts by autobump-release.yml. Never compile them again on OCO.
+          skip_autobump=false
+          if [ "$EVENT_NAME" = push ] && [ "$GITHUB_REF" = refs/heads/OCO ]; then
+            _message=$(git log -1 --format=%B "$PUSH_AFTER")
+            if printf '%s\n' "$_message" | grep -Eq '^OCO-Autobump-Run: [0-9]+$'; then
+              _associated=''
+              for _try in 1 2 3 4 5; do
+                _associated=$(gh api "repos/${GITHUB_REPOSITORY}/commits/${PUSH_AFTER}/pulls?per_page=100" \
+                  | jq -r --arg repo "$GITHUB_REPOSITORY" \
+                    '.[] | select(.merged_at != null and .base.ref == "OCO" and .head.repo.full_name == $repo and (.user.login == "oSoWoSo-bot" or .user.login == "zen0bit" or .user.login == "zenobit") and (.head.ref | startswith("autobump/"))) | .number' \
+                  ) && [ -n "$_associated" ] && break
+                sleep 3
+              done
+              if [ -z "$_associated" ]; then
+                echo "::error::Autobump merge marker present, but no matching merged PR was verified"
+                exit 1
+              fi
+              echo "Autobump merge #${_associated} uses PR build artifacts; skip recompilation"
+              skip_autobump=true
+            fi
+          fi
+          echo "skip_autobump=$skip_autobump" >> "$GITHUB_OUTPUT"
+
+          # Fail closed: only an exact OCO ref may publish production, and
+          # only ordinary OCO pushes are implicitly production. Dispatch must
+          # explicitly choose production; repository_dispatch stays testing.
+          publish_target=testing
+          if [ "$GITHUB_REF" = "refs/heads/OCO" ]; then
+            if [ "$EVENT_NAME" = push ] || \
+               { [ "$EVENT_NAME" = workflow_dispatch ] && [ "$INPUT_PUBLISH_TARGET" = production ]; }; then
+              publish_target=production
+            fi
+          fi
+          repository_prefix=testing
+          [ "$publish_target" = production ] && repository_prefix=''
+          echo "publish_target=$publish_target" >> "$GITHUB_OUTPUT"
+          echo "repository_prefix=$repository_prefix" >> "$GITHUB_OUTPUT"
+
           ZERO_SHA="0000000000000000000000000000000000000000"
           all_packages() {
-            find srcpkgs -maxdepth 1 -mindepth 1 -type d -printf "%f " | sed 's/ $//'
+            list_srcpkgs srcpkgs | tr '\n' ' ' | sed 's/ $//'
           }
 
           if [ "$INPUT_ALL" = "true" ]; then
@@ -136,17 +180,26 @@ jobs:
           elif [ -n "$INPUT_TEMPLATES" ]; then
             packages=$(printf '%s ' $INPUT_TEMPLATES | sed 's/ $//')
           elif [ "$EVENT_NAME" = "push" ] || [ "$EVENT_NAME" = "pull_request" ]; then
+            UNCERTAIN_OCO_BASE=false
             if [ "$EVENT_NAME" = "pull_request" ]; then
               BASE_SHA="$PR_BASE_SHA"
               HEAD_SHA="$PR_HEAD_SHA"
             else
               HEAD_SHA="$PUSH_AFTER"
               if [ "$CURRENT_BRANCH" = "OCO" ]; then
-                if [ -n "$PUSH_BEFORE" ] && [ "$PUSH_BEFORE" != "$ZERO_SHA" ] \
-                    && git cat-file -e "$PUSH_BEFORE" 2>/dev/null; then
-                  BASE_SHA="$PUSH_BEFORE"
+                # Push event SHAs are immutable. Do not substitute the moving
+                # branch tip (or HEAD^) when the exact before commit is absent.
+                if [ -z "$PUSH_BEFORE" ] || [ "$PUSH_BEFORE" = "$ZERO_SHA" ]; then
+                  UNCERTAIN_OCO_BASE=true
                 else
-                  BASE_SHA=$(git rev-parse HEAD^ 2>/dev/null || echo "$ZERO_SHA")
+                  if ! git cat-file -e "$PUSH_BEFORE" 2>/dev/null; then
+                    git fetch --no-tags origin "$PUSH_BEFORE" >/dev/null 2>&1 || true
+                  fi
+                  if git cat-file -e "$PUSH_BEFORE" 2>/dev/null; then
+                    BASE_SHA="$PUSH_BEFORE"
+                  else
+                    UNCERTAIN_OCO_BASE=true
+                  fi
                 fi
               else
                 BASE_SHA="$ZERO_SHA"
@@ -154,12 +207,15 @@ jobs:
             fi
             echo "DEBUG: BASE_SHA=$BASE_SHA"
             echo "DEBUG: HEAD_SHA=$HEAD_SHA"
-            if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "$ZERO_SHA" ] \
+            if [ "$UNCERTAIN_OCO_BASE" = "true" ]; then
+              echo "::warning::OCO push before SHA is zero or unavailable; building all packages without inferring removals"
+              packages=$(all_packages)
+            elif [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "$ZERO_SHA" ] \
                 || ! git cat-file -e "$BASE_SHA" 2>/dev/null; then
               echo "No direct diff base; reading origin/OCO .gitignore for package list"
               _main_list=$(git show origin/OCO:.gitignore 2>/dev/null | sed -n 's|^!/srcpkgs/\([^/]*\)/*$|\1|p' | sort -fu || true)
               if [ -n "$_main_list" ]; then
-                _current_list=$(find srcpkgs -maxdepth 1 -mindepth 1 -type d -printf "%f\n" | sort -f)
+                _current_list=$(list_srcpkgs srcpkgs)
                 _added=$(  grep -Fxvf <(printf '%s\n' "$_main_list") <(printf '%s\n' "$_current_list") || true)
                 _removed=$(grep -Fxvf <(printf '%s\n' "$_current_list") <(printf '%s\n' "$_main_list") || true)
                 removed=$(printf '%s\n' "$_removed" | tr '\n' ' ' | sed 's/ $//')
@@ -349,7 +405,7 @@ jobs:
               _arm_musl=$(arch_needed "aarch64-musl" && echo 1 || echo 0)
               matrix_configs=""
               [ "$_arm_native" = 1 ]      && add_cfg "aarch64"      "aarch64" "ubuntu-24.04-arm" "linux/arm64" 1 true
-              [ "$_arm_musl"  = 1 ]       && add_cfg "aarch64-musl" "aarch64" "ubuntu-24.04-arm" "linux/arm64" 1 true
+              [ "$_arm_musl"  = 1 ]      && add_cfg "aarch64-musl" "aarch64-musl" "ubuntu-24.04-arm" "linux/arm64" 1 true
               if [ -z "$matrix_configs" ]; then
                 echo "Warning: no packages for arm64 archs, defaulting to x86_64" >> "$GITHUB_STEP_SUMMARY"
                                              add_cfg "x86_64"       "x86_64"  "ubuntu-latest"    "linux/amd64" 1 false
@@ -360,7 +416,7 @@ jobs:
               arch_needed "x86_64"        && add_cfg "x86_64"       "x86_64"  "ubuntu-latest"    "linux/amd64" 1 false
               arch_needed "aarch64"       && add_cfg "aarch64"      "aarch64" "ubuntu-24.04-arm" "linux/arm64" 1 true
               arch_needed "x86_64-musl"   && add_cfg "x86_64-musl"  "x86_64"  "ubuntu-latest"    "linux/amd64" 1 false
-              arch_needed "aarch64-musl"  && add_cfg "aarch64-musl" "aarch64" "ubuntu-24.04-arm" "linux/arm64" 1 true
+              arch_needed "aarch64-musl"  && add_cfg "aarch64-musl" "aarch64-musl" "ubuntu-24.04-arm" "linux/arm64" 1 true
               if [ -z "$matrix_configs" ]; then
                 echo "Warning: no packages for any arch, defaulting to x86_64" >> "$GITHUB_STEP_SUMMARY"
                                              add_cfg "x86_64"       "x86_64"  "ubuntu-latest"    "linux/amd64" 1 false
@@ -373,7 +429,7 @@ jobs:
               arch_needed "x86_64-musl"   && add_cfg "x86_64-musl"  "x86_64"  "self-hosted"      "linux/amd64" 1 false
               needs_cross "aarch64-musl"  && add_cfg "aarch64-musl" "x86_64"  "self-hosted"      "linux/amd64" 0 false
               needs_native "aarch64"      && add_cfg "aarch64"      "aarch64" "self-hosted"      "linux/arm64" 1 true
-              needs_native "aarch64-musl" && add_cfg "aarch64-musl" "aarch64" "self-hosted"      "linux/arm64" 1 true
+              needs_native "aarch64-musl" && add_cfg "aarch64-musl" "aarch64-musl" "self-hosted"      "linux/arm64" 1 true
               if [ -z "$matrix_configs" ]; then
                 echo "Warning: no arch matched package list, defaulting to x86_64" >> "$GITHUB_STEP_SUMMARY"
                                              add_cfg "x86_64"       "x86_64"  "self-hosted"      "linux/amd64" 1 false
@@ -386,7 +442,7 @@ jobs:
               arch_needed "x86_64-musl"   && add_cfg "x86_64-musl"  "x86_64"  "ubuntu-latest"    "linux/amd64" 1 false
               needs_cross "aarch64-musl"  && add_cfg "aarch64-musl" "x86_64"  "ubuntu-latest"    "linux/amd64" 0 false
               needs_native "aarch64"      && add_cfg "aarch64"      "aarch64" "ubuntu-24.04-arm" "linux/arm64" 1 true
-              needs_native "aarch64-musl" && add_cfg "aarch64-musl" "aarch64" "ubuntu-24.04-arm" "linux/arm64" 1 true
+              needs_native "aarch64-musl" && add_cfg "aarch64-musl" "aarch64-musl" "ubuntu-24.04-arm" "linux/arm64" 1 true
               if [ -z "$matrix_configs" ]; then
                 echo "Warning: no arch matched package list, defaulting to x86_64" >> "$GITHUB_STEP_SUMMARY"
                                              add_cfg "x86_64"       "x86_64"  "ubuntu-latest"    "linux/amd64" 1 false
@@ -397,6 +453,9 @@ jobs:
 
   test-pr:
     name: ${{ matrix.config.arch }} on ${{ matrix.config.host }}
+    permissions:
+      contents: read
+      packages: read
     needs: detect
     if: github.event_name == 'pull_request' && needs.detect.outputs.packages != ''
     runs-on: ${{ matrix.config.runner }}
@@ -405,7 +464,7 @@ jobs:
       image: ghcr.io/osowoso/oco-builder-${{ matrix.config.host }}:latest
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.BOT }}
       options: --platform ${{ matrix.config.platform }} --privileged
       volumes:
         - /dev:/dev
@@ -422,6 +481,7 @@ jobs:
       - name: Checkout repo (PR head)
         uses: actions/checkout@v7
         with:
+          persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha }}
           path: extra
 
@@ -483,22 +543,122 @@ jobs:
           done
           exit "$failed"
 
+      - name: Snapshot existing binaries
+        if: startsWith(github.head_ref, 'autobump/') && github.event.pull_request.head.repo.full_name == github.repository
+        run: |
+          python3 extra/src/autobump-binaries.py snapshot \
+            --binpkgs /void-packages/hostdir/binpkgs \
+            --snapshot "$RUNNER_TEMP/autobump-before.json"
+
       - name: Build packages
         env:
           PACKAGES: ${{ needs.detect.outputs.packages }}
+          RESULT_FILE: ${{ runner.temp }}/results.tsv
         run: sh "${GITHUB_WORKSPACE}/extra/src/build-packages.sh"
+
+      - name: Collect new autobump binaries
+        if: success() && startsWith(github.head_ref, 'autobump/') && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          TARGET_ARCH: ${{ matrix.config.arch }}
+          TARGET_HOST: ${{ matrix.config.host }}
+        run: |
+          python3 extra/src/autobump-binaries.py collect \
+            --binpkgs /void-packages/hostdir/binpkgs \
+            --snapshot "$RUNNER_TEMP/autobump-before.json" \
+            --arch "$TARGET_ARCH" --host "$TARGET_HOST" \
+            --results "$RUNNER_TEMP/results.tsv" \
+            --output "$RUNNER_TEMP/autobump-out"
+
+      - name: Upload autobump binaries
+        if: success() && startsWith(github.head_ref, 'autobump/') && github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/upload-artifact@v7
+        with:
+          name: autobump-bin-${{ matrix.config.arch }}-${{ matrix.config.host }}
+          path: ${{ runner.temp }}/autobump-out/
+          if-no-files-found: error
+          retention-days: 7
+
+  build-gate:
+    name: 🏗️ build gate
+    permissions:
+      contents: read
+    needs: [detect, test-pr]
+    if: always() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify required autobump build
+        env:
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          DETECT_RESULT: ${{ needs.detect.result }}
+          TEST_RESULT: ${{ needs.test-pr.result }}
+          PACKAGES: ${{ needs.detect.outputs.packages }}
+          REMOVED: ${{ needs.detect.outputs.removed }}
+        run: |
+          set -euo pipefail
+          if [[ "$BASE_REF" != OCO || "$HEAD_REF" != autobump/* ]]; then
+            echo "Build not required for this PR"
+            exit 0
+          fi
+          [[ "$DETECT_RESULT" == success && "$TEST_RESULT" == success && -n "$PACKAGES" && -z "$REMOVED" ]] || {
+            echo "::error::Autobump package build/detection failed or no packages were detected"
+            exit 1
+          }
+          echo "All autobump architecture builds passed"
+
+      - name: Write autobump release plan
+        if: >-
+          ${{ startsWith(github.event.pull_request.head.ref, 'autobump/') &&
+              github.event.pull_request.base.ref == 'OCO' &&
+              github.event.pull_request.head.repo.full_name == github.repository }}
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          MATRIX_JSON: ${{ needs.detect.outputs.matrix }}
+          PACKAGES: ${{ needs.detect.outputs.packages }}
+          REMOVED: ${{ needs.detect.outputs.removed }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          plan = {
+              'pr_number': int(os.environ['PR_NUMBER']),
+              'run_id': int(os.environ['GITHUB_RUN_ID']),
+              'head_sha': os.environ['PR_HEAD_SHA'],
+              'base_sha': os.environ['PR_BASE_SHA'],
+              'head_ref': os.environ['PR_HEAD_REF'],
+              'packages': os.environ['PACKAGES'],
+              'removed': os.environ['REMOVED'],
+              'matrix': json.loads(os.environ['MATRIX_JSON']),
+          }
+          Path('release.json').write_text(json.dumps(plan, indent=2) + '\n')
+          PY
+
+      - name: Upload autobump release plan
+        if: >-
+          ${{ startsWith(github.event.pull_request.head.ref, 'autobump/') &&
+              github.event.pull_request.base.ref == 'OCO' &&
+              github.event.pull_request.head.repo.full_name == github.repository }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: autobump-release-plan
+          path: release.json
+          if-no-files-found: error
+          retention-days: 7
 
   build:
     name: ${{ matrix.config.arch }} on ${{ matrix.config.host }}
     needs: detect
-    if: (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch') && (needs.detect.outputs.packages != '' || needs.detect.outputs.removed != '')
+    if: (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch') && needs.detect.outputs.skip_autobump != 'true' && (needs.detect.outputs.packages != '' || needs.detect.outputs.removed != '')
     runs-on: ${{ matrix.config.runner }}
     timeout-minutes: 330
     container:
       image: ghcr.io/osowoso/oco-builder-${{ matrix.config.host }}:latest
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ secrets.BOT }}
       options: --platform ${{ matrix.config.platform }} --privileged
       volumes:
         - /dev:/dev
@@ -516,6 +676,7 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@v7
         with:
+          token: ${{ secrets.BOT }}
           path: extra
 
       - name: Prepare container
@@ -566,114 +727,120 @@ jobs:
           name: build-results-${{ matrix.config.arch }}
           path: ${{ runner.temp }}/results.tsv
           if-no-files-found: ignore
-
-      - name: Sign and upload new packages
+      - name: Stage newly built packages
         if: steps.build.outputs.built == 'true'
-        env:
-          ARCH: ${{ matrix.config.arch }}
-          PRIV_KEY: ${{ secrets.PRIV_KEY }}
-          XBPS_ARCH: ${{ matrix.config.arch }}
-          XBPS_TARGET_ARCH: ${{ matrix.config.arch }}
-          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
-          SURFER_USER: ${{ secrets.SURFER_USER }}
         working-directory: /void-packages/hostdir/binpkgs/
         run: |
-          export PATH="/opt/xbps/usr/bin/:$PATH"
-          export XBPS_TARGET_ARCH="${XBPS_ARCH}"
-
+          set -eu
           echo "==> Merging free + nonfree"
           [ -d nonfree ] && mv nonfree/*.xbps . 2>/dev/null || true
-
-          echo "==> Identifying newly built packages"
-          NEW_PKGS_DIR=$(mktemp -d)
+          out="$RUNNER_TEMP/packages/${{ matrix.config.arch }}"
+          mkdir -p "$out"
           for pkg in ./*.xbps; do
             [ -f "$pkg" ] || continue
             base=$(basename "$pkg")
             grep -qxF "$base" /tmp/pre-build-pkgs.txt && continue
-            mv "$pkg" "$NEW_PKGS_DIR/"
-            [ -f "${pkg}.sig2" ] && mv "${pkg}.sig2" "$NEW_PKGS_DIR/" || true
+            cp "$pkg" "$out/"
           done
 
-          if ! ls "$NEW_PKGS_DIR"/*.xbps 2>/dev/null; then
-            echo "==> No new packages to sign/upload"
-            rm -rf "$NEW_PKGS_DIR"
-            exit 0
-          fi
+      - name: Upload newly built packages
+        if: steps.build.outputs.built == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-packages-${{ matrix.config.arch }}
+          path: ${{ runner.temp }}/packages/${{ matrix.config.arch }}/*.xbps
+          if-no-files-found: ignore
+          retention-days: 14
 
-          echo "==> New packages: $(ls "$NEW_PKGS_DIR"/*.xbps | wc -l)"
-          . "${GITHUB_WORKSPACE}/extra/src/oco-key.sh"
-          oco_key_write /tmp/private.pem
-
-          echo "==> Signing new packages"
-          xbps-rindex -S --privkey /tmp/private.pem "$NEW_PKGS_DIR"/*.xbps
-
-          cd "${GITHUB_WORKSPACE}/extra/" || exit 1
-          if BUILDDIR="$NEW_PKGS_DIR" ./ocoman -p; then
-            echo "Packages updated"
-          else
-            echo "ERROR: Command 'ocoman -p' failed!"
-            exit 1
-          fi
-          if ./ocoman -a; then
-            echo "Arch pages updated"
-          else
-            echo "ERROR: Command 'ocoman -a' failed!"
-            exit 1
-          fi
-
-  purge-removed:
-    name: Purge removed packages (cleanup.yml)
+  publish-request:
+    name: Prepare Surfer publication request
     needs: [detect, build]
-    if: ${{ !cancelled() && (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch') && needs.detect.outputs.removed != '' }}
-    uses: ./.github/workflows/cleanup.yml
-    with:
-      packages: ${{ needs.detect.outputs.removed }}
-    secrets: inherit
-
-  update-status:
-    name: update
-    needs: [detect, build]
-    if: always() && (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch')
+    if: >-
+      ${{
+        needs.build.result == 'success' &&
+        needs.detect.outputs.skip_autobump != 'true' &&
+        github.event_name != 'pull_request' &&
+        (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch')
+      }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
-      - name: Checkout this repo
+      - name: Checkout source
         uses: actions/checkout@v7
         with:
-          path: extra
-          fetch-depth: 0
+          ref: ${{ github.sha }}
+          persist-credentials: false
 
-      - name: Download build results
-        continue-on-error: true
+      - name: Download build artifacts
         uses: actions/download-artifact@v8
         with:
-          path: extra/results
+          path: ${{ runner.temp }}/incoming
 
-      - name: Update RSS
-        if: always()
+      - name: Assemble publication artifact
         env:
-          RUN_ID: ${{ github.run_id }}
-          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
-          SURFER_USER: ${{ secrets.SURFER_USER }}
+          DESTINATION: ${{ needs.detect.outputs.publish_target }}
+          SOURCE_SHA: ${{ github.sha }}
+          SOURCE_RUN_ID: ${{ github.run_id }}
+          REMOVED: ${{ needs.detect.outputs.removed }}
+          RESULTS: ${{ needs.detect.outputs.packages != '' }}
         run: |
-          curl -sf -u "${SURFER_USER}:${SURFER_TOKEN}" -o extra/src/feed.xml \
-            "https://repo.osowoso.org/_webdav/feed.xml" || true
-          python3 extra/src/gen-feed.py update \
-            extra/src/feed.xml extra/results "$RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          curl -sf -T extra/src/feed.xml \
-            "https://repo.osowoso.org/_webdav/feed.xml" \
-            -u "${SURFER_USER}:${SURFER_TOKEN}" || {
-            echo "::error::feed upload failed (check SURFER_USER/SURFER_TOKEN secrets)"
-            exit 1
-          }
-          cd extra
-          ./ocoman -u
+          set -eu
+          root="$RUNNER_TEMP/surfer-publication"
+          mkdir -p "$root/packages" "$root/results"
+          for dir in "$RUNNER_TEMP"/incoming/build-packages-*; do
+            [ -d "$dir" ] || continue
+            arch=${dir##*build-packages-}
+            mkdir -p "$root/packages/$arch"
+            cp "$dir"/*.xbps "$root/packages/$arch/" 2>/dev/null || rmdir "$root/packages/$arch"
+          done
+          for dir in "$RUNNER_TEMP"/incoming/build-results-*; do
+            [ -d "$dir" ] || continue
+            arch=${dir##*build-results-}
+            [ -f "$dir/results.tsv" ] && cp "$dir/results.tsv" "$root/results/$arch.tsv"
+          done
+          python3 - "$root" <<'PY'
+          import json, os, pathlib, sys
+          root = pathlib.Path(sys.argv[1])
+          arches = sorted(p.name for p in (root / "packages").iterdir() if p.is_dir())
+          results = sorted(p.stem for p in (root / "results").glob("*.tsv"))
+          purges = os.environ["REMOVED"].split()
+          manifest = {"schema_version": 1, "destination": os.environ["DESTINATION"], "source_sha": os.environ["SOURCE_SHA"], "source_run_id": os.environ["SOURCE_RUN_ID"], "package_arches": arches, "result_arches": results, "purge_packages": purges, "update_arch_pages": True, "update_feed": True, "update_main_index": False}
+          (root / "manifest.json").write_text(json.dumps(manifest) + "\n")
+          if purges:
+              (root / "purge-packages.txt").write_text("\n".join(purges) + "\n")
+          PY
 
-      - name: Close resolved update issues
-        if: always()
+      - uses: actions/upload-artifact@v7
+        with:
+          name: surfer-publication
+          path: ${{ runner.temp }}/surfer-publication
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    needs: [detect, publish-request]
+    uses: ./.github/workflows/write-surfer.yml
+    with:
+      destination: ${{ needs.detect.outputs.publish_target }}
+      artifact_name: surfer-publication
+    secrets: inherit
+
+  close-update-issues:
+    name: Close resolved update issues
+    needs: [detect, publish]
+    if: needs.detect.outputs.publish_target == 'production'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: build-results-*
+          merge-multiple: false
+          path: results
+      - name: Close resolved package issues
         env:
-          GH_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          python3 extra/src/close-update-issues.py extra/results \
-            --repo "$GH_REPO" --token "$GH_TOKEN"
+        run: python3 src/close-update-issues.py results --repo "$GH_REPO" --token "$GH_TOKEN"
+

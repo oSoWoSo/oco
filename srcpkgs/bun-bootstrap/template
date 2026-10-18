@@ -1,6 +1,6 @@
 # Template file for 'bun-bootstrap'
 pkgname=bun-bootstrap
-version=1.4.2
+version=1.4.3
 revision=1
 archs="x86_64* aarch64*"
 hostmakedepends="patchelf unzip"
@@ -13,11 +13,11 @@ distfiles="https://github.com/oven-sh/bun/releases/download/bun-v${version}/bun-
  https://github.com/oven-sh/bun/releases/download/bun-v${version}/bun-linux-aarch64.zip
  https://github.com/oven-sh/bun/releases/download/bun-v${version}/bun-linux-aarch64-musl.zip
  https://raw.githubusercontent.com/oven-sh/bun/refs/tags/bun-v${version}/LICENSE.md"
-checksum="36368faef7527875d5ffa52e53cd48021741f2a83eb6208a8dd64068d422a913
- 4835eca59d6da70f4674f5642f6e459dcadab773695b2ed9922d131057989742
- 54328bbc2d9c8e0c9f892c544d66c57a83b84139e34909e5ee81758f1ac8fda7
- 71760b6c8ea30623b81a4907cb815d48e2ea266f2e73e751534a44a0607950df
- b9caf52728691b4057e371232c221a132883198be2f3d2ddf92c90404c984b1a"
+checksum="3e730528d89775f03f87f05c06787c4df4099d0a37f3f252e7b829cb23816e18
+ 6e9ea98554ea0d05efda5840ae292618aaa3adefd66b0853520c5c86a37eac9c
+ efa9813da5ed72423bf847f916e8d2c47c0d776add972354026a75e10da9aa21
+ 8de8a0003cc2707bb555887e3d450e24e1edf3f605f491393e89ed61a8853420
+ 056696884250b0d682365260cf1487a6501b1665a343ec60e23a1e647043c572"
 skip_extraction="bun-linux-x64.zip bun-linux-x64-musl.zip bun-linux-aarch64.zip bun-linux-aarch64-musl.zip LICENSE.md"
 repository=bootstrap
 nostrip=yes

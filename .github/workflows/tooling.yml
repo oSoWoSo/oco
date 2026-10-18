@@ -1,4 +1,4 @@
-name: 🧰
+name: 🧰 tooling
 run-name: >-
   ${{
     github.event_name == 'push' && format('🧰 {0}', github.event.head_commit.message) ||
@@ -14,6 +14,12 @@ on:
       - 'src/build.yml.in'
       - 'src/*.sh'
       - 'src/*.py'
+      - 'src/*.js'
+      - 'src/*.css'
+      - 'src/*.html'
+      - 'srcpkgs/**'
+      - '.github/osv-identities.json'
+      - '.github/scripts/**'
       - 'tests/**'
       - '.github/workflows/**'
   pull_request:
@@ -23,6 +29,12 @@ on:
       - 'src/build.yml.in'
       - 'src/*.sh'
       - 'src/*.py'
+      - 'src/*.js'
+      - 'src/*.css'
+      - 'src/*.html'
+      - 'srcpkgs/**'
+      - '.github/osv-identities.json'
+      - '.github/scripts/**'
       - 'tests/**'
       - '.github/workflows/**'
 permissions:
@@ -30,10 +42,14 @@ permissions:
 
 jobs:
   helper-tests:
-    name: 🧰
+    name: Run tooling tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.BOT }}
+      - name: Check website JavaScript syntax
+        run: node --check src/main.js
       - name: Run helper tests
         run: sh tests/run.sh

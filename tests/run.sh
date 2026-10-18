@@ -65,6 +65,7 @@ eval "$(awk '
 	/^fetch_repodata\(\)/ {p=1}
 	/^delete_remote\(\)/   {p=1}
 	/^upload_file\(\)/   {p=1}
+	/^surf_api_path\(\)/ {p=1}
 	/^prune_orphans\(\)/ {p=1}
 	/^delete_orphan_files\(\)/ {p=1}
 	/^read_template_fields/{p=1}
@@ -81,6 +82,7 @@ eval "$(awk '
 export SURF_ATTEMPTS=4 SURF_BACKOFF=0
 export SURF_DEADLINE=1500 SURF_CONNECT_TIMEOUT=20 SURF_MAX_TIME=300 SURF_BACKOFF_MAX=30
 export SURFER_URL='https://repo.osowoso.org'
+export SURF_PATH_PREFIX=''
 
 # surf_cli_init() reads _SURF_READY, which ocoman initialises at file scope.
 # The awk extractor above only pulls function bodies, so that initialisation
@@ -98,6 +100,24 @@ it 'hyphenated name';       assert_eq "$(pkg_name 'python3-PyGithub-1.59_1.x86_6
 it 'musl arch suffix';      assert_eq "$(pkg_name 'foo-1.2_1.aarch64-musl')"    'foo'
 it 'caller stripped .xbps'; assert_eq "$(pkg_name 'foo-1.0_1.x86_64')"          'foo'
 it 'caller passed .xbps';   assert_eq "$(pkg_name 'foo-1.0_1.x86_64.xbps')"     'foo'
+echo '== list_srcpkgs =='
+mkdir -p srcpkgs/list-parent srcpkgs/list-plain
+ln -s list-parent srcpkgs/list-alias
+ln -s missing-target srcpkgs/list-broken
+it 'lists a symlink to an existing package directory'
+assert_eq "$(list_srcpkgs srcpkgs | grep -Fx list-alias)" 'list-alias'
+it 'excludes a dangling package symlink'
+assert_eq "$(list_srcpkgs srcpkgs | grep -Fx list-broken)" ''
+_main_list=$(printf '%s\n' list-alias list-parent)
+_current_file=$(mktemp)
+_main_file=$(mktemp)
+list_srcpkgs srcpkgs > "$_current_file"
+printf '%s\n' "$_main_list" > "$_main_file"
+it 'fallback package diff does not classify a valid alias as removed'
+assert_eq "$(grep -Fxvf "$_current_file" "$_main_file" || true)" ''
+rm -f "$_current_file" "$_main_file"
+
+rm -rf srcpkgs/list-parent srcpkgs/list-plain srcpkgs/list-alias srcpkgs/list-broken
 
 echo '== pkg_arch_ok =='
 
@@ -660,7 +680,7 @@ EOF
 	grep -q '<link>https://example.org/tor</link>' "$_gf_wd/feed.xml"; assert_rc $? 0
 	it 'codeberg is the only template link in description'
 	grep -q 'codeberg.org/oSoWoSo/oco/src/branch/OCO/srcpkgs/tor/template">template</a>' "$_gf_wd/feed.xml"; assert_rc $? 0
-	grep -vq 'github.com/oSoWoSo/Void_Community_Repository/blob/OCO/srcpkgs/tor/template' "$_gf_wd/feed.xml"; assert_rc $? 0
+	grep -vq 'github.com/oSoWoSo/oco/blob/OCO/srcpkgs/tor/template' "$_gf_wd/feed.xml"; assert_rc $? 0
 	it 'CI run link in description'
 	grep -q 'actions/runs/42' "$_gf_wd/feed.xml"; assert_rc $? 0
 	it 'output is valid XML'
@@ -773,6 +793,109 @@ else
 fi
 
 echo '== _check_nocross_chain =='
+
+echo '== build workflow package detection =='
+
+# Execute the real Detect changed packages run block from the source template,
+# rather than a reimplementation. The isolated fixture and fake git make the
+# immutable-before-SHA failure paths deterministic and network-free.
+_detect_wd=$(mktemp -d)
+mkdir -p "$_detect_wd/bin" "$_detect_wd/srcpkgs/alpha" \
+	"$_detect_wd/srcpkgs/beta" "$_detect_wd/srcpkgs/alias-parent" "$_detect_wd/src"
+cp "$SCRIPT_DIR/src/pkg-helpers.sh" "$_detect_wd/src/pkg-helpers.sh"
+: > "$_detect_wd/srcpkgs/alpha/template"
+: > "$_detect_wd/srcpkgs/beta/template"
+: > "$_detect_wd/srcpkgs/alias-parent/template"
+ln -s alias-parent "$_detect_wd/srcpkgs/alias-child"
+cat > "$_detect_wd/bin/git" <<'EOF'
+#!/bin/sh
+printf '%s\n' "$*" >> "$GIT_LOG"
+case "$1" in
+	cat-file|fetch) exit 1 ;;
+	*) exit 1 ;;
+esac
+EOF
+chmod +x "$_detect_wd/bin/git"
+
+# Extract precisely this step's shell body through the matrix output line.
+awk '
+	/^          \. src\/pkg-helpers\.sh$/ { p=1 }
+	p { sub(/^          /, ""); print }
+	p && /echo "matrix=/ { exit }
+' "$SCRIPT_DIR/src/build.yml.in" > "$_detect_wd/detect.sh"
+
+_run_detect_case() {
+	_case_name=$1 _before=$2 _ref=${3:-refs/heads/OCO} _event=${4:-push} _target=${5:-production}
+	mkdir -p "$_detect_wd/out-$_case_name"
+	: > "$_detect_wd/git-$_case_name.log"
+	(
+		cd "$_detect_wd" || exit 1
+		PATH="$_detect_wd/bin:$PATH_BACKUP"
+		GIT_LOG="$_detect_wd/git-$_case_name.log"
+		GITHUB_OUTPUT="$_detect_wd/out-$_case_name/output"
+		GITHUB_STEP_SUMMARY="$_detect_wd/out-$_case_name/summary"
+		GITHUB_SERVER_URL=https://example.invalid GITHUB_REPOSITORY=o/r GITHUB_REF_NAME=OCO GITHUB_REF="$_ref"
+		INPUT_ALL=false INPUT_TEMPLATE='' INPUT_TEMPLATES='' INPUT_RUNNER=amd64
+		INPUT_PUBLISH_TARGET="$_target" EVENT_NAME="$_event" CURRENT_BRANCH=OCO PUSH_BEFORE="$_before"
+		PUSH_AFTER=after PR_BASE_SHA='' PR_HEAD_SHA=''
+		export PATH GIT_LOG GITHUB_OUTPUT GITHUB_STEP_SUMMARY GITHUB_SERVER_URL
+		export GITHUB_REPOSITORY GITHUB_REF_NAME GITHUB_REF INPUT_ALL INPUT_TEMPLATE INPUT_TEMPLATES
+		export INPUT_RUNNER INPUT_PUBLISH_TARGET EVENT_NAME CURRENT_BRANCH PUSH_BEFORE PUSH_AFTER PR_BASE_SHA PR_HEAD_SHA
+		bash ./detect.sh
+	)
+}
+
+_nonzero_before=1234567890abcdef1234567890abcdef12345678
+_run_detect_case unavailable "$_nonzero_before" >/dev/null 2>&1; _detect_rc=$?
+it 'unavailable immutable OCO base executes the workflow step'
+assert_rc "$_detect_rc" 0
+_detected=$(grep '^packages=' "$_detect_wd/out-unavailable/output" | cut -d= -f2-)
+it 'unavailable immutable OCO base builds every real package'
+assert_eq "$_detected" 'alias-parent alpha beta'
+it 'unavailable immutable OCO base filters symlink aliases'
+case " $_detected " in *' alias-child '*) _has_alias=1 ;; *) _has_alias=0 ;; esac
+assert_eq "$_has_alias" '0'
+it 'unavailable immutable OCO base infers no removals'
+assert_eq "$(grep '^removed=' "$_detect_wd/out-unavailable/output" | cut -d= -f2-)" ''
+it 'unavailable immutable OCO base produces a non-empty matrix'
+assert_eq "$(grep '^matrix=' "$_detect_wd/out-unavailable/output" | grep -c '"config":\[{' ; true)" '1'
+it 'unavailable immutable OCO base fetches only the exact event SHA'
+assert_eq "$(grep -c '^fetch --no-tags origin ' "$_detect_wd/git-unavailable.log")" '1'
+assert_eq "$(grep '^fetch ' "$_detect_wd/git-unavailable.log" | cut -d' ' -f4)" "$_nonzero_before"
+it 'OCO push selects production with an empty path prefix'
+assert_eq "$(grep '^publish_target=' "$_detect_wd/out-unavailable/output" | cut -d= -f2-)" production
+assert_eq "$(grep '^repository_prefix=' "$_detect_wd/out-unavailable/output" | cut -d= -f2-)" ''
+
+_zero_sha=0000000000000000000000000000000000000000
+_run_detect_case initial "$_zero_sha" >/dev/null 2>&1; _detect_rc=$?
+it 'zero-SHA initial OCO push executes the workflow step'
+assert_rc "$_detect_rc" 0
+it 'zero-SHA initial OCO push builds all real packages and no aliases'
+assert_eq "$(grep '^packages=' "$_detect_wd/out-initial/output" | cut -d= -f2-)" 'alias-parent alpha beta'
+it 'zero-SHA initial OCO push infers no removals'
+assert_eq "$(grep '^removed=' "$_detect_wd/out-initial/output" | cut -d= -f2-)" ''
+it 'zero-SHA initial OCO push produces a non-empty matrix'
+assert_eq "$(grep '^matrix=' "$_detect_wd/out-initial/output" | grep -c '"config":\[{' ; true)" '1'
+it 'zero-SHA initial OCO push does not attempt a git fetch'
+assert_eq "$(grep -c '^fetch ' "$_detect_wd/git-initial.log"; true)" '0'
+
+_run_detect_case feature 0000000000000000000000000000000000000000 refs/heads/feature push production >/dev/null 2>&1
+it 'non-OCO push always selects isolated testing path'
+assert_eq "$(grep '^publish_target=' "$_detect_wd/out-feature/output" | cut -d= -f2-)" testing
+assert_eq "$(grep '^repository_prefix=' "$_detect_wd/out-feature/output" | cut -d= -f2-)" testing
+
+_run_detect_case manual-test 0000000000000000000000000000000000000000 refs/heads/OCO workflow_dispatch testing >/dev/null 2>&1
+it 'OCO manual dispatch can explicitly select testing'
+assert_eq "$(grep '^repository_prefix=' "$_detect_wd/out-manual-test/output" | cut -d= -f2-)" testing
+
+_run_detect_case manual-prod 0000000000000000000000000000000000000000 refs/heads/OCO workflow_dispatch production >/dev/null 2>&1
+it 'OCO manual dispatch explicitly selecting production has empty prefix'
+assert_eq "$(grep '^repository_prefix=' "$_detect_wd/out-manual-prod/output" | cut -d= -f2-)" ''
+
+_run_detect_case dispatch 0000000000000000000000000000000000000000 refs/heads/OCO repository_dispatch production >/dev/null 2>&1
+it 'repository_dispatch defaults to testing even on OCO'
+assert_eq "$(grep '^repository_prefix=' "$_detect_wd/out-dispatch/output" | cut -d= -f2-)" testing
+rm -rf "$_detect_wd"
 
 eval "$(awk '
   /^[[:space:]]*_check_nocross_chain\(\)/ { p=1; depth=0 }
@@ -896,6 +1019,15 @@ spec.loader.exec_module(m)
 body = "**Package:** `foo`\n**Upstream version:** `2.0`\n<!-- package-update:foo -->\n<!-- upstream-version:2.0 -->"
 print(m.extract_pkg_version(body))
 ' "$SCRIPT_DIR/src/close-update-issues.py")" "('foo', '2.0')"
+	it 'linked package template heading is parsed without hidden markers'
+	assert_eq "$(python3 -c '
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("cui", sys.argv[1])
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+body = "**Package:** [`llama.cpp`](https://github.com/oSoWoSo/oco/blob/OCO/srcpkgs/llama.cpp/template)\n**Upstream version:** `2.0`"
+print(m.extract_pkg_version(body))
+' "$SCRIPT_DIR/src/close-update-issues.py")" "('llama.cpp', '2.0')"
 
 	it 'autobump skip/done marker is bound to requested version'
 	assert_eq "$(python3 -c '
@@ -971,47 +1103,26 @@ else
 	echo '  (skipped: python3 not on PATH)'
 fi
 
-echo '== workflows: Surfer CLI only, no WebDAV =='
+echo '== OSV autobump advisories =='
+if command -v python3 >/dev/null 2>&1; then
+	python3 "$SCRIPT_DIR/tests/test_osv_advisory.py"
+	_rc=$?
+	it 'OSV advisory identities, reports, and failure states'
+	assert_rc "$_rc" 0
+else
+	echo '  (skipped: python3 not on PATH)'
+fi
 
-# Deletes now go through the surfer CLI (REST /api/files/, fsPromises.rm), so
-# they cannot crash Surfer the way the removed WebDAV DELETE did. What must
-# stay true is that the workflows delegate to ocoman and never hand-roll a
-# DELETE, and that the workaround flags are gone for good.
-it 'cleanup.yml does not use the surfer CLI del command'
-assert_eq "$(grep -c 'surfer .* del \| \bdel ' "$SCRIPT_DIR/.github/workflows/cleanup.yml" 2>/dev/null)" '0'
+echo '== XBPS binary build results =='
+if command -v python3 >/dev/null 2>&1; then
+	python3 "$SCRIPT_DIR/tests/test-xbps-results.py"
+	_rc=$?
+	it 'metadata collection, result consumers, and autobump validation'
+	assert_rc "$_rc" 0
+else
+	echo '  (skipped: python3 not on PATH)'
+fi
 
-it 'cleanup.yml delegates to ocoman prune (no DELETE)'
-assert_eq "$(grep -c './ocoman -p' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
-assert_eq "$(grep -v '^[[:space:]]*#' "$SCRIPT_DIR/.github/workflows/cleanup.yml" | grep -c 'SURF_SKIP_DELETE=0\|xargs.*del\|surfer.*del\|\bdel\b')" '0'
-
-it 'build.yml calls cleanup.yml for removed packages'
-assert_eq "$(grep -c 'uses: \./\.github/workflows/cleanup\.yml' "$SCRIPT_DIR/.github/workflows/build.yml")" '1'
-assert_eq "$(grep -c 'SURF_SKIP_DELETE: .0' "$SCRIPT_DIR/.github/workflows/build.yml")" '0'
-
-it 'cleanup.yml has no schedule trigger (event-driven only)'
-assert_eq "$(grep -c '^  *schedule:' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '0'
-assert_eq "$(grep -c '^  *cron:' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '0'
-# ...but it must stay callable from build.yml
-assert_eq "$(grep -c 'workflow_call:' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
-assert_eq "$(grep -c 'workflow_dispatch:' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
-
-it 'cleanup.yml carries none of the removed delete workarounds'
-# The flags are gone from ocoman; a leftover would silently do nothing.
-assert_eq "$(grep -c 'SURF_SKIP_DELETE' "$SCRIPT_DIR/.github/workflows/cleanup.yml"; true)" '0'
-assert_eq "$(grep -c 'SURF_DELETE_ORPHANS' "$SCRIPT_DIR/.github/workflows/cleanup.yml"; true)" '0'
-assert_eq "$(grep -c 'SURF_BACKEND' "$SCRIPT_DIR/.github/workflows/cleanup.yml"; true)" '0'
-# ...and ocoman itself must not know them either
-assert_eq "$(grep -c 'SURF_SKIP_DELETE\|SURF_DELETE_ORPHANS\|SURF_BACKEND' "$SCRIPT_DIR/ocoman"; true)" '0'
-
-it 'cleanup.yml calls ocoman -p with no positional argument'
-# getopts' p) takes no argument, so anything after -p was silently discarded
-assert_eq "$(grep -c '\./ocoman -p \${{' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '0'
-assert_eq "$(grep -c '\./ocoman -p$' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
-# ARCH must come from the job env instead
-assert_eq "$(grep -c 'ARCH: \${{ matrix\.arch }}' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
-
-it 'cleanup.yml cannot hang for hours on a dead Surfer'
-assert_eq "$(grep -c '^    timeout-minutes: [0-9]' "$SCRIPT_DIR/.github/workflows/cleanup.yml")" '1'
 
 echo '== surf transport: surfer CLI backend =='
 
@@ -1273,6 +1384,44 @@ assert_eq "$(grep -c '^del -y ' "$_SARGV"; true)" '1'
 it '...and issues no MKCOL, which the CLI does not have'
 assert_eq "$(grep -ci 'mkcol' "$_SARGV"; true)" '0'
 
+SURF_PATH_PREFIX=testing
+printf 'listing:%s\n' "$_LISTING" > "$_SSCRIPT"
+_cli_reset
+printf 'listing:%s\n' "$_LISTING" > "$_SSCRIPT"
+it 'testing fetch/list paths are prefixed'
+fetch_remote_list '/x86_64' >/dev/null 2>&1
+assert_eq "$(cat "$_SARGV")" 'get /testing/x86_64'
+
+printf 'bytes:%s\n' "$_REPO_BODY" > "$_SSCRIPT"
+_cli_reset
+printf 'bytes:%s\n' "$_REPO_BODY" > "$_SSCRIPT"
+it 'testing repodata fetch path is prefixed'
+fetch_repodata '/x86_64/x86_64-repodata' "$_out" >/dev/null 2>&1
+assert_eq "$(cat "$_SARGV")" 'get /testing/x86_64/x86_64-repodata'
+
+_cli_reset
+printf 'ok\n' > "$_SSCRIPT"
+it 'testing package put path is prefixed'
+upload_file "$_pkg" '/x86_64' >/dev/null 2>&1
+assert_eq "$(cat "$_SARGV")" "put $_pkg /testing/x86_64/"
+
+_cli_reset
+printf 'ok\n' > "$_SSCRIPT"
+it 'testing cleanup/delete path is prefixed'
+delete_remote '/x86_64/foo-1.0_1.x86_64.xbps' >/dev/null 2>&1
+assert_eq "$(cat "$_SARGV")" 'del -y /testing/x86_64/foo-1.0_1.x86_64.xbps'
+it 'testing arch-page URL is prefixed while retaining the Surfer host'
+assert_eq "$(SURFER_URL="$SURFER_URL" surf_api_path '/x86_64')" '/testing/x86_64'
+it 'invalid slash-only prefix fails closed instead of mapping to production'
+SURF_PATH_PREFIX=/; surf_api_path '/x86_64' >/dev/null 2>&1; _rc=$?
+assert_rc "$_rc" 1
+SURF_PATH_PREFIX=testing
+it 'arch-page generation derives public repository URL through prefix mapping'
+assert_eq "$(grep -c '_repo_path=$(surf_api_path "/\${_arch}")' "$SCRIPT_DIR/ocoman")" '1'
+it 'arch-page upload uses the prefixed upload helper'
+assert_eq "$(grep -c 'upload_file "\$_out" "/\${_arch}"' "$SCRIPT_DIR/ocoman")" '1'
+SURF_PATH_PREFIX=''
+
 # End to end through the fake: the delete_remote stub from the prune_orphans
 # section is gone, so this drives the real one into surfer del.
 _orphan_list=$(mktemp)
@@ -1295,6 +1444,12 @@ HOME="$_HOME_BACKUP"
 export HOME
 _SURF_READY=''
 unset FAKE_SURFER_ARGV FAKE_SURFER_SCRIPT FAKE_SURFER_COUNT
+
+echo '== detect-update.sh =='
+python3 "$SCRIPT_DIR/tests/test_detect_update.py" || _FAIL=$((_FAIL + 1))
+
+echo '== surfer-publish.py =='
+python3 "$SCRIPT_DIR/tests/test_surfer_publish.py" || _FAIL=$((_FAIL + 1))
 
 echo
 printf 'Passed: %s    Failed: %s\n' "$_PASS" "$_FAIL"

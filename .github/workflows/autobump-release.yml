@@ -1,0 +1,140 @@
+name: 🚀 autobump release
+
+on:
+  workflow_run:
+    workflows:
+      - 🏗️ build
+    types: [completed]
+    branches:
+      - autobump/**
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  packages: read
+
+jobs:
+  prepare:
+    name: Validate, merge and prepare release request
+    if: >-
+      ${{ github.event.workflow_run.event == 'pull_request' &&
+          github.event.workflow_run.conclusion == 'success' &&
+          startsWith(github.event.workflow_run.head_branch, 'autobump/') &&
+          github.event.workflow_run.head_repository.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    concurrency:
+      group: autobump-release-merge
+      cancel-in-progress: false
+      queue: max
+    container:
+      image: ghcr.io/osowoso/oco-builder-x86_64:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.BOT }}
+    steps:
+      - name: Checkout trusted OCO source
+        uses: actions/checkout@v7
+        with:
+          ref: OCO
+          path: extra
+          fetch-depth: 2
+
+      - name: Download completed PR build artifacts
+        uses: actions/download-artifact@v8
+        with:
+          pattern: autobump-*
+          merge-multiple: false
+          path: artifacts
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+
+      - name: Validate PR and stage verified binaries
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 extra/src/autobump-release.py prepare --event "$GITHUB_EVENT_PATH" --repo "$GITHUB_REPOSITORY" --artifacts "$GITHUB_WORKSPACE/artifacts" --staging "$RUNNER_TEMP/autobump-staging"
+
+      - name: Merge exact tested PR revision
+        id: merge
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
+        run: |
+          python3 extra/src/autobump-release.py merge --event "$GITHUB_EVENT_PATH" --repo "$GITHUB_REPOSITORY" --staging "$RUNNER_TEMP/autobump-staging"
+
+      - name: Checkout merged OCO tree
+        env:
+          MERGE_SHA: ${{ steps.merge.outputs.merge_sha }}
+        run: |
+          set -eu
+          git -C extra fetch --no-tags origin "$MERGE_SHA"
+          git -C extra checkout --detach "$MERGE_SHA"
+
+      - name: Assemble publication request
+        env:
+          MERGE_SHA: ${{ steps.merge.outputs.merge_sha }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set -eu
+          root="$RUNNER_TEMP/surfer-publication"
+          mkdir -p "$root/packages" "$root/results"
+          for arch in x86_64 x86_64-musl aarch64 aarch64-musl; do
+            source="$RUNNER_TEMP/autobump-staging/$arch"
+            [ -d "$source" ] || continue
+            mkdir -p "$root/packages/$arch"
+            cp "$source"/*."$arch".xbps "$root/packages/$arch/"
+          done
+          for result in "$RUNNER_TEMP"/autobump-staging/results/build-results-*; do
+            [ -d "$result" ] || continue
+            arch=${result##*build-results-}
+            cp "$result/results.tsv" "$root/results/$arch.tsv"
+          done
+          python3 - "$root" <<'PY'
+          import json, pathlib, sys
+          root = pathlib.Path(sys.argv[1])
+          arches = sorted(p.name for p in (root / "packages").iterdir() if p.is_dir())
+          results = sorted(p.stem for p in (root / "results").glob("*.tsv"))
+          data = {"schema_version": 1, "destination": "production", "source_sha": __import__("os").environ["MERGE_SHA"], "source_run_id": __import__("os").environ["RUN_ID"], "package_arches": arches, "result_arches": results, "purge_packages": [], "update_arch_pages": True, "update_feed": True, "update_main_index": False}
+          (root / "manifest.json").write_text(json.dumps(data) + "\n")
+          PY
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: surfer-publication
+          path: ${{ runner.temp }}/surfer-publication
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    needs: prepare
+    uses: ./.github/workflows/write-surfer.yml
+    with:
+      destination: production
+      artifact_name: surfer-publication
+    secrets: inherit
+
+  close-issues:
+    needs: [prepare, publish]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: OCO
+          persist-credentials: false
+      - uses: actions/download-artifact@v8
+        with:
+          name: surfer-publication
+          path: publication
+      - name: Close resolved package issues
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          mkdir -p results
+          for result in publication/results/*.tsv; do
+            arch=${result##*/}; arch=${arch%.tsv}
+            mkdir -p "results/build-results-$arch"
+            cp "$result" "results/build-results-$arch/results.tsv"
+          done
+          python3 src/close-update-issues.py results --repo "$GITHUB_REPOSITORY" --token "$GH_TOKEN"

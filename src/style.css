@@ -451,6 +451,68 @@ footer a:hover {
 }
 
 /* Architecture selection cards on main index page */
+/* Shared package finder: stays outside the sticky nav so results never cover content. */
+.package-search {
+  border: 1px solid var(--border-color);
+  border-top: 3px solid var(--green-tea);
+  border-radius: 3px;
+  padding: 1.1em 1.3em;
+  background: var(--bg-light);
+  margin-bottom: 2em;
+}
+
+.package-search label {
+  display: block;
+  color: var(--text-light);
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 0.6em;
+}
+
+.package-search label span {
+  color: var(--text-color);
+  font-size: 0.8rem;
+  font-weight: normal;
+}
+
+.package-search-controls { display: flex; flex-wrap: wrap; gap: 0.5em; }
+.package-search input, .package-search button {
+  font: inherit;
+  min-height: 44px;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  padding: 0.6em 0.9em;
+}
+.package-search input {
+  flex: 1 1 220px;
+  min-width: 0;
+  background: var(--bg-color);
+  color: var(--text-light);
+  font-size: 1rem;
+}
+.package-search input::placeholder { color: var(--text-color); opacity: 0.8; }
+.package-search button { background: var(--green); color: var(--white); cursor: pointer; }
+.package-search button:hover { background: var(--gren-dark); }
+.package-search #package-search-clear { background: var(--bg-color); color: var(--link-color); }
+.package-search :focus-visible { outline: 2px solid var(--link-color); outline-offset: 3px; }
+#package-search-status { margin: 0.7em 0 0; font-size: 0.85rem; }
+.package-search-results { list-style: none; margin: 1em 0 0; max-height: 28rem; overflow-y: auto; }
+.package-search-results > li { border-top: 1px solid var(--border-color); padding: 1em 0; margin: 0; overflow-wrap: anywhere; }
+.package-search-results strong { margin: 0; font-size: 1rem; }
+.package-search-version { margin-left: 1em; font-size: 0.85rem; }
+.package-search-results p { margin: 0.3em 0 0.6em; }
+.package-search-architectures { display: flex; flex-wrap: wrap; gap: 0.5em; }
+.package-search-architectures a { display: inline-block; padding: 0.5em 0.7em; border: 1px solid var(--link-color); border-radius: 3px; }
+.package-search-references { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0.5em 0; }
+.package-search-references a { display: inline-block; padding: 0.35em 0.5em; border: 1px solid var(--border-color); border-radius: 3px; }
+.package-search-target { outline: 2px solid var(--link-color); outline-offset: -2px; background: var(--bg-light); }
+
+@media (max-width: 480px) {
+  .package-search { padding: 1em; }
+  .package-search label span { display: block; margin-top: 0.2em; }
+  .package-search input { flex-basis: 100%; }
+}
+
 .arch-cards {
   display: flex;
   flex-wrap: wrap;

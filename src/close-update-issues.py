@@ -7,10 +7,12 @@ Usage:
     close-update-issues.py --list-stale [--repo OWNER/REPO] [--token TOKEN]
                                       [--srcpkgs DIR]
 
---token defaults to $GITHUB_TOKEN, then $GH_TOKEN.
+--token defaults to $GH_TOKEN.
 
 Reads per-arch build result files (`build-results-<ARCH>/results.tsv`,
-lines `name<TAB>version<TAB>status`) produced by `build-packages.sh`,
+with source rows `name<TAB>version<TAB>status` and binary rows
+`name<TAB>source-version<TAB>status<TAB>source-template`) produced by
+`build-packages.sh`,
 lists open issues carrying the `package-update` label, and closes each
 one whose package was built successfully (an `ok` result with no `fail`
 on any arch) at exactly the upstream version requested in the issue body.
@@ -46,11 +48,12 @@ import urllib.request
 
 PKG_RE = re.compile(r"<!-- package-update:(\S+?) -->")
 VER_RE = re.compile(r"<!-- upstream-version:(\S+?) -->")
-PKG_BODY_RE = re.compile(r"\*\*Package:\*\*\s*`([^`]+)`")
+PKG_BODY_RE = re.compile(r"\*\*Package:\*\*\s*(?:\[`([^`]+)`\]\([^)]*\)|`([^`]+)`)")
 VER_BODY_RE = re.compile(r"\*\*Upstream version:\*\*\s*`([^`]+)`")
 SKIP_RE = re.compile(r"<!-- autobump:(?:skip|done) for (\S+) -->")
 API = "https://api.github.com/repos/{}"
 LABEL = "package-update"
+RESULT_PACKAGE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9+._-]*$")
 
 
 def collect_results(results_dir: str) -> tuple[dict[str, set[str]], dict[str, set[str]]]:
@@ -71,9 +74,13 @@ def collect_results(results_dir: str) -> tuple[dict[str, set[str]], dict[str, se
                 if not line:
                     continue
                 parts = line.split("\t")
-                if len(parts) != 3:
+                if len(parts) not in (3, 4):
                     continue
-                pkg, version, status = parts
+                pkg, version, status = parts[:3]
+                if (not RESULT_PACKAGE_RE.fullmatch(pkg) or not version
+                        or status not in ("ok", "fail", "skip")
+                        or (len(parts) == 4 and not RESULT_PACKAGE_RE.fullmatch(parts[3]))):
+                    continue
                 if status not in ("ok", "fail"):
                     continue
                 bucket = ok if status == "ok" else fail
@@ -287,11 +294,16 @@ def list_stale(repo: str, token: str, srcpkgs: str) -> int:
 
 
 def extract_pkg_version(body: str) -> tuple[str | None, str | None]:
-    pkg = PKG_RE.search(body) or PKG_BODY_RE.search(body)
+    pkg = PKG_RE.search(body)
+    if pkg:
+        package = pkg.group(1).strip()
+    else:
+        pkg = PKG_BODY_RE.search(body)
+        package = (pkg.group(1) or pkg.group(2)).strip() if pkg else None
     ver = VER_RE.search(body) or VER_BODY_RE.search(body)
-    if not pkg or not ver:
+    if not package or not ver:
         return None, None
-    return pkg.group(1).strip(), ver.group(1).strip()
+    return package, ver.group(1).strip()
 
 
 def main() -> int:
@@ -307,8 +319,7 @@ def main() -> int:
     ap.add_argument(
         "--token",
         default=None,
-        help="GitHub token with issues:write; "
-             "defaults to $GITHUB_TOKEN or $GH_TOKEN",
+        help="GitHub token with issues:write; defaults to $GH_TOKEN",
     )
     ap.add_argument("--dry-run", action="store_true", help="list matches without closing")
     ap.add_argument(
@@ -324,10 +335,10 @@ def main() -> int:
     )
     args = ap.parse_args()
 
-    token = args.token or os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    token = args.token or os.environ.get("GH_TOKEN")
     if not token:
         sys.stderr.write(
-            "error: no GitHub token; pass --token or set GITHUB_TOKEN/GH_TOKEN\n")
+            "error: no GitHub token; pass --token or set GH_TOKEN\n")
         return 2
 
     if args.list_stale:

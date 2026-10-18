@@ -1,0 +1,13 @@
+# Template file for 'libkrunfw'
+pkgname=libkrunfw
+version=5.6.2
+revision=1
+build_style=gnu-makefile
+hostmakedepends="pkg-config curl python3-pyelftools flex bison tar xz libcprime
+ linux6.12-headers elfutils-devel llvm23-devel bc"
+short_desc="Dynamic library bundling the guest payload consumed by libkrun"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-2.0-only"
+homepage="https://github.com/libkrun/libkrunfw"
+distfiles="https://github.com/libkrun/libkrunfw/archive/refs/tags/v${version}.tar.gz"
+checksum=df45d649fcbd07a4d0ca03fa836b2f640fdcf9b40187f3eb7023259c6e83d582

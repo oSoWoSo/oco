@@ -1,6 +1,6 @@
 # Template file for 'librewolf-bin'
 pkgname=librewolf-bin
-version=157.0.1.1
+version=158.0.1
 revision=1
 _distver="${version%.*}-${version##*.}"
 archs="x86_64 aarch64"
@@ -10,8 +10,8 @@ license="MPL-2.0"
 homepage="https://librewolf.net"
 distfiles="https://dl.librewolf.net/librewolf/${_distver}/librewolf-${_distver}-linux-x86_64-package.tar.xz
  https://dl.librewolf.net/librewolf/${_distver}/librewolf-${_distver}-linux-arm64-package.tar.xz"
-checksum="33281aa1fc8a2602cd6fc2f05c504865542d80be068885bfeec6c5cfcff967fa
- 14a36602d4f0ba525af5fe26be8166ebe7835497691165b322bd5c588163888b"
+checksum="34bb7296feec0c6823abdfaf4fd50e47e9eada9cb4a5ed16e111a951dc9eb16c
+ eca78479d6382b5cadc1337d7cc4ecbf7c75921c53e6acc08f213f5b9316bfa8"
 conflicts="librewolf"
 #shlib_provides="libonnxruntime.so.1"
 nostrip=yes

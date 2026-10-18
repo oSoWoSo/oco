@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Void Community Repository</title>
   <link rel="stylesheet" href="__CSS_URL__" />
+  <script src="main.js" defer></script>
   <link rel="alternate" type="application/rss+xml" title="Void Community Repository - Package updates" href="feed.xml" />
   __FAVICON__
 </head>
@@ -25,10 +26,24 @@
 <nav><ul>
   <li><a href="https://osowoso.org">oSoWoSo</a></li>
   <li><a href="index.html" class="active">Home</a></li>
+  <li><a href="manual.html">manual</a></li>
 __NAV_ARCH_LINKS__
   <li><a href="feed.xml" title="RSS feed: package updates" aria-label="RSS feed: package updates"><svg role="img" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M6.18 17.82a2.18 2.18 0 1 1 0 4.36 2.18 2.18 0 0 1 0-4.36zM4 4.44v3.36c6.71 0 12.2 5.49 12.2 12.2h3.36C19.56 10.99 13.01 4.44 4 4.44zM4 10.1v3.36c3.65 0 6.54 2.89 6.54 6.54h3.36C13.9 13.94 10.06 10.1 4 10.1z"/></svg></a></li>
   <li class="nav-toggle"><button class="theme-toggle" onclick="toggleTheme()">🌓</button></li>
 </ul></nav>
+<section class="package-search" aria-label="Package search">
+  <form role="search" id="package-search-form" hidden>
+    <label for="package-query">Find a package <span>across all architectures</span></label>
+    <div class="package-search-controls">
+      <input id="package-query" type="search" placeholder="Package name or description…" aria-describedby="package-search-status" aria-controls="package-search-results" autocomplete="off" />
+      <button type="submit">Search</button>
+      <button type="button" id="package-search-clear" hidden>Clear</button>
+    </div>
+    <p id="package-search-status" role="status" aria-live="polite">Search package names and descriptions. All words must match.</p>
+  </form>
+  <ul id="package-search-results" class="package-search-results" aria-label="Matching packages" hidden></ul>
+  <noscript>Package search requires JavaScript. Browse packages using the architecture links above.</noscript>
+</section>
 <header id="title-block-header">
 <h1 class="title">Void Community Repository</h1>
 </header>

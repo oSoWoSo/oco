@@ -1,7 +1,7 @@
 # Template file for 'Community-Repositories-Collection'
 pkgname=Community-Repositories-Collection
 version=1
-revision=8
+revision=9
 metapackage=yes
 short_desc="CRC: Collection of community repositories"
 maintainer="zenobit <zen@osowoso.org>"
@@ -22,10 +22,21 @@ CRC-black-hole_package() {
 CRC-brgvos_package() {
 	archs="x86_64"
 	short_desc="${short_desc} - BRGV-OS repository"
-	homepage="https://github.com/florintanasa/brgvos-void"
+	homepage="https://github.com/florintanasa/void-packages-brgvos"
 	pkg_install() {
 		vmkdir etc/xbps.d
 		echo "repository=https://repository.brgv-os.ro/x86_64-current" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-brgvos.conf
+	}
+}
+
+CRC-brgvos-testing_package() {
+	archs="x86_64"
+	short_desc="${short_desc} - BRGV-OS repository"
+	homepage="https://github.com/florintanasa/void-packages-brgvos"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://repository.brgv-os.ro/repository-test/" > \
 			${PKGDESTDIR}/etc/xbps.d/20-CRC-brgvos.conf
 	}
 }

@@ -1,4 +1,4 @@
-name: 🔬
+name: 🔬 update scan
 run-name: >-
   ${{
     github.event_name == 'workflow_dispatch' && (inputs.pkg != '' && format('🔬 {0}', inputs.pkg) ||
@@ -7,8 +7,8 @@ run-name: >-
     '🔬'
   }}
 on:
-  schedule:
-    - cron: '17 4 * * *'
+  #schedule:
+    #- cron: '17 4 * * *'
   workflow_dispatch:
     inputs:
       pkg:
@@ -32,11 +32,13 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.BOT }}
 
       - name: Detect newer versions
         id: scan
         env:
-          GITHUB_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.BOT }}
           SCAN_PKG: ${{ inputs.pkg }}
         run: |
           set -uo pipefail
@@ -85,7 +87,7 @@ jobs:
       - name: Open issues
         if: steps.scan.outputs.count != ''
         env:
-          GH_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
         run: |
           set -euo pipefail
 
@@ -103,9 +105,9 @@ jobs:
               continue
             fi
 
+            template_url="https://github.com/$GITHUB_REPOSITORY/blob/OCO/srcpkgs/$pkg/template"
             cat >out/issue.md <<EOF
-          **Package:** \`$pkg\`
-
+          **Package:** [\`$pkg\`]($template_url)
           **Upstream version:** \`$new\`
 
           <!-- package-update:$pkg -->
@@ -125,7 +127,7 @@ jobs:
 
             issue=$(gh issue create \
               --repo "$GITHUB_REPOSITORY" \
-              --title "package-update: $pkg $old -> $new" \
+              --title "$pkg $new" \
               --label package-update \
               --body-file out/issue.md)
 

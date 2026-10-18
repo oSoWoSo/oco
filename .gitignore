@@ -6,16 +6,18 @@
 !/.gitignore
 
 !/.github
+!/.forgejo
 
 !/LICENSE
 !/README.md
+!/Manual.md
 !/README-void.md
 !/shlibs_append
 !/shlibs_remove
 
 !/tests
-.github/__pycache__/
-src/__pycache__/
+*/__pycache__/
+*/*/__pycache__/
 !/src
 
 # Repository signing keys
@@ -89,6 +91,7 @@ src/__pycache__/
 !/srcpkgs/cosmic-workspaces-epoch
 !/srcpkgs/CRC-black-hole
 !/srcpkgs/CRC-brgvos
+!/srcpkgs/CRC-brgvos-testing
 !/srcpkgs/CRC-cereus-core
 !/srcpkgs/CRC-cereus-extra
 !/srcpkgs/CRC-cosmic
@@ -199,6 +202,9 @@ src/__pycache__/
 !/srcpkgs/libcprime
 !/srcpkgs/libheif
 !/srcpkgs/libheif-devel
+!/srcpkgs/libkrun
+!/srcpkgs/libkrun-devel
+!/srcpkgs/libkrunfw
 !/srcpkgs/librewolf-bin
 !/srcpkgs/libspng
 !/srcpkgs/libtsm

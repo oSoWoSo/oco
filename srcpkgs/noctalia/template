@@ -1,9 +1,10 @@
 # Template file for 'noctalia'
 pkgname=noctalia
-version=5.2.1
+version=5.3.0
 revision=1
 build_style=meson
 build_helper=qemu
+make_check_args="--print-errorlogs"
 hostmakedepends="pkgconf wayland-devel"
 makedepends="basu-devel cairo-devel fontconfig-devel freetype-devel glib-devel
  harfbuzz-devel json-c++ libcurl-devel libepoxy-devel libglvnd-devel
@@ -13,14 +14,14 @@ makedepends="basu-devel cairo-devel fontconfig-devel freetype-devel glib-devel
  sdbus-c++-devel stb tomlplusplus-devel libical-devel wayland-devel
  wayland-protocols wireplumber-devel"
 depends="git sound-theme-freedesktop"
-checkdepends="git dejavu-fonts-ttf dbus"
+checkdepends="git dejavu-fonts-ttf"
 short_desc="Sleek, customizable desktop shell crafted for Wayland"
 maintainer="Coolllyn <leanhduc673@gmail.com>"
-license="MIT"
+license="MIT AND Apache-2.0"
 homepage="https://noctalia.dev"
 changelog="https://github.com/noctalia-dev/noctalia/releases"
 distfiles="https://github.com/noctalia-dev/noctalia/archive/refs/tags/v${version}.tar.gz"
-checksum=5418f6b759de96e56a4bbca809c5a4c60a8a9594bdf67ecb8c5a341f97c221d1
+checksum="7677b5d7da80cf89c7a8232de26d25380aa5fcaf34fb38abddd4fe7cb676161a"
 
 if [ "$XBPS_TARGET_LIBC" = glibc ]; then
 	makedepends+=" jemalloc-devel"
@@ -37,6 +38,11 @@ fi
 
 post_install() {
 	vlicense LICENSE
+	vlicense third_party/fzy/LICENSE fzy.LICENSE
+	vlicense third_party/wuffs/LICENSE-MIT wuffs.LICENSE
+	vlicense third_party/luau/LICENSE.txt luau.LICENSE
+	vlicense third_party/luau/lua_LICENSE.txt luau.lua.LICENSE
+	vlicense assets/fonts/tabler-icons-license.txt tabler-icons.LICENSE
 	vsconf example.toml
 
 	for shell in bash fish zsh; do

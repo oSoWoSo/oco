@@ -1,6 +1,6 @@
 # Template file for 'vm-curator'
 pkgname=vm-curator
-version=1.4.0
+version=1.5.0
 revision=1
 build_style=cargo
 hostmakedepends="pkg-config"
@@ -10,7 +10,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://github.com/mroboff/vm-curator"
 distfiles="https://github.com/mroboff/vm-curator/archive/refs/tags/v${version}.tar.gz"
-checksum=be763835a28ec27c858c952296fa371f37793b19ece5aa0a0e81f1016d50933b
+checksum=8049fc7bf1990734f9786de669353a05b3a4a3a25e98f1059a1e9da0225d8b91
 
 post_install() {
 	vlicense LICENSE

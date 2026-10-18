@@ -1,4 +1,4 @@
-name: 🛰️
+name: 🛰️ autobump
 run-name: >-
   ${{
     github.event_name == 'workflow_dispatch' && format('🛰️ {0}', inputs.pkg) ||
@@ -19,6 +19,11 @@ on:
         required: false
         default: false
         type: boolean
+      automerge:
+        description: 'Open as oSoWoSo-bot so a successful build auto-merges'
+        required: false
+        default: false
+        type: boolean
 permissions:
   contents: write
   issues: write
@@ -36,11 +41,13 @@ jobs:
     env:
       ISSUE_NUMBER: ${{ github.event.issue.number }}
       ISSUE_BODY: ${{ github.event.issue.body }}
-      OCO_TOKEN: ${{ secrets.BOT }}
+      OCO_TOKEN: ${{ secrets.WORKFLOWS }}
       GH_REPO: ${{ github.repository }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.BOT }}
 
       - name: Extract template from issue body
         id: template
@@ -159,7 +166,7 @@ jobs:
         if: steps.whitelist.outputs.in_list == 'true'
         timeout-minutes: 10
         env:
-          GITHUB_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.BOT }}
         run: |
           set -euo pipefail
 
@@ -190,7 +197,7 @@ jobs:
         if: steps.whitelist.outputs.in_list == 'true' && steps.detect.outputs.new != ''
         timeout-minutes: 20
         env:
-          GITHUB_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.BOT }}
           NEW_VERSION: ${{ steps.detect.outputs.new }}
         run: |
           set -euo pipefail
@@ -201,10 +208,22 @@ jobs:
           echo "version=$version" >>"$GITHUB_OUTPUT"
           echo "bumped=true" >>"$GITHUB_OUTPUT"
 
+      - name: Check OSV advisories (informational)
+        id: osv
+        if: steps.bump.outputs.bumped == 'true'
+        continue-on-error: true
+        env:
+          VERSION: ${{ steps.bump.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          python3 .github/scripts/osv-advisory.py "$TEMPLATE" "$VERSION" --all-upstream \
+            --mapping .github/osv-identities.json \
+            --output "$RUNNER_TEMP/osv-report.md"
+
       - name: Nothing to bump
         if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped != 'true'
         env:
-          GH_TOKEN: ${{ secrets.BOT }}
           NEW_VERSION: ${{ steps.detect.outputs.new }}
         run: |
           set -euo pipefail
@@ -258,7 +277,8 @@ jobs:
         id: pr
         if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
-          GH_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ inputs.automerge && secrets.BOT || secrets.WORKFLOWS }}
+          AUTOMERGE: ${{ inputs.automerge }}
         run: |
           set -euo pipefail
 
@@ -266,12 +286,25 @@ jobs:
           if [ -n "$ISSUE_NUMBER" ]; then
             printf '\n\nCloses #%s' "$ISSUE_NUMBER" >>"$RUNNER_TEMP/pr-body.md"
           fi
+          printf '\n\n' >>"$RUNNER_TEMP/pr-body.md"
+          if [ -s "$RUNNER_TEMP/osv-report.md" ]; then
+            cat "$RUNNER_TEMP/osv-report.md" >>"$RUNNER_TEMP/pr-body.md"
+          else
+            printf '### OSV advisory check: error\n\n**ERROR:** Advisory report could not be generated; no clean result is implied.\n' \
+              >>"$RUNNER_TEMP/pr-body.md"
+          fi
 
-          if existing=$(gh api "repos/${GH_REPO}/pulls?state=open&per_page=100" \
-            --jq ".[] | select(.head.ref == \"${BRANCH}\") | .number" | sed -n '1p') &&
-            [ -n "$existing" ]; then
-            echo "number=$existing" >>"$GITHUB_OUTPUT"
-            echo "PR #${existing} already open"
+          existing=$(gh api "repos/${GH_REPO}/pulls?state=open&per_page=100" \
+            --jq ".[] | select(.head.ref == \"${BRANCH}\") | [.number, .user.login] | @tsv" |
+            sed -n '1p')
+          if [ -n "$existing" ]; then
+            IFS=$'\t' read -r existing_number existing_author <<<"$existing"
+            if [ "$AUTOMERGE" = "true" ] && [ "$existing_author" != "oSoWoSo-bot" ]; then
+              echo "::error::PR #${existing_number} is owned by ${existing_author}; close it before requesting a bot-created auto-merge PR"
+              exit 1
+            fi
+            echo "number=$existing_number" >>"$GITHUB_OUTPUT"
+            echo "PR #${existing_number} already open by ${existing_author}"
             exit 0
           fi
 
@@ -289,7 +322,7 @@ jobs:
       - name: Comment on issue
         if: github.event_name != 'workflow_dispatch' && steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
-          GH_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
           PR_NUMBER: ${{ steps.pr.outputs.number }}
           REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
         run: |

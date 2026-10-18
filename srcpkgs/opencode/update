@@ -1,2 +1,2 @@
 site="https://github.com/anomalyco/opencode/releases/latest"
-pattern='(?<=/tag/v)\d+\.\d+\.\d+(?=")'
+pattern='(?<=/tag/v)1\.\d+\.\d+(?=")'

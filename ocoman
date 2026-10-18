@@ -25,6 +25,8 @@ FEED_OPML="${SCRIPT_DIR}/src/feed.opml"
 NVCONF="${SCRIPT_DIR}/.nvchecker/nvchecker.toml"
 
 SURFER_URL='https://repo.osowoso.org'
+# Empty means production. Test publications use a distinct path on this host.
+SURF_PATH_PREFIX="${SURF_PATH_PREFIX:-}"
 # Use a Cloudron app password with username
 SURFER_USER="${SURFER_USER:-}"
 # Deprecated, kept only so existing callers keep working: retries are now
@@ -40,7 +42,7 @@ SURF_MAX_TIME="${SURF_MAX_TIME:-300}"
 SURF_BACKOFF_MAX="${SURF_BACKOFF_MAX:-30}"
 # Space-separated package names to strip from the repodata
 SURF_PURGE_PACKAGES="${SURF_PURGE_PACKAGES:-}"
-CI_URL="${CI_URL:-https://github.com/oSoWoSo/Void_Community_Repository}"
+CI_URL="${CI_URL:-https://github.com/oSoWoSo/oco}"
 SIGNED_BY='oSoWoSo <mail@osowoso.org>'
 ARCHES='x86_64 x86_64-musl aarch64 aarch64-musl'
 
@@ -100,9 +102,7 @@ _re() {
 
 # --- GitHub authentication, optional ---
 _gh_token() {
-	if [ -n "${GITHUB_TOKEN:-}" ]; then
-		printf '%s' "$GITHUB_TOKEN"
-	elif [ -n "${GH_TOKEN:-}" ]; then
+	if [ -n "${GH_TOKEN:-}" ]; then
 		printf '%s' "$GH_TOKEN"
 	elif command -v gh >/dev/null 2>&1; then
 		gh auth token 2>/dev/null || true
@@ -253,7 +253,7 @@ repodata_looks_valid() {
 fetch_repodata() {
 	command -v python3 >/dev/null 2>&1 ||
 		fatal 'python3 not found (needed to validate the downloaded index)'
-	_fr_rel="$1"
+	_fr_rel=$(surf_api_path "$1") || return 2
 	_fr_out="$2"
 	_fr_start=$(date +%s)
 	_fr_delay="$SURF_BACKOFF"
@@ -437,7 +437,8 @@ pkg_name() {
 # really empty for this arch), nonzero on failure.
 list_published_pkgs() {
 	_lpp_arch="$1"
-	_lpp_url="${SURFER_URL}/${_lpp_arch}"
+	_lpp_path=$(surf_api_path "/${_lpp_arch}") || return 1
+	_lpp_url="${SURFER_URL}${_lpp_path}"
 	_lpp_tmp=$(mktemp)
 	_lpp_rc=1
 
@@ -487,7 +488,8 @@ list_published_pkgs() {
 #   \t /x86_64/subdir/
 # so: drop directories (trailing slash), keep .xbps, and reduce to basenames.
 fetch_remote_list() {
-	_frlc_out=$(surf_cli get "$1" 2>&1)
+	_frlc_path=$(surf_api_path "$1") || return 1
+	_frlc_out=$(surf_cli get "$_frlc_path" 2>&1)
 	_frlc_rc=$?
 	if [ "$_frlc_rc" -ne 0 ]; then
 		# An empty (or absent) directory is a legitimate state, not a
@@ -509,7 +511,8 @@ fetch_remote_list() {
 # Delete one remote file, given its path relative to the API root.
 # Suppressed, not failed: whatever we delete is stale, not broken.
 delete_remote() {
-	surf_retry del -y "$1" || true
+	_dr_path=$(surf_api_path "$1") || return 0
+	surf_retry del -y "$_dr_path" || true
 	return 0
 }
 
@@ -525,6 +528,7 @@ upload_file() {
 	_uf_dir="$2"
 	_uf_fname="$(basename "$_uf_file")"
 	# 'put' wants an absolute path that ends in a slash.
+	_uf_dir=$(surf_api_path "$_uf_dir") || return 1
 	_uf_dir="/${_uf_dir#/}"
 	case "$_uf_dir" in
 		*/) ;;
@@ -536,6 +540,17 @@ upload_file() {
 		return 1
 	fi
 	return 0
+}
+
+# Prefix API-root-relative paths consistently for every CLI operation.
+surf_api_path() {
+	_sap_prefix=$SURF_PATH_PREFIX
+	case "$_sap_prefix" in
+		/*|*/|*..*|*'//'*) echo "Invalid SURF_PATH_PREFIX: $_sap_prefix" >&2; return 1 ;;
+	esac
+	_sap_path="/${1#/}"
+	[ -z "$_sap_prefix" ] || _sap_path="/${_sap_prefix}${_sap_path}"
+	printf '%s' "$_sap_path"
 }
 
 prune_orphans() {
@@ -582,6 +597,16 @@ delete_orphan_files() {
 
 # --- Website helpers (from create-web) ---
 
+_build_manual() {
+	command -v python3 >/dev/null 2>&1 || fatal 'python3 not installed!'
+	# The generator synchronizes root Manual.md before rendering; errors abort
+	# before the publishing phase rather than silently publishing a stale manual.
+	python3 "${SCRIPT_DIR}/src/gen-manual.py" "${SCRIPT_DIR}" "${SCRIPT_DIR}/docs/manual.html" $ARCHES \
+		|| fatal 'Failed to synchronize/generate the XBPS manual!'
+	rm -f "${SCRIPT_DIR}/docs/manual-index-template.html"
+	_g 'Generated: docs/manual.html'
+}
+
 _build_main_index() {
 	_title="${1:-Void Community Repository}"
 
@@ -590,7 +615,7 @@ _build_main_index() {
 	_svg_tmp=$(mktemp)
 
 	for _arch in $ARCHES; do
-		printf '  <li><a href="%s/">%s</a></li>\n' "$_arch" "$_arch" >> "$_nav_arch_tmp"
+		printf '  <li><a data-package-arch="%s" href="%s/">%s</a></li>\n' "$_arch" "$_arch" "$_arch" >> "$_nav_arch_tmp"
 	done
 	printf '  <li><a href="https://codeberg.org/osowoso/oco">&#x2934; source</a></li>\n' >> "$_nav_arch_tmp"
 	if [ -n "${CI_URL:-}" ]; then
@@ -895,7 +920,8 @@ generate_arch_pages() {
 		[ -z "${ARCH:-}" ] || [ "$_arch" = "$ARCH" ] || continue
 		_out_dir="${SCRIPT_DIR}/docs/${_arch}"
 		_out="${_out_dir}/index.html"
-		_repo_url="${SURFER_URL}/${_arch}"
+		_repo_path=$(surf_api_path "/${_arch}") || fatal 'invalid repository path prefix'
+		_repo_url="${SURFER_URL}${_repo_path}"
 
 		mkdir -p "$_out_dir"
 
@@ -905,9 +931,9 @@ generate_arch_pages() {
 
 		for _a in $ARCHES; do
 			if [ "$_a" = "$_arch" ]; then
-				printf '  <li><a href="." class="active">%s</a></li>\n' "$_arch" >> "$_nav_tmp"
+				printf '  <li><a data-package-arch="%s" href="./" class="active">%s</a></li>\n' "$_arch" "$_arch" >> "$_nav_tmp"
 			else
-				printf '  <li><a href="../%s/">%s</a></li>\n' "$_a" "$_a" >> "$_nav_tmp"
+				printf '  <li><a data-package-arch="%s" href="../%s/">%s</a></li>\n' "$_a" "$_a" "$_a" >> "$_nav_tmp"
 			fi
 		done
 
@@ -995,6 +1021,7 @@ build_site() {
 	cp -r src/* docs/
 	rm -f docs/toggle.html docs/toc.html docs/svg-color.html docs/footer.html
 
+	_build_manual
 	_build_main_index "$_title"
 	generate_arch_pages
 	_g "Finished"
@@ -1024,6 +1051,7 @@ build_main() {
 	cp -r src/* docs/
 	rm -f docs/toggle.html docs/toc.html docs/svg-color.html docs/footer.html
 
+	_build_manual
 	_build_main_index "$_title"
 	_g "Finished"
 
@@ -1058,6 +1086,9 @@ target_serve() {
 
 do_upload() {
 	[ -n "$ARCH" ]         || fatal 'ARCH is required'
+	# xbps-rindex selects repodata from XBPS_ARCH, which differs from the
+	# runner's native architecture for cross-arch cleanup jobs.
+	export XBPS_ARCH="$ARCH" XBPS_TARGET_ARCH="$ARCH"
 	surf_auth_check
 	[ -n "$PRIV_KEY" ]     || fatal 'PRIV_KEY is required'
 

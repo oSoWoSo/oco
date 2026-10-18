@@ -1,17 +1,18 @@
 # Template file for 'tuios'
 pkgname=tuios
-version=0.7.0
+version=0.10.1
 revision=2
 build_style=go
 build_helper=qemu
 go_import_path="github.com/Gaurav-Gosain/tuios"
 go_package="./cmd/tuios"
+hostmakedepends="git"
 short_desc="Terminal UI OS (Terminal Multiplexer)"
 maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://github.com/Gaurav-Gosain/tuios"
 distfiles="https://github.com/Gaurav-Gosain/tuios/archive/refs/tags/v${version}.tar.gz"
-checksum=a803c947890abf8f82f77f287eabe360d4f4aa25dc13059d4264d626a9771daf
+checksum=91af8abe671c5c79d0eac7b2b045ca61ef9023241edefd4d636becbedcc0ec0f
 
 post_install() {
 	vlicense LICENSE

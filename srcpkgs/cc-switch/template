@@ -1,8 +1,9 @@
 # Template file for 'cc-switch'
 pkgname=cc-switch
-version=3.20.4
-revision=1
+version=4.0.15
+revision=2
 archs="x86_64* aarch64*"
+build_helper="rust"
 hostmakedepends="nodejs cargo python3 xdg-utils pnpm pkg-config"
 makedepends="glib-devel cairo-devel gdk-pixbuf-devel gtk+3-devel pango-devel libwebkit2gtk41-devel libsoup3-devel libsecret-devel openssl-devel rust-std"
 depends="glib cairo gdk-pixbuf gtk+3 pango libwebkit2gtk41 libsoup3 libsecret openssl"
@@ -11,7 +12,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://github.com/farion1231/cc-switch"
 distfiles="https://github.com/farion1231/cc-switch/archive/refs/tags/v${version}.tar.gz"
-checksum=6d86cbafddd41299a2be364fe8ad2457941a8c33202ba252fbeeae8b6057b207
+checksum=6fc370f341c517922aa03dd5693451437e67aea45ce91026a1d296f19e02cfa8
 
 _setup_env() {
 	if [ -n "$CROSS_BUILD" ]; then
@@ -47,7 +48,7 @@ do_build() {
 }
 
 do_check() {
-	pnpm run test:unit
+	pnpm exec vitest run --testTimeout=15000 --minWorkers=1 --maxWorkers=2
 }
 
 do_install() {

@@ -1,0 +1,13 @@
+# Template file for 'morewaita-icon-theme'
+pkgname=morewaita-icon-theme
+version=50.1
+revision=1
+build_style=meson
+depends="adwaita-icon-theme hicolor-icon-theme"
+short_desc="Expanded Adwaita-styled companion icon theme for GNOME Shell"
+maintainer="Coolllyn <leanhduc673@gmail.com>"
+license="GPL-3.0-only"
+homepage="https://github.com/somepaulo/MoreWaita"
+changelog="https://github.com/somepaulo/MoreWaita/releases"
+distfiles="https://github.com/somepaulo/MoreWaita/archive/v${version}.tar.gz"
+checksum=000e858d346e64bfdb87fb305e8046e09f5554385cf9c213fe648887fe218940

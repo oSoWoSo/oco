@@ -3,6 +3,7 @@ pkgname=SysMan
 version=0.024
 revision=1
 build_style=gnu-makefile
+build_helper=go
 hostmakedepends="go pkg-config"
 makedepends="wayland-devel libxkbcommon-devel libX11-devel libglvnd-devel
  libXcursor-devel libXrandr-devel libXinerama-devel libXi-devel libXxf86vm-devel"

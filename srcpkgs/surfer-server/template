@@ -2,6 +2,7 @@
 pkgname=surfer-server
 version=7.2.7
 revision=1
+checkdepends="shared-mime-info"
 hostmakedepends="nodejs"
 depends="nodejs better-sqlite3"
 short_desc="Simple static file server with web interface and resumable uploads"

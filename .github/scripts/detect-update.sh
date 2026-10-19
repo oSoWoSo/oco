@@ -16,7 +16,7 @@ RC_ERROR=2
 
 pkg=${1:?usage: detect-update.sh <pkgname> [repo-root]}
 root=${2:-$(git rev-parse --show-toplevel)}
-image=${VOID_IMAGE:-ghcr.io/osowoso/oco-builder-x86_64@sha256:6aa90d348e60e53879b61c13298af7590329fd4c40f41c8a39a4bcbf1fa03ac1}
+image=${VOID_IMAGE:-ghcr.io/osowoso/oco-builder-x86_64:latest}
 
 cd "$root"
 

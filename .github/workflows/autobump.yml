@@ -282,7 +282,26 @@ jobs:
         run: |
           set -euo pipefail
 
-          printf '**%s** %s' "$TEMPLATE" "$VERSION" >"$RUNNER_TEMP/pr-body.md"
+          template_url="https://github.com/${GH_REPO}/blob/OCO/srcpkgs/${TEMPLATE}/template"
+          changelog_url=$(awk '
+            /^[[:space:]]*#/ { next }
+            /^[[:space:]]*changelog[[:space:]]*=/ {
+              sub(/^[^=]*=/, "")
+              sub(/^[[:space:]]+/, "")
+              sub(/[[:space:]]+$/, "")
+              if ($0 ~ /^"/) { sub(/^"/, ""); sub(/"[[:space:]]*(#.*)?$/, "") }
+              else if ($0 ~ /^\047/) { sub(/^\047/, ""); sub(/\047[[:space:]]*(#.*)?$/, "") }
+              else sub(/[[:space:]]+#.*/, "")
+              print
+              exit
+            }
+          ' "srcpkgs/$TEMPLATE/template")
+
+          printf '**%s** %s\n\n**Template:** [srcpkgs/%s/template](%s)' \
+            "$TEMPLATE" "$VERSION" "$TEMPLATE" "$template_url" >"$RUNNER_TEMP/pr-body.md"
+          if [ -n "$changelog_url" ]; then
+            printf '\n\n**Release notes:** [%s](%s)' "$VERSION" "$changelog_url" >>"$RUNNER_TEMP/pr-body.md"
+          fi
           if [ -n "$ISSUE_NUMBER" ]; then
             printf '\n\nCloses #%s' "$ISSUE_NUMBER" >>"$RUNNER_TEMP/pr-body.md"
           fi

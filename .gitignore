@@ -134,6 +134,7 @@
 !/srcpkgs/flyline
 !/srcpkgs/forgejo-runner
 !/srcpkgs/FreeTube
+!/srcpkgs/fresh
 !/srcpkgs/ftxui
 !/srcpkgs/ftxui-devel
 !/srcpkgs/gama
@@ -219,6 +220,7 @@
 !/srcpkgs/lycan
 !/srcpkgs/menu-themes
 !/srcpkgs/mesa-amber
+!/srcpkgs/morewaita-icon-theme
 !/srcpkgs/morgenwm
 !/srcpkgs/nano-syntax-highlighting
 !/srcpkgs/nebula-gtk

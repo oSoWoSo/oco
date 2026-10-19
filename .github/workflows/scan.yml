@@ -106,6 +106,19 @@ jobs:
             fi
 
             template_url="https://github.com/$GITHUB_REPOSITORY/blob/OCO/srcpkgs/$pkg/template"
+            changelog_url=$(awk '
+              /^[[:space:]]*#/ { next }
+              /^[[:space:]]*changelog[[:space:]]*=/ {
+                sub(/^[^=]*=/, "")
+                sub(/^[[:space:]]+/, "")
+                sub(/[[:space:]]+$/, "")
+                if ($0 ~ /^"/) { sub(/^"/, ""); sub(/"[[:space:]]*(#.*)?$/, "") }
+                else if ($0 ~ /^\047/) { sub(/^\047/, ""); sub(/\047[[:space:]]*(#.*)?$/, "") }
+                else sub(/[[:space:]]+#.*/, "")
+                print
+                exit
+              }
+            ' "srcpkgs/$pkg/template")
             cat >out/issue.md <<EOF
           **Package:** [\`$pkg\`]($template_url)
           **Upstream version:** \`$new\`
@@ -114,6 +127,11 @@ jobs:
           <!-- upstream-version:$new -->
 
           A newer upstream release is available.
+          EOF
+            if [ -n "$changelog_url" ]; then
+              printf '\n**Release notes:** [%s](%s)\n' "$new" "$changelog_url" >>out/issue.md
+            fi
+            cat >>out/issue.md <<EOF
 
           | Current | Latest |
           |---|---|

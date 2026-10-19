@@ -53,6 +53,7 @@ on:
         type: choice
         options:
         -
+        - adw-gtk3
         - android-sdk
         - aquamarine
         - better-sqlite3

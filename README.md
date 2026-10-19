@@ -92,6 +92,7 @@ Create PR
 ## Available templates (packages when built successfully)
 | package | version | home | maintainer | notes | description |
 |:--------|:--------|:-----|:-----------|:------|:------|
+| adw-gtk3 | 6.5 | [home](https://github.com/lassekongo83/adw-gtk3) | Coolllyn |  | Libadwaita-styled theme ported to GTK 3 |
 | android-sdk | 36 | [home](https://developer.android.com/studio) | zenobit | x86_64 | Android SDK platform 36 and build-tools 29.0.3 |
 | aquamarine | 0.15.1 | [home](https://github.com/hyprwm/aquamarine) | zenobit |  | Aquamarine is a very light linux rendering backend library |
 | aquamarine-devel | 0.15.1 | [home](https://github.com/hyprwm/aquamarine) | zenobit |  | Aquamarine is a very light linux rendering backend library |

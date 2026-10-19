@@ -32,6 +32,7 @@
 /srcpkgs/*
 
 # Start of templates list
+!/srcpkgs/adw-gtk3
 !/srcpkgs/android-sdk
 !/srcpkgs/aquamarine
 !/srcpkgs/aquamarine-devel

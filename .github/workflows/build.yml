@@ -180,6 +180,7 @@ on:
         - lycan
         - menu-themes
         - mesa-amber
+        - morewaita-icon-theme
         - morgenwm
         - nano-syntax-highlighting
         - nebula-gtk

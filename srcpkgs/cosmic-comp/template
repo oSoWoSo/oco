@@ -1,7 +1,7 @@
 # Template file for 'cosmic-comp'
 pkgname=cosmic-comp
 version=1.10.0
-revision=1
+revision=2
 build_style=cargo
 configure_args="--no-default-features --features logind"
 hostmakedepends="just pkg-config rust-std"

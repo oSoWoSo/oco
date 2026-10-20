@@ -119,7 +119,7 @@ Create PR
 | corekeyboard | 5.0.1 | [home](https://gitlab.com/cubocore/coreapps/corekeyboard) | zenobit |  | X11 based virtual keyboard for C Suite |
 | cosign | 3.1.4 | [home](https://github.com/sigstore/cosign) | zenobit |  | Code signing and transparency for containers and binaries |
 | cosmic-applets | 1.10.0 | [home](https://github.com/pop-os/cosmic-applets) | zenobit |  | Applets for COSMIC Panel |
-| cosmic-applibrary | 1.10.0 | [home](https://github.com/pop-os/cosmic-app-library) | zenobit |  | Application launcher for the COSMIC desktop |
+| cosmic-applibrary | 1.11.0 | [home](https://github.com/pop-os/cosmic-app-library) | zenobit |  | Application launcher for the COSMIC desktop |
 | cosmic-bg | 1.10.0 | [home](https://github.com/pop-os/cosmic-bg) | zenobit |  | COSMIC session service which applies backgrounds to displays |
 | cosmic-comp | 1.10.0 | [home](https://github.com/pop-os/cosmic-comp) | zenobit |  | Compositor for the COSMIC desktop environment |
 | cosmic-desktop-full | 1.10.0 | [home](https://github.com/pop-os/cosmic-epoch) | Bella109 |  | Full Cosmic Desktop |

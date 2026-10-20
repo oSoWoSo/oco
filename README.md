@@ -285,7 +285,7 @@ Create PR
 | nano-syntax-highlighting | 2026.10.01 | [home](https://github.com/galenguyer/nano-syntax-highlighting) | Coolllyn |  | Improved nano syntax highlighting files |
 | nebula-gtk | 1.3.7 | [home](https://github.com/Letdown2491/nebula-gtk) | zenobit |  | GTK frontend for Void Linux's XBPS tooling |
 | noctalia | 5.3.0 | [home](https://noctalia.dev) | Coolllyn |  | Sleek, customizable desktop shell crafted for Wayland |
-| noctalia-greeter | 1.6.0 | [home](https://github.com/noctalia-dev/noctalia-greeter) | Coolllyn |  | Minimal login greeter for greetd matching the Noctalia Shell look |
+| noctalia-greeter | 1.7.0 | [home](https://github.com/noctalia-dev/noctalia-greeter) | Coolllyn |  | Minimal login greeter for greetd matching the Noctalia Shell look |
 | NuvioDesktop | 0.3.8 | [home](https://github.com/blarns/NuvioForLinux) | Bella109 | x86_64* | Multi Media Hub - multiple sources for watching Series, Movies and Anime |
 | nvchecker | 2.22 | [home](https://github.com/lilydjwg/nvchecker) | zenobit |  | New version checker for software releases |
 | nwg-bar | 0.1.6 | [home](https://github.com/nwg-piotr/nwg-bar) | zenobit |  | GTK3-based button bar for wlroots-based compositors |

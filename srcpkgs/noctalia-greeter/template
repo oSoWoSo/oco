@@ -1,12 +1,12 @@
 # Template file for 'noctalia-greeter'
 pkgname=noctalia-greeter
-version=1.6.0
-revision=2
+version=1.7.0
+revision=1
 build_style=meson
 hostmakedepends="pkgconf wayland-devel"
 makedepends="wlroots0.20-devel libinput-devel MesaLib-devel libglvnd-devel
  cairo-devel fontconfig-devel freetype-devel harfbuzz-devel pango-devel
- glib-devel libxkbcommon-devel libxml2-devel librsvg-devel json-c++
+ glib-devel libxkbcommon-devel libxml2-devel libjxl-devel librsvg-devel json-c++
  tomlplusplus-devel libwebp-devel stb wayland-devel wayland-protocols"
 depends="greetd"
 short_desc="Minimal login greeter for greetd matching the Noctalia Shell look"
@@ -15,7 +15,7 @@ license="MIT"
 homepage="https://github.com/noctalia-dev/noctalia-greeter"
 changelog="https://github.com/noctalia-dev/noctalia-greeter/releases"
 distfiles="https://github.com/noctalia-dev/noctalia-greeter/archive/refs/tags/v${version}.tar.gz"
-checksum=f23ebf07cbe4508971c08b0b81d2b5bfc4ec1ec45605d8f8fb01b799743a70b6
+checksum="5b092784c0147bb6739efc2e8146d2d07e3572a59d7a370e93092f9f56d4fcc8"
 
 post_patch() {
 	vsed -i -e 's/greeter:greeter/_greeter:_greeter/g' \

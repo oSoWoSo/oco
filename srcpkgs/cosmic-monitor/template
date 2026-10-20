@@ -1,6 +1,6 @@
 # Template file for 'cosmic-monitor'
 pkgname=cosmic-monitor
-version=1.10.0
+version=1.11.0
 revision=1
 build_style=cargo
 hostmakedepends="pkg-config just"
@@ -10,7 +10,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="GPL-3.0-only"
 homepage="https://github.com/pop-os/cosmic-monitor"
 distfiles="https://github.com/pop-os/cosmic-monitor/archive/refs/tags/epoch-${version}.tar.gz"
-checksum=ad05af39c240f252bf1191a58563c3d3e858afeeec8334879bba0050c9697496
+checksum=c63aef9814982fd6dd1a0527c83bbe29c015154dee32a1ac9ce8f84290afd52b
 
 do_install() {
 	just cargo-target-dir="target/${RUST_TARGET}" rootdir="${DESTDIR}" prefix=/usr install

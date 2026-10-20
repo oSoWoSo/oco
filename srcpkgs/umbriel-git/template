@@ -1,8 +1,8 @@
 # Template file for 'umbriel-git'
 pkgname=umbriel-git
-version=0.1.0.20261018
+version=0.1.0.20261019
 revision=1
-_commit=5d884c8dcf33855c67b258ff113b92f5c1a315a9
+_commit=b2d80be0b45bad3e9687ac4d4352d331d79180f1
 build_style=meson
 hostmakedepends="pkgconf wayland-devel"
 makedepends="wlroots0.20-devel wayland-devel wayland-protocols libxkbcommon-devel
@@ -16,7 +16,7 @@ maintainer="Coolllyn <leanhduc673@gmail.com>"
 license="MIT"
 homepage="https://github.com/noctalia-dev/umbriel"
 distfiles="https://github.com/noctalia-dev/umbriel/archive/${_commit}.tar.gz"
-checksum=3b9915c1d8bf4e17441294e84403b36809dada9ecf084104461b84db7ff95d6a
+checksum=6c220886fa20336ec67adad36e333a8582f678a251267d18141576d8b24332f2
 
 if [ "$XBPS_TARGET_LIBC" = glibc ]; then
 	makedepends+=" jemalloc-devel"

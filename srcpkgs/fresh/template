@@ -1,0 +1,33 @@
+# Template file for 'fresh'
+pkgname=fresh
+version=0.5.3
+revision=2
+#archs="i686 x86_64"
+#build_wrksrc=
+build_style=cargo
+#configure_args=""
+# The default cargo build-style runs the test suite with --release, but
+# fresh-editor's unit tests call counters that live behind
+# #[cfg(debug_assertions)], so they only compile in the dev profile. Run
+# the library tests without --release. Integration/e2e tests need
+# external tools (ssh, kubectl, ...) not available in the build chroot.
+do_check() {
+	XDG_CACHE_HOME=/var/cache cargo test --lib --locked --target ${RUST_TARGET} \
+		${configure_args} ${make_check_args}
+}
+
+#go_import_path=""
+#make_build_args=""
+make_install_args="--path crates/fresh-editor"
+#conf_files=""
+#make_dirs="/var/log/dir 0755 root root"
+hostmakedepends="pkg-config"
+makedepends="oniguruma-devel"
+checkdepends="python3"
+#depends=""
+short_desc="Terminal based IDE & text editor: easy, powerful and fast"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-3.0-only"
+homepage="https://github.com/sinelaw/fresh"
+distfiles="https://github.com/sinelaw/fresh/archive/refs/tags/v${version}.tar.gz"
+checksum=76b9731fe75b3a2d3e39acc695c7fa16b74c7aff4744f6afcc5cf2c9b529ed60

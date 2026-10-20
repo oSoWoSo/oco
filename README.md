@@ -176,7 +176,7 @@ Create PR
 | default-cursors | 1 | [home](https://www.voidlinux.org) | zenobit |  | Default cursor set |
 | desktop-tui | 0.3.2 | [home](https://github.com/Julien-cpsn/desktop-tui) | zenobit |  | Desktop environment without graphics |
 | devedeng | 4.22.1 | [home](https://www.rastersoft.com/programas/devede.html) | Bella109 |  | Create video DVDs and CDs |
-| diskwatch | 0.6.0 | [home](https://www.netwatchlabs.com) | zenobit |  | Single-host, read-only disk diagnostics TUI |
+| diskwatch | 0.7.0 | [home](https://www.netwatchlabs.com) | zenobit |  | Single-host, read-only disk diagnostics TUI |
 | distrobox | 1.8.2.5 | [home](https://distrobox.it/) | zenobit |  | Podman/Docker wrapper to use any linux distribution in your terminal |
 | dragonfly-reverb | 3.2.10 | [home](https://michaelwillis.github.io/dragonfly-reverb) | Trve_AY |  | Collection of reverbs |
 | dragonfly-reverb-clap | 3.2.10 | [home](https://michaelwillis.github.io/dragonfly-reverb) | Trve_AY |  | Collection of reverbs |
@@ -194,6 +194,7 @@ Create PR
 | flyline | 1.10.0 | [home](https://github.com/HalFrgrd/flyline) | zenobit |  | Bash plugin to replace readline for a modern line editing experience |
 | forgejo-runner | 13.2.0 | [home](https://code.forgejo.org/forgejo/runner) | zenobit |  | Continuous integration for Forgejo |
 | FreeTube | 0.25.1 | [home](https://github.com/FreeTubeApp/FreeTube) | Bella109 | x86_64 | Client for watching YouTube Videos |
+| fresh | 0.5.3 | [home](https://github.com/sinelaw/fresh) | zenobit |  | Terminal based IDE & text editor: easy, powerful and fast |
 | ftxui | 7.0.3 | [home](https://github.com/ArthurSonzogni/FTXUI) | zenobit |  | C++ Functional Terminal User Interface |
 | ftxui-devel | 7.0.3 | [home](https://github.com/ArthurSonzogni/FTXUI) | zenobit |  | C++ Functional Terminal User Interface |
 | gama | 1.2.1 | [home](https://github.com/termkit/gama) | zenobit |  | Manage your GitHub Actions from Terminal with great UI |
@@ -234,7 +235,7 @@ Create PR
 | hyprland-qt-support | 0.1.0 | [home](https://github.com/hyprwm/hyprland-qt-support) | zenobit |  | QML style provider for Hypr* QT apps |
 | hyprlang | 0.6.8 | [home](https://github.com/hyprwm/hyprlang) | zenobit |  | Official implementation library for the hypr config language |
 | hyprlock | 0.9.6 | [home](https://github.com/hyprwm/hyprlock) | zenobit |  | Hyprland's GPU-accelerated screen locking utility |
-| hyprmoncfg | 1.24.1 | [home](https://github.com/crmne/hyprmoncfg/) | zenobit |  | Terminal-first monitor configurator and daemon for Hyprland |
+| hyprmoncfg | 1.25.1 | [home](https://github.com/crmne/hyprmoncfg/) | zenobit |  | Terminal-first monitor configurator and daemon for Hyprland |
 | hyprpaper | 0.8.4 | [home](https://github.com/hyprwm/hyprpaper) | zenobit |  | Fast wallpaper utility for wlroots compositors with IPC controls |
 | hyprpicker | 0.4.7 | [home](https://github.com/hyprwm/hyprpicker) | zenobit |  | Wlroots-compatible Wayland color picker that does not suck |
 | hyprpolkitagent | 0.2.0 | [home](https://github.com/hyprwm/hyprpolkitagent) | zenobit |  | Simple polkit authentication agent for Hyprland, written in QT/QML |
@@ -279,11 +280,12 @@ Create PR
 | lycan | 0.1.2 | [home](https://github.com/tutkuofnight/lycan) | Bella109 | x86_64* | Lightweight PWA manager for Linux |
 | menu-themes | 0.9.0 | [home](https://github.com/kando-menu/menu-themes) | zenobit | x86_64 aarch64 | Collection of menu themes for Kando |
 | mesa-amber | 26.1.2 | [home](https://www.mesa3d.org/) | Bella109 |  | Mesa for older hardware (legacy driver build) |
+| morewaita-icon-theme | 50.1 | [home](https://github.com/somepaulo/MoreWaita) | Coolllyn |  | Expanded Adwaita-styled companion icon theme for GNOME Shell |
 | morgenwm | 0.2.1 | [home](https://codeberg.org/LinuxNation/MorgenWM) | LinuxNation |  | Scrolling window manager with subframes for the River compositor |
 | nano-syntax-highlighting | 2026.10.01 | [home](https://github.com/galenguyer/nano-syntax-highlighting) | Coolllyn |  | Improved nano syntax highlighting files |
 | nebula-gtk | 1.3.7 | [home](https://github.com/Letdown2491/nebula-gtk) | zenobit |  | GTK frontend for Void Linux's XBPS tooling |
 | noctalia | 5.3.0 | [home](https://noctalia.dev) | Coolllyn |  | Sleek, customizable desktop shell crafted for Wayland |
-| noctalia-greeter | 1.6.0 | [home](https://github.com/noctalia-dev/noctalia-greeter) | Coolllyn |  | Minimal login greeter for greetd matching the Noctalia Shell look |
+| noctalia-greeter | 1.7.0 | [home](https://github.com/noctalia-dev/noctalia-greeter) | Coolllyn |  | Minimal login greeter for greetd matching the Noctalia Shell look |
 | NuvioDesktop | 0.3.8 | [home](https://github.com/blarns/NuvioForLinux) | Bella109 | x86_64* | Multi Media Hub - multiple sources for watching Series, Movies and Anime |
 | nvchecker | 2.22 | [home](https://github.com/lilydjwg/nvchecker) | zenobit |  | New version checker for software releases |
 | nwg-bar | 0.1.6 | [home](https://github.com/nwg-piotr/nwg-bar) | zenobit |  | GTK3-based button bar for wlroots-based compositors |
@@ -364,7 +366,7 @@ Create PR
 | sv-helper | 5.0.0 | [home](https://github.com/rubyists/sv-helper) | zenobit |  | Utilities to help administer a runit-as-pid1 system |
 | svi | 0.2.2 | [home](https://codeberg.org/LinuxNation/svi) | zenobit |  | Graphical installer for Void Linux, built with GTK4 and Python |
 | svlog | 0.6.3 | [home](https://github.com/pascal-huber/svlog) | Coolllyn |  | Display, filter and follow socklog log files on Void Linux |
-| SysMan | 0.020 | [home](https://codeberg.org/oSoWoSo/SysMan) | zenobit |  | System Manager |
+| SysMan | 0.024 | [home](https://codeberg.org/oSoWoSo/SysMan) | zenobit |  | System Manager |
 | syswatch | 0.14.4 | [home](https://www.netwatchlabs.com) | zenobit |  | Single-host system diagnostics TUI |
 | tdf | 0.5.0 | [home](https://github.com/itsjunetime/tdf) | zenobit |  | TUI PDF viewer |
 | tiki | 0.6.1 | [home](https://github.com/boolean-maybe/tiki) | zenobit |  | Terminal Markdown-based shapeless workflow builder |
@@ -374,7 +376,7 @@ Create PR
 | tuios | 0.10.1 | [home](https://github.com/Gaurav-Gosain/tuios) | zenobit |  | Terminal UI OS (Terminal Multiplexer) |
 | tuisic | 2.5.2 | [home](https://github.com/Dark-Kernel/tuisic) | zenobit |  | TUI online music streaming application |
 | typobuster | 1.0.0 | [home](https://github.com/nwg-piotr/typobuster) | zenobit |  | Lightweight editor with text transformations and auto-correction |
-| umbriel-git | 0.1.0.20261018 | [home](https://github.com/noctalia-dev/umbriel) | Coolllyn |  | Wayland compositor built on wlroots |
+| umbriel-git | 0.1.0.20261019 | [home](https://github.com/noctalia-dev/umbriel) | Coolllyn |  | Wayland compositor built on wlroots |
 | undelete-btrfs | 1.0 | [home](https://github.com/danthem/undelete-btrfs) | zenobit |  | Undelete files in a BTRFS file system |
 | vbm | 1.0.2 | [home](https://codeberg.org/oSoWoSo/vbm) | zenobit |  | XBPS package management helper for VoidLinux |
 | vibepanel | 0.17.0 | [home](https://github.com/prankstr/vibepanel) | LinuxNation |  | GTK4 panel for Wayland with notifications, OSD, and quick settings |
@@ -392,7 +394,7 @@ Create PR
 | wpgtk | 6.7.1 | [home](https://github.com/deviantfero/wpgtk/) | zenobit |  | Colorscheme, wallpaper and template manager for *nix |
 | xdg-desktop-portal-cosmic | 1.10.0 | [home](https://github.com/pop-os/xdg-desktop-portal-cosmic) | zenobit |  | Backend implementation for xdg-desktop-portal for COSMIC |
 | xdg-desktop-portal-hyprland | 1.4.1 | [home](https://github.com/hyprwm/xdg-desktop-portal-hyprland) | zenobit |  | Backend of xdg-desktop-portal for Hyprland |
-| xdg-desktop-portal-umbriel-git | 0.1.0.20261014 | [home](https://github.com/noctalia-dev/xdg-desktop-portal-umbriel) | Coolllyn |  | XDG Desktop Portal backend for the Umbriel compositor |
+| xdg-desktop-portal-umbriel-git | 0.1.0.20261019 | [home](https://github.com/noctalia-dev/xdg-desktop-portal-umbriel) | Coolllyn |  | XDG Desktop Portal backend for the Umbriel compositor |
 | xut | 0.4.2 | [home](https://codeberg.org/mobinmob/xut) | mobinmob |  | Work with templates from unofficial repositories |
 | xxtools-git | 0.0.0 | [home](https://github.com/Piraty/xxtools) | zenobit |  | Tools to ease packaging tasks for Void Linux |
 | zen-browser-bin | 1.23.3 | [home](https://github.com/zen-browser/desktop) | Bella109 | x86_64 aarch64 | New Browser based on Firefox |

@@ -140,7 +140,7 @@ Create PR
 | cosmic-randr | 1.10.0 | [home](https://github.com/pop-os/cosmic-randr) | zenobit |  | Library and utility for displaying and configuring Wayland outputs |
 | cosmic-screenshot | 1.10.0 | [home](https://github.com/pop-os/cosmic-screenshot) | zenobit |  | Utility for capturing screenshots via XDG Desktop Portal |
 | cosmic-session | 1.10.0 | [home](https://github.com/pop-os/cosmic-session) | zenobit |  | Session manager for the COSMIC desktop environment |
-| cosmic-settings | 1.10.0 | [home](https://github.com/pop-os/cosmic-settings) | zenobit |  | Settings application for the COSMIC desktop environment |
+| cosmic-settings | 1.11.0 | [home](https://github.com/pop-os/cosmic-settings) | zenobit |  | Settings application for the COSMIC desktop environment |
 | cosmic-settings-daemon | 1.10.0 | [home](https://github.com/pop-os/cosmic-settings-daemon) | zenobit |  | Settings daemon for the COSMIC desktop environment |
 | cosmic-sound-theme | 1.10.0 | [home](https://github.com/pop-os/cosmic-sound-theme) | zenobit |  | Sound theme for the COSMIC desktop environment |
 | cosmic-store | 1.10.0 | [home](https://github.com/pop-os/cosmic-store) | zenobit |  | Cosmic App Store |

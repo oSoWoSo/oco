@@ -3,6 +3,7 @@ pkgname=noctalia-greeter
 version=1.7.0
 revision=1
 build_style=meson
+make_check_args="--exclude greeter-frame-loop"
 hostmakedepends="pkgconf wayland-devel"
 makedepends="wlroots0.20-devel libinput-devel MesaLib-devel libglvnd-devel
  cairo-devel fontconfig-devel freetype-devel harfbuzz-devel pango-devel

@@ -977,6 +977,18 @@ _cnc_visited=" pkg_guard"
 _check_nocross_chain pkg_guard; assert_rc $? 1
 
 echo
+echo '== Forgejo workflow compatibility =='
+
+# Forgejo ignores the `permissions` key entirely and shows a warning on every
+# affected job (workflow-level or job-level). Grant capabilities with
+# Authorized Integrations instead, so the key must not come back here.
+for _fw in "$SCRIPT_DIR"/.forgejo/workflows/*.yml; do
+	[ -f "$_fw" ] || continue
+	it "no permissions field in ${_fw##*/}"
+	assert_eq "$(grep -c '^[[:space:]]*permissions:' "$_fw"; true)" '0'
+done
+
+echo
 echo '== close-update-issues.py =='
 
 if command -v python3 >/dev/null 2>&1; then
@@ -1447,6 +1459,12 @@ unset FAKE_SURFER_ARGV FAKE_SURFER_SCRIPT FAKE_SURFER_COUNT
 
 echo '== detect-update.sh =='
 python3 "$SCRIPT_DIR/tests/test_detect_update.py" || _FAIL=$((_FAIL + 1))
+
+echo '== autobump-batch.py =='
+python3 "$SCRIPT_DIR/tests/test_autobump_batch.py" || _FAIL=$((_FAIL + 1))
+
+echo '== autobump-release.py =='
+python3 "$SCRIPT_DIR/tests/test_autobump_release.py" || _FAIL=$((_FAIL + 1))
 
 echo '== surfer-publish.py =='
 python3 "$SCRIPT_DIR/tests/test_surfer_publish.py" || _FAIL=$((_FAIL + 1))

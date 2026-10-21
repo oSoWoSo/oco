@@ -3,7 +3,7 @@
 #
 # Bump a template to <newversion> and refresh its checksums.
 #
-# Usage: bump-template.sh <pkgname> <newversion>
+# Usage: bump-template.sh <pkgname> <newversion> [repo-root]
 #
 # This is the xgensum subset the autobump whitelist needs: the templates in
 # src/autobump-pkgs carry plain sha256 digests (no checksum_type), so the
@@ -19,9 +19,9 @@ set -euo pipefail
 
 RC_ERROR=2
 
-pkg=${1:?usage: bump-template.sh <pkgname> <newversion>}
-new=${2:?usage: bump-template.sh <pkgname> <newversion>}
-root=$(git rev-parse --show-toplevel)
+pkg=${1:?usage: bump-template.sh <pkgname> <newversion> [repo-root]}
+new=${2:?usage: bump-template.sh <pkgname> <newversion> [repo-root]}
+root=${3:-$(git rev-parse --show-toplevel)}
 
 cd "$root"
 
@@ -128,7 +128,18 @@ mapfile -t distfiles < <(
 	# shellcheck disable=SC2086
 	printf '%s\n' $distfiles
 )
-[ "${#distfiles[@]}" -gt 0 ] || fail "$pkg has no distfiles"
+
+# Metapackages and other source-less templates have no archive to checksum.
+# Their version can still be updated from the upstream release tag.
+if [ "${#distfiles[@]}" -eq 1 ] && [ -z "${distfiles[0]}" ]; then
+	distfiles=()
+fi
+if [ "${#distfiles[@]}" -eq 0 ]; then
+	grep -q '^checksum=' "$tpl" && fail "$pkg has a checksum but no distfiles"
+	mv "$tmp/template.new" "$tpl"
+	printf '%s %s\n' "$pkg" "$new"
+	exit 0
+fi
 
 sums=()
 for url in "${distfiles[@]}"; do

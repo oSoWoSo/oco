@@ -1,6 +1,6 @@
 # Template file for 'DankMaterialShell'
 pkgname=DankMaterialShell
-version=1.6.3
+version=2.0.0
 revision=1
 _version=1.6.0
 build_style=gnu-makefile
@@ -13,8 +13,8 @@ license="MIT"
 homepage="https://github.com/AvengeMedia/DankMaterialShell"
 distfiles="https://github.com/AvengeMedia/DankMaterialShell/archive/refs/tags/v${version}.tar.gz
  https://github.com/AvengeMedia/dank-qml-common/archive/refs/tags/v${_version}.tar.gz"
-checksum="32e5a87130c5127391f5b1f307348e89a2b34f17e9f0d9c8c0ce09fba334e1fd
- 1d2a7820054ed7efdcf3bffe4ba611a37c2e701844de575a168cece66f57027e"
+checksum="e81b0b496b3a6a5a08a6b045ef04d79b3a36f9b07bbfdf475e7dceb80228aca4
+ 6dd68cab5cc6558d24fe9ab1383040631eb7fbbc0c5d8d9cef3d55e5becf6304"
 
 post_extract() {
 	mv ${pkgname}-${version}/* ./

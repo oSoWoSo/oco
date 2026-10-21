@@ -392,7 +392,7 @@ Create PR
 | vtm | 2026.10.12 | [home](https://github.com/directvt/vtm) | zenobit |  | Text-based desktop environment |
 | waterfox-bin | 6.7.6 | [home](https://www.waterfox.net) | zenobit | x86_64 aarch64 | Fast and private web browser |
 | wpgtk | 6.7.1 | [home](https://github.com/deviantfero/wpgtk/) | zenobit |  | Colorscheme, wallpaper and template manager for *nix |
-| xdg-desktop-portal-cosmic | 1.10.0 | [home](https://github.com/pop-os/xdg-desktop-portal-cosmic) | zenobit |  | Backend implementation for xdg-desktop-portal for COSMIC |
+| xdg-desktop-portal-cosmic | 1.11.0 | [home](https://github.com/pop-os/xdg-desktop-portal-cosmic) | zenobit |  | Backend implementation for xdg-desktop-portal for COSMIC |
 | xdg-desktop-portal-hyprland | 1.4.1 | [home](https://github.com/hyprwm/xdg-desktop-portal-hyprland) | zenobit |  | Backend of xdg-desktop-portal for Hyprland |
 | xdg-desktop-portal-umbriel-git | 0.1.0.20261019 | [home](https://github.com/noctalia-dev/xdg-desktop-portal-umbriel) | Coolllyn |  | XDG Desktop Portal backend for the Umbriel compositor |
 | xut | 0.4.2 | [home](https://codeberg.org/mobinmob/xut) | mobinmob |  | Work with templates from unofficial repositories |

@@ -16,7 +16,7 @@ homepage="https://github.com/duxlabs-dev/dux-calendar"
 changelog="https://github.com/duxlabs-dev/dux-calendar/releases"
 distfiles="https://github.com/duxlabs-dev/dux-calendar/archive/refs/tags/v${version}.tar.gz"
 checksum=866ee8dfedb91639c8d13081cb52ff743eaeeb322545f67ff74f74eb85674cdb
-replaces=dankcalendar>=0
+replaces="dankcalendar>=0"
 
 post_install() {
 	vmkdir usr/share/quickshell/dcal
@@ -36,7 +36,7 @@ post_install() {
 
 dankcalendar_package() {
 	metapackage=yes
-	short_desc="Calendar app that brings your calendars together in one place (transitional dummy package)"
+	short_desc="Renamed to dux-calendar (transitional dummy package)"
 	depends="${sourcepkg}>=${version}_${revision}"
 	reverts="1.6.1"
 }

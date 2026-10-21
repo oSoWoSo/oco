@@ -1,6 +1,6 @@
 # Template file for 'cosmic-randr'
 pkgname=cosmic-randr
-version=1.10.0
+version=1.11.0
 revision=1
 build_style=cargo
 make_install_args="--path cli"
@@ -9,4 +9,4 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MPL-2.0"
 homepage="https://github.com/pop-os/cosmic-randr"
 distfiles="https://github.com/pop-os/cosmic-randr/archive/refs/tags/epoch-${version}.tar.gz"
-checksum=4556bc8954b212b74aabc60960c1f5f63af1c3cb3abe6b7e00d8278094a6ab1c
+checksum=cd04841b780ad13d407a0a3740f827b3fc214dfc198b114d6a83524c2a0ca96e

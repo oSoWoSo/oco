@@ -144,7 +144,7 @@ Create PR
 | cosmic-settings-daemon | 1.11.0 | [home](https://github.com/pop-os/cosmic-settings-daemon) | zenobit |  | Settings daemon for the COSMIC desktop environment |
 | cosmic-sound-theme | 1.10.0 | [home](https://github.com/pop-os/cosmic-sound-theme) | zenobit |  | Sound theme for the COSMIC desktop environment |
 | cosmic-store | 1.10.0 | [home](https://github.com/pop-os/cosmic-store) | zenobit |  | Cosmic App Store |
-| cosmic-term | 1.10.0 | [home](https://github.com/pop-os/cosmic-term) | zenobit |  | COSMIC terminal emulator |
+| cosmic-term | 1.11.0 | [home](https://github.com/pop-os/cosmic-term) | zenobit |  | COSMIC terminal emulator |
 | cosmic-tweaks | 0.2.5 | [home](https://github.com/cosmic-utils/cosmic-tweaks) | Bella109 | x86_64 | Tweaks for COSMIC |
 | cosmic-viewer | 1.10.0 | [home](https://github.com/pop-os/cosmic-viewer) | zenobit |  | COSMIC Image Viewer |
 | cosmic-wallpapers | 1.11.0 | [home](https://github.com/pop-os/cosmic-wallpapers) | zenobit |  | Wallpapers for the COSMIC Desktop Environment |

@@ -293,6 +293,25 @@ class HelperTests(unittest.TestCase):
             self.assertNotIn("usage:", result.stderr)
             self.assertEqual(result.returncode, 2)
 
+    def test_bump_template_updates_source_less_metapackage(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            template = write_template(root, "desktop", (
+                "pkgname=desktop\n"
+                "version=1.0\n"
+                "revision=1\n"
+                'metapackage="yes"\n'
+                "skip_extraction=yes\n"
+            ))
+            result = subprocess.run(
+                ["bash", str(ROOT / ".github/scripts/bump-template.sh"),
+                 "desktop", "1.1", str(root)],
+                check=False, capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertTrue(result.stdout.strip().endswith("desktop 1.1"))
+            self.assertIn("version=1.1", template.read_text(encoding="utf-8"))
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())

@@ -128,7 +128,18 @@ mapfile -t distfiles < <(
 	# shellcheck disable=SC2086
 	printf '%s\n' $distfiles
 )
-[ "${#distfiles[@]}" -gt 0 ] || fail "$pkg has no distfiles"
+
+# Metapackages and other source-less templates have no archive to checksum.
+# Their version can still be updated from the upstream release tag.
+if [ "${#distfiles[@]}" -eq 1 ] && [ -z "${distfiles[0]}" ]; then
+	distfiles=()
+fi
+if [ "${#distfiles[@]}" -eq 0 ]; then
+	grep -q '^checksum=' "$tpl" && fail "$pkg has a checksum but no distfiles"
+	mv "$tmp/template.new" "$tpl"
+	printf '%s %s\n' "$pkg" "$new"
+	exit 0
+fi
 
 sums=()
 for url in "${distfiles[@]}"; do

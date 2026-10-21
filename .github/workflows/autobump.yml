@@ -204,30 +204,31 @@ jobs:
         run: |
           set -euo pipefail
 
-          # A batch covers every package of the component, so an open pull
-          # request that touches any of them already carries these updates.
-          # The comparison is on the changed templates, not on the branch
-          # name: the branch is named after one package of the batch.
-          existing=""
+          # Reuse an open autobump PR only when it already contains every
+          # package in this plan. Partial single-package PRs must be folded
+          # into the complete dependency batch instead of suppressing it.
           existing_number=""
           while IFS=$'\t' read -r number _ref; do
             [ -n "$number" ] || continue
             files=$(gh api "repos/${GH_REPO}/pulls/${number}/files?per_page=100" \
               --jq '.[].filename')
+            covered=true
             while IFS=$'\t' read -r package _version _kind _order; do
               [ -n "$package" ] || continue
-              if printf '%s\n' "$files" | grep -qxF "srcpkgs/$package/template"; then
-                existing="autobump batch"
-                existing_number="$number"
+              if ! printf '%s\n' "$files" | grep -qxF "srcpkgs/$package/template"; then
+                covered=false
                 break
               fi
             done <"$RUNNER_TEMP/autobump-plan.tsv"
-            [ -n "$existing_number" ] && break
+            if [ "$covered" = true ]; then
+              existing_number="$number"
+              break
+            fi
           done <<<"$(gh api "repos/${GH_REPO}/pulls?state=open&per_page=100" \
             --jq '.[] | select(.head.ref | startswith("autobump/")) | "\(.number)\t\(.head.ref)"')"
 
           if [ -n "$existing_number" ]; then
-            echo "::notice::the batch is already covered by the open pull request #${existing_number}"
+            echo "::notice::the complete batch is already covered by open pull request #${existing_number}"
             echo "number=$existing_number" >>"$GITHUB_OUTPUT"
             echo "handled=true" >>"$GITHUB_OUTPUT"
           else
@@ -418,6 +419,45 @@ jobs:
 
           echo "number=$number" >>"$GITHUB_OUTPUT"
           echo "PR: #${number}"
+
+      - name: Consolidate related package PRs
+        if: steps.pr.outputs.number != '' && steps.existing.outputs.handled == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
+          BATCH_PR: ${{ steps.pr.outputs.number }}
+        run: |
+          set -euo pipefail
+
+          plan="$RUNNER_TEMP/autobump-plan.tsv"
+          while IFS=$'\t' read -r number _ref; do
+            [ -n "$number" ] || continue
+            [ "$number" != "$BATCH_PR" ] || continue
+            files=$(gh api "repos/${GH_REPO}/pulls/${number}/files?per_page=100" \
+              --jq '.[].filename')
+            templates=$(printf '%s\n' "$files" | grep -E '^srcpkgs/[^/]+/template$' || true)
+            [ -n "$templates" ] || continue
+
+            belongs=true
+            overlap=false
+            while IFS= read -r filename; do
+              package=${filename#srcpkgs/}
+              package=${package%/template}
+              if awk -F '\t' -v pkg="$package" '$1 == pkg { found=1 } END { exit !found }' "$plan"; then
+                overlap=true
+              else
+                belongs=false
+              fi
+            done <<<"$templates"
+
+            if [ "$belongs" = true ] && [ "$overlap" = true ]; then
+              gh pr comment "$number" --repo "$GH_REPO" --body \
+                "This package update is included in the dependency batch PR #${BATCH_PR}; closing this individual autobump PR."
+              gh api "repos/${GH_REPO}/pulls/${number}" \
+                --method PATCH -f state=closed >/dev/null
+              echo "Closed superseded autobump PR #${number}"
+            fi
+          done <<<"$(gh api "repos/${GH_REPO}/pulls?state=open&per_page=100" \
+            --jq '.[] | select(.head.ref | startswith("autobump/")) | "\(.number)\t\(.head.ref)"')"
 
       - name: Comment on issue
         if: github.event_name != 'workflow_dispatch' && steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'

@@ -1,6 +1,6 @@
 # Template file for 'morgenwm'
 pkgname=morgenwm
-version=0.2.1
+version=0.3.0
 revision=1
 hostmakedepends="nim pkg-config"
 makedepends="libxkbcommon-devel wayland-devel"
@@ -11,7 +11,7 @@ license="GPL-3.0-only"
 homepage="https://codeberg.org/LinuxNation/MorgenWM"
 changelog="https://codeberg.org/LinuxNation/MorgenWM/raw/branch/master/CHANGELOG.md"
 distfiles="https://codeberg.org/LinuxNation/MorgenWM/archive/v${version}.tar.gz"
-checksum=c95147c1979d6610dc14d30572087c9a79887901a35268565e801b69757b857b
+checksum=57503b9b03cb169f82c863f8eb0dc69e638c690cfe2f6f00e62cdb269950ee68
 conf_files="/etc/morgenwm/config.toml"
 
 do_build() {

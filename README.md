@@ -16,14 +16,14 @@ Providing:
 - for community
 
 ## DISCLAIMER
-This project is **not affiliated with or endorsed by the Void Linux project** or its maintainers.  
-It is an **unofficial community repository** designed to simplify managing and building user-contributed packages using the void-packages build system.  
+This project is **not affiliated with or endorsed by the Void Linux project** or its maintainers.
+It is an **unofficial community repository** designed to simplify managing and building user-contributed packages using the void-packages build system.
 Use at your own discretion.
 
 ## Overview
-A collection of template files for building packages on Void Linux.  
-If you dont wish to build the packages locally,  
-https://repo.osowoso.org repository provides prebuilt binaries.  
+A collection of template files for building packages on Void Linux.
+If you dont wish to build the packages locally,
+https://repo.osowoso.org repository provides prebuilt binaries.
 Pick your architecture there and you will see
 
 ## Structure
@@ -35,9 +35,9 @@ Pick your architecture there and you will see
 - Just built (RSS feed) https://repo.osowoso.org/feed.xml
 
 ## What we don't build? (From source)
-Browsers: It's waste of energy and when you finish building is maybe already new version out  
-We provide repackaged binaries, they all have `-bin` after <pkgname>  
-(You can use AppImages and manage them with [AM](https://github.com/ivan-hc/AM), or flatpaks. They are usualy always latest)  
+Browsers: It's waste of energy and when you finish building is maybe already new version out
+We provide repackaged binaries, they all have `-bin` after <pkgname>
+(You can use AppImages and manage them with [AM](https://github.com/ivan-hc/AM), or flatpaks. They are usualy always latest)
 
 ## How to use
 in https://repo.osowoso.org/`(architecture)`
@@ -59,28 +59,28 @@ sudo cp /tmp/oco-repo-key.plist /var/db/xbps/keys/df:ec:10:ef:5c:03:e9:e0:9e:86:
 ## How to contribute
 
 ### Clone using ocoman script
-Running `./ocoman -i` will clone void-packages and oco into ~/void  
+Running `./ocoman -i` will clone void-packages and oco into ~/void
 PS: Destination could be changed look at `./ocoman -h`
 
 ### Clone manualy
-Clone Codeberg repo  
-`git clone https://codeberg.org/oSoWoSo/oco`  
+Clone Codeberg repo
+`git clone https://codeberg.org/oSoWoSo/oco`
 Copy srcpkgs directory to cloned [void-packages](https://github.com/void-linux/void-packages)
 
 Then:
 
-Use `xnew <pkgname>` to create new template  
-Fill everyhing as needed and remove rest  
-Use `xlint <pkgname>` to lint templates  
-Build templates with tests `./xbps-src -Q pkg <pkgname>`  
-(Tests must be allowed in $XBPS_DISTDIR/etc/conf)  
-We build for x86_64 and aarch64 + musl variants  
-(I am usualy trying x86_64 and aarch64-musl crossbuild)  
-Add your changes  
-When you change any shlib from upstream void-packages, changes must be reflected in `shlibs_remove` and `shlibe_append`  
-When you add new shlib add it only to `shlibe_append`  
-After adding template, run `./ocoman -u` to regenerate templates list and table  
-One commit per template, mesage: `<pkgname> <version>`  
+Use `xnew <pkgname>` to create new template
+Fill everyhing as needed and remove rest
+Use `xlint <pkgname>` to lint templates
+Build templates with tests `./xbps-src -Q pkg <pkgname>`
+(Tests must be allowed in $XBPS_DISTDIR/etc/conf)
+We build for x86_64 and aarch64 + musl variants
+(I am usualy trying x86_64 and aarch64-musl crossbuild)
+Add your changes
+When you change any shlib from upstream void-packages, changes must be reflected in `shlibs_remove` and `shlibe_append`
+When you add new shlib add it only to `shlibe_append`
+After adding template, run `./ocoman -u` to regenerate templates list and table
+One commit per template, mesage: `<pkgname> <version>`
 
 Create PR
 
@@ -143,7 +143,7 @@ Create PR
 | cosmic-settings | 1.11.0 | [home](https://github.com/pop-os/cosmic-settings) | zenobit |  | Settings application for the COSMIC desktop environment |
 | cosmic-settings-daemon | 1.11.0 | [home](https://github.com/pop-os/cosmic-settings-daemon) | zenobit |  | Settings daemon for the COSMIC desktop environment |
 | cosmic-sound-theme | 1.11.0 | [home](https://github.com/pop-os/cosmic-sound-theme) | zenobit |  | Sound theme for the COSMIC desktop environment |
-| cosmic-store | 1.10.0 | [home](https://github.com/pop-os/cosmic-store) | zenobit |  | Cosmic App Store |
+| cosmic-store | 1.11.0 | [home](https://github.com/pop-os/cosmic-store) | zenobit |  | Cosmic App Store |
 | cosmic-term | 1.11.0 | [home](https://github.com/pop-os/cosmic-term) | zenobit |  | COSMIC terminal emulator |
 | cosmic-tweaks | 0.2.5 | [home](https://github.com/cosmic-utils/cosmic-tweaks) | Bella109 | x86_64 | Tweaks for COSMIC |
 | cosmic-viewer | 1.10.0 | [home](https://github.com/pop-os/cosmic-viewer) | zenobit |  | COSMIC Image Viewer |

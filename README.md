@@ -290,7 +290,7 @@ Create PR
 | nvchecker | 2.22 | [home](https://github.com/lilydjwg/nvchecker) | zenobit |  | New version checker for software releases |
 | nwg-bar | 0.1.6 | [home](https://github.com/nwg-piotr/nwg-bar) | zenobit |  | GTK3-based button bar for wlroots-based compositors |
 | nwg-clipman | 0.2.8 | [home](https://github.com/nwg-piotr/nwg-clipman) | zenobit |  | GTK based GUI for cliphist - nwg-shell clipboard manager |
-| nwg-displays | 0.4.4 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-displays) | zenobit |  | Intuitive GUI to manage multiple displays for wayland |
+| nwg-displays | 0.5.0 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-displays) | zenobit |  | Intuitive GUI to manage multiple displays for wayland |
 | nwg-dock | 0.4.3 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-dock) | zenobit |  | GTK based dock for sway |
 | nwg-dock-hyprland | 0.4.11 | [home](https://github.com/nwg-piotr/nwg-dock-hyprland) | zenobit |  | GTK3-based dock for Hyprland |
 | nwg-drawer | 0.7.5 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-drawer) | zenobit |  | Application drawer for wlroots-based Wayland compositors |

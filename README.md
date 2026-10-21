@@ -16,14 +16,14 @@ Providing:
 - for community
 
 ## DISCLAIMER
-This project is **not affiliated with or endorsed by the Void Linux project** or its maintainers.  
-It is an **unofficial community repository** designed to simplify managing and building user-contributed packages using the void-packages build system.  
+This project is **not affiliated with or endorsed by the Void Linux project** or its maintainers.
+It is an **unofficial community repository** designed to simplify managing and building user-contributed packages using the void-packages build system.
 Use at your own discretion.
 
 ## Overview
-A collection of template files for building packages on Void Linux.  
-If you dont wish to build the packages locally,  
-https://repo.osowoso.org repository provides prebuilt binaries.  
+A collection of template files for building packages on Void Linux.
+If you dont wish to build the packages locally,
+https://repo.osowoso.org repository provides prebuilt binaries.
 Pick your architecture there and you will see
 
 ## Structure
@@ -35,9 +35,9 @@ Pick your architecture there and you will see
 - Just built (RSS feed) https://repo.osowoso.org/feed.xml
 
 ## What we don't build? (From source)
-Browsers: It's waste of energy and when you finish building is maybe already new version out  
-We provide repackaged binaries, they all have `-bin` after <pkgname>  
-(You can use AppImages and manage them with [AM](https://github.com/ivan-hc/AM), or flatpaks. They are usualy always latest)  
+Browsers: It's waste of energy and when you finish building is maybe already new version out
+We provide repackaged binaries, they all have `-bin` after <pkgname>
+(You can use AppImages and manage them with [AM](https://github.com/ivan-hc/AM), or flatpaks. They are usualy always latest)
 
 ## How to use
 in https://repo.osowoso.org/`(architecture)`
@@ -59,28 +59,28 @@ sudo cp /tmp/oco-repo-key.plist /var/db/xbps/keys/df:ec:10:ef:5c:03:e9:e0:9e:86:
 ## How to contribute
 
 ### Clone using ocoman script
-Running `./ocoman -i` will clone void-packages and oco into ~/void  
+Running `./ocoman -i` will clone void-packages and oco into ~/void
 PS: Destination could be changed look at `./ocoman -h`
 
 ### Clone manualy
-Clone Codeberg repo  
-`git clone https://codeberg.org/oSoWoSo/oco`  
+Clone Codeberg repo
+`git clone https://codeberg.org/oSoWoSo/oco`
 Copy srcpkgs directory to cloned [void-packages](https://github.com/void-linux/void-packages)
 
 Then:
 
-Use `xnew <pkgname>` to create new template  
-Fill everyhing as needed and remove rest  
-Use `xlint <pkgname>` to lint templates  
-Build templates with tests `./xbps-src -Q pkg <pkgname>`  
-(Tests must be allowed in $XBPS_DISTDIR/etc/conf)  
-We build for x86_64 and aarch64 + musl variants  
-(I am usualy trying x86_64 and aarch64-musl crossbuild)  
-Add your changes  
-When you change any shlib from upstream void-packages, changes must be reflected in `shlibs_remove` and `shlibe_append`  
-When you add new shlib add it only to `shlibe_append`  
-After adding template, run `./ocoman -u` to regenerate templates list and table  
-One commit per template, mesage: `<pkgname> <version>`  
+Use `xnew <pkgname>` to create new template
+Fill everyhing as needed and remove rest
+Use `xlint <pkgname>` to lint templates
+Build templates with tests `./xbps-src -Q pkg <pkgname>`
+(Tests must be allowed in $XBPS_DISTDIR/etc/conf)
+We build for x86_64 and aarch64 + musl variants
+(I am usualy trying x86_64 and aarch64-musl crossbuild)
+Add your changes
+When you change any shlib from upstream void-packages, changes must be reflected in `shlibs_remove` and `shlibe_append`
+When you add new shlib add it only to `shlibe_append`
+After adding template, run `./ocoman -u` to regenerate templates list and table
+One commit per template, mesage: `<pkgname> <version>`
 
 Create PR
 
@@ -122,34 +122,34 @@ Create PR
 | cosmic-applets | 1.11.0 | [home](https://github.com/pop-os/cosmic-applets) | zenobit |  | Applets for COSMIC Panel |
 | cosmic-applibrary | 1.11.0 | [home](https://github.com/pop-os/cosmic-app-library) | zenobit |  | Application launcher for the COSMIC desktop |
 | cosmic-bg | 1.11.0 | [home](https://github.com/pop-os/cosmic-bg) | zenobit |  | COSMIC session service which applies backgrounds to displays |
-| cosmic-comp | 1.10.0 | [home](https://github.com/pop-os/cosmic-comp) | zenobit |  | Compositor for the COSMIC desktop environment |
-| cosmic-desktop-full | 1.10.0 | [home](https://github.com/pop-os/cosmic-epoch) | Bella109 |  | Full Cosmic Desktop |
+| cosmic-comp | 1.11.0 | [home](https://github.com/pop-os/cosmic-comp) | zenobit |  | Compositor for the COSMIC desktop environment |
+| cosmic-desktop-full | 1.11.0 | [home](https://github.com/pop-os/cosmic-epoch) | Bella109 |  | Full Cosmic Desktop |
 | cosmic-desktop-minimal | 1.10.0 | [home](https://github.com/pop-os/cosmic-epoch) | Bella109 |  | Meta Package for COSMIC Desktop |
-| cosmic-edit | 1.10.0 | [home](https://github.com/pop-os/cosmic-edit) | zenobit |  | Text editor for the COSMIC desktop |
+| cosmic-edit | 1.11.0 | [home](https://github.com/pop-os/cosmic-edit) | zenobit |  | Text editor for the COSMIC desktop |
 | cosmic-files | 1.11.0 | [home](https://github.com/pop-os/cosmic-files) | zenobit |  | File manager for the COSMIC desktop environment |
-| cosmic-greeter | 1.10.0 | [home](https://github.com/pop-os/cosmic-greeter) | zenobit |  | COSMIC greeter for greetd |
-| cosmic-icons | 1.10.0 | [home](https://github.com/pop-os/cosmic-icons) | zenobit |  | System76 Cosmic icon theme for Linux |
+| cosmic-greeter | 1.11.0 | [home](https://github.com/pop-os/cosmic-greeter) | zenobit |  | COSMIC greeter for greetd |
+| cosmic-icons | 1.11.0 | [home](https://github.com/pop-os/cosmic-icons) | zenobit |  | System76 Cosmic icon theme for Linux |
 | cosmic-idle | 1.11.0 | [home](https://github.com/pop-os/cosmic-idle) | zenobit |  | Idle daemon for the COSMIC desktop |
 | cosmic-initial-setup | 1.11.0 | [home](https://github.com/pop-os/cosmic-initial-setup) | zenobit |  | Initial setup for the COSMIC desktop |
 | cosmic-launcher | 1.11.0 | [home](https://github.com/pop-os/cosmic-launcher) | zenobit |  | Layer Shell frontend for pop-launcher |
-| cosmic-monitor | 1.10.0 | [home](https://github.com/pop-os/cosmic-monitor) | zenobit |  | System monitor for the COSMIC desktop |
+| cosmic-monitor | 1.11.0 | [home](https://github.com/pop-os/cosmic-monitor) | zenobit |  | System monitor for the COSMIC desktop |
 | cosmic-notifications | 1.11.0 | [home](https://github.com/pop-os/cosmic-notifications) | zenobit |  | Layer Shell notifications daemon for the COSMIC desktop |
-| cosmic-osd | 1.10.0 | [home](https://github.com/pop-os/cosmic-osd) | zenobit |  | On-Screen Display daemon for the COSMIC desktop |
+| cosmic-osd | 1.11.0 | [home](https://github.com/pop-os/cosmic-osd) | zenobit |  | On-Screen Display daemon for the COSMIC desktop |
 | cosmic-osk | 1.11.0 | [home](https://github.com/pop-os/cosmic-osk) | zenobit |  | COSMIC On-Screen Keyboard |
 | cosmic-panel | 1.11.0 | [home](https://github.com/pop-os/cosmic-panel) | zenobit |  | COSMIC applet for creating panels and docks |
-| cosmic-player | 1.10.0 | [home](https://github.com/pop-os/cosmic-player) | zenobit |  | Media player for the COSMIC desktop |
+| cosmic-player | 1.11.0 | [home](https://github.com/pop-os/cosmic-player) | zenobit |  | Media player for the COSMIC desktop |
 | cosmic-randr | 1.11.0 | [home](https://github.com/pop-os/cosmic-randr) | zenobit |  | Library and utility for displaying and configuring Wayland outputs |
-| cosmic-screenshot | 1.10.0 | [home](https://github.com/pop-os/cosmic-screenshot) | zenobit |  | Utility for capturing screenshots via XDG Desktop Portal |
+| cosmic-screenshot | 1.11.0 | [home](https://github.com/pop-os/cosmic-screenshot) | zenobit |  | Utility for capturing screenshots via XDG Desktop Portal |
 | cosmic-session | 1.11.0 | [home](https://github.com/pop-os/cosmic-session) | zenobit |  | Session manager for the COSMIC desktop environment |
-| cosmic-settings | 1.10.0 | [home](https://github.com/pop-os/cosmic-settings) | zenobit |  | Settings application for the COSMIC desktop environment |
+| cosmic-settings | 1.11.0 | [home](https://github.com/pop-os/cosmic-settings) | zenobit |  | Settings application for the COSMIC desktop environment |
 | cosmic-settings-daemon | 1.11.0 | [home](https://github.com/pop-os/cosmic-settings-daemon) | zenobit |  | Settings daemon for the COSMIC desktop environment |
 | cosmic-sound-theme | 1.11.0 | [home](https://github.com/pop-os/cosmic-sound-theme) | zenobit |  | Sound theme for the COSMIC desktop environment |
-| cosmic-store | 1.10.0 | [home](https://github.com/pop-os/cosmic-store) | zenobit |  | Cosmic App Store |
+| cosmic-store | 1.11.0 | [home](https://github.com/pop-os/cosmic-store) | zenobit |  | Cosmic App Store |
 | cosmic-term | 1.11.0 | [home](https://github.com/pop-os/cosmic-term) | zenobit |  | COSMIC terminal emulator |
 | cosmic-tweaks | 0.2.5 | [home](https://github.com/cosmic-utils/cosmic-tweaks) | Bella109 | x86_64 | Tweaks for COSMIC |
 | cosmic-viewer | 1.10.0 | [home](https://github.com/pop-os/cosmic-viewer) | zenobit |  | COSMIC Image Viewer |
 | cosmic-wallpapers | 1.11.0 | [home](https://github.com/pop-os/cosmic-wallpapers) | zenobit |  | Wallpapers for the COSMIC Desktop Environment |
-| cosmic-workspaces-epoch | 1.10.0 | [home](https://github.com/pop-os/cosmic-workspaces-epoch) | zenobit |  | COSMIC workspaces |
+| cosmic-workspaces-epoch | 1.11.0 | [home](https://github.com/pop-os/cosmic-workspaces-epoch) | zenobit |  | COSMIC workspaces |
 | CRC-black-hole | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-brgvos | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-brgvos-testing | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |

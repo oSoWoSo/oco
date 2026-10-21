@@ -171,7 +171,7 @@ Create PR
 | CRC-xlibre | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | crush | 0.98.1 | [home](https://github.com/charmbracelet/crush) | zenobit |  | Glamourous AI coding agent for your favourite terminal |
 | cwal | 0.10.1 | [home](https://github.com/nitinbhat972/cwal) | zenobit |  | Blazing-fast pywal-like color palette generator written in C |
-| dankcalendar | 1.6.1 | [home](https://github.com/AvengeMedia/dankcalendar) | zenobit |  | Calendar app for the Dank Linux desktop (Local, Google, CalDAV, iCloud) |
+| dankcalendar | 2.0.0 | [home](https://github.com/duxlabs-dev/dux-calendar) | zenobit |  | Calendar app that brings your calendars together in one place |
 | DankMaterialShell | 1.6.3 | [home](https://github.com/AvengeMedia/DankMaterialShell) | zenobit |  | Desktop shell for wayland compositors built with Quickshell & GO |
 | dashy | 4.8.7 | [home](https://dashy.to) | zenobit |  | Feature-rich, self-hostable dashboard for your services |
 | default-cursors | 1 | [home](https://www.voidlinux.org) | zenobit |  | Default cursor set |
@@ -187,6 +187,7 @@ Create PR
 | dragonfly-reverb-vst | 3.2.10 | [home](https://michaelwillis.github.io/dragonfly-reverb) | Trve_AY |  | Collection of reverbs |
 | dragonfly-reverb-vst3 | 3.2.10 | [home](https://michaelwillis.github.io/dragonfly-reverb) | Trve_AY |  | Collection of reverbs |
 | drako | 0.4.2 | [home](https://github.com/lucky7xz/drako) | zenobit |  | Grid-based, customizable TUI-Deck launcher |
+| dux-calendar | 2.0.0 | [home](https://github.com/duxlabs-dev/dux-calendar) | zenobit |  | Calendar app that brings your calendars together in one place |
 | dux-gop | 2.0.0 | [home](https://github.com/duxlabs-dev/dux-gop) | zenobit |  | API and CLI for system and process monitoring from Dux Labs |
 | easybashgui | 15.0.2 | [home](https://github.com/BashGui/easybashgui) | zenobit |  | Bash functions library that aims to give simple GUI functions |
 | faugus-launcher | 2.5.0.1 | [home](https://github.com/Faugus/faugus-launcher) | zenobit |  | Simple and lightweight app for running Windows games using UMU-Launcher |

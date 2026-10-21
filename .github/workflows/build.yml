@@ -107,7 +107,6 @@ on:
         - cosmic-workspaces-epoch
         - crush
         - cwal
-        - dankcalendar
         - DankMaterialShell
         - dashy
         - default-cursors
@@ -117,6 +116,7 @@ on:
         - distrobox
         - dragonfly-reverb
         - drako
+        - dux-calendar
         - dux-gop
         - easybashgui
         - faugus-launcher

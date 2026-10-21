@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+import fnmatch
 import hashlib
 import json
 import os
@@ -86,15 +87,18 @@ def check_pr(pr: dict, files: list, *, repo: str, plan: dict, allow_merged: bool
 
     require(pr["changed_files"] == len(files), "PR file list incomplete (pagination) or changed")
     paths = {item["filename"] for item in files}
-    template_paths = [path for path in paths if re.fullmatch(r"srcpkgs/[^/]+/template", path)]
-    require(len(template_paths) == 1, "Autobump PR must modify exactly one package template")
-    package = template_paths[0].split("/")[1]
-    require(head_ref.startswith(f"autobump/{package}-"), "Package name differs from autobump branch")
-    require(paths <= {"README.md", template_paths[0]}, "Unexpected modified files in autobump PR")
+    template_paths = sorted(path for path in paths if re.fullmatch(r"srcpkgs/[^/]+/template", path))
+    require(bool(template_paths), "Autobump PR must modify at least one package template")
+    packages = [path.split("/")[1] for path in template_paths]
+    require(len(set(packages)) == len(packages), "Duplicate package template in PR file list")
+    require(any(head_ref.startswith(f"autobump/{package}-") for package in packages),
+            "Autobump branch target is not among the changed packages")
+    require(paths <= {"README.md", *template_paths}, "Unexpected modified files in autobump PR")
     require(all(item["status"] == "modified" for item in files), "Unexpected added/deleted/renamed files")
-    require(plan["packages"].split() == [package], "Build plan does not match changed package")
+    require(set(plan["packages"].split()) == set(packages),
+            "Build plan does not match the changed packages")
     require(not plan.get("removed", "").strip(), "Autobump PR unexpectedly removes packages")
-    return package
+    return packages
 
 
 def template_version(repo: str, package: str, head_sha: str, token: str) -> str:
@@ -138,9 +142,49 @@ def check_run(event: dict, plan: dict, repo: str):
     require(bool(HEX_SHA.fullmatch(plan["base_sha"])), "Invalid PR base SHA")
 
 
-def stage(artifacts: Path, staging: Path, plan: dict, target_package: str, expected_version: str):
-    require(bool(PACKAGE_NAME.fullmatch(target_package)), "Invalid autobump target package")
-    require(bool(RESULT_VERSION.fullmatch(expected_version)), "Invalid expected autobump version")
+def package_arch_patterns(templates: Path, package: str) -> list[str]:
+    """Return the architectures a template is built for.
+
+    A package with an `archs=` restriction is skipped by the build on the
+    other architectures, so its build result says "skip" there. The
+    patterns are read from the trusted checkout, which holds the same
+    `archs=` the build used.
+    """
+    template = templates / package / "template"
+    if not template.is_file():
+        return []
+    for line in template.read_text(encoding="utf-8", errors="replace").splitlines():
+        if line.startswith("archs="):
+            value = line.split("=", 1)[1].strip().strip('"').strip("'")
+            return value.split()
+    return []
+
+
+def arch_matches(patterns: list[str], target: str) -> bool:
+    """Return whether a package is built for an architecture.
+
+    Mirrors pkg_arch_ok() in src/pkg-helpers.sh: a pattern prefixed with
+    "~" excludes the architecture, and a list that only excludes leaves
+    every other architecture in.
+    """
+    if not patterns:
+        return True
+    last = ""
+    for pattern in patterns:
+        last = pattern
+        excluded = pattern.startswith("~")
+        candidate = pattern[1:] if excluded else pattern
+        if fnmatch.fnmatchcase(target, candidate):
+            return not excluded
+    return last.startswith("~")
+
+
+def stage(artifacts: Path, staging: Path, plan: dict, expected_versions: dict[str, str],
+          templates: Path):
+    require(bool(expected_versions), "No changed package versions supplied")
+    for package, version in expected_versions.items():
+        require(bool(PACKAGE_NAME.fullmatch(package)), "Invalid changed package")
+        require(bool(RESULT_VERSION.fullmatch(version)), f"Invalid expected version for {package}")
     matrix = plan["matrix"]
     configs = matrix["config"]
     require(isinstance(configs, list) and bool(configs), "Empty build matrix")
@@ -159,7 +203,8 @@ def stage(artifacts: Path, staging: Path, plan: dict, target_package: str, expec
     staging.mkdir(parents=True, exist_ok=True)
     paths_by_arch = {}
     results_by_arch = {}
-    target_versions = {}
+    package_versions: dict[str, dict[str, str]] = {package: {} for package in expected_versions}
+    package_skipped: dict[str, set[str]] = {package: set() for package in expected_versions}
     count = 0
     for artifact_name in sorted(expected):
         folder = artifacts / artifact_name
@@ -201,7 +246,8 @@ def stage(artifacts: Path, staging: Path, plan: dict, target_package: str, expec
         expected_digest = entry.get("results_sha256", "")
         require(bool(re.fullmatch(r"[a-f0-9]{64}", expected_digest)), "Invalid result checksum")
         require(hash_file(results) == expected_digest, "Result checksum mismatch")
-        target_source_rows = 0
+        source_rows: dict[str, str] = {}
+        skipped_here: set[str] = set()
         validated_rows = []
         source_ok_rows = set()
         for line in results.read_text(encoding="utf-8").splitlines():
@@ -223,31 +269,47 @@ def stage(artifacts: Path, staging: Path, plan: dict, target_package: str, expec
                         "Invalid source template in binary result row")
                 validated_rows.append(line)
                 continue
-            if package_name != target_package:
+            if package_name not in expected_versions:
                 continue
-            target_source_rows += 1
-            require(target_source_rows == 1,
-                    f"Duplicate autobump target source result for {target_package}")
-            require(status == "ok", f"Autobump target {target_package} build status is {status}")
-            require(version == expected_version,
-                    f"Autobump target {target_package} reported {version}, expected {expected_version}")
-            target_versions[artifact_name] = version
+            require(package_name not in source_rows,
+                    f"Duplicate autobump source result for {package_name}")
+            if status == "skip":
+                # The package is not built for this architecture. That is
+                # only allowed when the template itself says so.
+                patterns = package_arch_patterns(templates, package_name)
+                require(bool(patterns) and not arch_matches(patterns, arch),
+                        f"Autobump package {package_name} was skipped on {arch} but is built for it")
+                package_skipped[package_name].add(artifact_name)
+                skipped_here.add(package_name)
+                continue
+            require(status == "ok", f"Autobump package {package_name} build status is {status}")
+            require(version == expected_versions[package_name],
+                    f"Autobump package {package_name} reported {version}, "
+                    f"expected {expected_versions[package_name]}")
+            source_rows[package_name] = version
         for line in validated_rows:
             fields = line.split("\t")
             if len(fields) == 4:
                 require((fields[3], fields[1]) in source_ok_rows,
                         f"Binary result {fields[0]} lacks a matching successful source result")
-        require(target_source_rows == 1,
-                f"Missing autobump target source result for {artifact_name}")
+        missing = set(expected_versions) - set(source_rows) - skipped_here
+        require(not missing,
+                f"Missing autobump source results for {artifact_name}: {sorted(missing)}")
+        for package, version in source_rows.items():
+            package_versions[package][artifact_name] = version
         results_by_arch.setdefault(arch, []).extend(validated_rows)
         require({p.name for p in folder.iterdir()} == {"packages", "manifest.json", "results.tsv"},
                 "Unexpected content inside binary artifact")
     require(count > 0, "No new binaries were staged")
-    require(set(target_versions) == expected,
-            f"Missing autobump target result for matrix builds: {sorted(expected - set(target_versions))}")
-    versions = set(target_versions.values())
-    require(len(versions) == 1,
-            f"Conflicting autobump target versions across matrix builds: {sorted(versions)}")
+    for package, versions in package_versions.items():
+        covered = set(versions) | package_skipped[package]
+        missing = expected - covered
+        require(not missing,
+                f"Missing {package} source result for matrix builds: {sorted(missing)}")
+        require(bool(versions), f"{package} was not built for any architecture")
+        distinct = set(versions.values())
+        require(distinct == {expected_versions[package]},
+                f"Conflicting {package} versions across matrix builds: {sorted(distinct)}")
     for arch, rows in results_by_arch.items():
         target = staging / "results" / f"build-results-{arch}"
         target.mkdir(parents=True, exist_ok=True)
@@ -272,12 +334,15 @@ def prepare(args):
     token = api_token()
     pr = github_api(repo, f"pulls/{pr_number}", token)
     files = github_api(repo, f"pulls/{pr_number}/files?per_page=100", token)
-    package = check_pr(pr, files, repo=repo, plan=plan, allow_merged=True)
-    expected_version = template_version(repo, package, plan["head_sha"], token)
-    count = stage(args.artifacts, args.staging, plan, package, expected_version)
+    packages = check_pr(pr, files, repo=repo, plan=plan, allow_merged=True)
+    expected_versions = {
+        package: template_version(repo, package, plan["head_sha"], token)
+        for package in packages
+    }
+    count = stage(args.artifacts, args.staging, plan, expected_versions, args.templates)
     info = dict(plan)
-    info["package"] = package
-    info["version"] = expected_version
+    info["changed_packages"] = packages
+    info["versions"] = expected_versions
     (args.staging / "release-info.json").write_text(
         json.dumps(info, sort_keys=True, indent=2) + "\n", encoding="utf-8"
     )
@@ -285,8 +350,13 @@ def prepare(args):
 
 
 def merge_commit_message(info: dict) -> tuple[str, str]:
-    title = f"{info['package']} {info['version']}"
+    packages = info["changed_packages"]
+    versions = info["versions"]
+    title = f"{packages[0]} {versions[packages[0]]}"
+    if len(packages) > 1:
+        title += f" + {len(packages) - 1} more"
     body = (
+        f"Packages: {', '.join(packages)}\n"
         f"OCO-Autobump-Run: {info['run_id']}\n"
         f"OCO-Autobump-Head: {info['head_sha']}"
     )
@@ -337,6 +407,12 @@ def main():
     p.add_argument("--artifacts", type=Path)
     p.add_argument("--staging", required=True, type=Path)
     p.add_argument("--repo", required=True)
+    p.add_argument(
+        "--templates",
+        type=Path,
+        default=Path(__file__).resolve().parents[1] / "srcpkgs",
+        help="trusted srcpkgs directory; used to read the per-package archs= restriction",
+    )
     args = p.parse_args()
     require(bool(re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", args.repo)), "Invalid repo")
     if args.operation == "prepare":

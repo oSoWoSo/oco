@@ -3,7 +3,7 @@
 #
 # Bump a template to <newversion> and refresh its checksums.
 #
-# Usage: bump-template.sh <pkgname> <newversion>
+# Usage: bump-template.sh <pkgname> <newversion> [repo-root]
 #
 # This is the xgensum subset the autobump whitelist needs: the templates in
 # src/autobump-pkgs carry plain sha256 digests (no checksum_type), so the
@@ -19,9 +19,9 @@ set -euo pipefail
 
 RC_ERROR=2
 
-pkg=${1:?usage: bump-template.sh <pkgname> <newversion>}
-new=${2:?usage: bump-template.sh <pkgname> <newversion>}
-root=$(git rev-parse --show-toplevel)
+pkg=${1:?usage: bump-template.sh <pkgname> <newversion> [repo-root]}
+new=${2:?usage: bump-template.sh <pkgname> <newversion> [repo-root]}
+root=${3:-$(git rev-parse --show-toplevel)}
 
 cd "$root"
 

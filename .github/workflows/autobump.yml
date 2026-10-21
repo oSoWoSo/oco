@@ -127,13 +127,9 @@ jobs:
               handled=true
             fi
           else
-            existing=$(gh api "repos/${GH_REPO}/pulls?state=open&per_page=100" \
-              --jq ".[] | select(.head.ref | startswith(\"autobump/${TEMPLATE}-\")) | .number" |
-              sed -n '1p')
-            if [ -n "$existing" ]; then
-              echo "Autobump PR #$existing is already open"
-              handled=true
-            fi
+            # The open-pull-request check needs the batch plan, so it runs
+            # in its own step once the plan is known.
+            :
           fi
 
           echo "handled=$handled" >>"$GITHUB_OUTPUT"
@@ -161,48 +157,93 @@ jobs:
             fi
           fi
 
-      - name: Detect newer version
-        id: detect
+      - name: Plan the dependency batch
+        id: plan
         if: steps.whitelist.outputs.in_list == 'true'
-        timeout-minutes: 10
+        timeout-minutes: 30
         env:
           GH_TOKEN: ${{ secrets.BOT }}
+          FORCE: ${{ inputs.force }}
         run: |
           set -euo pipefail
 
-          err=$(mktemp)
-          set +e
-          out=$(.github/scripts/detect-update.sh "$TEMPLATE" "$GITHUB_WORKSPACE" 2>"$err")
-          rc=$?
-          set -e
+          # The batch is the connected component of the target in the
+          # template dependency graph: every package that has a newer
+          # upstream release is bumped, and every package that depends on a
+          # bumped one gets a revision bump.
+          plan="$RUNNER_TEMP/autobump-plan.tsv"
+          args=(plan "$TEMPLATE" --output "$plan")
+          if [ "$FORCE" = "true" ]; then args+=(--force); fi
+          .github/scripts/autobump-batch.py "${args[@]}"
 
-          cat "$err"
-          if [ "$rc" -ge 2 ]; then
-            echo "::error::detection failed for $TEMPLATE (rc=$rc)"
-            exit 1
-          fi
-
-          if [ -z "$out" ]; then
-            echo "new=" >>"$GITHUB_OUTPUT"
-            echo "$TEMPLATE is up to date"
+          if [ ! -s "$plan" ]; then
+            echo "bumped=false" >>"$GITHUB_OUTPUT"
+            echo "No newer version found in the dependency component of $TEMPLATE"
             exit 0
           fi
 
-          read -r _pkg _old new <<<"$out"
-          echo "new=$new" >>"$GITHUB_OUTPUT"
-          echo "$TEMPLATE -> $new"
+          echo "bumped=true" >>"$GITHUB_OUTPUT"
+          echo "packages=$(cut -f1 "$plan" | paste -sd' ' -)" >>"$GITHUB_OUTPUT"
+          echo "count=$(cut -f1 "$plan" | wc -l)" >>"$GITHUB_OUTPUT"
 
-      - name: Bump template
-        id: bump
-        if: steps.whitelist.outputs.in_list == 'true' && steps.detect.outputs.new != ''
-        timeout-minutes: 20
+          # The branch is named after the target and the version it moves to.
+          # A target that only gets a revision bump has no new version, so
+          # the first version of the batch names the branch instead.
+          version=$(awk -F '\t' -v pkg="$TEMPLATE" '$1 == pkg { print $2; exit }' "$plan")
+          if [ -z "$version" ]; then
+            version=$(awk -F '\t' '$3 == "version" { print $2; exit }' "$plan")
+          fi
+          [ -n "$version" ] || version="revbump"
+          echo "version=$version" >>"$GITHUB_OUTPUT"
+
+      - name: Skip when the batch is already open
+        id: existing
+        if: steps.marker.outputs.handled == 'false' && steps.plan.outputs.bumped == 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT }}
-          NEW_VERSION: ${{ steps.detect.outputs.new }}
         run: |
           set -euo pipefail
 
-          .github/scripts/bump-template.sh "$TEMPLATE" "$NEW_VERSION"
+          # A batch covers every package of the component, so an open pull
+          # request that touches any of them already carries these updates.
+          # The comparison is on the changed templates, not on the branch
+          # name: the branch is named after one package of the batch.
+          existing=""
+          existing_number=""
+          while IFS=$'\t' read -r number _ref; do
+            [ -n "$number" ] || continue
+            files=$(gh api "repos/${GH_REPO}/pulls/${number}/files?per_page=100" \
+              --jq '.[].filename')
+            while IFS=$'\t' read -r package _version _kind _order; do
+              [ -n "$package" ] || continue
+              if printf '%s\n' "$files" | grep -qxF "srcpkgs/$package/template"; then
+                existing="autobump batch"
+                existing_number="$number"
+                break
+              fi
+            done <"$RUNNER_TEMP/autobump-plan.tsv"
+            [ -n "$existing_number" ] && break
+          done <<<"$(gh api "repos/${GH_REPO}/pulls?state=open&per_page=100" \
+            --jq '.[] | select(.head.ref | startswith("autobump/")) | "\(.number)\t\(.head.ref)"')"
+
+          if [ -n "$existing_number" ]; then
+            echo "::notice::the batch is already covered by the open pull request #${existing_number}"
+            echo "number=$existing_number" >>"$GITHUB_OUTPUT"
+            echo "handled=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "handled=false" >>"$GITHUB_OUTPUT"
+          fi
+
+      - name: Apply the batch
+        id: bump
+        if: steps.whitelist.outputs.in_list == 'true' && steps.plan.outputs.bumped == 'true'
+        timeout-minutes: 30
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
+        run: |
+          set -euo pipefail
+
+          .github/scripts/autobump-batch.py apply --plan "$RUNNER_TEMP/autobump-plan.tsv"
 
           version=$(sed -n 's|^version=||p' "srcpkgs/$TEMPLATE/template" | head -1 | tr -d '"')
           echo "version=$version" >>"$GITHUB_OUTPUT"
@@ -212,60 +253,85 @@ jobs:
         id: osv
         if: steps.bump.outputs.bumped == 'true'
         continue-on-error: true
-        env:
-          VERSION: ${{ steps.bump.outputs.version }}
         run: |
           set -euo pipefail
 
-          python3 .github/scripts/osv-advisory.py "$TEMPLATE" "$VERSION" --all-upstream \
-            --mapping .github/osv-identities.json \
-            --output "$RUNNER_TEMP/osv-report.md"
+          # Every package that moved to a new upstream version is checked;
+          # the revision-only bumps carry no new upstream code.
+          : >"$RUNNER_TEMP/osv-report.md"
+          while IFS=$'\t' read -r package version kind _order; do
+            [ -n "$package" ] || continue
+            [ "$kind" = "version" ] || continue
+            report="$RUNNER_TEMP/osv-$package.md"
+            if ! python3 .github/scripts/osv-advisory.py "$package" "$version" --all-upstream \
+              --mapping .github/osv-identities.json \
+              --output "$report"; then
+              printf '### OSV advisory check: error\n\n**ERROR:** Advisory report for `%s` could not be generated; no clean result is implied.\n' \
+                "$package" >>"$RUNNER_TEMP/osv-report.md"
+              continue
+            fi
+            cat "$report" >>"$RUNNER_TEMP/osv-report.md"
+            printf '\n' >>"$RUNNER_TEMP/osv-report.md"
+          done <"$RUNNER_TEMP/autobump-plan.tsv"
 
       - name: Nothing to bump
-        if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped != 'true'
-        env:
-          NEW_VERSION: ${{ steps.detect.outputs.new }}
+        if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.plan.outputs.bumped != 'true'
         run: |
           set -euo pipefail
 
-          detail=""
-          if [ -n "$NEW_VERSION" ]; then
-            detail="Already at $NEW_VERSION."
-          else
-            detail="No newer version found."
-          fi
+          echo "No newer version found in the dependency component of $TEMPLATE"
 
       - name: Create branch + push
         id: branch
-        if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
-          VERSION: ${{ steps.bump.outputs.version }}
+          VERSION: ${{ steps.plan.outputs.version }}
         run: |
           set -euo pipefail
 
           BRANCH="autobump/${TEMPLATE}-${VERSION}"
-          TPL="srcpkgs/$TEMPLATE/template"
+          plan="$RUNNER_TEMP/autobump-plan.tsv"
+          snapshot="$RUNNER_TEMP/autobump-templates"
 
           git config user.name "oSoWoSo-bot"
           git config user.email "mail@osowoso.org"
 
-          bumped=$(mktemp)
-          cp "$TPL" "$bumped"
+          # Keep the bumped templates aside: the branch is cut from the
+          # current OCO, so the bump has to be replayed onto it.
+          rm -rf "$snapshot"
+          mkdir -p "$snapshot"
+          while IFS=$'\t' read -r package _version _kind _order; do
+            [ -n "$package" ] || continue
+            mkdir -p "$snapshot/$package"
+            cp "srcpkgs/$package/template" "$snapshot/$package/template"
+          done <"$plan"
 
           git fetch --no-tags --depth=1 origin "+refs/heads/OCO:refs/remotes/origin/OCO"
           git checkout -B "$BRANCH" refs/remotes/origin/OCO
-          cp "$bumped" "$TPL"
 
-          git add "$TPL"
-          if git diff --cached --quiet; then
-            echo "::error::rebase onto OCO left ${TPL} unchanged; nothing to bump"
-            exit 1
-          fi
+          # One commit per package, in dependency order, so the history
+          # reads like the build order and a reviewer can follow it.
+          while IFS=$'\t' read -r package version kind _order; do
+            [ -n "$package" ] || continue
+            tpl="srcpkgs/$package/template"
+            cp "$snapshot/$package/template" "$tpl"
+            git add "$tpl"
+            if git diff --cached --quiet; then
+              echo "::error::rebase onto OCO left ${tpl} unchanged; nothing to bump"
+              exit 1
+            fi
+            if [ "$kind" = "version" ]; then
+              git commit -m "$package $version"
+            else
+              git commit -m "$package: raise revision for updated dependencies"
+            fi
+          done <"$plan"
 
           ./ocoman -u
           git add README.md
-
-          git commit -m "$TEMPLATE $VERSION"
+          if ! git diff --cached --quiet; then
+            git commit -m "CI: update"
+          fi
 
           git push --force "https://x-access-token:${OCO_TOKEN}@github.com/${GH_REPO}.git" "HEAD:${BRANCH}"
 
@@ -275,37 +341,46 @@ jobs:
 
       - name: Open PR
         id: pr
-        if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
           GH_TOKEN: ${{ inputs.automerge && secrets.BOT || secrets.WORKFLOWS }}
           AUTOMERGE: ${{ inputs.automerge }}
         run: |
           set -euo pipefail
 
-          template_url="https://github.com/${GH_REPO}/blob/OCO/srcpkgs/${TEMPLATE}/template"
-          changelog_url=$(awk '
-            /^[[:space:]]*#/ { next }
-            /^[[:space:]]*changelog[[:space:]]*=/ {
-              sub(/^[^=]*=/, "")
-              sub(/^[[:space:]]+/, "")
-              sub(/[[:space:]]+$/, "")
-              if ($0 ~ /^"/) { sub(/^"/, ""); sub(/"[[:space:]]*(#.*)?$/, "") }
-              else if ($0 ~ /^\047/) { sub(/^\047/, ""); sub(/\047[[:space:]]*(#.*)?$/, "") }
-              else sub(/[[:space:]]+#.*/, "")
-              print
-              exit
-            }
-          ' "srcpkgs/$TEMPLATE/template")
+          plan="$RUNNER_TEMP/autobump-plan.tsv"
 
-          printf '**%s** %s\n\n**Template:** [srcpkgs/%s/template](%s)' \
-            "$TEMPLATE" "$VERSION" "$TEMPLATE" "$template_url" >"$RUNNER_TEMP/pr-body.md"
-          if [ -n "$changelog_url" ]; then
-            printf '\n\n**Release notes:** [%s](%s)' "$VERSION" "$changelog_url" >>"$RUNNER_TEMP/pr-body.md"
-          fi
+          printf '### Packages\n\n' >"$RUNNER_TEMP/pr-body.md"
+          printf '| package | change | version |\n|:-------|:-------|:-------|\n' \
+            >>"$RUNNER_TEMP/pr-body.md"
+          while IFS=$'\t' read -r package version kind _order; do
+            [ -n "$package" ] || continue
+            template_url="https://github.com/${GH_REPO}/blob/OCO/srcpkgs/${package}/template"
+            if [ "$kind" = "version" ]; then
+              printf '| [`%s`](%s) | version | %s |\n' \
+                "$package" "$template_url" "$version" >>"$RUNNER_TEMP/pr-body.md"
+            else
+              printf '| [`%s`](%s) | revision | unchanged |\n' \
+                "$package" "$template_url" >>"$RUNNER_TEMP/pr-body.md"
+            fi
+          done <"$plan"
+
+          printf '\n### Build order\n\n' >>"$RUNNER_TEMP/pr-body.md"
+          while IFS=$'\t' read -r package _version _kind order; do
+            [ -n "$package" ] || continue
+            printf '%s. `%s`\n' "$((order + 1))" "$package" >>"$RUNNER_TEMP/pr-body.md"
+          done <"$plan"
+
+          printf '\nThe revision-only bumps rebuild the packages that depend on a\n' \
+            >>"$RUNNER_TEMP/pr-body.md"
+          printf 'changed package, so the repository stops serving binaries linked\n' \
+            >>"$RUNNER_TEMP/pr-body.md"
+          printf 'against the old dependency.\n' >>"$RUNNER_TEMP/pr-body.md"
+
           if [ -n "$ISSUE_NUMBER" ]; then
-            printf '\n\nCloses #%s' "$ISSUE_NUMBER" >>"$RUNNER_TEMP/pr-body.md"
+            printf '\nCloses #%s\n' "$ISSUE_NUMBER" >>"$RUNNER_TEMP/pr-body.md"
           fi
-          printf '\n\n' >>"$RUNNER_TEMP/pr-body.md"
+          printf '\n' >>"$RUNNER_TEMP/pr-body.md"
           if [ -s "$RUNNER_TEMP/osv-report.md" ]; then
             cat "$RUNNER_TEMP/osv-report.md" >>"$RUNNER_TEMP/pr-body.md"
           else
@@ -327,9 +402,15 @@ jobs:
             exit 0
           fi
 
+          count=$(wc -l <"$plan")
+          title="${TEMPLATE} ${VERSION}"
+          if [ "$count" -gt 1 ]; then
+            title="$title + $((count - 1)) more"
+          fi
+
           number=$(gh api "repos/${GH_REPO}/pulls" \
             --method POST \
-            -f title="${TEMPLATE} ${VERSION}" \
+            -f title="$title" \
             -f head="$BRANCH" \
             -f base=OCO \
             -F body=@"$RUNNER_TEMP/pr-body.md" \
@@ -342,7 +423,7 @@ jobs:
         if: github.event_name != 'workflow_dispatch' && steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
           GH_TOKEN: ${{ secrets.WORKFLOWS }}
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          PR_NUMBER: ${{ steps.pr.outputs.number || steps.existing.outputs.number }}
           REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
         run: |
           set -euo pipefail
@@ -352,8 +433,21 @@ jobs:
               REQUEST_VER=$VERSION
             fi
             [ -n "$REQUEST_VER" ] || { echo "::error::cannot determine version for done marker"; exit 1; }
-            printf 'PR opened: **%s** -> #%s.\n\n<!-- autobump:done for %s -->\n' \
-              "$TEMPLATE" "$PR_NUMBER" "$REQUEST_VER" >"$RUNNER_TEMP/comment.md"
+
+            {
+              printf 'PR opened: **%s** -> #%s.\n\n' "$TEMPLATE" "$PR_NUMBER"
+              printf 'This pull request covers the whole dependency component of `%s`:\n\n' "$TEMPLATE"
+              while IFS=$'\t' read -r package version kind _order; do
+                [ -n "$package" ] || continue
+                if [ "$kind" = "version" ]; then
+                  printf '- `%s` -> %s\n' "$package" "$version"
+                else
+                  printf '- `%s` (revision bump)\n' "$package"
+                fi
+              done <"$RUNNER_TEMP/autobump-plan.tsv"
+              printf '\n<!-- autobump:done for %s -->\n' "$REQUEST_VER"
+            } >"$RUNNER_TEMP/comment.md"
+
             gh api "repos/${GH_REPO}/issues/${ISSUE_NUMBER}/comments" \
               --method POST -F body=@"$RUNNER_TEMP/comment.md" || true
           fi

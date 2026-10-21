@@ -110,44 +110,44 @@ Create PR
 | bulletty | 0.3.0 | [home](https://github.com/crocidb/bulletty) | zenobit |  | Feed reader for the terminal that stores the articles as Markdown |
 | bun | 1.4.2 | [home](https://bun.sh) | zenobit | aarch64* x86_64* | JavaScript runtime, bundler, transpiler, and package manager |
 | bun-bootstrap | 1.4.3 | [home](https://bun.sh) | zenobit | x86_64* aarch64* | Bootstrap package for bun (prebuilt binary) |
-| caerus | 0.7.2 | [home](https://github.com/mendescotta/Caerus) | zenobit |  | Package manager for Void Linux, inspired by Synaptic |
+| caerus | 0.7.3 | [home](https://github.com/mendescotta/Caerus) | zenobit |  | Package manager for Void Linux, inspired by Synaptic |
 | candy-icons-git | 0.11.1 | [home](https://www.opendesktop.org/p/1305251/) | Trve_AY |  | Sweet gradient icons, sweet rainbow folders included |
-| cc-switch | 4.0.15 | [home](https://github.com/farion1231/cc-switch) | zenobit | x86_64* aarch64* | Assistant for Claude Code, Codex, OpenCode, OpenClaw & Gemini CLI |
+| cc-switch | 4.0.17 | [home](https://github.com/farion1231/cc-switch) | zenobit | x86_64* aarch64* | Assistant for Claude Code, Codex, OpenCode, OpenClaw & Gemini CLI |
 | cliamp | 2.3.0 | [home](https://github.com/bjarneo/cliamp) | zenobit |  | Terminal music player inspired by winamp |
 | clitest | 0.5.0 | [home](https://github.com/aureliojargas/clitest) | zenobit |  | Command Line Tester |
 | Community-Repositories-Collection | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | corekeyboard | 5.0.1 | [home](https://gitlab.com/cubocore/coreapps/corekeyboard) | zenobit |  | X11 based virtual keyboard for C Suite |
-| cosign | 3.1.3 | [home](https://github.com/sigstore/cosign) | zenobit |  | Code signing and transparency for containers and binaries |
-| cosmic-applets | 1.10.0 | [home](https://github.com/pop-os/cosmic-applets) | zenobit |  | Applets for COSMIC Panel |
-| cosmic-applibrary | 1.10.0 | [home](https://github.com/pop-os/cosmic-app-library) | zenobit |  | Application launcher for the COSMIC desktop |
-| cosmic-bg | 1.10.0 | [home](https://github.com/pop-os/cosmic-bg) | zenobit |  | COSMIC session service which applies backgrounds to displays |
+| cosign | 3.1.4 | [home](https://github.com/sigstore/cosign) | zenobit |  | Code signing and transparency for containers and binaries |
+| cosmic-applets | 1.11.0 | [home](https://github.com/pop-os/cosmic-applets) | zenobit |  | Applets for COSMIC Panel |
+| cosmic-applibrary | 1.11.0 | [home](https://github.com/pop-os/cosmic-app-library) | zenobit |  | Application launcher for the COSMIC desktop |
+| cosmic-bg | 1.11.0 | [home](https://github.com/pop-os/cosmic-bg) | zenobit |  | COSMIC session service which applies backgrounds to displays |
 | cosmic-comp | 1.10.0 | [home](https://github.com/pop-os/cosmic-comp) | zenobit |  | Compositor for the COSMIC desktop environment |
 | cosmic-desktop-full | 1.10.0 | [home](https://github.com/pop-os/cosmic-epoch) | Bella109 |  | Full Cosmic Desktop |
 | cosmic-desktop-minimal | 1.10.0 | [home](https://github.com/pop-os/cosmic-epoch) | Bella109 |  | Meta Package for COSMIC Desktop |
 | cosmic-edit | 1.10.0 | [home](https://github.com/pop-os/cosmic-edit) | zenobit |  | Text editor for the COSMIC desktop |
-| cosmic-files | 1.10.0 | [home](https://github.com/pop-os/cosmic-files) | zenobit |  | File manager for the COSMIC desktop environment |
+| cosmic-files | 1.11.0 | [home](https://github.com/pop-os/cosmic-files) | zenobit |  | File manager for the COSMIC desktop environment |
 | cosmic-greeter | 1.10.0 | [home](https://github.com/pop-os/cosmic-greeter) | zenobit |  | COSMIC greeter for greetd |
 | cosmic-icons | 1.10.0 | [home](https://github.com/pop-os/cosmic-icons) | zenobit |  | System76 Cosmic icon theme for Linux |
-| cosmic-idle | 1.10.0 | [home](https://github.com/pop-os/cosmic-idle) | zenobit |  | Idle daemon for the COSMIC desktop |
-| cosmic-initial-setup | 1.10.0 | [home](https://github.com/pop-os/cosmic-initial-setup) | zenobit |  | Initial setup for the COSMIC desktop |
-| cosmic-launcher | 1.10.0 | [home](https://github.com/pop-os/cosmic-launcher) | zenobit |  | Layer Shell frontend for pop-launcher |
+| cosmic-idle | 1.11.0 | [home](https://github.com/pop-os/cosmic-idle) | zenobit |  | Idle daemon for the COSMIC desktop |
+| cosmic-initial-setup | 1.11.0 | [home](https://github.com/pop-os/cosmic-initial-setup) | zenobit |  | Initial setup for the COSMIC desktop |
+| cosmic-launcher | 1.11.0 | [home](https://github.com/pop-os/cosmic-launcher) | zenobit |  | Layer Shell frontend for pop-launcher |
 | cosmic-monitor | 1.10.0 | [home](https://github.com/pop-os/cosmic-monitor) | zenobit |  | System monitor for the COSMIC desktop |
-| cosmic-notifications | 1.10.0 | [home](https://github.com/pop-os/cosmic-notifications) | zenobit |  | Layer Shell notifications daemon for the COSMIC desktop |
+| cosmic-notifications | 1.11.0 | [home](https://github.com/pop-os/cosmic-notifications) | zenobit |  | Layer Shell notifications daemon for the COSMIC desktop |
 | cosmic-osd | 1.10.0 | [home](https://github.com/pop-os/cosmic-osd) | zenobit |  | On-Screen Display daemon for the COSMIC desktop |
-| cosmic-osk | 1.10.0 | [home](https://github.com/pop-os/cosmic-osk) | zenobit |  | COSMIC On-Screen Keyboard |
-| cosmic-panel | 1.10.0 | [home](https://github.com/pop-os/cosmic-panel) | zenobit |  | COSMIC applet for creating panels and docks |
+| cosmic-osk | 1.11.0 | [home](https://github.com/pop-os/cosmic-osk) | zenobit |  | COSMIC On-Screen Keyboard |
+| cosmic-panel | 1.11.0 | [home](https://github.com/pop-os/cosmic-panel) | zenobit |  | COSMIC applet for creating panels and docks |
 | cosmic-player | 1.10.0 | [home](https://github.com/pop-os/cosmic-player) | zenobit |  | Media player for the COSMIC desktop |
-| cosmic-randr | 1.10.0 | [home](https://github.com/pop-os/cosmic-randr) | zenobit |  | Library and utility for displaying and configuring Wayland outputs |
+| cosmic-randr | 1.11.0 | [home](https://github.com/pop-os/cosmic-randr) | zenobit |  | Library and utility for displaying and configuring Wayland outputs |
 | cosmic-screenshot | 1.10.0 | [home](https://github.com/pop-os/cosmic-screenshot) | zenobit |  | Utility for capturing screenshots via XDG Desktop Portal |
-| cosmic-session | 1.10.0 | [home](https://github.com/pop-os/cosmic-session) | zenobit |  | Session manager for the COSMIC desktop environment |
+| cosmic-session | 1.11.0 | [home](https://github.com/pop-os/cosmic-session) | zenobit |  | Session manager for the COSMIC desktop environment |
 | cosmic-settings | 1.10.0 | [home](https://github.com/pop-os/cosmic-settings) | zenobit |  | Settings application for the COSMIC desktop environment |
-| cosmic-settings-daemon | 1.10.0 | [home](https://github.com/pop-os/cosmic-settings-daemon) | zenobit |  | Settings daemon for the COSMIC desktop environment |
-| cosmic-sound-theme | 1.10.0 | [home](https://github.com/pop-os/cosmic-sound-theme) | zenobit |  | Sound theme for the COSMIC desktop environment |
+| cosmic-settings-daemon | 1.11.0 | [home](https://github.com/pop-os/cosmic-settings-daemon) | zenobit |  | Settings daemon for the COSMIC desktop environment |
+| cosmic-sound-theme | 1.11.0 | [home](https://github.com/pop-os/cosmic-sound-theme) | zenobit |  | Sound theme for the COSMIC desktop environment |
 | cosmic-store | 1.10.0 | [home](https://github.com/pop-os/cosmic-store) | zenobit |  | Cosmic App Store |
-| cosmic-term | 1.10.0 | [home](https://github.com/pop-os/cosmic-term) | zenobit |  | COSMIC terminal emulator |
+| cosmic-term | 1.11.0 | [home](https://github.com/pop-os/cosmic-term) | zenobit |  | COSMIC terminal emulator |
 | cosmic-tweaks | 0.2.5 | [home](https://github.com/cosmic-utils/cosmic-tweaks) | Bella109 | x86_64 | Tweaks for COSMIC |
 | cosmic-viewer | 1.10.0 | [home](https://github.com/pop-os/cosmic-viewer) | zenobit |  | COSMIC Image Viewer |
-| cosmic-wallpapers | 1.10.0 | [home](https://github.com/pop-os/cosmic-wallpapers) | zenobit |  | Wallpapers for the COSMIC Desktop Environment |
+| cosmic-wallpapers | 1.11.0 | [home](https://github.com/pop-os/cosmic-wallpapers) | zenobit |  | Wallpapers for the COSMIC Desktop Environment |
 | cosmic-workspaces-epoch | 1.10.0 | [home](https://github.com/pop-os/cosmic-workspaces-epoch) | zenobit |  | COSMIC workspaces |
 | CRC-black-hole | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-brgvos | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
@@ -176,7 +176,7 @@ Create PR
 | default-cursors | 1 | [home](https://www.voidlinux.org) | zenobit |  | Default cursor set |
 | desktop-tui | 0.3.2 | [home](https://github.com/Julien-cpsn/desktop-tui) | zenobit |  | Desktop environment without graphics |
 | devedeng | 4.22.1 | [home](https://www.rastersoft.com/programas/devede.html) | Bella109 |  | Create video DVDs and CDs |
-| diskwatch | 0.6.0 | [home](https://www.netwatchlabs.com) | zenobit |  | Single-host, read-only disk diagnostics TUI |
+| diskwatch | 0.7.0 | [home](https://www.netwatchlabs.com) | zenobit |  | Single-host, read-only disk diagnostics TUI |
 | distrobox | 1.8.2.5 | [home](https://distrobox.it/) | zenobit |  | Podman/Docker wrapper to use any linux distribution in your terminal |
 | dragonfly-reverb | 3.2.10 | [home](https://michaelwillis.github.io/dragonfly-reverb) | Trve_AY |  | Collection of reverbs |
 | dragonfly-reverb-clap | 3.2.10 | [home](https://michaelwillis.github.io/dragonfly-reverb) | Trve_AY |  | Collection of reverbs |
@@ -235,7 +235,7 @@ Create PR
 | hyprland-qt-support | 0.1.0 | [home](https://github.com/hyprwm/hyprland-qt-support) | zenobit |  | QML style provider for Hypr* QT apps |
 | hyprlang | 0.6.8 | [home](https://github.com/hyprwm/hyprlang) | zenobit |  | Official implementation library for the hypr config language |
 | hyprlock | 0.9.6 | [home](https://github.com/hyprwm/hyprlock) | zenobit |  | Hyprland's GPU-accelerated screen locking utility |
-| hyprmoncfg | 1.25.0 | [home](https://github.com/crmne/hyprmoncfg/) | zenobit |  | Terminal-first monitor configurator and daemon for Hyprland |
+| hyprmoncfg | 1.25.1 | [home](https://github.com/crmne/hyprmoncfg/) | zenobit |  | Terminal-first monitor configurator and daemon for Hyprland |
 | hyprpaper | 0.8.4 | [home](https://github.com/hyprwm/hyprpaper) | zenobit |  | Fast wallpaper utility for wlroots compositors with IPC controls |
 | hyprpicker | 0.4.7 | [home](https://github.com/hyprwm/hyprpicker) | zenobit |  | Wlroots-compatible Wayland color picker that does not suck |
 | hyprpolkitagent | 0.2.0 | [home](https://github.com/hyprwm/hyprpolkitagent) | zenobit |  | Simple polkit authentication agent for Hyprland, written in QT/QML |
@@ -285,12 +285,12 @@ Create PR
 | nano-syntax-highlighting | 2026.10.01 | [home](https://github.com/galenguyer/nano-syntax-highlighting) | Coolllyn |  | Improved nano syntax highlighting files |
 | nebula-gtk | 1.3.7 | [home](https://github.com/Letdown2491/nebula-gtk) | zenobit |  | GTK frontend for Void Linux's XBPS tooling |
 | noctalia | 5.3.0 | [home](https://noctalia.dev) | Coolllyn |  | Sleek, customizable desktop shell crafted for Wayland |
-| noctalia-greeter | 1.6.0 | [home](https://github.com/noctalia-dev/noctalia-greeter) | Coolllyn |  | Minimal login greeter for greetd matching the Noctalia Shell look |
+| noctalia-greeter | 1.7.0 | [home](https://github.com/noctalia-dev/noctalia-greeter) | Coolllyn |  | Minimal login greeter for greetd matching the Noctalia Shell look |
 | NuvioDesktop | 0.3.8 | [home](https://github.com/blarns/NuvioForLinux) | Bella109 | x86_64* | Multi Media Hub - multiple sources for watching Series, Movies and Anime |
 | nvchecker | 2.22 | [home](https://github.com/lilydjwg/nvchecker) | zenobit |  | New version checker for software releases |
 | nwg-bar | 0.1.6 | [home](https://github.com/nwg-piotr/nwg-bar) | zenobit |  | GTK3-based button bar for wlroots-based compositors |
 | nwg-clipman | 0.2.8 | [home](https://github.com/nwg-piotr/nwg-clipman) | zenobit |  | GTK based GUI for cliphist - nwg-shell clipboard manager |
-| nwg-displays | 0.4.4 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-displays) | zenobit |  | Intuitive GUI to manage multiple displays for wayland |
+| nwg-displays | 0.5.0 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-displays) | zenobit |  | Intuitive GUI to manage multiple displays for wayland |
 | nwg-dock | 0.4.3 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-dock) | zenobit |  | GTK based dock for sway |
 | nwg-dock-hyprland | 0.4.11 | [home](https://github.com/nwg-piotr/nwg-dock-hyprland) | zenobit |  | GTK3-based dock for Hyprland |
 | nwg-drawer | 0.7.5 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-drawer) | zenobit |  | Application drawer for wlroots-based Wayland compositors |
@@ -311,14 +311,14 @@ Create PR
 | odin2-vst3 | 2.4.1 | [home](https://thewavewarden.com/pages/odin-2) | Trve_AY |  | 24 voice polyphinic synthesizer with modulation and FX |
 | omniroute | 3.8.24 | [home](https://github.com/diegosouzapw/OmniRoute) | zenobit |  | Universal AI gateway with smart routing for multiple LLM providers |
 | opencode | 1.19.3 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
-| opencode2 | 2.0.32 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
+| opencode2 | 2.1.1 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
 | OpenShell | 0.1.2 | [home](https://github.com/NVIDIA/OpenShell) | zenobit |  | OpenShell is the safe, private runtime for autonomous AI agents |
 | patchance | 1.4.0 | [home](https://raysession.tuxfamily.org/) | Trve_AY |  | Jack patchbay GUI |
 | pi | 1.3.0 | [home](https://github.com/earendil-works/pi) | zenobit |  | AI agent toolkit: unified LLM API, agent loop, TUI, coding agent CLI |
 | pinguintv-installer-git | 0.0.0 | [home](https://pinguin-tv.de/installer.html) | Bella109 | x86_64 | New GUI Installer for void |
 | pop-fonts | 0.0.0 | [home](https://github.com/pop-os/fonts) | Bella109 |  | Pop Fonts |
 | pop-icons | 3.5.1 | [home](https://github.com/pop-os/icon-theme) | Bella109 |  | TODO: pop-icons short_desc |
-| pop-launcher | 1.10.0 | [home](https://github.com/pop-os/launcher) | zenobit |  | Modular IPC-based desktop launcher service |
+| pop-launcher | 1.11.0 | [home](https://github.com/pop-os/launcher) | zenobit |  | Modular IPC-based desktop launcher service |
 | pop-sounds-theme | 5.5.1 | [home](https://github.com/pop-os/gtk-theme) | Bella109 |  | Pop sounds theme |
 | proxelar | 0.6.1 | [home](https://github.com/emanuele-em/proxelar) | zenobit |  | Scriptable local traffic workbench |
 | python3-anysqlite | 0.0.5 | [home](https://github.com/karpetrosyan/anysqlite) | zenobit |  | Provides interface to sqlite3 library and supports trio and asyncio |
@@ -367,7 +367,7 @@ Create PR
 | svi | 0.2.2 | [home](https://codeberg.org/LinuxNation/svi) | zenobit |  | Graphical installer for Void Linux, built with GTK4 and Python |
 | svlog | 0.6.3 | [home](https://github.com/pascal-huber/svlog) | Coolllyn |  | Display, filter and follow socklog log files on Void Linux |
 | SysMan | 0.024 | [home](https://codeberg.org/oSoWoSo/SysMan) | zenobit |  | System Manager |
-| syswatch | 0.14.3 | [home](https://www.netwatchlabs.com) | zenobit |  | Single-host system diagnostics TUI |
+| syswatch | 0.14.4 | [home](https://www.netwatchlabs.com) | zenobit |  | Single-host system diagnostics TUI |
 | tdf | 0.5.0 | [home](https://github.com/itsjunetime/tdf) | zenobit |  | TUI PDF viewer |
 | tiki | 0.6.1 | [home](https://github.com/boolean-maybe/tiki) | zenobit |  | Terminal Markdown-based shapeless workflow builder |
 | tls-client | 1.16.0 | [home](https://github.com/bogdanfinn/tls-client) | zenobit |  | Net/http.Client like HTTP Client |
@@ -376,7 +376,7 @@ Create PR
 | tuios | 0.10.1 | [home](https://github.com/Gaurav-Gosain/tuios) | zenobit |  | Terminal UI OS (Terminal Multiplexer) |
 | tuisic | 2.5.2 | [home](https://github.com/Dark-Kernel/tuisic) | zenobit |  | TUI online music streaming application |
 | typobuster | 1.0.0 | [home](https://github.com/nwg-piotr/typobuster) | zenobit |  | Lightweight editor with text transformations and auto-correction |
-| umbriel-git | 0.1.0.20261019 | [home](https://github.com/noctalia-dev/umbriel) | Coolllyn |  | Wayland compositor built on wlroots |
+| umbriel-git | 0.1.0.20261020 | [home](https://github.com/noctalia-dev/umbriel) | Coolllyn |  | Wayland compositor built on wlroots |
 | undelete-btrfs | 1.0 | [home](https://github.com/danthem/undelete-btrfs) | zenobit |  | Undelete files in a BTRFS file system |
 | vbm | 1.0.2 | [home](https://codeberg.org/oSoWoSo/vbm) | zenobit |  | XBPS package management helper for VoidLinux |
 | vibepanel | 0.17.0 | [home](https://github.com/prankstr/vibepanel) | LinuxNation |  | GTK4 panel for Wayland with notifications, OSD, and quick settings |
@@ -392,7 +392,7 @@ Create PR
 | vtm | 2026.10.12 | [home](https://github.com/directvt/vtm) | zenobit |  | Text-based desktop environment |
 | waterfox-bin | 6.7.6 | [home](https://www.waterfox.net) | zenobit | x86_64 aarch64 | Fast and private web browser |
 | wpgtk | 6.7.1 | [home](https://github.com/deviantfero/wpgtk/) | zenobit |  | Colorscheme, wallpaper and template manager for *nix |
-| xdg-desktop-portal-cosmic | 1.10.0 | [home](https://github.com/pop-os/xdg-desktop-portal-cosmic) | zenobit |  | Backend implementation for xdg-desktop-portal for COSMIC |
+| xdg-desktop-portal-cosmic | 1.11.0 | [home](https://github.com/pop-os/xdg-desktop-portal-cosmic) | zenobit |  | Backend implementation for xdg-desktop-portal for COSMIC |
 | xdg-desktop-portal-hyprland | 1.4.1 | [home](https://github.com/hyprwm/xdg-desktop-portal-hyprland) | zenobit |  | Backend of xdg-desktop-portal for Hyprland |
 | xdg-desktop-portal-umbriel-git | 0.1.0.20261019 | [home](https://github.com/noctalia-dev/xdg-desktop-portal-umbriel) | Coolllyn |  | XDG Desktop Portal backend for the Umbriel compositor |
 | xut | 0.4.2 | [home](https://codeberg.org/mobinmob/xut) | mobinmob |  | Work with templates from unofficial repositories |

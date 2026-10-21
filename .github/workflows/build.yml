@@ -107,7 +107,6 @@ on:
         - cosmic-workspaces-epoch
         - crush
         - cwal
-        - dankcalendar
         - DankMaterialShell
         - dashy
         - default-cursors

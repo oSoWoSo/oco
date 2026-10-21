@@ -170,7 +170,7 @@ Create PR
 | CRC-xlibre | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | crush | 0.98.1 | [home](https://github.com/charmbracelet/crush) | zenobit |  | Glamourous AI coding agent for your favourite terminal |
 | cwal | 0.10.1 | [home](https://github.com/nitinbhat972/cwal) | zenobit |  | Blazing-fast pywal-like color palette generator written in C |
-| dankcalendar | 1.6.1 | [home](https://github.com/AvengeMedia/dankcalendar) | zenobit |  | Calendar app for the Dank Linux desktop (Local, Google, CalDAV, iCloud) |
+| dankcalendar | 2.0.0 | [home](https://github.com/AvengeMedia/dankcalendar) | zenobit |  | Calendar app for the Dank Linux desktop (Local, Google, CalDAV, iCloud) |
 | DankMaterialShell | 1.6.3 | [home](https://github.com/AvengeMedia/DankMaterialShell) | zenobit |  | Desktop shell for wayland compositors built with Quickshell & GO |
 | dashy | 4.8.7 | [home](https://dashy.to) | zenobit |  | Feature-rich, self-hostable dashboard for your services |
 | default-cursors | 1 | [home](https://www.voidlinux.org) | zenobit |  | Default cursor set |

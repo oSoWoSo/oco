@@ -58,8 +58,6 @@ cosmic-wallpapers
 cosmic-workspaces-epoch
 crush
 cwal
-dankcalendar
-DankMaterialShell
 dashy
 default-cursors
 desktop-tui
@@ -68,6 +66,8 @@ diskwatch
 distrobox
 dragonfly-reverb
 drako
+dux-calendar
+dux-shell
 easybashgui
 faugus-launcher
 fcitx5-lotus

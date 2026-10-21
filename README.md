@@ -370,7 +370,7 @@ Create PR
 | syswatch | 0.14.4 | [home](https://www.netwatchlabs.com) | zenobit |  | Single-host system diagnostics TUI |
 | tdf | 0.5.0 | [home](https://github.com/itsjunetime/tdf) | zenobit |  | TUI PDF viewer |
 | tiki | 0.6.1 | [home](https://github.com/boolean-maybe/tiki) | zenobit |  | Terminal Markdown-based shapeless workflow builder |
-| tls-client | 1.16.0 | [home](https://github.com/bogdanfinn/tls-client) | zenobit |  | Net/http.Client like HTTP Client |
+| tls-client | 1.17.0 | [home](https://github.com/bogdanfinn/tls-client) | zenobit |  | Net/http.Client like HTTP Client |
 | Trilium | 0.106.0 | [home](https://github.com/TriliumNext/Trilium) | zenobit |  | Build your personal knowledge base with Trilium Notes |
 | tufw | 0.2.8 | [home](https://github.com/peltho/tufw) | zenobit |  | Terminal UI for ufw |
 | tuios | 0.10.1 | [home](https://github.com/Gaurav-Gosain/tuios) | zenobit |  | Terminal UI OS (Terminal Multiplexer) |

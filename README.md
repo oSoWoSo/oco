@@ -118,36 +118,36 @@ Create PR
 | Community-Repositories-Collection | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | corekeyboard | 5.0.1 | [home](https://gitlab.com/cubocore/coreapps/corekeyboard) | zenobit |  | X11 based virtual keyboard for C Suite |
 | cosign | 3.1.4 | [home](https://github.com/sigstore/cosign) | zenobit |  | Code signing and transparency for containers and binaries |
-| cosmic-applets | 1.10.0 | [home](https://github.com/pop-os/cosmic-applets) | zenobit |  | Applets for COSMIC Panel |
-| cosmic-applibrary | 1.10.0 | [home](https://github.com/pop-os/cosmic-app-library) | zenobit |  | Application launcher for the COSMIC desktop |
-| cosmic-bg | 1.10.0 | [home](https://github.com/pop-os/cosmic-bg) | zenobit |  | COSMIC session service which applies backgrounds to displays |
+| cosmic-applets | 1.11.0 | [home](https://github.com/pop-os/cosmic-applets) | zenobit |  | Applets for COSMIC Panel |
+| cosmic-applibrary | 1.11.0 | [home](https://github.com/pop-os/cosmic-app-library) | zenobit |  | Application launcher for the COSMIC desktop |
+| cosmic-bg | 1.11.0 | [home](https://github.com/pop-os/cosmic-bg) | zenobit |  | COSMIC session service which applies backgrounds to displays |
 | cosmic-comp | 1.10.0 | [home](https://github.com/pop-os/cosmic-comp) | zenobit |  | Compositor for the COSMIC desktop environment |
 | cosmic-desktop-full | 1.10.0 | [home](https://github.com/pop-os/cosmic-epoch) | Bella109 |  | Full Cosmic Desktop |
 | cosmic-desktop-minimal | 1.10.0 | [home](https://github.com/pop-os/cosmic-epoch) | Bella109 |  | Meta Package for COSMIC Desktop |
 | cosmic-edit | 1.10.0 | [home](https://github.com/pop-os/cosmic-edit) | zenobit |  | Text editor for the COSMIC desktop |
-| cosmic-files | 1.10.0 | [home](https://github.com/pop-os/cosmic-files) | zenobit |  | File manager for the COSMIC desktop environment |
+| cosmic-files | 1.11.0 | [home](https://github.com/pop-os/cosmic-files) | zenobit |  | File manager for the COSMIC desktop environment |
 | cosmic-greeter | 1.10.0 | [home](https://github.com/pop-os/cosmic-greeter) | zenobit |  | COSMIC greeter for greetd |
 | cosmic-icons | 1.10.0 | [home](https://github.com/pop-os/cosmic-icons) | zenobit |  | System76 Cosmic icon theme for Linux |
-| cosmic-idle | 1.10.0 | [home](https://github.com/pop-os/cosmic-idle) | zenobit |  | Idle daemon for the COSMIC desktop |
+| cosmic-idle | 1.11.0 | [home](https://github.com/pop-os/cosmic-idle) | zenobit |  | Idle daemon for the COSMIC desktop |
 | cosmic-initial-setup | 1.11.0 | [home](https://github.com/pop-os/cosmic-initial-setup) | zenobit |  | Initial setup for the COSMIC desktop |
-| cosmic-launcher | 1.10.0 | [home](https://github.com/pop-os/cosmic-launcher) | zenobit |  | Layer Shell frontend for pop-launcher |
+| cosmic-launcher | 1.11.0 | [home](https://github.com/pop-os/cosmic-launcher) | zenobit |  | Layer Shell frontend for pop-launcher |
 | cosmic-monitor | 1.10.0 | [home](https://github.com/pop-os/cosmic-monitor) | zenobit |  | System monitor for the COSMIC desktop |
-| cosmic-notifications | 1.10.0 | [home](https://github.com/pop-os/cosmic-notifications) | zenobit |  | Layer Shell notifications daemon for the COSMIC desktop |
+| cosmic-notifications | 1.11.0 | [home](https://github.com/pop-os/cosmic-notifications) | zenobit |  | Layer Shell notifications daemon for the COSMIC desktop |
 | cosmic-osd | 1.10.0 | [home](https://github.com/pop-os/cosmic-osd) | zenobit |  | On-Screen Display daemon for the COSMIC desktop |
-| cosmic-osk | 1.10.0 | [home](https://github.com/pop-os/cosmic-osk) | zenobit |  | COSMIC On-Screen Keyboard |
-| cosmic-panel | 1.10.0 | [home](https://github.com/pop-os/cosmic-panel) | zenobit |  | COSMIC applet for creating panels and docks |
+| cosmic-osk | 1.11.0 | [home](https://github.com/pop-os/cosmic-osk) | zenobit |  | COSMIC On-Screen Keyboard |
+| cosmic-panel | 1.11.0 | [home](https://github.com/pop-os/cosmic-panel) | zenobit |  | COSMIC applet for creating panels and docks |
 | cosmic-player | 1.10.0 | [home](https://github.com/pop-os/cosmic-player) | zenobit |  | Media player for the COSMIC desktop |
-| cosmic-randr | 1.10.0 | [home](https://github.com/pop-os/cosmic-randr) | zenobit |  | Library and utility for displaying and configuring Wayland outputs |
+| cosmic-randr | 1.11.0 | [home](https://github.com/pop-os/cosmic-randr) | zenobit |  | Library and utility for displaying and configuring Wayland outputs |
 | cosmic-screenshot | 1.10.0 | [home](https://github.com/pop-os/cosmic-screenshot) | zenobit |  | Utility for capturing screenshots via XDG Desktop Portal |
-| cosmic-session | 1.10.0 | [home](https://github.com/pop-os/cosmic-session) | zenobit |  | Session manager for the COSMIC desktop environment |
+| cosmic-session | 1.11.0 | [home](https://github.com/pop-os/cosmic-session) | zenobit |  | Session manager for the COSMIC desktop environment |
 | cosmic-settings | 1.10.0 | [home](https://github.com/pop-os/cosmic-settings) | zenobit |  | Settings application for the COSMIC desktop environment |
-| cosmic-settings-daemon | 1.10.0 | [home](https://github.com/pop-os/cosmic-settings-daemon) | zenobit |  | Settings daemon for the COSMIC desktop environment |
-| cosmic-sound-theme | 1.10.0 | [home](https://github.com/pop-os/cosmic-sound-theme) | zenobit |  | Sound theme for the COSMIC desktop environment |
+| cosmic-settings-daemon | 1.11.0 | [home](https://github.com/pop-os/cosmic-settings-daemon) | zenobit |  | Settings daemon for the COSMIC desktop environment |
+| cosmic-sound-theme | 1.11.0 | [home](https://github.com/pop-os/cosmic-sound-theme) | zenobit |  | Sound theme for the COSMIC desktop environment |
 | cosmic-store | 1.10.0 | [home](https://github.com/pop-os/cosmic-store) | zenobit |  | Cosmic App Store |
-| cosmic-term | 1.10.0 | [home](https://github.com/pop-os/cosmic-term) | zenobit |  | COSMIC terminal emulator |
+| cosmic-term | 1.11.0 | [home](https://github.com/pop-os/cosmic-term) | zenobit |  | COSMIC terminal emulator |
 | cosmic-tweaks | 0.2.5 | [home](https://github.com/cosmic-utils/cosmic-tweaks) | Bella109 | x86_64 | Tweaks for COSMIC |
 | cosmic-viewer | 1.10.0 | [home](https://github.com/pop-os/cosmic-viewer) | zenobit |  | COSMIC Image Viewer |
-| cosmic-wallpapers | 1.10.0 | [home](https://github.com/pop-os/cosmic-wallpapers) | zenobit |  | Wallpapers for the COSMIC Desktop Environment |
+| cosmic-wallpapers | 1.11.0 | [home](https://github.com/pop-os/cosmic-wallpapers) | zenobit |  | Wallpapers for the COSMIC Desktop Environment |
 | cosmic-workspaces-epoch | 1.10.0 | [home](https://github.com/pop-os/cosmic-workspaces-epoch) | zenobit |  | COSMIC workspaces |
 | CRC-black-hole | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-brgvos | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
@@ -290,7 +290,7 @@ Create PR
 | nvchecker | 2.22 | [home](https://github.com/lilydjwg/nvchecker) | zenobit |  | New version checker for software releases |
 | nwg-bar | 0.1.6 | [home](https://github.com/nwg-piotr/nwg-bar) | zenobit |  | GTK3-based button bar for wlroots-based compositors |
 | nwg-clipman | 0.2.8 | [home](https://github.com/nwg-piotr/nwg-clipman) | zenobit |  | GTK based GUI for cliphist - nwg-shell clipboard manager |
-| nwg-displays | 0.4.4 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-displays) | zenobit |  | Intuitive GUI to manage multiple displays for wayland |
+| nwg-displays | 0.5.0 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-displays) | zenobit |  | Intuitive GUI to manage multiple displays for wayland |
 | nwg-dock | 0.4.3 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-dock) | zenobit |  | GTK based dock for sway |
 | nwg-dock-hyprland | 0.4.11 | [home](https://github.com/nwg-piotr/nwg-dock-hyprland) | zenobit |  | GTK3-based dock for Hyprland |
 | nwg-drawer | 0.7.5 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-drawer) | zenobit |  | Application drawer for wlroots-based Wayland compositors |
@@ -318,7 +318,7 @@ Create PR
 | pinguintv-installer-git | 0.0.0 | [home](https://pinguin-tv.de/installer.html) | Bella109 | x86_64 | New GUI Installer for void |
 | pop-fonts | 0.0.0 | [home](https://github.com/pop-os/fonts) | Bella109 |  | Pop Fonts |
 | pop-icons | 3.5.1 | [home](https://github.com/pop-os/icon-theme) | Bella109 |  | TODO: pop-icons short_desc |
-| pop-launcher | 1.10.0 | [home](https://github.com/pop-os/launcher) | zenobit |  | Modular IPC-based desktop launcher service |
+| pop-launcher | 1.11.0 | [home](https://github.com/pop-os/launcher) | zenobit |  | Modular IPC-based desktop launcher service |
 | pop-sounds-theme | 5.5.1 | [home](https://github.com/pop-os/gtk-theme) | Bella109 |  | Pop sounds theme |
 | proxelar | 0.6.1 | [home](https://github.com/emanuele-em/proxelar) | zenobit |  | Scriptable local traffic workbench |
 | python3-anysqlite | 0.0.5 | [home](https://github.com/karpetrosyan/anysqlite) | zenobit |  | Provides interface to sqlite3 library and supports trio and asyncio |
@@ -392,7 +392,7 @@ Create PR
 | vtm | 2026.10.12 | [home](https://github.com/directvt/vtm) | zenobit |  | Text-based desktop environment |
 | waterfox-bin | 6.7.6 | [home](https://www.waterfox.net) | zenobit | x86_64 aarch64 | Fast and private web browser |
 | wpgtk | 6.7.1 | [home](https://github.com/deviantfero/wpgtk/) | zenobit |  | Colorscheme, wallpaper and template manager for *nix |
-| xdg-desktop-portal-cosmic | 1.10.0 | [home](https://github.com/pop-os/xdg-desktop-portal-cosmic) | zenobit |  | Backend implementation for xdg-desktop-portal for COSMIC |
+| xdg-desktop-portal-cosmic | 1.11.0 | [home](https://github.com/pop-os/xdg-desktop-portal-cosmic) | zenobit |  | Backend implementation for xdg-desktop-portal for COSMIC |
 | xdg-desktop-portal-hyprland | 1.4.1 | [home](https://github.com/hyprwm/xdg-desktop-portal-hyprland) | zenobit |  | Backend of xdg-desktop-portal for Hyprland |
 | xdg-desktop-portal-umbriel-git | 0.1.0.20261019 | [home](https://github.com/noctalia-dev/xdg-desktop-portal-umbriel) | Coolllyn |  | XDG Desktop Portal backend for the Umbriel compositor |
 | xut | 0.4.2 | [home](https://codeberg.org/mobinmob/xut) | mobinmob |  | Work with templates from unofficial repositories |

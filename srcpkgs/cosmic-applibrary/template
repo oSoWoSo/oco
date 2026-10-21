@@ -1,6 +1,6 @@
 # Template file for 'cosmic-applibrary'
 pkgname=cosmic-applibrary
-version=1.10.0
+version=1.11.0
 revision=1
 build_style=cargo
 hostmakedepends="pkg-config just"
@@ -10,7 +10,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="GPL-3.0-only"
 homepage="https://github.com/pop-os/cosmic-app-library"
 distfiles="https://github.com/pop-os/cosmic-app-library/archive/refs/tags/epoch-${version}.tar.gz"
-checksum=43ce4f50c97d2106ac981080d8372e03c50af28660a6737400920ecbc6ce4b39
+checksum=9ce3f012af1f885b0a99c589e77803c8d7fb76cba7a7202030cae19f1ac2dd55
 
 do_install() {
 	just cargo-target-dir="target/${RUST_TARGET}" rootdir="${DESTDIR}" prefix=/usr install

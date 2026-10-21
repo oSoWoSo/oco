@@ -1,6 +1,6 @@
 # Template file for 'cosmic-osd'
 pkgname=cosmic-osd
-version=1.10.0
+version=1.11.0
 revision=1
 build_style=cargo
 hostmakedepends="pkg-config"
@@ -10,4 +10,4 @@ maintainer="zenobit <zen@osowoso.org>"
 license="GPL-3.0-or-later"
 homepage="https://github.com/pop-os/cosmic-osd"
 distfiles="https://github.com/pop-os/cosmic-osd/archive/refs/tags/epoch-${version}.tar.gz"
-checksum=41cd18721bee2c9123a9fb5f8c09617ad0033f5cf688933fff47f6ac28c825c0
+checksum=98f049d10e9746ae9751d10d556eff73b7270d7d99861445ab9171bd140ba416

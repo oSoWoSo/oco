@@ -977,6 +977,18 @@ _cnc_visited=" pkg_guard"
 _check_nocross_chain pkg_guard; assert_rc $? 1
 
 echo
+echo '== Forgejo workflow compatibility =='
+
+# Forgejo ignores the `permissions` key entirely and shows a warning on every
+# affected job (workflow-level or job-level). Grant capabilities with
+# Authorized Integrations instead, so the key must not come back here.
+for _fw in "$SCRIPT_DIR"/.forgejo/workflows/*.yml; do
+	[ -f "$_fw" ] || continue
+	it "no permissions field in ${_fw##*/}"
+	assert_eq "$(grep -c '^[[:space:]]*permissions:' "$_fw"; true)" '0'
+done
+
+echo
 echo '== close-update-issues.py =='
 
 if command -v python3 >/dev/null 2>&1; then

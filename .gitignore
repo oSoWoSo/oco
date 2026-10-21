@@ -111,6 +111,8 @@
 !/srcpkgs/CRC-xlibre
 !/srcpkgs/crush
 !/srcpkgs/cwal
+!/srcpkgs/dankcalendar
+!/srcpkgs/DankMaterialShell
 !/srcpkgs/dashy
 !/srcpkgs/default-cursors
 !/srcpkgs/desktop-tui
@@ -126,7 +128,6 @@
 !/srcpkgs/dragonfly-reverb-vst3
 !/srcpkgs/drako
 !/srcpkgs/dux-calendar
-!/srcpkgs/dux-shell
 !/srcpkgs/easybashgui
 !/srcpkgs/faugus-launcher
 !/srcpkgs/fcitx5-lotus

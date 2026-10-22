@@ -1,0 +1,45 @@
+# Template file for 'dux-files'
+pkgname=dux-files
+version=2.0.0
+revision=1
+build_style=go
+build_helper=qemu
+build_wrksrc="core"
+go_import_path="github.com/duxlabs-dev/dux-files/core"
+go_package="${go_import_path}/cmd/dfiles"
+#go_build_tags="withshell"
+go_ldflags="-X main.Version=${version}"
+depends="quickshell qt6-declarative"
+short_desc="File manager for the Dux Labs desktop"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/duxlabs-dev/dux-files"
+changelog="https://github.com/duxlabs-dev/dux-files/releases"
+distfiles="https://github.com/duxlabs-dev/dux-files/archive/refs/tags/v${version}.tar.gz>dux-files.tar.gz
+ https://github.com/duxlabs-dev/dux-qml-common/archive/refs/tags/v${version}.tar.gz>dux-qml-common.tar.gz"
+checksum="954e6048babf423b6b8ceaf204eb0fbeff7c83dc48bab403fb2bc19561e02335
+ dc08721f6df0fbd7717486e1fd3aa29e0b6ec0c687c68efd6b4576751b0752ca"
+
+post_extract() {
+	cp -r dux-files-${version}/* ./
+	cp -r dux-qml-common-${version} dux-qml-common/
+}
+
+post_install() {
+	# Desktop integration (UI isn't embedded in the binary! QML install?)
+	cd ..
+	vinstall assets/dev.duxlabs.files.desktop 644 usr/share/applications
+	vinstall assets/dev.duxlabs.files.svg 644 usr/share/icons/hicolor/scalable/apps
+	vinstall assets/dev.duxlabs.files.metainfo.xml 644 usr/share/metainfo
+	vinstall assets/dev.duxlabs.files.policy 644 usr/share/polkit-1/actions
+	vinstall assets/dbus/dev.duxlabs.files.FileManager1.service 644 usr/share/dbus-1/services
+	vinstall assets/dbus/org.freedesktop.impl.portal.desktop.dfiles.service 644 usr/share/dbus-1/services
+	vinstall assets/portal/dfiles.portal 644 usr/share/xdg-desktop-portal/portals
+
+	for shell in bash fish zsh; do
+		vtargetrun ${DESTDIR}/usr/bin/dfiles completion ${shell} > ${pkgname}.${shell}
+		vcompletion ${pkgname}.${shell} ${shell}
+	done
+
+	vlicense LICENSE
+}

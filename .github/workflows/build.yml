@@ -116,6 +116,8 @@ on:
         - distrobox
         - dragonfly-reverb
         - drako
+        - dux-calendar
+        - dux-files
         - dux-gop
         - easybashgui
         - faugus-launcher

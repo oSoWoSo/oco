@@ -107,7 +107,6 @@ on:
         - cosmic-workspaces-epoch
         - crush
         - cwal
-        - DankMaterialShell
         - dashy
         - default-cursors
         - desktop-tui
@@ -120,6 +119,7 @@ on:
         - dux-files
         - dux-gop
         - dux-search
+        - dux-shell
         - easybashgui
         - faugus-launcher
         - fcitx5-lotus

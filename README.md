@@ -174,7 +174,7 @@ Create PR
 | crush | 0.98.1 | [home](https://github.com/charmbracelet/crush) | zenobit |  | Glamourous AI coding agent for your favourite terminal |
 | cwal | 0.10.1 | [home](https://github.com/nitinbhat972/cwal) | zenobit |  | Blazing-fast pywal-like color palette generator written in C |
 | dankcalendar | 2.0.0 | [home](https://github.com/duxlabs-dev/dux-calendar) | zenobit |  | Calendar app that brings your calendars together in one place |
-| DankMaterialShell | 1.6.3 | [home](https://github.com/AvengeMedia/DankMaterialShell) | zenobit |  | Desktop shell for wayland compositors built with Quickshell & GO |
+| DankMaterialShell | 2.0.0 | [home](https://duxlabs.dev) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
 | dashy | 4.8.7 | [home](https://dashy.to) | zenobit |  | Feature-rich, self-hostable dashboard for your services |
 | default-cursors | 1 | [home](https://www.voidlinux.org) | zenobit |  | Default cursor set |
 | desktop-tui | 0.3.2 | [home](https://github.com/Julien-cpsn/desktop-tui) | zenobit |  | Desktop environment without graphics |
@@ -193,6 +193,7 @@ Create PR
 | dux-files | 2.0.0 | [home](https://github.com/duxlabs-dev/dux-files) | zenobit |  | File manager for the Dux Labs desktop |
 | dux-gop | 2.0.0 | [home](https://github.com/duxlabs-dev/dux-gop) | zenobit |  | API and CLI for system and process monitoring from Dux Labs |
 | dux-search | 2.0.0 | [home](https://duxlabs.dev/docs/dsearch/) | AvengeMedia |  | Blazingly fast filesystem search tool (Dux Shell) |
+| dux-shell | 2.0.0 | [home](https://duxlabs.dev) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
 | easybashgui | 15.0.2 | [home](https://github.com/BashGui/easybashgui) | zenobit |  | Bash functions library that aims to give simple GUI functions |
 | faugus-launcher | 2.5.0.1 | [home](https://github.com/Faugus/faugus-launcher) | zenobit |  | Simple and lightweight app for running Windows games using UMU-Launcher |
 | fcitx5-lotus | 6.0.0 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |

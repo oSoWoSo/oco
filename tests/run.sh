@@ -817,12 +817,8 @@ esac
 EOF
 chmod +x "$_detect_wd/bin/git"
 
-# Extract precisely this step's shell body through the matrix output line.
-awk '
-	/^          \. src\/pkg-helpers\.sh$/ { p=1 }
-	p { sub(/^          /, ""); print }
-	p && /echo "matrix=/ { exit }
-' "$SCRIPT_DIR/src/build.yml.in" > "$_detect_wd/detect.sh"
+# Run the real Detect changed packages script rather than a reimplementation.
+cp "$SCRIPT_DIR/.github/scripts/ci/build-detect.sh" "$_detect_wd/detect.sh"
 
 _run_detect_case() {
 	_case_name=$1 _before=$2 _ref=${3:-refs/heads/OCO} _event=${4:-push} _target=${5:-production}

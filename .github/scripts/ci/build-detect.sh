@@ -16,7 +16,7 @@ echo "DEBUG: PUSH_AFTER=$PUSH_AFTER"
 # artifacts by autobump-release.yml. Never compile them again on OCO.
 skip_autobump=false
 if [ "$EVENT_NAME" = push ] && [ "$GITHUB_REF" = refs/heads/OCO ]; then
-  _message=$(git log -1 --format=%B "$PUSH_AFTER")
+  _message=$(git log -1 --format=%B "$PUSH_AFTER" 2>/dev/null || true)
   if printf '%s\n' "$_message" | grep -Eq '^OCO-Autobump-Run: [0-9]+$'; then
     _associated=''
     for _try in 1 2 3 4 5; do
@@ -151,7 +151,7 @@ ref="${GITHUB_REF_NAME//\//%2F}"
 echo "| Package | version | template |" >> "$GITHUB_STEP_SUMMARY"
 echo "|---------|---------|----------|" >> "$GITHUB_STEP_SUMMARY"
 for pkg in $packages; do
-  version=$(grep '^version=' "srcpkgs/${pkg}/template" | cut -d '=' -f2)
+  version=$(grep '^version=' "srcpkgs/${pkg}/template" 2>/dev/null | cut -d '=' -f2 || true)
   echo "| $pkg | $version | [template](${repo}/blob/${ref}/srcpkgs/${pkg}/template) |" >> "$GITHUB_STEP_SUMMARY"
 done
 

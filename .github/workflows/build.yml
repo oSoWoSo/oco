@@ -119,6 +119,7 @@ on:
         - dux-calendar
         - dux-files
         - dux-gop
+        - dux-search
         - easybashgui
         - faugus-launcher
         - fcitx5-lotus

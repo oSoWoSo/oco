@@ -131,6 +131,7 @@
 !/srcpkgs/dux-files
 !/srcpkgs/dux-gop
 !/srcpkgs/dux-search
+!/srcpkgs/dux-shell
 !/srcpkgs/easybashgui
 !/srcpkgs/faugus-launcher
 !/srcpkgs/fcitx5-lotus

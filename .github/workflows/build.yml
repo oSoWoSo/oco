@@ -116,7 +116,7 @@ on:
         - distrobox
         - dragonfly-reverb
         - drako
-        - dux-calendar
+        - dux-gop
         - easybashgui
         - faugus-launcher
         - fcitx5-lotus

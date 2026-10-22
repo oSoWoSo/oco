@@ -1,7 +1,7 @@
 # Template file for 'Community-Repositories-Collection'
 pkgname=Community-Repositories-Collection
 version=1
-revision=9
+revision=10
 metapackage=yes
 short_desc="CRC: Collection of community repositories"
 maintainer="zenobit <zen@osowoso.org>"
@@ -86,6 +86,28 @@ CRC-d77void_package() {
 			x86_64-musl) repo+="d77void-musl" ;;
 		esac
 		echo "repository=${repo}" > ${PKGDESTDIR}/etc/xbps.d/20-CRC-d77void.conf
+	}
+}
+
+CRC-dms_package() {
+	archs="x86_64*"
+	short_desc="${short_desc} - dux shell by duxlabs"
+	homepage="https://duxlabs.dev"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://void.danklinux.com/dms/current" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-dms.conf
+	}
+}
+
+CRC-dux_package() {
+	archs="x86_64*"
+	short_desc="${short_desc} - dux apps by duxlabs"
+	homepage="https://duxlabs.dev"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://void.danklinux.com/danklinux/current" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-dux.conf
 	}
 }
 

@@ -157,6 +157,8 @@ Create PR
 | CRC-cereus-extra | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-cosmic | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-d77void | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
+| CRC-dms | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
+| CRC-dux | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-hyprland | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-jake | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-lazy | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |

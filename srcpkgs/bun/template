@@ -13,6 +13,7 @@ license="MIT"
 homepage="https://bun.sh"
 distfiles="https://github.com/oven-sh/bun/archive/refs/tags/bun-v${version}.tar.gz"
 checksum=00ce37fa5ac393a7d225bcf847365982fceb818b56a19b6884fefd67918468ff
+nocross="Use nocross"
 nopie_files="/usr/bin/bun"
 replaces="bun-bin>=0 bun-musl-bin>=0 bun-arm-bin>=0 bun-arm-musl-bin>=0"
 

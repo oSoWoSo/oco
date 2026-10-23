@@ -35,6 +35,18 @@ do_patch() {
 	git commit -q -m "Initial commit for build"
 }
 
+pre_configure() {
+	# Bun's scripts/build/config.ts detectLinuxAbi() resolves the ABI from
+	# /etc/alpine-release and defaults to "gnu" when it is missing. The Void
+	# musl chroot has no such file, which makes the build treat a native musl
+	# target as a gnu host cross-compiling to musl, skipping the musl-only
+	# code paths (compat/queue for lshpack/lsquic) and demanding an Alpine
+	# musl sysroot. A marker makes the native musl build take the musl path.
+	if [ "$XBPS_TARGET_MACHINE" = 'x86_64-musl' ] || [ "$XBPS_TARGET_MACHINE" = 'aarch64-musl' ]; then
+		install -m 0644 /dev/null /etc/alpine-release
+	fi
+}
+
 do_configure() {
 	export RUSTUP_HOME="${XBPS_BUILDDIR}/.rustup"
 	export CARGO_HOME="${XBPS_BUILDDIR}/.cargo"
@@ -46,9 +58,16 @@ do_build() {
 	export RUSTUP_HOME="${XBPS_BUILDDIR}/.rustup"
 	export CARGO_HOME="${XBPS_BUILDDIR}/.cargo"
 	export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/lib/llvm/21/bin:$PATH"
-	# Ensure bytecode directory exists
-	mkdir -p build/release/rust-target/x86_64-unknown-linux-gnu/release/deps
 	ninja -C build/release
+}
+
+post_build() {
+	# The alpine-release marker must not leak into the shared masterdir:
+	# other packages built in the same job might read it and misreport
+	# their distro as Alpine.
+	if [ "$XBPS_TARGET_MACHINE" = 'x86_64-musl' ] || [ "$XBPS_TARGET_MACHINE" = 'aarch64-musl' ]; then
+		rm -f /etc/alpine-release
+	fi
 }
 
 do_check() {

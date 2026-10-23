@@ -1,16 +1,16 @@
 # Template file for 'surfer-server'
 pkgname=surfer-server
-version=7.2.7
+version=7.4.0
 revision=1
-checkdepends="shared-mime-info"
 hostmakedepends="nodejs"
 depends="nodejs better-sqlite3"
+checkdepends="shared-mime-info"
 short_desc="Simple static file server with web interface and resumable uploads"
 maintainer="zenobit <zen@osoweso.org>"
 license="AGPL-3.0-only"
 homepage="https://github.com/cloudron-io/surfer"
 distfiles="https://github.com/cloudron-io/surfer/archive/refs/tags/v${version}.tar.gz"
-checksum=e1a5a7f611a6979b6f2ef1b3a27d6a1897c196fae44dffd33cdf23099b4990b2
+checksum=f4d9921710c83cb2e3b88245452dbc9a101272bad398cc7335e40d2e7cf1e479
 nocross="depends on better-sqlite3, which cannot be cross built"
 system_accounts="_surfer"
 system_groups="_surfer"

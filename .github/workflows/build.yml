@@ -60,7 +60,6 @@ on:
         - blocaled
         - BoxBuddy
         - brave-browser-bin
-        - brave-origin-bin
         - brow6el
         - btrfs-progs
         - bulletty

@@ -3,9 +3,10 @@ pkgname=bun
 version=1.4.4
 revision=1
 archs="aarch64* x86_64*"
-hostmakedepends="bun-bootstrap cargo clang23 llvm23 lld23 rustup cmake ninja
+_llvm=23
+hostmakedepends="bun-bootstrap cargo clang${_llvm} llvm${_llvm} lld${_llvm} rustup cmake ninja
  pkg-config perl python3 tar unzip git nasm"
-makedepends="llvm23-devel compiler-rt23"
+makedepends="llvm${_llvm}-devel compiler-rt${_llvm}"
 checkdepends="procps-ng"
 short_desc="JavaScript runtime, bundler, transpiler, and package manager"
 maintainer="zenobit <zen@osowoso.org>"
@@ -26,8 +27,6 @@ do_patch() {
 	rustup toolchain install nightly-2026-07-20 --profile minimal
 	rustup component add rust-src --toolchain nightly-2026-07-20
 
-	# Initialize git repo in extracted source so bun can get GIT_SHA
-	# The tarball doesn't have git history which breaks compile-time constants
 	cd /builddir/bun-${version}
 	git init -q
 	git config user.email "build@voidlinux.org"
@@ -37,12 +36,6 @@ do_patch() {
 }
 
 pre_configure() {
-	# Bun's scripts/build/config.ts detectLinuxAbi() resolves the ABI from
-	# /etc/alpine-release and defaults to "gnu" when it is missing. The Void
-	# musl chroot has no such file, which makes the build treat a native musl
-	# target as a gnu host cross-compiling to musl, skipping the musl-only
-	# code paths (compat/queue for lshpack/lsquic) and demanding an Alpine
-	# musl sysroot. A marker makes the native musl build take the musl path.
 	if [ "$XBPS_TARGET_MACHINE" = 'x86_64-musl' ] || [ "$XBPS_TARGET_MACHINE" = 'aarch64-musl' ]; then
 		install -m 0644 /dev/null /etc/alpine-release
 	fi
@@ -51,21 +44,18 @@ pre_configure() {
 do_configure() {
 	export RUSTUP_HOME="${XBPS_BUILDDIR}/.rustup"
 	export CARGO_HOME="${XBPS_BUILDDIR}/.cargo"
-	export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/lib/llvm/21/bin:$PATH"
+	export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/lib/llvm/${_llvm}/bin:$PATH"
 	bun scripts/build.ts --profile=release --configure-only
 }
 
 do_build() {
 	export RUSTUP_HOME="${XBPS_BUILDDIR}/.rustup"
 	export CARGO_HOME="${XBPS_BUILDDIR}/.cargo"
-	export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/lib/llvm/21/bin:$PATH"
+	export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/lib/llvm/${_llvm}/bin:$PATH"
 	ninja -C build/release
 }
 
 post_build() {
-	# The alpine-release marker must not leak into the shared masterdir:
-	# other packages built in the same job might read it and misreport
-	# their distro as Alpine.
 	if [ "$XBPS_TARGET_MACHINE" = 'x86_64-musl' ] || [ "$XBPS_TARGET_MACHINE" = 'aarch64-musl' ]; then
 		rm -f /etc/alpine-release
 	fi
@@ -74,7 +64,7 @@ post_build() {
 do_check() {
 	export RUSTUP_HOME="${XBPS_BUILDDIR}/.rustup"
 	export CARGO_HOME="${XBPS_BUILDDIR}/.cargo"
-	export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/lib/llvm/21/bin:$PATH"
+	export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/lib/llvm/${_llvm}/bin:$PATH"
 	ninja -C build/release check
 }
 

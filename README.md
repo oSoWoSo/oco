@@ -171,7 +171,7 @@ Create PR
 | CRC-voiders | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-vostock | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-xlibre | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
-| crush | 0.98.1 | [home](https://github.com/charmbracelet/crush) | zenobit |  | Glamourous AI coding agent for your favourite terminal |
+| crush | 0.98.2 | [home](https://github.com/charmbracelet/crush) | zenobit |  | Glamourous AI coding agent for your favourite terminal |
 | cwal | 0.10.1 | [home](https://github.com/nitinbhat972/cwal) | zenobit |  | Blazing-fast pywal-like color palette generator written in C |
 | dankcalendar | 2.0.0 | [home](https://github.com/duxlabs-dev/dux-calendar) | zenobit |  | Calendar app that brings your calendars together in one place |
 | DankMaterialShell | 2.0.0 | [home](https://duxlabs.dev) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
@@ -251,8 +251,8 @@ Create PR
 | hyprsysteminfo | 0.2.0 | [home](https://github.com/hyprwm/hyprsysteminfo) | zenobit |  | Tiny qt6/qml application to display system informations |
 | hyprtoolkit | 0.6.0 | [home](https://github.com/hyprwm/hyprtoolkit) | zenobit |  | Modern C++ Wayland-native GUI toolkit |
 | hyprtoolkit-devel | 0.6.0 | [home](https://github.com/hyprwm/hyprtoolkit) | zenobit |  | Modern C++ Wayland-native GUI toolkit |
-| hyprutils | 0.14.2 | [home](https://github.com/hyprwm/hyprutils) | zenobit |  | Hyprland utilities library used across the ecosystem |
-| hyprutils-devel | 0.14.2 | [home](https://github.com/hyprwm/hyprutils) | zenobit |  | Hyprland utilities library used across the ecosystem |
+| hyprutils | 0.14.3 | [home](https://github.com/hyprwm/hyprutils) | zenobit |  | Hyprland utilities library used across the ecosystem |
+| hyprutils-devel | 0.14.3 | [home](https://github.com/hyprwm/hyprutils) | zenobit |  | Hyprland utilities library used across the ecosystem |
 | hyprwayland-scanner | 0.4.6 | [home](https://github.com/hyprwm/hyprwayland-scanner) | zenobit |  | Hyprland's implementation of wayland-scanner |
 | hyprwire | 0.3.1 | [home](https://github.com/hyprwm/hyprwire) | zenobit |  | Fast and consistent wire protocol for IPC |
 | hyprwire-devel | 0.3.1 | [home](https://github.com/hyprwm/hyprwire) | zenobit |  | Fast and consistent wire protocol for IPC |
@@ -318,8 +318,8 @@ Create PR
 | odin2-standalone | 2.4.1 | [home](https://thewavewarden.com/pages/odin-2) | Trve_AY |  | 24 voice polyphinic synthesizer with modulation and FX |
 | odin2-vst3 | 2.4.1 | [home](https://thewavewarden.com/pages/odin-2) | Trve_AY |  | 24 voice polyphinic synthesizer with modulation and FX |
 | omniroute | 3.8.24 | [home](https://github.com/diegosouzapw/OmniRoute) | zenobit |  | Universal AI gateway with smart routing for multiple LLM providers |
-| opencode | 1.19.3 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
-| opencode2 | 2.1.2 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
+| opencode | 1.19.4 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
+| opencode2 | 2.1.4 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
 | OpenShell | 0.1.2 | [home](https://github.com/NVIDIA/OpenShell) | zenobit |  | OpenShell is the safe, private runtime for autonomous AI agents |
 | patchance | 1.4.0 | [home](https://raysession.tuxfamily.org/) | Trve_AY |  | Jack patchbay GUI |
 | pi | 1.4.0 | [home](https://github.com/earendil-works/pi) | zenobit |  | AI agent toolkit: unified LLM API, agent loop, TUI, coding agent CLI |
@@ -384,7 +384,7 @@ Create PR
 | tuios | 0.10.1 | [home](https://github.com/Gaurav-Gosain/tuios) | zenobit |  | Terminal UI OS (Terminal Multiplexer) |
 | tuisic | 2.5.2 | [home](https://github.com/Dark-Kernel/tuisic) | zenobit |  | TUI online music streaming application |
 | typobuster | 1.0.0 | [home](https://github.com/nwg-piotr/typobuster) | zenobit |  | Lightweight editor with text transformations and auto-correction |
-| umbriel-git | 0.1.0.20261022 | [home](https://github.com/noctalia-dev/umbriel) | Coolllyn |  | Wayland compositor built on wlroots |
+| umbriel-git | 0.1.0.20261023 | [home](https://github.com/noctalia-dev/umbriel) | Coolllyn |  | Wayland compositor built on wlroots |
 | undelete-btrfs | 1.0 | [home](https://github.com/danthem/undelete-btrfs) | zenobit |  | Undelete files in a BTRFS file system |
 | vbm | 1.0.2 | [home](https://codeberg.org/oSoWoSo/vbm) | zenobit |  | XBPS package management helper for VoidLinux |
 | vibepanel | 0.17.0 | [home](https://github.com/prankstr/vibepanel) | LinuxNation |  | GTK4 panel for Wayland with notifications, OSD, and quick settings |

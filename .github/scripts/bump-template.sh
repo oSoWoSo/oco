@@ -33,10 +33,9 @@ fail() {
 	printf '::error::%s\n' "$*" >&2
 	exit "$RC_ERROR"
 }
-new=$(printf '%s' "$new" | sed -E 's/-([0-9]+)$/.\1/')
 
 case $new in
-*[!0-9A-Za-z._+~-]*)
+*[!0-9.]*)
 	fail "refusing to bump $pkg to a non-version string: $new"
 	;;
 esac

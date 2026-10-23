@@ -251,8 +251,8 @@ Create PR
 | hyprsysteminfo | 0.2.0 | [home](https://github.com/hyprwm/hyprsysteminfo) | zenobit |  | Tiny qt6/qml application to display system informations |
 | hyprtoolkit | 0.6.0 | [home](https://github.com/hyprwm/hyprtoolkit) | zenobit |  | Modern C++ Wayland-native GUI toolkit |
 | hyprtoolkit-devel | 0.6.0 | [home](https://github.com/hyprwm/hyprtoolkit) | zenobit |  | Modern C++ Wayland-native GUI toolkit |
-| hyprutils | 0.14.2 | [home](https://github.com/hyprwm/hyprutils) | zenobit |  | Hyprland utilities library used across the ecosystem |
-| hyprutils-devel | 0.14.2 | [home](https://github.com/hyprwm/hyprutils) | zenobit |  | Hyprland utilities library used across the ecosystem |
+| hyprutils | 0.14.3 | [home](https://github.com/hyprwm/hyprutils) | zenobit |  | Hyprland utilities library used across the ecosystem |
+| hyprutils-devel | 0.14.3 | [home](https://github.com/hyprwm/hyprutils) | zenobit |  | Hyprland utilities library used across the ecosystem |
 | hyprwayland-scanner | 0.4.6 | [home](https://github.com/hyprwm/hyprwayland-scanner) | zenobit |  | Hyprland's implementation of wayland-scanner |
 | hyprwire | 0.3.1 | [home](https://github.com/hyprwm/hyprwire) | zenobit |  | Fast and consistent wire protocol for IPC |
 | hyprwire-devel | 0.3.1 | [home](https://github.com/hyprwm/hyprwire) | zenobit |  | Fast and consistent wire protocol for IPC |

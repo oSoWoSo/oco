@@ -171,7 +171,7 @@ Create PR
 | CRC-voiders | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-vostock | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-xlibre | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
-| crush | 0.98.1 | [home](https://github.com/charmbracelet/crush) | zenobit |  | Glamourous AI coding agent for your favourite terminal |
+| crush | 0.98.2 | [home](https://github.com/charmbracelet/crush) | zenobit |  | Glamourous AI coding agent for your favourite terminal |
 | cwal | 0.10.1 | [home](https://github.com/nitinbhat972/cwal) | zenobit |  | Blazing-fast pywal-like color palette generator written in C |
 | dankcalendar | 2.0.0 | [home](https://github.com/duxlabs-dev/dux-calendar) | zenobit |  | Calendar app that brings your calendars together in one place |
 | DankMaterialShell | 2.0.0 | [home](https://duxlabs.dev) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |

@@ -20,8 +20,6 @@ checksum="0e49b5f84597fbbefdc8d791900d170d4f3792dc5d38056f6a3e35100706cdc7
  9c02f03b691515a2eb81a17c5570fcc958915a4f1ee9973b69b578566c876a3b"
 replaces="brave-browser-arm-bin>=0"
 skip_extraction=yes
-repository=nonfree
-restricted=yes
 nostrip=yes
 nopie=yes
 noshlibprovides=yes

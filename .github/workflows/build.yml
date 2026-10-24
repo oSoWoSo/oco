@@ -56,6 +56,7 @@ on:
         - adw-gtk3
         - android-sdk
         - aquamarine
+        - artcraft-suite
         - better-sqlite3
         - blocaled
         - BoxBuddy
@@ -65,6 +66,7 @@ on:
         - bulletty
         - bun
         - bun-bootstrap
+        - cadcraft
         - caerus
         - candy-icons-git
         - cc-switch
@@ -107,7 +109,9 @@ on:
         - crush
         - cwal
         - dashy
+        - deckcraft
         - default-cursors
+        - designcraft
         - desktop-tui
         - devedeng
         - diskwatch
@@ -120,9 +124,11 @@ on:
         - dux-search
         - dux-shell
         - easybashgui
+        - effectcraft
         - faugus-launcher
         - Favnyr
         - fcitx5-lotus
+        - filmcraft
         - floorp-bin
         - flyline
         - forgejo-runner
@@ -138,6 +144,7 @@ on:
         - gofer
         - gradle9
         - graphite-gtk-theme
+        - gridcraft
         - gum-panel
         - helium-browser-bin
         - hister
@@ -176,6 +183,7 @@ on:
         - librewolf-bin
         - libspng
         - libtsm
+        - lightcraft
         - linuxcommandlibrary
         - llama.cpp
         - llmfit
@@ -215,6 +223,8 @@ on:
         - opencode2
         - OpenShell
         - patchance
+        - pdfcraft
+        - photocraft
         - pi
         - pinguintv-installer-git
         - pop-fonts
@@ -251,6 +261,7 @@ on:
         - shaderc
         - shattered-pixel-dungeon
         - simplex-chat
+        - soundcraft
         - surfer-cli
         - surfer-server
         - surge-xt
@@ -270,6 +281,7 @@ on:
         - umbriel-git
         - undelete-btrfs
         - vbm
+        - vectorcraft
         - vibepanel
         - Vish
         - vm-curator
@@ -282,6 +294,7 @@ on:
         - vote
         - vtm
         - waterfox-bin
+        - wordcraft
         - wpgtk
         - xdg-desktop-portal-cosmic
         - xdg-desktop-portal-hyprland

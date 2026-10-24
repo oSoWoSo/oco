@@ -36,6 +36,7 @@
 !/srcpkgs/android-sdk
 !/srcpkgs/aquamarine
 !/srcpkgs/aquamarine-devel
+!/srcpkgs/artcraft-suite
 !/srcpkgs/better-sqlite3
 !/srcpkgs/better-sqlite3-devel
 !/srcpkgs/blocaled
@@ -51,6 +52,7 @@
 !/srcpkgs/bulletty
 !/srcpkgs/bun
 !/srcpkgs/bun-bootstrap
+!/srcpkgs/cadcraft
 !/srcpkgs/caerus
 !/srcpkgs/candy-icons-git
 !/srcpkgs/cc-switch
@@ -116,7 +118,9 @@
 !/srcpkgs/dankcalendar
 !/srcpkgs/DankMaterialShell
 !/srcpkgs/dashy
+!/srcpkgs/deckcraft
 !/srcpkgs/default-cursors
+!/srcpkgs/designcraft
 !/srcpkgs/desktop-tui
 !/srcpkgs/devedeng
 !/srcpkgs/diskwatch
@@ -135,10 +139,12 @@
 !/srcpkgs/dux-search
 !/srcpkgs/dux-shell
 !/srcpkgs/easybashgui
+!/srcpkgs/effectcraft
 !/srcpkgs/faugus-launcher
 !/srcpkgs/Favnyr
 !/srcpkgs/fcitx5-lotus
 !/srcpkgs/fcitx5-lotus-settings
+!/srcpkgs/filmcraft
 !/srcpkgs/floorp-bin
 !/srcpkgs/flyline
 !/srcpkgs/forgejo-runner
@@ -170,6 +176,7 @@
 !/srcpkgs/graphite-gtk-theme-nord-dark-compact
 !/srcpkgs/graphite-gtk-theme-nord-light
 !/srcpkgs/graphite-gtk-theme-nord-light-compact
+!/srcpkgs/gridcraft
 !/srcpkgs/gum-panel
 !/srcpkgs/helium-browser-bin
 !/srcpkgs/hister
@@ -219,6 +226,7 @@
 !/srcpkgs/libspng
 !/srcpkgs/libtsm
 !/srcpkgs/libtsm-devel
+!/srcpkgs/lightcraft
 !/srcpkgs/linuxcommandlibrary
 !/srcpkgs/linuxcommandlibrary-desktop
 !/srcpkgs/llama.cpp
@@ -265,6 +273,8 @@
 !/srcpkgs/opencode2
 !/srcpkgs/OpenShell
 !/srcpkgs/patchance
+!/srcpkgs/pdfcraft
+!/srcpkgs/photocraft
 !/srcpkgs/pi
 !/srcpkgs/pinguintv-installer-git
 !/srcpkgs/pop-fonts
@@ -306,6 +316,7 @@
 !/srcpkgs/shattered-pixel-dungeon
 !/srcpkgs/simplex-chat
 !/srcpkgs/simplex-chat-desktop
+!/srcpkgs/soundcraft
 !/srcpkgs/surfer-cli
 !/srcpkgs/surfer-server
 !/srcpkgs/surge-xt
@@ -330,6 +341,7 @@
 !/srcpkgs/umbriel-git
 !/srcpkgs/undelete-btrfs
 !/srcpkgs/vbm
+!/srcpkgs/vectorcraft
 !/srcpkgs/vibepanel
 !/srcpkgs/Vish
 !/srcpkgs/vm-curator
@@ -342,6 +354,7 @@
 !/srcpkgs/vote
 !/srcpkgs/vtm
 !/srcpkgs/waterfox-bin
+!/srcpkgs/wordcraft
 !/srcpkgs/wpgtk
 !/srcpkgs/xdg-desktop-portal-cosmic
 !/srcpkgs/xdg-desktop-portal-hyprland

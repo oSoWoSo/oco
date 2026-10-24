@@ -96,6 +96,7 @@ Create PR
 | android-sdk | 36 | [home](https://developer.android.com/studio) | zenobit | x86_64 | Android SDK platform 36 and build-tools 29.0.3 |
 | aquamarine | 0.15.1 | [home](https://github.com/hyprwm/aquamarine) | zenobit |  | Aquamarine is a very light linux rendering backend library |
 | aquamarine-devel | 0.15.1 | [home](https://github.com/hyprwm/aquamarine) | zenobit |  | Aquamarine is a very light linux rendering backend library |
+| artcraft-suite | 1.2.0 | [home](https://getartcraft.com/apps) | zenobit |  | The complete ArtCraft creative studio suite |
 | better-sqlite3 | 13.0.3 | [home](https://github.com/WiseLibs/better-sqlite3) | zenobit |  | Fastest and simplest SQLite library for Node.js |
 | better-sqlite3-devel | 13.0.3 | [home](https://github.com/WiseLibs/better-sqlite3) | zenobit |  | Fastest and simplest SQLite library for Node.js |
 | blocaled | 0.7 | [home](https://github.com/lfs-book/blocaled) | zenobit |  | Standalone implementation of the localed D-Bus service |
@@ -111,6 +112,7 @@ Create PR
 | bulletty | 0.3.0 | [home](https://github.com/crocidb/bulletty) | zenobit |  | Feed reader for the terminal that stores the articles as Markdown |
 | bun | 1.4.4 | [home](https://bun.sh) | zenobit | aarch64* x86_64* | JavaScript runtime, bundler, transpiler, and package manager |
 | bun-bootstrap | 1.4.4 | [home](https://bun.sh) | zenobit | x86_64* aarch64* | Bootstrap package for bun (prebuilt binary) |
+| cadcraft | 0.12.0 | [home](https://github.com/storytold/cadcraft) | zenobit |  | Computer-aided design and drafting. Clean-room AutoCAD-style app in pure Rust |
 | caerus | 0.8.1 | [home](https://github.com/mendescotta/Caerus) | zenobit |  | Package manager for Void Linux, inspired by Synaptic |
 | candy-icons-git | 0.11.1 | [home](https://www.opendesktop.org/p/1305251/) | Trve_AY |  | Sweet gradient icons, sweet rainbow folders included |
 | cc-switch | 4.0.17 | [home](https://github.com/farion1231/cc-switch) | zenobit | x86_64* aarch64* | Assistant for Claude Code, Codex, OpenCode, OpenClaw & Gemini CLI |
@@ -176,7 +178,9 @@ Create PR
 | dankcalendar | 2.0.0 | [home](https://github.com/duxlabs-dev/dux-calendar) | zenobit |  | Calendar app that brings your calendars together in one place |
 | DankMaterialShell | 2.0.0 | [home](https://duxlabs.dev) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
 | dashy | 4.9.8 | [home](https://dashy.to) | zenobit |  | Feature-rich, self-hostable dashboard for your services |
+| deckcraft | 0.10.0 | [home](https://github.com/storytold/deckcraft) | zenobit |  | Clean-room reimplementation of Microsoft PowerPoint in pure Rust |
 | default-cursors | 1 | [home](https://www.voidlinux.org) | zenobit |  | Default cursor set |
+| designcraft | 0.12.0 | [home](https://github.com/storytold/designcraft) | zenobit |  | Page and layout design editor written by scratch in pure Rust |
 | desktop-tui | 0.3.2 | [home](https://github.com/Julien-cpsn/desktop-tui) | zenobit |  | Desktop environment without graphics |
 | devedeng | 4.22.1 | [home](https://www.rastersoft.com/programas/devede.html) | Bella109 |  | Create video DVDs and CDs |
 | diskwatch | 0.7.0 | [home](https://www.netwatchlabs.com) | zenobit |  | Single-host, read-only disk diagnostics TUI |
@@ -195,10 +199,12 @@ Create PR
 | dux-search | 2.0.0 | [home](https://duxlabs.dev/docs/dsearch/) | AvengeMedia |  | Blazingly fast filesystem search tool (Dux Shell) |
 | dux-shell | 2.0.0 | [home](https://duxlabs.dev) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
 | easybashgui | 15.0.2 | [home](https://github.com/BashGui/easybashgui) | zenobit |  | Bash functions library that aims to give simple GUI functions |
+| effectcraft | 0.16.0 | [home](https://github.com/storytold/effectcraft) | zenobit |  | Motion graphics and compositing tool written by scratch in pure Rust |
 | faugus-launcher | 2.5.1 | [home](https://github.com/Faugus/faugus-launcher) | zenobit |  | Simple and lightweight app for running Windows games using UMU-Launcher |
 | Favnyr | 0.3.7 | [home](https://github.com/GlitchAwakened/Favnyr) | zenobit |  | Modern and lightweight file manager for Windows and Linux |
 | fcitx5-lotus | 6.0.2 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
 | fcitx5-lotus-settings | 6.0.2 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
+| filmcraft | 0.12.0 | [home](https://github.com/storytold/filmcraft) | zenobit |  | Nonlinear video editor written by scratch in pure Rust |
 | floorp-bin | 12.20.2 | [home](https://github.com/Floorp-Projects/Floorp) | zenobit | x86_64 aarch64 | Browser built for keeping the Open, Private and Sustainable Web alive |
 | flyline | 1.10.0 | [home](https://github.com/HalFrgrd/flyline) | zenobit |  | Bash plugin to replace readline for a modern line editing experience |
 | forgejo-runner | 13.2.0 | [home](https://code.forgejo.org/forgejo/runner) | zenobit |  | Continuous integration for Forgejo |
@@ -230,6 +236,7 @@ Create PR
 | graphite-gtk-theme-nord-dark-compact | 2026.08.23 | [home](https://github.com/vinceliuice/Graphite-gtk-theme) | zenobit |  | Material design inspired GTK theme with light and dark variants |
 | graphite-gtk-theme-nord-light | 2026.08.23 | [home](https://github.com/vinceliuice/Graphite-gtk-theme) | zenobit |  | Material design inspired GTK theme with light and dark variants |
 | graphite-gtk-theme-nord-light-compact | 2026.08.23 | [home](https://github.com/vinceliuice/Graphite-gtk-theme) | zenobit |  | Material design inspired GTK theme with light and dark variants |
+| gridcraft | 0.11.1 | [home](https://github.com/storytold/gridcraft) | zenobit |  | Clean-room spreadsheet (Microsoft Excel-style) in pure Rust |
 | gum-panel | 2.0.0.001 | [home](https://codeberg.org/oSoWoSo/gum) | zenobit |  | Modified version of gum with panel support |
 | helium-browser-bin | 0.20.1.1 | [home](https://helium.computer) | zenobit | x86_64 aarch64 | Private, fast, and honest web browser based on Chromium (binary build) |
 | hister | 0.21.0 | [home](https://github.com/asciimoo/hister) | zenobit |  | Your own search engine |
@@ -279,6 +286,7 @@ Create PR
 | libspng | 0.7.4 | [home](https://libspng.org/) | zenobit |  | Simple, modern libpng alternative |
 | libtsm | 4.8.0 | [home](https://github.com/kmscon/libtsm) | zenobit |  | Terminal-emulator State Machine |
 | libtsm-devel | 4.8.0 | [home](https://github.com/kmscon/libtsm) | zenobit |  | Terminal-emulator State Machine |
+| lightcraft | 0.13.0 | [home](https://github.com/storytold/lightcraft) | zenobit |  | Non-destructive photo editor written by scratch in pure Rust |
 | linuxcommandlibrary | 4.9.1 | [home](http://linuxcommandlibrary.com/) | zenobit | x86_64 aarch64 | Linux reference app with basics, tips and formatted man pages |
 | linuxcommandlibrary-desktop | 4.9.1 | [home](http://linuxcommandlibrary.com/) | zenobit | x86_64 aarch64 | Linux reference app with basics, tips and formatted man pages |
 | llama.cpp | 0.7.0 | [home](https://github.com/ggml-org/llama.cpp) | zenobit |  | LLM inference in C/C++ |
@@ -325,6 +333,8 @@ Create PR
 | opencode2 | 2.2.0 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
 | OpenShell | 0.1.2 | [home](https://github.com/NVIDIA/OpenShell) | zenobit |  | OpenShell is the safe, private runtime for autonomous AI agents |
 | patchance | 1.4.0 | [home](https://raysession.tuxfamily.org/) | Trve_AY |  | Jack patchbay GUI |
+| pdfcraft | 0.13.0 | [home](https://github.com/storytold/pdfcraft) | zenobit |  | PDF reader and editor written by scratch in pure Rust |
+| photocraft | 0.15.1 | [home](https://getartcraft.com/apps/photocraft) | zenobit |  | Open-source, clean-room reimplementation of Adobe Photoshop in pure Rust |
 | pi | 1.4.0 | [home](https://github.com/earendil-works/pi) | zenobit |  | AI agent toolkit: unified LLM API, agent loop, TUI, coding agent CLI |
 | pinguintv-installer-git | 0.0.0 | [home](https://pinguin-tv.de/installer.html) | Bella109 | x86_64 | New GUI Installer for void |
 | pop-fonts | 0.0.0 | [home](https://github.com/pop-os/fonts) | Bella109 |  | Pop Fonts |
@@ -366,6 +376,7 @@ Create PR
 | shattered-pixel-dungeon | 4.0.2 | [home](https://github.com/00-Evan/shattered-pixel-dungeon) | zenobit |  | Open-source roguelike dungeon crawler with randomized levels and enemies |
 | simplex-chat | 7.0.0 | [home](https://simplex.chat) | rayfadh | ~i686 | Private and secure messaging application (CLI) |
 | simplex-chat-desktop | 7.0.0 | [home](https://simplex.chat) | rayfadh | ~i686 | Private and secure messaging application (CLI) |
+| soundcraft | 0.12.1 | [home](https://github.com/storytold/soundcraft) | zenobit |  | Clean-room reimplementation of Avid Pro Tools in pure Rust |
 | surfer-cli | 7.4.0 | [home](https://github.com/cloudron-io/surfer) | zenobit |  | Command line interface for surfer |
 | surfer-server | 7.4.0 | [home](https://github.com/cloudron-io/surfer) | zenobit |  | Simple static file server with web interface and resumable uploads |
 | surge-xt | 1.3.4 | [home](https://surge-synthesizer.github.io/) | Trve_AY |  | Subtractive hybrid synthesizer |
@@ -390,6 +401,7 @@ Create PR
 | umbriel-git | 0.1.0.20261027 | [home](https://github.com/noctalia-dev/umbriel) | Coolllyn |  | Wayland compositor built on wlroots |
 | undelete-btrfs | 1.0 | [home](https://github.com/danthem/undelete-btrfs) | zenobit |  | Undelete files in a BTRFS file system |
 | vbm | 1.0.2 | [home](https://codeberg.org/oSoWoSo/vbm) | zenobit |  | XBPS package management helper for VoidLinux |
+| vectorcraft | 0.16.0 | [home](https://getartcraft.com/apps/vectorcraft) | zenobit |  | Vector art tool written by scratch in pure Rust |
 | vibepanel | 0.17.1 | [home](https://github.com/prankstr/vibepanel) | LinuxNation |  | GTK4 panel for Wayland with notifications, OSD, and quick settings |
 | Vish | 1.1.5 | [home](https://github.com/Lluciocc/Vish) | zenobit |  | Visual Scripting for Bash |
 | vm-curator | 1.5.0 | [home](https://github.com/mroboff/vm-curator) | zenobit |  | TUI to build and manage QEMU/KVM virtual machines |
@@ -402,6 +414,7 @@ Create PR
 | vote | 0.92 | [home](https://codeberg.org/oSoWoSo/vote) | zenobit |  | XBPS package management helper for VoidLinux |
 | vtm | 2026.10.12 | [home](https://github.com/directvt/vtm) | zenobit |  | Text-based desktop environment |
 | waterfox-bin | 6.7.6 | [home](https://www.waterfox.net) | zenobit | x86_64 aarch64 | Fast and private web browser |
+| wordcraft | 0.10.0 | [home](https://github.com/storytold/wordcraft) | zenobit |  | Clean-room reimplementation of Microsoft Word in pure Rust |
 | wpgtk | 6.7.1 | [home](https://github.com/deviantfero/wpgtk/) | zenobit |  | Colorscheme, wallpaper and template manager for *nix |
 | xdg-desktop-portal-cosmic | 1.11.0 | [home](https://github.com/pop-os/xdg-desktop-portal-cosmic) | zenobit |  | Backend implementation for xdg-desktop-portal for COSMIC |
 | xdg-desktop-portal-hyprland | 1.4.1 | [home](https://github.com/hyprwm/xdg-desktop-portal-hyprland) | zenobit |  | Backend of xdg-desktop-portal for Hyprland |

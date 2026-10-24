@@ -340,8 +340,8 @@ Create PR
 | python3-textual | 8.2.8 | [home](https://textual.textualize.io) | icp |  | Modern Text User Interface framework |
 | python3-uc-micro-py | 2.0.0 | [home](https://github.com/tsutsu3/uc.micro-py) | Orphaned |  | Unicode category micro library |
 | qrunsvmgr | 0.2.5 | [home](https://codeberg.org/ItsZariep/qrunsvmgr) | zenobit |  | Service manager GUI (Qt6), supporting Runit and Dinit |
-| quickbox-gtk4 | 1.3.8 | [home](https://github.com/musqz/quickbox) | zenobit |  | GTK4 UI for managing quickemu VMs |
-| quickbox-qt | 1.3.2 | [home](https://github.com/musqz/quickbox-qt) | zenobit |  | QT6 UI for managing Quickemu VMs |
+| quickbox-gtk4 | 1.3.10 | [home](https://github.com/musqz/quickbox) | zenobit |  | GTK4 UI for managing quickemu VMs |
+| quickbox-qt | 1.3.4 | [home](https://github.com/musqz/quickbox-qt) | zenobit |  | QT6 UI for managing Quickemu VMs |
 | quickemu | 4.9.9 | [home](https://github.com/quickemu-project/quickemu) | zenobit |  | Quickly create and run optimised virtual machines |
 | quickosdl | 0.3.2 | [home](https://github.com/lj3954/quickosdl) | zenobit |  | Tool to quickly find URLs to images and download them |
 | quickshell+ | 0.3.2 | [home](https://quickshell.org) | zenobit |  | Flexible QtQuick-based desktop shell toolkit. Hyprland-enabled |

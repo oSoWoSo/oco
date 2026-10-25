@@ -1,7 +1,7 @@
 # Template file for 'notesnook'
 pkgname=notesnook
 version=3.4.10
-revision=1
+revision=2
 archs="x86_64* aarch64*"
 hostmakedepends="nodejs python3 git yarn"
 short_desc="End-to-end encrypted note taking alternative to Evernote"
@@ -11,6 +11,13 @@ homepage="https://github.com/streetwriters/notesnook"
 distfiles="https://github.com/streetwriters/notesnook/archive/refs/tags/v${version}.tar.gz"
 checksum=e69318868f9426780af99e38c6d2ca4a4d71f1dc532db1dbcbabec63a86b1a73
 if [ "$XBPS_TARGET_MACHINE" = "aarch64-musl" ]; then
+	noverifyrdeps=yes
+	depends="gcompat libX11 libXcomposite libXdamage libXext libXfixes libXrandr
+		alsa-lib atk at-spi2-atk at-spi2-core cairo libcups dbus-libs expat
+		eudev-libudev glib gtk+3 libgcc libgbm libstdc++ libxcb libxkbcommon
+		nspr nss pango"
+fi
+if [ "$XBPS_TARGET_MACHINE" = "x86_64-musl" ]; then
 	noverifyrdeps=yes
 	depends="gcompat libX11 libXcomposite libXdamage libXext libXfixes libXrandr
 		alsa-lib atk at-spi2-atk at-spi2-core cairo libcups dbus-libs expat

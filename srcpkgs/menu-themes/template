@@ -1,7 +1,7 @@
 # Template file for 'menu-themes'
 pkgname=menu-themes
 version=0.9.0
-revision=1
+revision=2
 archs="x86_64 aarch64"
 depends="kando"
 short_desc="Collection of menu themes for Kando"

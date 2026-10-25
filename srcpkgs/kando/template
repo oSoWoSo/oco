@@ -1,19 +1,19 @@
 # Template file for 'kando'
 pkgname=kando
-version=3.0.0
+version=3.0.1
 revision=1
 archs="x86_64 aarch64"
 hostmakedepends="cmake pkg-config nodejs base-devel"
 makedepends="libX11-devel libXtst-devel libxkbcommon-devel wayland-devel
  libxkbfile-devel libsecret-devel gobject-introspection"
-depends="libX11 libXtst libxkbfile libsecret"
+depends="hicolor-icon-theme libX11 libXtst libxkbfile libsecret"
 short_desc="Do things with utmost efficiency"
 maintainer="zenobit <zen@osowoso.org>"
 license="CC-BY-4.0, CC0-1.0, OFL-1.1, MIT"
 homepage="https://kando.menu"
 changelog="https://raw.githubusercontent.com/kando-menu/kando/refs/heads/main/docs/changelog.md"
 distfiles="https://github.com/kando-menu/kando/archive/refs/tags/v${version}.tar.gz"
-checksum=e0bfc34b29808db99b8e8e325f8be10df50aad16fa756472e1b2050bc72a829e
+checksum=674ab36512a3f2cdf9bd6aee497af6b4b11099cfec4bac50597ce422405f5276
 nocross=yes
 
 case $XBPS_TARGET_MACHINE in
@@ -46,15 +46,20 @@ do_install() {
 	vinstall out/Kando-linux-${_electron_arch}/chrome-sandbox 4755 usr/lib/kando
 	vbin ${FILESDIR}/kando
 
-	vmkdir usr/share/applications
-	vcopy appstream/menu.kando.Kando.desktop usr/share/applications/kando.desktop
+	vinstall packaging/appstream/menu.kando.Kando.desktop 644 usr/share/applications
+	vsed -i ${DESTDIR}/usr/share/applications/menu.kando.Kando.desktop \
+		-e 's|^Exec=AppRun %U$|Exec=kando %U|'
+	vinstall packaging/appstream/menu.kando.Kando.metainfo.xml 644 usr/share/metainfo
 
-	vmkdir usr/share/icons
-	vcopy assets/icons/* usr/share/icons
+	vinstall assets/icons/icon.svg 644 usr/share/icons/hicolor/scalable/apps menu.kando.Kando.svg
+	vinstall assets/icons/icon.png 644 usr/share/icons/hicolor/256x256/apps menu.kando.Kando.png
 
 	for f in docs/*.md; do
 		vdoc "$f"
 	done
 
-	vlicense LICENSES/MIT.txt
+	vlicense LICENSE.md
+	for f in LICENSES/*.txt; do
+		vlicense "$f"
+	done
 }

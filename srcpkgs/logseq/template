@@ -2,7 +2,7 @@
 pkgname=logseq
 version=2.0.2
 revision=1
-archs="x86_64 aarch64"
+#archs="x86_64* aarch64*"
 create_wrksrc=yes
 build_wrksrc="${pkgname}-${version}"
 hostmakedepends="clojure git nodejs ocaml opam openjdk21 pnpm"
@@ -33,7 +33,10 @@ do_build() {
 }
 
 do_install() {
-	local appdir="static/dist/linux-unpacked"
+	case "$XBPS_TARGET_MACHINE" in
+		x86_64*) appdir="static/dist/linux-unpacked" ;;
+		aarch64*) appdir="static/dist/linux-arm64-unpacked" ;;
+	esac
 
 	if [ ! -x "${appdir}/logseq" ]; then
 		msg_error "Logseq release build did not produce ${appdir}/logseq\n"

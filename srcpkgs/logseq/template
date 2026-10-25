@@ -1,0 +1,50 @@
+# Template file for 'logseq'
+pkgname=logseq
+version=2.0.2
+revision=1
+archs="x86_64 aarch64"
+create_wrksrc=yes
+build_wrksrc="${pkgname}-${version}"
+hostmakedepends="clojure git nodejs ocaml opam openjdk21 pnpm"
+depends="gtk+3 nss alsa-lib libXScrnSaver libxkbcommon mesa libnotify libXtst"
+short_desc="Privacy-first, open-source knowledge management platform"
+maintainer="zenobit <zen@osowoso.org>"
+license="AGPL-3.0-or-later"
+homepage="https://logseq.com"
+distfiles="https://github.com/logseq/logseq/archive/refs/tags/${version}.tar.gz"
+checksum=2c3b46a9277400dd4353e30ccbf10b301624c14b37e764e14713b2f89d8f2241
+noshlibprovides=yes
+noverifyrdeps=yes
+
+nocross="Logseq contains native Node.js modules that must be built for the target"
+
+pre_build() {
+	opam init --bare --disable-sandboxing --yes
+	opam switch list --short | grep -qx logseq || \
+		opam switch create logseq ocaml-system --yes
+	opam switch set logseq
+	(cd cli && opam install . --deps-only --yes)
+	pnpm install --frozen-lockfile
+	pnpm --dir cli install --ignore-workspace --frozen-lockfile
+}
+
+do_build() {
+	pnpm release-electron
+}
+
+do_install() {
+	local appdir="static/dist/linux-unpacked"
+
+	if [ ! -x "${appdir}/logseq" ]; then
+		msg_error "Logseq release build did not produce ${appdir}/logseq\n"
+	fi
+
+	vmkdir usr/lib/logseq
+	vcopy "${appdir}/." usr/lib/logseq
+	chmod 755 "${DESTDIR}/usr/lib/logseq/logseq"
+	vbin "${FILESDIR}/logseq"
+	vinstall "${FILESDIR}/logseq.desktop" 644 usr/share/applications
+	vinstall "${wrksrc}/${build_wrksrc}/static/icons/logseq.png" 644 \
+		usr/share/icons/hicolor/512x512/apps
+	vlicense "${wrksrc}/${build_wrksrc}/LICENSE.md"
+}

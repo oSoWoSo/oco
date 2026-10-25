@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Logseq
+GenericName=Knowledge base
+Comment=Privacy-first knowledge management on local Markdown/Org files
+Exec=/usr/bin/logseq %u
+Icon=logseq
+Type=Application
+StartupNotify=true
+StartupWMClass=Logseq
+Terminal=false
+Categories=Office;Utility;
+MimeType=x-scheme-handler/logseq;

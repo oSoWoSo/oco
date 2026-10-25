@@ -178,6 +178,7 @@ on:
         - linuxcommandlibrary
         - llama.cpp
         - llmfit
+        - logseq
         - lunasvg
         - ly
         - lycan

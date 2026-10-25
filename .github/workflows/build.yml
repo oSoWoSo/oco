@@ -190,6 +190,7 @@ on:
         - nebula-gtk
         - noctalia
         - noctalia-greeter
+        - notesnook
         - NuvioDesktop
         - nvchecker
         - nwg-bar

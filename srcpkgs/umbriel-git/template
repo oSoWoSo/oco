@@ -4,12 +4,12 @@ version=0.1.0.20261025
 revision=1
 _commit=5527c8ff76f33ed90eca7b7648bf731f6b522d7b
 build_style=meson
-hostmakedepends="pkgconf wayland-devel"
+hostmakedepends="pkgconf wayland-devel cmake"
 makedepends="wlroots0.20-devel wayland-devel wayland-protocols libxkbcommon-devel
  libinput-devel pixman-devel cairo-devel pango-devel libdrm-devel
  libdisplay-info-devel eudev-libudev-devel libxcb-devel xcb-util-wm-devel
  libglvnd-devel libgbm-devel lcms2-devel tomlplusplus-devel
- json-c++"
+ json-c++ libei-devel"
 depends="xorg-server-xwayland virtual?font:sans-serif"
 short_desc="Wayland compositor built on wlroots"
 maintainer="Coolllyn <leanhduc673@gmail.com>"

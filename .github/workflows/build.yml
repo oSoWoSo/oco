@@ -121,6 +121,7 @@ on:
         - dux-shell
         - easybashgui
         - faugus-launcher
+        - Favnyr
         - fcitx5-lotus
         - floorp-bin
         - flyline

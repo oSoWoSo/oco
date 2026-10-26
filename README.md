@@ -383,7 +383,7 @@ Create PR
 | tls-client | 1.16.0 | [home](https://github.com/bogdanfinn/tls-client) | zenobit |  | Net/http.Client like HTTP Client |
 | Trilium | 0.106.1 | [home](https://github.com/TriliumNext/Trilium) | zenobit |  | Build your personal knowledge base with Trilium Notes |
 | tufw | 0.2.8 | [home](https://github.com/peltho/tufw) | zenobit |  | Terminal UI for ufw |
-| tuios | 0.11.0 | [home](https://github.com/Gaurav-Gosain/tuios) | zenobit |  | Terminal UI OS (Terminal Multiplexer) |
+| tuios | 0.11.1 | [home](https://github.com/Gaurav-Gosain/tuios) | zenobit |  | Terminal UI OS (Terminal Multiplexer) |
 | tuisic | 2.5.2 | [home](https://github.com/Dark-Kernel/tuisic) | zenobit |  | TUI online music streaming application |
 | typobuster | 1.0.0 | [home](https://github.com/nwg-piotr/typobuster) | zenobit |  | Lightweight editor with text transformations and auto-correction |
 | umbriel-git | 0.1.0.20261025 | [home](https://github.com/noctalia-dev/umbriel) | Coolllyn |  | Wayland compositor built on wlroots |

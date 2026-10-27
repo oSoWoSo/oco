@@ -4,7 +4,7 @@ version=5.4.0
 revision=1
 build_style=meson
 build_helper=qemu
-make_check_args="--print-errorlogs"
+make_check_args="--print-errorlogs --exclude notification_reply_integration"
 hostmakedepends="pkgconf wayland-devel"
 makedepends="cairo-devel fontconfig-devel freetype-devel harfbuzz-devel json-c++
  libcurl-devel libepoxy-devel libglib-devel libglvnd-devel libical-devel

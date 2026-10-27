@@ -199,7 +199,7 @@ Create PR
 | Favnyr | 0.3.7 | [home](https://github.com/GlitchAwakened/Favnyr) | zenobit |  | Modern and lightweight file manager for Windows and Linux |
 | fcitx5-lotus | 6.0.2 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
 | fcitx5-lotus-settings | 6.0.2 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
-| floorp-bin | 12.20.2 | [home](https://github.com/Floorp-Projects/Floorp) | zenobit | x86_64 aarch64 | Browser built for keeping the Open, Private and Sustainable Web alive |
+| floorp-bin | 12.21.0 | [home](https://github.com/Floorp-Projects/Floorp) | zenobit | x86_64 aarch64 | Browser built for keeping the Open, Private and Sustainable Web alive |
 | flyline | 1.10.0 | [home](https://github.com/HalFrgrd/flyline) | zenobit |  | Bash plugin to replace readline for a modern line editing experience |
 | forgejo-runner | 13.2.0 | [home](https://code.forgejo.org/forgejo/runner) | zenobit |  | Continuous integration for Forgejo |
 | FreeTube | 0.25.1 | [home](https://github.com/FreeTubeApp/FreeTube) | Bella109 | x86_64 | Client for watching YouTube Videos |

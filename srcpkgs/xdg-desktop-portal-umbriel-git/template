@@ -4,10 +4,10 @@ version=0.1.0.20261028
 revision=1
 _commit=e24762d9c75e294f89dbe7a0e3fd55c5cdc3ff0a
 build_style=meson
-hostmakedepends="pkgconf wayland-devel glib-devel"
+hostmakedepends="pkgconf wayland-devel glib-devel cmake"
 makedepends="sdbus-c++-devel pipewire-devel wayland-devel wayland-protocols
  libdrm-devel libgbm-devel cairo-devel tomlplusplus-devel json-c++
- gtk4-devel"
+ gtk4-devel libei-devel"
 depends="xdg-desktop-portal"
 short_desc="XDG Desktop Portal backend for the Umbriel compositor"
 maintainer="Coolllyn <leanhduc673@gmail.com>"

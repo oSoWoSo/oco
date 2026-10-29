@@ -26,10 +26,10 @@ do_extract() {
 }
 
 do_install() {
-vmkdir usr/lib/librewolf
-vcopy "*" usr/lib/librewolf
-vmkdir usr/share/applications
-vcopy "${FILESDIR}/librewolf.desktop" usr/share/applications
-vinstall browser/chrome/icons/default/default128.png 644 usr/share/pixmaps librewolf.png
-vbin "${FILESDIR}/librewolf"
+	vmkdir usr/lib/librewolf
+	vcopy "*" usr/lib/librewolf
+	vmkdir usr/share/applications
+	vcopy "${FILESDIR}/librewolf.desktop" usr/share/applications
+	vinstall browser/chrome/icons/default/default128.png 644 usr/share/pixmaps librewolf.png
+	vbin "${FILESDIR}/librewolf"
 }

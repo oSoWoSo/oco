@@ -305,10 +305,10 @@ Create PR
 | nwg-dock | 0.4.3 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-dock) | zenobit |  | GTK based dock for sway |
 | nwg-dock-hyprland | 0.4.11 | [home](https://github.com/nwg-piotr/nwg-dock-hyprland) | zenobit |  | GTK3-based dock for Hyprland |
 | nwg-drawer | 0.7.5 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-drawer) | zenobit |  | Application drawer for wlroots-based Wayland compositors |
-| nwg-hello | 0.5.0 | [home](https://github.com/nwg-piotr/nwg-hello) | zenobit |  | GTK based greeter for greetd written in python |
+| nwg-hello | 0.5.1 | [home](https://github.com/nwg-piotr/nwg-hello) | zenobit |  | GTK based greeter for greetd written in python |
 | nwg-icon-picker | 0.1.1 | [home](https://github.com/nwg-piotr/nwg-icon-picker) | zenobit |  | GTK icon chooser with a text search option |
 | nwg-menu | 0.1.9 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-menu) | zenobit |  | MenuStart plugin to nwg-panel, also capable of working standalone |
-| nwg-panel | 0.12.2 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-panel) | zenobit |  | GTK based panel for sway and Hyprland Wayland compositors |
+| nwg-panel | 0.12.3 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-panel) | zenobit |  | GTK based panel for sway and Hyprland Wayland compositors |
 | nwg-readme-browser | 0.1.7 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-readme-browser) | zenobit |  | WebKitGTK based README file browser |
 | nwg-shell | 0.5.50 | [home](https://nwg-piotr.github.io/nwg-shell) | zenobit |  | GTK based shell for sway and Hyprland Wayland compositors |
 | nwg-shell-config | 0.5.65 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-shell-config) | zenobit |  | Graphical user interface for configuring sway and Hyprland |

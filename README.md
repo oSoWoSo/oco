@@ -321,7 +321,7 @@ Create PR
 | odin2-standalone | 2.4.1 | [home](https://thewavewarden.com/pages/odin-2) | Trve_AY |  | 24 voice polyphinic synthesizer with modulation and FX |
 | odin2-vst3 | 2.4.1 | [home](https://thewavewarden.com/pages/odin-2) | Trve_AY |  | 24 voice polyphinic synthesizer with modulation and FX |
 | omniroute | 3.8.24 | [home](https://github.com/diegosouzapw/OmniRoute) | zenobit |  | Universal AI gateway with smart routing for multiple LLM providers |
-| opencode | 1.19.4 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
+| opencode | 1.19.5 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
 | opencode2 | 2.2.1 | [home](https://github.com/anomalyco/opencode) | zenobit | x86_64 aarch64 | Open source AI coding agent |
 | OpenShell | 0.1.2 | [home](https://github.com/NVIDIA/OpenShell) | zenobit |  | OpenShell is the safe, private runtime for autonomous AI agents |
 | patchance | 1.4.0 | [home](https://raysession.tuxfamily.org/) | Trve_AY |  | Jack patchbay GUI |

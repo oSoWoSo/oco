@@ -15,7 +15,7 @@ _PASS=0
 _FAIL=0
 _CURRENT=''
 
-_red()   { printf '\033[0;31m%s\033[0m' "$1"; }
+_red() { printf '\033[0;31m%s\033[0m' "$1"; }
 _green() { printf '\033[0;32m%s\033[0m' "$1"; }
 
 it() { _CURRENT="$1"; }
@@ -93,13 +93,20 @@ _SURF_READY="${_SURF_READY:-}"
 REPODATA_STRIP_PY="$SCRIPT_DIR/src/repodata-strip.py"
 
 echo '== pkg_name =='
-it 'plain name';            assert_eq "$(pkg_name 'foo-1.0_1.x86_64')"          'foo'
-it '+ in name';             assert_eq "$(pkg_name 'quickshell+-1.0_1.x86_64')"  'quickshell+'
-it 'digit in name';         assert_eq "$(pkg_name 'gtk+3-3.24.42_1.x86_64')"    'gtk+3'
-it 'hyphenated name';       assert_eq "$(pkg_name 'python3-PyGithub-1.59_1.x86_64')" 'python3-PyGithub'
-it 'musl arch suffix';      assert_eq "$(pkg_name 'foo-1.2_1.aarch64-musl')"    'foo'
-it 'caller stripped .xbps'; assert_eq "$(pkg_name 'foo-1.0_1.x86_64')"          'foo'
-it 'caller passed .xbps';   assert_eq "$(pkg_name 'foo-1.0_1.x86_64.xbps')"     'foo'
+it 'plain name'
+assert_eq "$(pkg_name 'foo-1.0_1.x86_64')" 'foo'
+it '+ in name'
+assert_eq "$(pkg_name 'quickshell+-1.0_1.x86_64')" 'quickshell+'
+it 'digit in name'
+assert_eq "$(pkg_name 'gtk+3-3.24.42_1.x86_64')" 'gtk+3'
+it 'hyphenated name'
+assert_eq "$(pkg_name 'python3-PyGithub-1.59_1.x86_64')" 'python3-PyGithub'
+it 'musl arch suffix'
+assert_eq "$(pkg_name 'foo-1.2_1.aarch64-musl')" 'foo'
+it 'caller stripped .xbps'
+assert_eq "$(pkg_name 'foo-1.0_1.x86_64')" 'foo'
+it 'caller passed .xbps'
+assert_eq "$(pkg_name 'foo-1.0_1.x86_64.xbps')" 'foo'
 echo '== list_srcpkgs =='
 mkdir -p srcpkgs/list-parent srcpkgs/list-plain
 ln -s list-parent srcpkgs/list-alias
@@ -111,8 +118,8 @@ assert_eq "$(list_srcpkgs srcpkgs | grep -Fx list-broken)" ''
 _main_list=$(printf '%s\n' list-alias list-parent)
 _current_file=$(mktemp)
 _main_file=$(mktemp)
-list_srcpkgs srcpkgs > "$_current_file"
-printf '%s\n' "$_main_list" > "$_main_file"
+list_srcpkgs srcpkgs >"$_current_file"
+printf '%s\n' "$_main_list" >"$_main_file"
 it 'fallback package diff does not classify a valid alias as removed'
 assert_eq "$(grep -Fxvf "$_current_file" "$_main_file" || true)" ''
 rm -f "$_current_file" "$_main_file"
@@ -124,43 +131,64 @@ echo '== pkg_arch_ok =='
 _mktpl() {
 	mkdir -p srcpkgs/_t
 	if [ -z "$1" ]; then
-		: > srcpkgs/_t/template
+		: >srcpkgs/_t/template
 	else
-		printf 'archs="%s"\n' "$1" > srcpkgs/_t/template
+		printf 'archs="%s"\n' "$1" >srcpkgs/_t/template
 	fi
 }
 
 _mktpl 'x86_64'
-it 'archs=x86_64 vs x86_64';      pkg_arch_ok _t x86_64;       assert_rc $? 0
-it 'archs=x86_64 vs aarch64';     pkg_arch_ok _t aarch64;      assert_rc $? 1
+it 'archs=x86_64 vs x86_64'
+pkg_arch_ok _t x86_64
+assert_rc $? 0
+it 'archs=x86_64 vs aarch64'
+pkg_arch_ok _t aarch64
+assert_rc $? 1
 
 _mktpl 'x86_64 aarch64'
-it 'multi-arch positive';         pkg_arch_ok _t aarch64;      assert_rc $? 0
-it 'multi-arch negative';         pkg_arch_ok _t i686;         assert_rc $? 1
+it 'multi-arch positive'
+pkg_arch_ok _t aarch64
+assert_rc $? 0
+it 'multi-arch negative'
+pkg_arch_ok _t i686
+assert_rc $? 1
 
 _mktpl '~i686'
-it 'exclusion: passes other';     pkg_arch_ok _t x86_64;       assert_rc $? 0
-it 'exclusion: blocks excluded';  pkg_arch_ok _t i686;         assert_rc $? 1
+it 'exclusion: passes other'
+pkg_arch_ok _t x86_64
+assert_rc $? 0
+it 'exclusion: blocks excluded'
+pkg_arch_ok _t i686
+assert_rc $? 1
 
 _mktpl '*'
-it 'glob *: matches everything';  pkg_arch_ok _t aarch64-musl; assert_rc $? 0
+it 'glob *: matches everything'
+pkg_arch_ok _t aarch64-musl
+assert_rc $? 0
 
 _mktpl '*-musl'
-it 'glob *-musl: positive';       pkg_arch_ok _t aarch64-musl; assert_rc $? 0
-it 'glob *-musl: negative';       pkg_arch_ok _t x86_64;       assert_rc $? 1
+it 'glob *-musl: positive'
+pkg_arch_ok _t aarch64-musl
+assert_rc $? 0
+it 'glob *-musl: negative'
+pkg_arch_ok _t x86_64
+assert_rc $? 1
 
 _mktpl ''
-it 'empty archs (allow all)';     pkg_arch_ok _t aarch64;      assert_rc $? 0
+it 'empty archs (allow all)'
+pkg_arch_ok _t aarch64
+assert_rc $? 0
 
 it 'missing template (allow all)'
 rm -rf srcpkgs/_t
-pkg_arch_ok _t aarch64; assert_rc $? 0
+pkg_arch_ok _t aarch64
+assert_rc $? 0
 
 echo '== read_template_fields =='
 
 _mkfull_tpl() {
 	mkdir -p srcpkgs/_t
-	cat > srcpkgs/_t/template <<'EOF'
+	cat >srcpkgs/_t/template <<'EOF'
 # Template file for 'foo'
 pkgname=foo
 version=1.2.3
@@ -176,30 +204,38 @@ EOF
 _mkfull_tpl
 read_template_fields srcpkgs/_t/template
 
-it 'version';     assert_eq "$_tpl_version"     '1.2.3'
-it 'short_desc';  assert_eq "$_tpl_short_desc"  'A short description with spaces and = sign'
-it 'maintainer';  assert_eq "$_tpl_maintainer"  'Jane Doe'
-it 'homepage';    assert_eq "$_tpl_homepage"    'https://example.com/foo?bar=baz'
-it 'archs';       assert_eq "$_tpl_archs"       'x86_64 ~i686'
+it 'version'
+assert_eq "$_tpl_version" '1.2.3'
+it 'short_desc'
+assert_eq "$_tpl_short_desc" 'A short description with spaces and = sign'
+it 'maintainer'
+assert_eq "$_tpl_maintainer" 'Jane Doe'
+it 'homepage'
+assert_eq "$_tpl_homepage" 'https://example.com/foo?bar=baz'
+it 'archs'
+assert_eq "$_tpl_archs" 'x86_64 ~i686'
 
-cat > srcpkgs/_t/template <<'EOF'
+cat >srcpkgs/_t/template <<'EOF'
 version=1.0
 version=2.0
 EOF
 read_template_fields srcpkgs/_t/template
-it 'first version wins'; assert_eq "$_tpl_version" '1.0'
+it 'first version wins'
+assert_eq "$_tpl_version" '1.0'
 
-: > srcpkgs/_t/template
+: >srcpkgs/_t/template
 read_template_fields srcpkgs/_t/template
-it 'empty template -> empty version'; assert_eq "$_tpl_version" ''
-it 'empty template -> empty archs';   assert_eq "$_tpl_archs"   ''
+it 'empty template -> empty version'
+assert_eq "$_tpl_version" ''
+it 'empty template -> empty archs'
+assert_eq "$_tpl_archs" ''
 
 echo '== feed (feed.opml) helpers =='
 
 NVCONF="$PWD/nvchecker.toml"
 FEED_OPML="$PWD/feed.opml"
 
-cat > "$NVCONF" <<'EOF'
+cat >"$NVCONF" <<'EOF'
 [__config__]
 oldver = "old_ver.json"
 
@@ -234,20 +270,28 @@ pypi = "textual"
 EOF
 
 feed_urls_from_nvchecker aquamarine
-it 'nvchecker github rc';   assert_rc $? 0
-it 'nvchecker github xml';  assert_eq "$_feed_xml_url"  'https://github.com/hyprwm/aquamarine/tags.atom'
-it 'nvchecker github html'; assert_eq "$_feed_html_url" 'https://github.com/hyprwm/aquamarine/releases'
+it 'nvchecker github rc'
+assert_rc $? 0
+it 'nvchecker github xml'
+assert_eq "$_feed_xml_url" 'https://github.com/hyprwm/aquamarine/tags.atom'
+it 'nvchecker github html'
+assert_eq "$_feed_html_url" 'https://github.com/hyprwm/aquamarine/releases'
 
 feed_urls_from_nvchecker 'quickshell+'
-it 'nvchecker gitea xml';  assert_eq "$_feed_xml_url"  'https://git.outfoxxed.me/quickshell/quickshell/tags.rss'
-it 'nvchecker gitea html'; assert_eq "$_feed_html_url" 'https://git.outfoxxed.me/quickshell/quickshell/tags'
+it 'nvchecker gitea xml'
+assert_eq "$_feed_xml_url" 'https://git.outfoxxed.me/quickshell/quickshell/tags.rss'
+it 'nvchecker gitea html'
+assert_eq "$_feed_html_url" 'https://git.outfoxxed.me/quickshell/quickshell/tags'
 
 feed_urls_from_nvchecker hyprlock
-it 'nvchecker pkgname subst'; assert_eq "$_feed_xml_url" 'https://github.com/hyprwm/hyprlock/tags.atom'
+it 'nvchecker pkgname subst'
+assert_eq "$_feed_xml_url" 'https://github.com/hyprwm/hyprlock/tags.atom'
 
 feed_urls_from_nvchecker sdkmanager
-it 'nvchecker gitlab xml';  assert_eq "$_feed_xml_url"  'https://gitlab.com/fdroid/sdkmanager/-/tags?format=atom'
-it 'nvchecker gitlab html'; assert_eq "$_feed_html_url" 'https://gitlab.com/fdroid/sdkmanager/-/tags'
+it 'nvchecker gitlab xml'
+assert_eq "$_feed_xml_url" 'https://gitlab.com/fdroid/sdkmanager/-/tags?format=atom'
+it 'nvchecker gitlab html'
+assert_eq "$_feed_html_url" 'https://gitlab.com/fdroid/sdkmanager/-/tags'
 
 it 'nvchecker pypi rc'
 feed_urls_from_nvchecker 'python3-textual'
@@ -263,20 +307,24 @@ feed_urls_from_nvchecker aquamarine
 assert_rc $? 1
 
 feed_urls_from_homepage 'https://github.com/zen-browser/desktop'
-it 'homepage github xml';  assert_eq "$_feed_xml_url"  'https://github.com/zen-browser/desktop/tags.atom'
-it 'homepage github html'; assert_eq "$_feed_html_url" 'https://github.com/zen-browser/desktop/releases'
+it 'homepage github xml'
+assert_eq "$_feed_xml_url" 'https://github.com/zen-browser/desktop/tags.atom'
+it 'homepage github html'
+assert_eq "$_feed_html_url" 'https://github.com/zen-browser/desktop/releases'
 
 feed_urls_from_homepage 'https://codeberg.org/oSoWoSo/gum'
-it 'homepage codeberg xml'; assert_eq "$_feed_xml_url" 'https://codeberg.org/oSoWoSo/gum/tags.rss'
+it 'homepage codeberg xml'
+assert_eq "$_feed_xml_url" 'https://codeberg.org/oSoWoSo/gum/tags.rss'
 
 feed_urls_from_homepage 'https://gitlab.com/fdroid/sdkmanager'
-it 'homepage gitlab xml'; assert_eq "$_feed_xml_url" 'https://gitlab.com/fdroid/sdkmanager/-/tags?format=atom'
+it 'homepage gitlab xml'
+assert_eq "$_feed_xml_url" 'https://gitlab.com/fdroid/sdkmanager/-/tags?format=atom'
 
 it 'homepage website rc'
 feed_urls_from_homepage 'https://hyprland.org/'
 assert_rc $? 1
 
-cat > "$FEED_OPML" <<'EOF'
+cat >"$FEED_OPML" <<'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <opml version="2.0">
     <body>
@@ -291,15 +339,21 @@ cat > "$FEED_OPML" <<'EOF'
 </opml>
 EOF
 
-feed_opml_has drako;       assert_rc $? 0
-feed_opml_has 'quickshell+'; assert_rc $? 0
-feed_opml_has gofer;       assert_rc $? 1
-feed_opml_has _t;          assert_rc $? 1
+feed_opml_has drako
+assert_rc $? 0
+feed_opml_has 'quickshell+'
+assert_rc $? 0
+feed_opml_has gofer
+assert_rc $? 1
+feed_opml_has _t
+assert_rc $? 1
 
 rm -f "$FEED_OPML"
-feed_opml_has drako;       assert_rc $? 1
+feed_opml_has drako
+assert_rc $? 1
 
-it 'xml escape'; assert_eq "$(feed_xml_escape 'a&b<c>d"e')" 'a&amp;b&lt;c&gt;d&quot;e'
+it 'xml escape'
+assert_eq "$(feed_xml_escape 'a&b<c>d"e')" 'a&amp;b&lt;c&gt;d&quot;e'
 
 # Fake transport binaries live in one directory; the surfer CLI section
 # below reuses it, so the directory outlives every section that needs it.
@@ -316,8 +370,8 @@ echo '== prune_orphans / delete_orphan_files =='
 # first and the litter cleaned afterwards, in do_upload's order.
 rm -rf srcpkgs
 mkdir -p srcpkgs/keepme srcpkgs/alsokeep
-: > srcpkgs/keepme/template
-: > srcpkgs/alsokeep/template
+: >srcpkgs/keepme/template
+: >srcpkgs/alsokeep/template
 
 eval "$(awk '
 	/^prune_orphans\(\)/ {p=1}
@@ -329,7 +383,7 @@ eval "$(awk '
 # Record the paths handed to delete_remote instead of touching a transport, so
 # the assertion is about the LIST ocoman builds, not about a particular client.
 _DELETED=$(mktemp)
-delete_remote() { printf '%s\n' "$1" >> "$_DELETED"; }
+delete_remote() { printf '%s\n' "$1" >>"$_DELETED"; }
 _SCRIPT_DIR_BACKUP="$SCRIPT_DIR"
 SCRIPT_DIR="$PWD"
 SRCPKGS=srcpkgs ARCH=x86_64
@@ -346,10 +400,10 @@ it 'orphans file lists only removed packages'
 assert_eq "$(sort "$_orphans" | tr '\n' ',')" 'dropped,gone,'
 
 it 'prune_orphans only detects; it issues no delete'
-assert_eq "$(wc -c < "$_DELETED" | tr -d ' ')" '0'
+assert_eq "$(wc -c <"$_DELETED" | tr -d ' ')" '0'
 
 it 'delete_orphan_files removes the binary and its signature'
-: > "$_DELETED"
+: >"$_DELETED"
 delete_orphan_files "$_orphans" "$(printf '%s\n' 'gone-1.0_1.x86_64.xbps')" >/dev/null 2>&1
 it 'deletes the .xbps'
 assert_eq "$(grep -c '^/x86_64/gone-1\.0_1\.x86_64\.xbps$' "$_DELETED")" '1'
@@ -357,21 +411,30 @@ it 'deletes the .sig2 alongside it'
 assert_eq "$(grep -c '^/x86_64/gone-1\.0_1\.x86_64\.xbps\.sig2$' "$_DELETED")" '1'
 
 it 'delete_orphan_files leaves packages that still have a template'
-assert_eq "$(grep -c 'keepme' "$_DELETED"; true)" '0'
-assert_eq "$(grep -c 'alsokeep' "$_DELETED"; true)" '0'
+assert_eq "$(
+	grep -c 'keepme' "$_DELETED"
+	true
+)" '0'
+assert_eq "$(
+	grep -c 'alsokeep' "$_DELETED"
+	true
+)" '0'
 
 it 'delete_orphan_files ignores an unlisted orphan'
-: > "$_DELETED"
+: >"$_DELETED"
 delete_orphan_files "$(printf '%s\n' 'gone\n')" "$(printf '%s\n' \
 	'gone-1.0_1.x86_64.xbps' \
 	'keepme-1.0_1.x86_64.xbps')" >/dev/null 2>&1
-assert_eq "$(grep -c 'keepme' "$_DELETED"; true)" '0'
+assert_eq "$(
+	grep -c 'keepme' "$_DELETED"
+	true
+)" '0'
 
 it 'delete_orphan_files is a no-op with an empty orphan list'
-: > "$_DELETED"
-: > "$_empty_orphans"
+: >"$_DELETED"
+: >"$_empty_orphans"
 delete_orphan_files "$_empty_orphans" "$(printf '%s\n' 'gone-1.0_1.x86_64.xbps')" >/dev/null 2>&1
-assert_eq "$(wc -c < "$_DELETED" | tr -d ' ')" '0'
+assert_eq "$(wc -c <"$_DELETED" | tr -d ' ')" '0'
 
 rm -f "$_orphans" "$_empty_orphans" "$_DELETED"
 rm -rf srcpkgs
@@ -384,7 +447,6 @@ eval "$(awk '
 	p {print}
 	p && /^}$/           {p=0}
 ' "$SCRIPT_DIR/ocoman")"
-
 
 echo '== do_upload: arch isolation (P0) =='
 
@@ -458,20 +520,24 @@ CLONE_DEST="$_init_test_dir/empty"
 mkdir "$CLONE_DEST"
 OCOMAN_INIT_FORCE=
 it 'init permits an empty destination without force'
-(init_destination_guard >/dev/null 2>&1); assert_rc $? 0
+(init_destination_guard >/dev/null 2>&1)
+assert_rc $? 0
 
 mkdir "$CLONE_DEST/valuable"
 it 'init refuses to delete a non-empty destination by default'
-(init_destination_guard >/dev/null 2>&1); assert_rc $? 1
+(init_destination_guard >/dev/null 2>&1)
+assert_rc $? 1
 
 OCOMAN_INIT_FORCE=1
 it 'init permits a non-empty destination with explicit force'
-(init_destination_guard >/dev/null 2>&1); assert_rc $? 0
+(init_destination_guard >/dev/null 2>&1)
+assert_rc $? 0
 
 OCOMAN_INIT_FORCE=
 CLONE_DEST=/
 it 'init refuses a dangerous root destination by default'
-(init_destination_guard >/dev/null 2>&1); assert_rc $? 1
+(init_destination_guard >/dev/null 2>&1)
+assert_rc $? 1
 rm -rf "$_init_test_dir"
 
 echo '== repodata-list.py =='
@@ -490,7 +556,7 @@ open("index.plist","wb").write(plistlib.dumps({
 '
 		tar -cf x86_64-repodata index.plist
 		python3 "$SCRIPT_DIR/src/repodata-list.py" x86_64-repodata | sort | tr '\n' ','
-	) > "$_wd/out"
+	) >"$_wd/out"
 	it 'lists all package names'
 	assert_eq "$(cat "$_wd/out")" 'alpha,alpha-devel,zeta,'
 
@@ -499,16 +565,23 @@ open("index.plist","wb").write(plistlib.dumps({
 		python3 -c 'import plistlib; open("index.plist","wb").write(plistlib.dumps({}, fmt=plistlib.FMT_XML))'
 		tar -cf empty-repodata index.plist
 		python3 "$SCRIPT_DIR/src/repodata-list.py" empty-repodata
-	) > "$_wd/out"; _rc=$?
-	it 'empty index: rc 0';        assert_rc "$_rc" 0
-	it 'empty index: no output';   assert_eq "$(cat "$_wd/out")" ''
+	) >"$_wd/out"
+	_rc=$?
+	it 'empty index: rc 0'
+	assert_rc "$_rc" 0
+	it 'empty index: no output'
+	assert_eq "$(cat "$_wd/out")" ''
 
-	python3 "$SCRIPT_DIR/src/repodata-list.py" >/dev/null 2>&1; _rc=$?
-	it 'missing arg: rc 2';        assert_rc "$_rc" 2
+	python3 "$SCRIPT_DIR/src/repodata-list.py" >/dev/null 2>&1
+	_rc=$?
+	it 'missing arg: rc 2'
+	assert_rc "$_rc" 2
 
-	echo bogus > "$_wd/garbage"
-	python3 "$SCRIPT_DIR/src/repodata-list.py" "$_wd/garbage" >/dev/null 2>&1; _rc=$?
-	it 'garbage input: rc 1';      assert_rc "$_rc" 1
+	echo bogus >"$_wd/garbage"
+	python3 "$SCRIPT_DIR/src/repodata-list.py" "$_wd/garbage" >/dev/null 2>&1
+	_rc=$?
+	it 'garbage input: rc 1'
+	assert_rc "$_rc" 1
 
 	if command -v zstd >/dev/null 2>&1; then
 		(
@@ -522,7 +595,7 @@ open("index.plist","wb").write(plistlib.dumps({
 			tar -cf zst.tar index.plist
 			zstd -q -o zst-repodata zst.tar
 			python3 "$SCRIPT_DIR/src/repodata-list.py" zst-repodata | sort | tr '\n' ','
-		) > "$_wd/out"
+		) >"$_wd/out"
 		it 'zstd input: lists all entries'
 		assert_eq "$(cat "$_wd/out")" 'zst-a,zst-b,'
 
@@ -530,14 +603,14 @@ open("index.plist","wb").write(plistlib.dumps({
 			cd "$_wd" || exit 1
 			python3 "$SCRIPT_DIR/src/repodata-strip.py" zst-repodata zst-a >/dev/null
 			head -c 4 zst-repodata | od -An -tx1 | tr -d ' \n'
-		) > "$_wd/out"
+		) >"$_wd/out"
 		it 'zstd strip: output is still zstd'
 		assert_eq "$(cat "$_wd/out")" '28b52ffd'
 
 		(
 			cd "$_wd" || exit 1
 			python3 "$SCRIPT_DIR/src/repodata-list.py" zst-repodata | tr '\n' ','
-		) > "$_wd/out"
+		) >"$_wd/out"
 		it 'zstd strip: surviving entry is correct'
 		assert_eq "$(cat "$_wd/out")" 'zst-b,'
 	else
@@ -571,7 +644,7 @@ with open("index.plist", "wb") as f:
 import sys, plistlib
 print(",".join(sorted(plistlib.loads(sys.stdin.buffer.read()).keys())))
 '
-	) > "$_workdir/out"
+	) >"$_workdir/out"
 	it 'strips listed entry; leaves rest'
 	assert_eq "$(cat "$_workdir/out")" 'alpha,gamma'
 	rm -rf "$_workdir"
@@ -583,7 +656,8 @@ echo '== repo key plists =='
 
 if command -v python3 >/dev/null 2>&1; then
 	for _plist in "$SCRIPT_DIR/oco-repo-key.plist"; do
-		_plist_have=$(python3 - "$_plist" <<'PYEOF'
+		_plist_have=$(
+			python3 - "$_plist" <<'PYEOF'
 import plistlib, base64, hashlib, sys
 d = plistlib.load(open(sys.argv[1], 'rb'))
 pub = d['public-key']
@@ -643,7 +717,7 @@ if fp != 'df:ec:10:ef:5c:03:e9:e0:9e:86:77:08:c2:b5:a8:cb':
     raise SystemExit('fingerprint mismatch: ' + fp)
 print('ok')
 PYEOF
-)
+		)
 		it "parses and key fingerprint matches: ${_plist#"$SCRIPT_DIR"/}"
 		assert_eq "$_plist_have" 'ok'
 	done
@@ -658,9 +732,9 @@ if command -v python3 >/dev/null 2>&1; then
 	mkdir -p "$_gf_wd/results/build-results-x86_64" \
 		"$_gf_wd/results/build-results-aarch64" \
 		"$_gf_wd/srcpkgs/tor"
-	printf 'tor\t0.4.8.11\tok\nfailme\t1.0\tfail\n' > "$_gf_wd/results/build-results-x86_64/results.tsv"
-	printf 'tor\t0.4.8.11\tok\n' > "$_gf_wd/results/build-results-aarch64/results.tsv"
-	cat > "$_gf_wd/srcpkgs/tor/template" <<'EOF'
+	printf 'tor\t0.4.8.11\tok\nfailme\t1.0\tfail\n' >"$_gf_wd/results/build-results-x86_64/results.tsv"
+	printf 'tor\t0.4.8.11\tok\n' >"$_gf_wd/results/build-results-aarch64/results.tsv"
+	cat >"$_gf_wd/srcpkgs/tor/template" <<'EOF'
 version=0.4.8.11
 homepage=https://example.org/tor
 short_desc="An overlay network"
@@ -671,39 +745,51 @@ EOF
 	it 'first run: one item per ok pkg'
 	assert_eq "$(grep -c '<item>' "$_gf_wd/feed.xml")" '1'
 	it 'item title carries pkg+version'
-	grep -q '<title>tor 0.4.8.11</title>' "$_gf_wd/feed.xml"; assert_rc $? 0
+	grep -q '<title>tor 0.4.8.11</title>' "$_gf_wd/feed.xml"
+	assert_rc $? 0
 	it 'guid = pkg-version'
-	grep -q 'guid isPermaLink="false">tor-0.4.8.11' "$_gf_wd/feed.xml"; assert_rc $? 0
+	grep -q 'guid isPermaLink="false">tor-0.4.8.11' "$_gf_wd/feed.xml"
+	assert_rc $? 0
 	it 'ok arches listed, failed arch skipped'
-	grep -q 'Archs: aarch64 x86_64' "$_gf_wd/feed.xml"; assert_rc $? 0
+	grep -q 'Archs: aarch64 x86_64' "$_gf_wd/feed.xml"
+	assert_rc $? 0
 	it 'template homepage used as item link'
-	grep -q '<link>https://example.org/tor</link>' "$_gf_wd/feed.xml"; assert_rc $? 0
+	grep -q '<link>https://example.org/tor</link>' "$_gf_wd/feed.xml"
+	assert_rc $? 0
 	it 'codeberg is the only template link in description'
-	grep -q 'codeberg.org/oSoWoSo/oco/src/branch/OCO/srcpkgs/tor/template">template</a>' "$_gf_wd/feed.xml"; assert_rc $? 0
-	grep -vq 'github.com/oSoWoSo/oco/blob/OCO/srcpkgs/tor/template' "$_gf_wd/feed.xml"; assert_rc $? 0
+	grep -q 'codeberg.org/oSoWoSo/oco/src/branch/OCO/srcpkgs/tor/template">template</a>' "$_gf_wd/feed.xml"
+	assert_rc $? 0
+	grep -vq 'github.com/oSoWoSo/oco/blob/OCO/srcpkgs/tor/template' "$_gf_wd/feed.xml"
+	assert_rc $? 0
 	it 'CI run link in description'
-	grep -q 'actions/runs/42' "$_gf_wd/feed.xml"; assert_rc $? 0
+	grep -q 'actions/runs/42' "$_gf_wd/feed.xml"
+	assert_rc $? 0
 	it 'output is valid XML'
-	python3 -c 'import sys, xml.etree.ElementTree as ET; ET.parse(sys.argv[1])' "$_gf_wd/feed.xml"; assert_rc $? 0
+	python3 -c 'import sys, xml.etree.ElementTree as ET; ET.parse(sys.argv[1])' "$_gf_wd/feed.xml"
+	assert_rc $? 0
 
 	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
 		"$_gf_wd/feed.xml" "$_gf_wd/results" 99 2026-09-11 "$_gf_wd/srcpkgs" >/dev/null
 	it 'same-version rebuild: no new item'
 	assert_eq "$(grep -c '<item>' "$_gf_wd/feed.xml")" '1'
 	it 'same-version rebuild: date updated'
-	grep -q 'Fri, 11 Sep 2026' "$_gf_wd/feed.xml"; assert_rc $? 0
+	grep -q 'Fri, 11 Sep 2026' "$_gf_wd/feed.xml"
+	assert_rc $? 0
 	it 'same-version rebuild: run link updated'
-	grep -q 'actions/runs/99' "$_gf_wd/feed.xml"; assert_rc $? 0
+	grep -q 'actions/runs/99' "$_gf_wd/feed.xml"
+	assert_rc $? 0
 
-	printf 'tor\t0.4.8.12\tok\n' > "$_gf_wd/results/build-results-x86_64/results.tsv"
+	printf 'tor\t0.4.8.12\tok\n' >"$_gf_wd/results/build-results-x86_64/results.tsv"
 	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
 		"$_gf_wd/feed.xml" "$_gf_wd/results" 100 2026-09-12 "$_gf_wd/srcpkgs" >/dev/null
 	it 'version bump adds new item'
 	assert_eq "$(grep -c '<item>' "$_gf_wd/feed.xml")" '2'
 	it 'history retains previous version'
-	grep -q 'tor-0.4.8.11' "$_gf_wd/feed.xml"; assert_rc $? 0
+	grep -q 'tor-0.4.8.11' "$_gf_wd/feed.xml"
+	assert_rc $? 0
 	it 'history adds new version item'
-	grep -q 'tor-0.4.8.12' "$_gf_wd/feed.xml"; assert_rc $? 0
+	grep -q 'tor-0.4.8.12' "$_gf_wd/feed.xml"
+	assert_rc $? 0
 
 	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
 		"$_gf_wd/feed.xml" "$_gf_wd/empty" 100 2026-09-12 "$_gf_wd/srcpkgs" 2>/dev/null >/dev/null
@@ -713,7 +799,7 @@ EOF
 	mkdir -p "$_gf_wd/cap/build-results-x86_64"
 	_i=0
 	while [ "$_i" -lt 1100 ]; do
-		printf 'pkg%s\t%s.0\tok\n' "$_i" "$_i" >> "$_gf_wd/cap/build-results-x86_64/results.tsv"
+		printf 'pkg%s\t%s.0\tok\n' "$_i" "$_i" >>"$_gf_wd/cap/build-results-x86_64/results.tsv"
 		_i=$((_i + 1))
 	done
 	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
@@ -732,9 +818,9 @@ print(" ".join(i.findtext("title", "").split()[0]
 	mkdir -p "$_gf_wd/ts/a/build-results-x86_64" \
 		"$_gf_wd/ts/b/build-results-x86_64" \
 		"$_gf_wd/ts/c/build-results-x86_64"
-	printf 'alpha\t1.0\tok\n' > "$_gf_wd/ts/a/build-results-x86_64/results.tsv"
-	printf 'bravo\t1.0\tok\n' > "$_gf_wd/ts/b/build-results-x86_64/results.tsv"
-	printf 'charlie\t1.0\tok\n' > "$_gf_wd/ts/c/build-results-x86_64/results.tsv"
+	printf 'alpha\t1.0\tok\n' >"$_gf_wd/ts/a/build-results-x86_64/results.tsv"
+	printf 'bravo\t1.0\tok\n' >"$_gf_wd/ts/b/build-results-x86_64/results.tsv"
+	printf 'charlie\t1.0\tok\n' >"$_gf_wd/ts/c/build-results-x86_64/results.tsv"
 	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
 		"$_gf_wd/ts.xml" "$_gf_wd/ts/a" 200 2026-09-20T08:00:00Z "$_gf_wd/srcpkgs" >/dev/null
 	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
@@ -742,23 +828,26 @@ print(" ".join(i.findtext("title", "").split()[0]
 	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
 		"$_gf_wd/ts.xml" "$_gf_wd/ts/c" 202 2026-09-20T06:00:00Z "$_gf_wd/srcpkgs" >/dev/null
 	it 'ISO run date: pubDate keeps the time of day'
-	grep -q '<pubDate>Sun, 20 Sep 2026 08:00:00 +0000</pubDate>' "$_gf_wd/ts.xml"; assert_rc $? 0
+	grep -q '<pubDate>Sun, 20 Sep 2026 08:00:00 +0000</pubDate>' "$_gf_wd/ts.xml"
+	assert_rc $? 0
 	it 'ISO run date: description shows the bare date only'
-	grep -q 'Built on: 2026-09-20' "$_gf_wd/ts.xml"; assert_rc $? 0
+	grep -q 'Built on: 2026-09-20' "$_gf_wd/ts.xml"
+	assert_rc $? 0
 	it 'same-day items sort newest first'
 	assert_eq "$(_titles "$_gf_wd/ts.xml")" 'bravo alpha charlie'
 
 	mkdir -p "$_gf_wd/leg/build-results-x86_64"
-	printf 'legacy\t1.0\tok\n' > "$_gf_wd/leg/build-results-x86_64/results.tsv"
+	printf 'legacy\t1.0\tok\n' >"$_gf_wd/leg/build-results-x86_64/results.tsv"
 	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
 		"$_gf_wd/leg.xml" "$_gf_wd/leg" 300 2026-09-20 "$_gf_wd/srcpkgs" >/dev/null
 	it 'legacy date-only run date means midnight UTC'
-	grep -q '<pubDate>Sun, 20 Sep 2026 00:00:00 +0000</pubDate>' "$_gf_wd/leg.xml"; assert_rc $? 0
+	grep -q '<pubDate>Sun, 20 Sep 2026 00:00:00 +0000</pubDate>' "$_gf_wd/leg.xml"
+	assert_rc $? 0
 
 	mkdir -p "$_gf_wd/mix/old/build-results-x86_64" \
 		"$_gf_wd/mix/new/build-results-x86_64"
-	printf 'zzz\t1.0\tok\n' > "$_gf_wd/mix/old/build-results-x86_64/results.tsv"
-	printf 'aaa\t1.0\tok\n' > "$_gf_wd/mix/new/build-results-x86_64/results.tsv"
+	printf 'zzz\t1.0\tok\n' >"$_gf_wd/mix/old/build-results-x86_64/results.tsv"
+	printf 'aaa\t1.0\tok\n' >"$_gf_wd/mix/new/build-results-x86_64/results.tsv"
 	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
 		"$_gf_wd/mix.xml" "$_gf_wd/mix/old" 400 2026-09-20T08:00:00Z "$_gf_wd/srcpkgs" >/dev/null
 	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
@@ -768,24 +857,26 @@ print(" ".join(i.findtext("title", "").split()[0]
 
 	mkdir -p "$_gf_wd/off/a/build-results-x86_64" \
 		"$_gf_wd/off/b/build-results-x86_64"
-	printf 'zzz\t1.0\tok\n' > "$_gf_wd/off/a/build-results-x86_64/results.tsv"
-	printf 'aaa\t1.0\tok\n' > "$_gf_wd/off/b/build-results-x86_64/results.tsv"
+	printf 'zzz\t1.0\tok\n' >"$_gf_wd/off/a/build-results-x86_64/results.tsv"
+	printf 'aaa\t1.0\tok\n' >"$_gf_wd/off/b/build-results-x86_64/results.tsv"
 	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
 		"$_gf_wd/off.xml" "$_gf_wd/off/a" 500 2026-09-20T09:00:00Z "$_gf_wd/srcpkgs" >/dev/null
 	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
 		"$_gf_wd/off.xml" "$_gf_wd/off/b" 501 2026-09-20T12:00:00+02:00 "$_gf_wd/srcpkgs" >/dev/null
 	it 'numeric offset: kept in pubDate'
-	grep -q '<pubDate>Sun, 20 Sep 2026 12:00:00 +0200</pubDate>' "$_gf_wd/off.xml"; assert_rc $? 0
+	grep -q '<pubDate>Sun, 20 Sep 2026 12:00:00 +0200</pubDate>' "$_gf_wd/off.xml"
+	assert_rc $? 0
 	it 'numeric offset: sorts by instant, not wall clock'
 	assert_eq "$(_titles "$_gf_wd/off.xml")" 'aaa zzz'
 
 	mkdir -p "$_gf_wd/junk/build-results-x86_64"
-	printf 'junked\t1.0\tok\n' > "$_gf_wd/junk/build-results-x86_64/results.tsv"
+	printf 'junked\t1.0\tok\n' >"$_gf_wd/junk/build-results-x86_64/results.tsv"
 	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
 		"$_gf_wd/junk.xml" "$_gf_wd/junk" 600 "not-a-date" "$_gf_wd/srcpkgs" >/dev/null
 	it 'unparsable run date: falls back to now instead of aborting'
 	grep -q "<pubDate>[A-Za-z]*, [0-9][0-9] [A-Za-z]* $(date -u +%Y) " \
-		"$_gf_wd/junk.xml"; assert_rc $? 0
+		"$_gf_wd/junk.xml"
+	assert_rc $? 0
 
 	rm -rf "$_gf_wd"
 else
@@ -803,11 +894,11 @@ _detect_wd=$(mktemp -d)
 mkdir -p "$_detect_wd/bin" "$_detect_wd/srcpkgs/alpha" \
 	"$_detect_wd/srcpkgs/beta" "$_detect_wd/srcpkgs/alias-parent" "$_detect_wd/src"
 cp "$SCRIPT_DIR/src/pkg-helpers.sh" "$_detect_wd/src/pkg-helpers.sh"
-: > "$_detect_wd/srcpkgs/alpha/template"
-: > "$_detect_wd/srcpkgs/beta/template"
-: > "$_detect_wd/srcpkgs/alias-parent/template"
+: >"$_detect_wd/srcpkgs/alpha/template"
+: >"$_detect_wd/srcpkgs/beta/template"
+: >"$_detect_wd/srcpkgs/alias-parent/template"
 ln -s alias-parent "$_detect_wd/srcpkgs/alias-child"
-cat > "$_detect_wd/bin/git" <<'EOF'
+cat >"$_detect_wd/bin/git" <<'EOF'
 #!/bin/sh
 printf '%s\n' "$*" >> "$GIT_LOG"
 case "$1" in
@@ -823,7 +914,7 @@ cp "$SCRIPT_DIR/.github/scripts/ci/build-detect.sh" "$_detect_wd/detect.sh"
 _run_detect_case() {
 	_case_name=$1 _before=$2 _ref=${3:-refs/heads/OCO} _event=${4:-push} _target=${5:-production}
 	mkdir -p "$_detect_wd/out-$_case_name"
-	: > "$_detect_wd/git-$_case_name.log"
+	: >"$_detect_wd/git-$_case_name.log"
 	(
 		cd "$_detect_wd" || exit 1
 		PATH="$_detect_wd/bin:$PATH_BACKUP"
@@ -842,7 +933,8 @@ _run_detect_case() {
 }
 
 _nonzero_before=1234567890abcdef1234567890abcdef12345678
-_run_detect_case unavailable "$_nonzero_before" >/dev/null 2>&1; _detect_rc=$?
+_run_detect_case unavailable "$_nonzero_before" >/dev/null 2>&1
+_detect_rc=$?
 it 'unavailable immutable OCO base executes the workflow step'
 assert_rc "$_detect_rc" 0
 _detected=$(grep '^packages=' "$_detect_wd/out-unavailable/output" | cut -d= -f2-)
@@ -854,7 +946,10 @@ assert_eq "$_has_alias" '0'
 it 'unavailable immutable OCO base infers no removals'
 assert_eq "$(grep '^removed=' "$_detect_wd/out-unavailable/output" | cut -d= -f2-)" ''
 it 'unavailable immutable OCO base produces a non-empty matrix'
-assert_eq "$(grep '^matrix=' "$_detect_wd/out-unavailable/output" | grep -c '"config":\[{' ; true)" '1'
+assert_eq "$(
+	grep '^matrix=' "$_detect_wd/out-unavailable/output" | grep -c '"config":\[{'
+	true
+)" '1'
 it 'unavailable immutable OCO base fetches only the exact event SHA'
 assert_eq "$(grep -c '^fetch --no-tags origin ' "$_detect_wd/git-unavailable.log")" '1'
 assert_eq "$(grep '^fetch ' "$_detect_wd/git-unavailable.log" | cut -d' ' -f4)" "$_nonzero_before"
@@ -863,7 +958,8 @@ assert_eq "$(grep '^publish_target=' "$_detect_wd/out-unavailable/output" | cut 
 assert_eq "$(grep '^repository_prefix=' "$_detect_wd/out-unavailable/output" | cut -d= -f2-)" ''
 
 _zero_sha=0000000000000000000000000000000000000000
-_run_detect_case initial "$_zero_sha" >/dev/null 2>&1; _detect_rc=$?
+_run_detect_case initial "$_zero_sha" >/dev/null 2>&1
+_detect_rc=$?
 it 'zero-SHA initial OCO push executes the workflow step'
 assert_rc "$_detect_rc" 0
 it 'zero-SHA initial OCO push builds all real packages and no aliases'
@@ -871,9 +967,15 @@ assert_eq "$(grep '^packages=' "$_detect_wd/out-initial/output" | cut -d= -f2-)"
 it 'zero-SHA initial OCO push infers no removals'
 assert_eq "$(grep '^removed=' "$_detect_wd/out-initial/output" | cut -d= -f2-)" ''
 it 'zero-SHA initial OCO push produces a non-empty matrix'
-assert_eq "$(grep '^matrix=' "$_detect_wd/out-initial/output" | grep -c '"config":\[{' ; true)" '1'
+assert_eq "$(
+	grep '^matrix=' "$_detect_wd/out-initial/output" | grep -c '"config":\[{'
+	true
+)" '1'
 it 'zero-SHA initial OCO push does not attempt a git fetch'
-assert_eq "$(grep -c '^fetch ' "$_detect_wd/git-initial.log"; true)" '0'
+assert_eq "$(
+	grep -c '^fetch ' "$_detect_wd/git-initial.log"
+	true
+)" '0'
 
 _run_detect_case feature 0000000000000000000000000000000000000000 refs/heads/feature push production >/dev/null 2>&1
 it 'non-OCO push always selects isolated testing path'
@@ -901,76 +1003,88 @@ eval "$(awk '
 ' "$SCRIPT_DIR/.github/workflows/build.yml")"
 
 _mknc_tpl() {
-  local _name="$1"; shift
-  mkdir -p "srcpkgs/${_name}"
-  : > "srcpkgs/${_name}/template"
-  while [ $# -gt 0 ]; do
-    printf '%s\n' "$1" >> "srcpkgs/${_name}/template"
-    shift
-  done
+	local _name="$1"
+	shift
+	mkdir -p "srcpkgs/${_name}"
+	: >"srcpkgs/${_name}/template"
+	while [ $# -gt 0 ]; do
+		printf '%s\n' "$1" >>"srcpkgs/${_name}/template"
+		shift
+	done
 }
 
 it 'missing template returns 1'
 rm -rf srcpkgs/ghost
 _cnc_visited=""
-_check_nocross_chain ghost; assert_rc $? 1
+_check_nocross_chain ghost
+assert_rc $? 1
 
 it 'direct nocross returns 0'
 _mknc_tpl nc1 'nocross=yes'
 _cnc_visited=""
-_check_nocross_chain nc1; assert_rc $? 0
+_check_nocross_chain nc1
+assert_rc $? 0
 
 it 'no nocross no deps returns 1'
 _mknc_tpl plain1
 _cnc_visited=""
-_check_nocross_chain plain1; assert_rc $? 1
+_check_nocross_chain plain1
+assert_rc $? 1
 
 it 'dep via hostmakedepends with nocross returns 0'
 _mknc_tpl nc_dep 'nocross=yes'
 _mknc_tpl pkg_hmd "hostmakedepends=\"nc_dep\""
 _cnc_visited=""
-_check_nocross_chain pkg_hmd; assert_rc $? 0
+_check_nocross_chain pkg_hmd
+assert_rc $? 0
 
 it 'dep via makedepends with nocross returns 0'
 _mknc_tpl nc_dep2 'nocross=yes'
 _mknc_tpl pkg_mkd "makedepends=\"nc_dep2\""
 _cnc_visited=""
-_check_nocross_chain pkg_mkd; assert_rc $? 0
+_check_nocross_chain pkg_mkd
+assert_rc $? 0
 
 it 'dep via depends with nocross returns 0'
 _mknc_tpl nc_dep3 'nocross=yes'
 _mknc_tpl pkg_dep "depends=\"nc_dep3\""
 _cnc_visited=""
-_check_nocross_chain pkg_dep; assert_rc $? 0
+_check_nocross_chain pkg_dep
+assert_rc $? 0
 
 it 'transitive chain (3 deep) returns 0'
 _mknc_tpl nc_leaf 'nocross=yes'
 _mknc_tpl chain_b "hostmakedepends=\"nc_leaf\""
 _mknc_tpl chain_a "hostmakedepends=\"chain_b\""
 _cnc_visited=""
-_check_nocross_chain chain_a; assert_rc $? 0
+_check_nocross_chain chain_a
+assert_rc $? 0
 
 it 'versioned dep (>=) stripped correctly'
 _mknc_tpl nc_ver 'nocross=yes'
 _mknc_tpl pkg_ver "hostmakedepends=\"nc_ver>=1.0\""
 _cnc_visited=""
-_check_nocross_chain pkg_ver; assert_rc $? 0
+_check_nocross_chain pkg_ver
+assert_rc $? 0
 
 it 'circular dep without nocross returns 1 (no infinite loop)'
 _mknc_tpl circ_a "hostmakedepends=\"circ_b\""
 _mknc_tpl circ_b "hostmakedepends=\"circ_a\""
 _cnc_visited=""
-_check_nocross_chain circ_a; assert_rc $? 1
+_check_nocross_chain circ_a
+assert_rc $? 1
 
 it 'external dep (no template) skipped, returns 1'
 _mknc_tpl pkg_ext "hostmakedepends=\"no-such-pkg\""
 _cnc_visited=""
-_check_nocross_chain pkg_ext; assert_rc $? 1
+_check_nocross_chain pkg_ext
+assert_rc $? 1
 
 it 'visited guard prevents re-entry'
 _mknc_tpl pkg_guard
 _cnc_visited=" pkg_guard"
-_check_nocross_chain pkg_guard; assert_rc $? 1
+_check_nocross_chain pkg_guard
+assert_rc $? 1
 
 echo
 echo '== Forgejo workflow compatibility =='
@@ -981,7 +1095,10 @@ echo '== Forgejo workflow compatibility =='
 for _fw in "$SCRIPT_DIR"/.forgejo/workflows/*.yml; do
 	[ -f "$_fw" ] || continue
 	it "no permissions field in ${_fw##*/}"
-	assert_eq "$(grep -c '^[[:space:]]*permissions:' "$_fw"; true)" '0'
+	assert_eq "$(
+		grep -c '^[[:space:]]*permissions:' "$_fw"
+		true
+	)" '0'
 done
 
 echo
@@ -992,9 +1109,9 @@ if command -v python3 >/dev/null 2>&1; then
 	mkdir -p "$_cui_wd/results/build-results-x86_64" \
 		"$_cui_wd/results/build-results-aarch64"
 	printf 'zen-browser-bin\t1.22.1\tok\nz-fail\t1.0\tok\nbump\t3.2.1\tskip\n' \
-		> "$_cui_wd/results/build-results-x86_64/results.tsv"
+		>"$_cui_wd/results/build-results-x86_64/results.tsv"
 	printf 'zen-browser-bin\t1.22.1\tok\nz-fail\t1.0\tfail\nbump\t3.2.1\tok\n' \
-		> "$_cui_wd/results/build-results-aarch64/results.tsv"
+		>"$_cui_wd/results/build-results-aarch64/results.tsv"
 
 	it 'results: ok/fail versions collected per pkg'
 	assert_eq "$(python3 -c '
@@ -1145,7 +1262,6 @@ else
 	echo '  (skipped: python3 not on PATH)'
 fi
 
-
 echo '== surf transport: surfer CLI backend =='
 
 # ocoman reaches Surfer only through the @cloudron/surfer CLI, so every case
@@ -1159,7 +1275,7 @@ PATH="$_FAKE_BIN:$PATH_BACKUP"
 export PATH
 export SURFER_TOKEN=dummy SURFER_USER=dummy-user
 
-cat > "$_FAKE_BIN/surfer" <<'EOF'
+cat >"$_FAKE_BIN/surfer" <<'EOF'
 #!/bin/sh
 # Scripted fake surfer. One directive per line in $FAKE_SURFER_SCRIPT:
 #   listing:<file>  print 'Entries:' plus the tab-indented paths in <file>,
@@ -1218,7 +1334,7 @@ _SCOUNT=$(mktemp)
 _LISTING=$(mktemp)
 _REPO_BODY=$(mktemp)
 _repodate_member="$_TEST_TMP/index.plist"
-printf '<plist version="1.0"><dict/></plist>' > "$_repodate_member"
+printf '<plist version="1.0"><dict/></plist>' >"$_repodate_member"
 tar -cf "$_REPO_BODY" -C "$_TEST_TMP" index.plist
 
 # The fake reads its script and its invocation counter from these; keep them
@@ -1230,8 +1346,8 @@ _cli_reset() {
 	_SURF_READY=''
 	HOME="$_CLI_HOME"
 	export HOME
-	: > "$_SARGV"
-	printf '0' > "$_SCOUNT"
+	: >"$_SARGV"
+	printf '0' >"$_SCOUNT"
 }
 
 _cli_reset
@@ -1240,7 +1356,8 @@ assert_eq "$(command -v surfer)" "$_FAKE_BIN/surfer"
 
 _cli_reset
 it 'surf_cli_init accepts an installed CLI with credentials'
-surf_cli_init >/dev/null 2>&1; _rc=$?
+surf_cli_init >/dev/null 2>&1
+_rc=$?
 assert_rc "$_rc" 0
 assert_eq "$_SURF_READY" '1'
 
@@ -1257,75 +1374,89 @@ assert_eq "$(stat -c '%a' "$_CLI_HOME/.surfer.json")" '600'
 it 'the password never reaches the process list'
 # grep -c prints 0 and exits 1 on no match, so read the count without a
 # fallback that would append a second line.
-assert_eq "$(grep -c 'dummy' "$_SARGV" 2>/dev/null; true)" '0'
+assert_eq "$(
+	grep -c 'dummy' "$_SARGV" 2>/dev/null
+	true
+)" '0'
 
 _cli_reset
 it 'a missing surfer CLI is fatal'
 # Not "move the fake aside": this host may carry a real surfer in PATH, and
 # the failure has to hold even so.
-out=$(PATH=/nonexistent surf_cli_init 2>&1); _rc=$?
-PATH="$_FAKE_BIN:$PATH_BACKUP"; export PATH
+out=$(PATH=/nonexistent surf_cli_init 2>&1)
+_rc=$?
+PATH="$_FAKE_BIN:$PATH_BACKUP"
+export PATH
 assert_rc "$_rc" 1
 it '...and says so'
 case "$out" in
-	*'not in PATH'*) assert_eq 'ok' 'ok' ;;
-	*) assert_eq "$out" 'a message naming PATH' ;;
+*'not in PATH'*) assert_eq 'ok' 'ok' ;;
+*) assert_eq "$out" 'a message naming PATH' ;;
 esac
 
 _cli_reset
 it 'missing credentials are fatal'
-out=$(SURFER_USER='' SURFER_TOKEN='' surf_cli_init 2>&1); _rc=$?
+out=$(SURFER_USER='' SURFER_TOKEN='' surf_cli_init 2>&1)
+_rc=$?
 assert_rc "$_rc" 1
 it '...and an empty username is named as the problem'
 case "$out" in
-	*'SURFER_USER'*) assert_eq 'ok' 'ok' ;;
-	*) assert_eq "$out" 'a message naming SURFER_USER' ;;
+*'SURFER_USER'*) assert_eq 'ok' 'ok' ;;
+*) assert_eq "$out" 'a message naming SURFER_USER' ;;
 esac
 
 _cli_reset
 it 'an empty app password is fatal'
-out=$(SURFER_TOKEN='' surf_cli_init 2>&1); _rc=$?
+out=$(SURFER_TOKEN='' surf_cli_init 2>&1)
+_rc=$?
 assert_rc "$_rc" 1
 it '...and is named as the problem'
 case "$out" in
-	*'SURFER_TOKEN'*) assert_eq 'ok' 'ok' ;;
-	*) assert_eq "$out" 'a message naming SURFER_TOKEN' ;;
+*'SURFER_TOKEN'*) assert_eq 'ok' 'ok' ;;
+*) assert_eq "$out" 'a message naming SURFER_TOKEN' ;;
 esac
 
-printf '/x86_64/foo-1.0_1.x86_64.xbps\n/x86_64/bar-2.0_1.x86_64.xbps\n/x86_64/subdir/\n' > "$_LISTING"
-printf 'listing:%s\n' "$_LISTING" > "$_SSCRIPT"
+printf '/x86_64/foo-1.0_1.x86_64.xbps\n/x86_64/bar-2.0_1.x86_64.xbps\n/x86_64/subdir/\n' >"$_LISTING"
+printf 'listing:%s\n' "$_LISTING" >"$_SSCRIPT"
 _cli_reset
-printf 'listing:%s\n' "$_LISTING" > "$_SSCRIPT"
+printf 'listing:%s\n' "$_LISTING" >"$_SSCRIPT"
 it 'fetch_remote_list parses a listing into basenames'
-_list=$(fetch_remote_list '/x86_64'); _rc=$?
+_list=$(fetch_remote_list '/x86_64')
+_rc=$?
 assert_rc "$_rc" 0
 assert_eq "$_list" "$(printf 'foo-1.0_1.x86_64.xbps\nbar-2.0_1.x86_64.xbps')"
 it '...passing the API-relative path straight through'
 assert_eq "$(cat "$_SARGV")" 'get /x86_64'
 it '...and skipping the directory entry'
-assert_eq "$(printf '%s\n' "$_list" | grep -c 'subdir'; true)" '0'
+assert_eq "$(
+	printf '%s\n' "$_list" | grep -c 'subdir'
+	true
+)" '0'
 
-printf 'empty\n' > "$_SSCRIPT"
+printf 'empty\n' >"$_SSCRIPT"
 _cli_reset
-printf 'empty\n' > "$_SSCRIPT"
+printf 'empty\n' >"$_SSCRIPT"
 it 'fetch_remote_list treats an empty directory as no packages'
-_list=$(fetch_remote_list '/x86_64' 2>/dev/null); _rc=$?
+_list=$(fetch_remote_list '/x86_64' 2>/dev/null)
+_rc=$?
 assert_rc "$_rc" 0
 assert_eq "$_list" ''
 
-printf 'missing\n' > "$_SSCRIPT"
+printf 'missing\n' >"$_SSCRIPT"
 _cli_reset
-printf 'missing\n' > "$_SSCRIPT"
+printf 'missing\n' >"$_SSCRIPT"
 it 'fetch_remote_list treats a 404 as no packages, not a failure'
-_list=$(fetch_remote_list '/x86_64' 2>/dev/null); _rc=$?
+_list=$(fetch_remote_list '/x86_64' 2>/dev/null)
+_rc=$?
 assert_rc "$_rc" 0
 assert_eq "$_list" ''
 
-printf 'connect\n' > "$_SSCRIPT"
+printf 'connect\n' >"$_SSCRIPT"
 _cli_reset
-printf 'connect\n' > "$_SSCRIPT"
+printf 'connect\n' >"$_SSCRIPT"
 it 'fetch_remote_list fails on a transport error'
-fetch_remote_list '/x86_64' >/dev/null 2>&1; _rc=$?
+fetch_remote_list '/x86_64' >/dev/null 2>&1
+_rc=$?
 if [ "$_rc" -eq 0 ]; then
 	assert_eq 'reported success on a dead host' 'nonzero rc'
 else
@@ -1333,109 +1464,127 @@ else
 fi
 
 _out="$_TEST_TMP/repodata.out"
-printf 'bytes:%s\n' "$_REPO_BODY" > "$_SSCRIPT"
+printf 'bytes:%s\n' "$_REPO_BODY" >"$_SSCRIPT"
 _cli_reset
-printf 'bytes:%s\n' "$_REPO_BODY" > "$_SSCRIPT"
+printf 'bytes:%s\n' "$_REPO_BODY" >"$_SSCRIPT"
 it 'fetch_repodata downloads the index'
-fetch_repodata '/x86_64/x86_64-repodata' "$_out" 2>/dev/null; _rc=$?
+fetch_repodata '/x86_64/x86_64-repodata' "$_out" 2>/dev/null
+_rc=$?
 assert_rc "$_rc" 0
 assert_eq "$(tar -tf "$_out" 2>/dev/null | head -n1)" 'index.plist'
 it '...from the API-relative path'
 assert_eq "$(tail -n 1 "$_SARGV")" 'get /x86_64/x86_64-repodata'
 
 _JUNK_BODY=$(mktemp)
-printf 'not an index at all\n' > "$_JUNK_BODY"
-printf 'bytes:%s\n' "$_JUNK_BODY" > "$_SSCRIPT"
+printf 'not an index at all\n' >"$_JUNK_BODY"
+printf 'bytes:%s\n' "$_JUNK_BODY" >"$_SSCRIPT"
 _cli_reset
-printf 'bytes:%s\n' "$_JUNK_BODY" > "$_SSCRIPT"
+printf 'bytes:%s\n' "$_JUNK_BODY" >"$_SSCRIPT"
 it 'fetch_repodata rejects a payload that is not an index'
-SURF_DEADLINE=0 fetch_repodata '/x86_64/x86_64-repodata' "$_out" 2>/dev/null; _rc=$?
+SURF_DEADLINE=0 fetch_repodata '/x86_64/x86_64-repodata' "$_out" 2>/dev/null
+_rc=$?
 SURF_DEADLINE=1500
 assert_rc "$_rc" 2
 it '...and leaves no payload behind'
 assert_eq "$([ -e "$_out" ] && echo present || echo absent)" 'absent'
 rm -f "$_JUNK_BODY"
 
-printf 'missing\n' > "$_SSCRIPT"
+printf 'missing\n' >"$_SSCRIPT"
 _cli_reset
-printf 'missing\n' > "$_SSCRIPT"
+printf 'missing\n' >"$_SSCRIPT"
 it 'a missing index reports "first run", not an error'
-fetch_repodata '/x86_64/x86_64-repodata' "$_out" 2>/dev/null; _rc=$?
+fetch_repodata '/x86_64/x86_64-repodata' "$_out" 2>/dev/null
+_rc=$?
 assert_rc "$_rc" 1
 it '...and leaves no partial file behind'
 assert_eq "$([ -e "$_out" ] && echo present || echo absent)" 'absent'
 
-printf 'token\n' > "$_SSCRIPT"
+printf 'token\n' >"$_SSCRIPT"
 _cli_reset
-printf 'token\n' > "$_SSCRIPT"
+printf 'token\n' >"$_SSCRIPT"
 it 'rejected credentials give up immediately'
-SURF_DEADLINE=0 fetch_repodata '/x86_64/x86_64-repodata' "$_out" 2>/dev/null; _rc=$?
+SURF_DEADLINE=0 fetch_repodata '/x86_64/x86_64-repodata' "$_out" 2>/dev/null
+_rc=$?
 SURF_DEADLINE=1500
 assert_rc "$_rc" 2
 it '...after a single attempt, not a retry storm'
 assert_eq "$(cat "$_SCOUNT")" '1'
 
-printf 'connect\n' > "$_SSCRIPT"
+printf 'connect\n' >"$_SSCRIPT"
 _cli_reset
-printf 'connect\n' > "$_SSCRIPT"
-printf '1' > "$_SCOUNT"
+printf 'connect\n' >"$_SSCRIPT"
+printf '1' >"$_SCOUNT"
 it 'a transport error is retried until the deadline'
-SURF_DEADLINE=0 fetch_repodata '/x86_64/x86_64-repodata' "$_out" 2>/dev/null; _rc=$?
+SURF_DEADLINE=0 fetch_repodata '/x86_64/x86_64-repodata' "$_out" 2>/dev/null
+_rc=$?
 SURF_DEADLINE=1500
 assert_rc "$_rc" 2
 
 _pkg="$_TEST_TMP/foo-1.0_1.x86_64.xbps"
-: > "$_pkg"
+: >"$_pkg"
 _cli_reset
-printf 'ok\n' > "$_SSCRIPT"
+printf 'ok\n' >"$_SSCRIPT"
 it 'upload_file uploads into the destination directory'
-upload_file "$_pkg" '/x86_64' >/dev/null 2>&1; _rc=$?
+upload_file "$_pkg" '/x86_64' >/dev/null 2>&1
+_rc=$?
 assert_rc "$_rc" 0
 it '...with a trailing-slash directory, as "put" requires'
 assert_eq "$(cat "$_SARGV")" "put $_pkg /x86_64/"
 it '...and never with -d, which would purge files we did not upload'
-assert_eq "$(grep -c -- ' -d' "$_SARGV" 2>/dev/null; true)" '0'
+assert_eq "$(
+	grep -c -- ' -d' "$_SARGV" 2>/dev/null
+	true
+)" '0'
 _cli_reset
-printf 'ok\n' > "$_SSCRIPT"
+printf 'ok\n' >"$_SSCRIPT"
 it 'delete_remote always reaches the server'
-delete_remote '/x86_64/foo-1.0_1.x86_64.xbps' >/dev/null 2>&1; _rc=$?
+delete_remote '/x86_64/foo-1.0_1.x86_64.xbps' >/dev/null 2>&1
+_rc=$?
 assert_rc "$_rc" 0
 assert_eq "$(cat "$_SARGV")" 'del -y /x86_64/foo-1.0_1.x86_64.xbps'
 it '...and never leaves the delete without -y to skip the prompt'
-assert_eq "$(grep -c '^del -y ' "$_SARGV"; true)" '1'
+assert_eq "$(
+	grep -c '^del -y ' "$_SARGV"
+	true
+)" '1'
 it '...and issues no MKCOL, which the CLI does not have'
-assert_eq "$(grep -ci 'mkcol' "$_SARGV"; true)" '0'
+assert_eq "$(
+	grep -ci 'mkcol' "$_SARGV"
+	true
+)" '0'
 
 SURF_PATH_PREFIX=testing
-printf 'listing:%s\n' "$_LISTING" > "$_SSCRIPT"
+printf 'listing:%s\n' "$_LISTING" >"$_SSCRIPT"
 _cli_reset
-printf 'listing:%s\n' "$_LISTING" > "$_SSCRIPT"
+printf 'listing:%s\n' "$_LISTING" >"$_SSCRIPT"
 it 'testing fetch/list paths are prefixed'
 fetch_remote_list '/x86_64' >/dev/null 2>&1
 assert_eq "$(cat "$_SARGV")" 'get /testing/x86_64'
 
-printf 'bytes:%s\n' "$_REPO_BODY" > "$_SSCRIPT"
+printf 'bytes:%s\n' "$_REPO_BODY" >"$_SSCRIPT"
 _cli_reset
-printf 'bytes:%s\n' "$_REPO_BODY" > "$_SSCRIPT"
+printf 'bytes:%s\n' "$_REPO_BODY" >"$_SSCRIPT"
 it 'testing repodata fetch path is prefixed'
 fetch_repodata '/x86_64/x86_64-repodata' "$_out" >/dev/null 2>&1
 assert_eq "$(cat "$_SARGV")" 'get /testing/x86_64/x86_64-repodata'
 
 _cli_reset
-printf 'ok\n' > "$_SSCRIPT"
+printf 'ok\n' >"$_SSCRIPT"
 it 'testing package put path is prefixed'
 upload_file "$_pkg" '/x86_64' >/dev/null 2>&1
 assert_eq "$(cat "$_SARGV")" "put $_pkg /testing/x86_64/"
 
 _cli_reset
-printf 'ok\n' > "$_SSCRIPT"
+printf 'ok\n' >"$_SSCRIPT"
 it 'testing cleanup/delete path is prefixed'
 delete_remote '/x86_64/foo-1.0_1.x86_64.xbps' >/dev/null 2>&1
 assert_eq "$(cat "$_SARGV")" 'del -y /testing/x86_64/foo-1.0_1.x86_64.xbps'
 it 'testing arch-page URL is prefixed while retaining the Surfer host'
 assert_eq "$(SURFER_URL="$SURFER_URL" surf_api_path '/x86_64')" '/testing/x86_64'
 it 'invalid slash-only prefix fails closed instead of mapping to production'
-SURF_PATH_PREFIX=/; surf_api_path '/x86_64' >/dev/null 2>&1; _rc=$?
+SURF_PATH_PREFIX=/
+surf_api_path '/x86_64' >/dev/null 2>&1
+_rc=$?
 assert_rc "$_rc" 1
 SURF_PATH_PREFIX=testing
 it 'arch-page generation derives public repository URL through prefix mapping'
@@ -1447,16 +1596,19 @@ SURF_PATH_PREFIX=''
 # End to end through the fake: the delete_remote stub from the prune_orphans
 # section is gone, so this drives the real one into surfer del.
 _orphan_list=$(mktemp)
-printf 'gone\n' > "$_orphan_list"
+printf 'gone\n' >"$_orphan_list"
 _cli_reset
-printf 'ok\n' > "$_SSCRIPT"
+printf 'ok\n' >"$_SSCRIPT"
 it 'delete_orphan_files removes orphan binaries through the CLI'
 delete_orphan_files "$_orphan_list" "$(printf '%s\n' \
 	'gone-1.0_1.x86_64.xbps' \
 	'keepme-1.0_1.x86_64.xbps')" >/dev/null 2>&1
 assert_eq "$(cat "$_SARGV")" "$(printf 'del -y /x86_64/gone-1.0_1.x86_64.xbps\ndel -y /x86_64/gone-1.0_1.x86_64.xbps.sig2')"
 it '...leaving a package that still has a template alone'
-assert_eq "$(grep -c 'keepme' "$_SARGV"; true)" '0'
+assert_eq "$(
+	grep -c 'keepme' "$_SARGV"
+	true
+)" '0'
 rm -f "$_orphan_list"
 
 # Leave no trace: the fake config file and the isolated HOME go away with
@@ -1476,8 +1628,11 @@ python3 "$SCRIPT_DIR/tests/test_autobump_batch.py" || _FAIL=$((_FAIL + 1))
 echo '== autobump-release.py =='
 python3 "$SCRIPT_DIR/tests/test_autobump_release.py" || _FAIL=$((_FAIL + 1))
 
-echo '== surfer-publish.py =='
-python3 "$SCRIPT_DIR/tests/test_surfer_publish.py" || _FAIL=$((_FAIL + 1))
+echo '== mirror-pr.py =='
+python3 "$SCRIPT_DIR/tests/test_mirror_pr.py" || _FAIL=$((_FAIL + 1))
+
+echo '== Codeberg PR webhook relay =='
+node --test "$SCRIPT_DIR/.github/webhook-relay/test_worker.mjs" || _FAIL=$((_FAIL + 1))
 
 echo
 printf 'Passed: %s    Failed: %s\n' "$_PASS" "$_FAIL"

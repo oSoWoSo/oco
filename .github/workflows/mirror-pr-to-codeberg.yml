@@ -1,0 +1,40 @@
+name: Mirror pull request to Codeberg
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited]
+    branches: [OCO]
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted base revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+
+      - name: Mirror PR to Codeberg
+        env:
+          SOURCE_FORGE: github
+          EVENT_ACTION: ${{ github.event.action }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_HEAD_REPO_URL: ${{ github.event.pull_request.head.repo.clone_url }}
+          # Set CODEBERG_TOKEN to a Codeberg token with repository write access.
+
+          TARGET_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+          TARGET_API_ROOT: https://codeberg.org/api/v1/repos/oSoWoSo/oco
+          TARGET_GIT_URL: https://codeberg.org/oSoWoSo/oco.git
+          TARGET_GIT_USERNAME: oSoWoSo
+        run: python3 .github/scripts/ci/mirror-pr.py

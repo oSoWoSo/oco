@@ -1,0 +1,31 @@
+name: Mirror Codeberg PR in GitHub Actions
+
+on:
+  repository_dispatch:
+    types: [codeberg_pr]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout trusted default-branch revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Mirror Codeberg PR to GitHub
+        env:
+          SOURCE_FORGE: codeberg
+          EVENT_ACTION: ${{ github.event.client_payload.action }}
+          PR_NUMBER: ${{ github.event.client_payload.number }}
+          TARGET_TOKEN: ${{ github.token }}
+          TARGET_API_ROOT: https://api.github.com/repos/oSoWoSo/oco
+          TARGET_GIT_URL: https://github.com/oSoWoSo/oco.git
+          TARGET_GIT_USERNAME: x-access-token
+        run: python3 .github/scripts/ci/mirror-pr.py

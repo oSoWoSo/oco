@@ -231,7 +231,7 @@ Create PR
 | graphite-gtk-theme-nord-light | 2026.08.23 | [home](https://github.com/vinceliuice/Graphite-gtk-theme) | zenobit |  | Material design inspired GTK theme with light and dark variants |
 | graphite-gtk-theme-nord-light-compact | 2026.08.23 | [home](https://github.com/vinceliuice/Graphite-gtk-theme) | zenobit |  | Material design inspired GTK theme with light and dark variants |
 | gum-panel | 2.0.0.001 | [home](https://codeberg.org/oSoWoSo/gum) | zenobit |  | Modified version of gum with panel support |
-| helium-browser-bin | 0.20.1.1 | [home](https://helium.computer) | zenobit | x86_64 aarch64 | Private, fast, and honest web browser based on Chromium (binary build) |
+| helium-browser-bin | 0.20.2.1 | [home](https://helium.computer) | zenobit | x86_64 aarch64 | Private, fast, and honest web browser based on Chromium (binary build) |
 | hister | 0.21.0 | [home](https://github.com/asciimoo/hister) | zenobit |  | Your own search engine |
 | hyprcursor | 0.1.13 | [home](https://github.com/hyprwm/hyprcursor) | zenobit |  | Hyprland cursor format, library and utilities |
 | hyprdynamicmonitors | 1.4.0 | [home](https://github.com/fiffeek/hyprdynamicmonitors) | zenobit |  | Hyprland configuration based on connected displays, power and lid state |

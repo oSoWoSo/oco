@@ -1,6 +1,6 @@
 # Template file for 'morgenwm'
 pkgname=morgenwm
-version=0.2.1
+version=0.3.1
 revision=1
 hostmakedepends="nim pkg-config"
 makedepends="libxkbcommon-devel wayland-devel"
@@ -11,17 +11,17 @@ license="GPL-3.0-only"
 homepage="https://codeberg.org/LinuxNation/MorgenWM"
 changelog="https://codeberg.org/LinuxNation/MorgenWM/raw/branch/master/CHANGELOG.md"
 distfiles="https://codeberg.org/LinuxNation/MorgenWM/archive/v${version}.tar.gz"
-checksum=c95147c1979d6610dc14d30572087c9a79887901a35268565e801b69757b857b
+checksum=7cb9db63fa026af217af0045936ceaa34b13648ca2bf91202cdc8824fd06ceec
 conf_files="/etc/morgenwm/config.toml"
 
 do_build() {
-	for _bin in morgenwm launch_morgenwm morgenwm_msg morgenwm_keys; do
+	for _bin in morgenwm morgenwm_setup launch_morgenwm morgenwm_msg morgenwm_keys; do
 		nim c --noNimblePath -d:release -o:bin/$_bin src/${_bin}.nim
 	done
 }
 
 do_install() {
-	for _bin in morgenwm launch_morgenwm morgenwm_msg morgenwm_keys; do
+	for _bin in morgenwm morgenwm_setup launch_morgenwm morgenwm_msg morgenwm_keys; do
 		vbin bin/$_bin
 	done
 	vinstall example/morgenwm.desktop 644 usr/share/wayland-sessions

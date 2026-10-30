@@ -1,6 +1,6 @@
 # Template file for 'cosmic-launcher'
 pkgname=cosmic-launcher
-version=1.10.0
+version=1.11.0
 revision=1
 build_style=cargo
 hostmakedepends="pkg-config just"
@@ -11,7 +11,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="GPL-3.0-only"
 homepage="https://github.com/pop-os/cosmic-launcher"
 distfiles="https://github.com/pop-os/cosmic-launcher/archive/refs/tags/epoch-${version}.tar.gz"
-checksum=6700ad7c036b323f877fbedd43d021f50128651af4265554466eb3847013774a
+checksum=82a510d7d472c68cdd1137363704c1f6a91b37de4f48e5a1f844242de79f941d
 
 do_install() {
 	just cargo-target-dir="target/${RUST_TARGET}" rootdir="${DESTDIR}" prefix=/usr install

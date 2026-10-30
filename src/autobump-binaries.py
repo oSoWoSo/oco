@@ -9,7 +9,7 @@ import shutil
 import sys
 
 ARCHES = {"x86_64", "x86_64-musl", "aarch64", "aarch64-musl"}
-HOSTS = {"x86_64", "aarch64"}
+HOSTS = {"x86_64", "x86_64-musl", "aarch64", "aarch64-musl"}
 
 
 def sha256(path: Path) -> str:

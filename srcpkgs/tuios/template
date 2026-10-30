@@ -1,7 +1,7 @@
 # Template file for 'tuios'
 pkgname=tuios
-version=0.10.1
-revision=2
+version=0.11.1
+revision=1
 build_style=go
 build_helper=qemu
 go_import_path="github.com/Gaurav-Gosain/tuios"
@@ -12,7 +12,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://github.com/Gaurav-Gosain/tuios"
 distfiles="https://github.com/Gaurav-Gosain/tuios/archive/refs/tags/v${version}.tar.gz"
-checksum=91af8abe671c5c79d0eac7b2b045ca61ef9023241edefd4d636becbedcc0ec0f
+checksum=a083bafc5dd6d73c1d8564ee1b4151541738c26d28467a7b5ebcefeba1c1d057
 
 post_install() {
 	vlicense LICENSE

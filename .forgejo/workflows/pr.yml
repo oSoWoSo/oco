@@ -1,0 +1,123 @@
+name: Validate pull request
+
+on:
+  pull_request:
+    branches:
+      - OCO
+    paths:
+      - 'srcpkgs/**'
+
+jobs:
+  validate:
+    name: PR check
+    runs-on: codeberg-medium
+    timeout-minutes: 10
+    container:
+      image: ghcr.io/osowoso/oco-builder-x86_64:latest
+      options: >-
+        --volume /dev:/dev
+
+    steps:
+      - name: Checkout pull request
+        uses: https://data.forgejo.org/actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+          ref: ${{ forgejo.event.pull_request.head.sha }}
+          path: extra
+
+      - name: Regenerate generated files
+        working-directory: extra
+        run: |
+          set -eu
+          ./ocoman -u
+          if ! git diff --quiet -- README.md .github/workflows/build.yml; then
+            echo 'Generated files are out of date. Run ./ocoman -u and commit the result.' >&2
+            git diff -- README.md .github/workflows/build.yml
+            exit 1
+          fi
+
+      - name: Detect changed packages
+        working-directory: extra
+        env:
+          BASE_SHA: ${{ forgejo.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ forgejo.event.pull_request.head.sha }}
+        run: |
+          set -eu
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          git cat-file -e "$BASE_SHA^{commit}"
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- srcpkgs/ \
+            | awk -F/ 'NF >= 2 { print $2 }' \
+            | sort -u > "$RUNNER_TEMP/changed-packages"
+          echo 'Changed packages:'
+          cat "$RUNNER_TEMP/changed-packages"
+
+      - name: Prepare Void checkout
+        run: |
+          set -eu
+          SHLIBS_FILE=/void-packages/common/shlibs extra/ocoman -l
+          while IFS= read -r package; do
+            [ -n "$package" ] || continue
+            source="$GITHUB_WORKSPACE/extra/srcpkgs/$package"
+            target="/void-packages/srcpkgs/$package"
+            if [ -e "$source" ] || [ -L "$source" ]; then
+              rm -rf "$target"
+              cp -a "$source" "$target"
+            else
+              rm -rf "$target"
+            fi
+          done < "$RUNNER_TEMP/changed-packages"
+          chown -R builder:builder /void-packages/srcpkgs /void-packages/common
+          : > "$RUNNER_TEMP/build-packages"
+          while IFS= read -r package; do
+            [ -f "/void-packages/srcpkgs/$package/template" ] || continue
+            [ -L "/void-packages/srcpkgs/$package" ] && continue
+            printf '%s\n' "$package" >> "$RUNNER_TEMP/build-packages"
+          done < "$RUNNER_TEMP/changed-packages"
+          echo 'Packages to lint and build:'
+          cat "$RUNNER_TEMP/build-packages"
+
+      - name: Lint templates
+        run: |
+          set -eu
+          cd /void-packages
+          failed=0
+          while IFS= read -r package; do
+            [ -n "$package" ] || continue
+            echo "==> Linting $package"
+            output=''
+            rc=0
+            output=$(sudo -Eu builder xlint "$package" 2>&1) || rc=$?
+            if [ "$rc" -ne 0 ] || [ -n "$output" ]; then
+              printf '%s\n' "Lint failed for $package:" "$output" >&2
+              failed=1
+            fi
+          done < "$RUNNER_TEMP/build-packages"
+          exit "$failed"
+
+      - name: Build packages
+        if: ${{ hashFiles('') != '' || true }}
+        run: |
+          set -eu
+          cd /void-packages
+          packages=$(tr '\n' ' ' < "$RUNNER_TEMP/build-packages")
+          [ -n "$packages" ] || {
+            echo 'No package templates changed; skipping build.'
+            exit 0
+          }
+          # xbps-uchroot(1) enters a new mount namespace, which needs
+          # CAP_SYS_ADMIN. The shared Codeberg runners do not grant it and
+          # the Forgejo runner drops --privileged from container.options, so
+          # fail with a readable reason instead of 'Failed to mount / private'.
+          if ! sudo -Eu builder xbps-uchroot /void-packages/masterdir-x86_64 \
+            /bin/true >/dev/null 2>&1; then
+            echo '::error::Cannot enter a mount namespace: this runner does not' \
+              'grant CAP_SYS_ADMIN, which xbps-uchroot(1) requires to build.' \
+              'Building needs a runner with container.privileged enabled.'
+            exit 1
+          fi
+          order=$(sudo -Eu builder ./xbps-src -Q sort-dependencies $packages)
+          for package in $order; do
+            echo "==> Building $package"
+            sudo -Eu builder ./xbps-src -Q pkg "$package"
+          done

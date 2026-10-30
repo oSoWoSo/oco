@@ -1,7 +1,7 @@
 # Template file for 'xdg-desktop-portal-cosmic'
 pkgname=xdg-desktop-portal-cosmic
-version=1.10.0
-revision=2
+version=1.11.0
+revision=1
 build_style=cargo
 hostmakedepends="just pkg-config llvm18 clang18"
 makedepends="libxkbcommon-devel libgbm-devel pipewire-devel llvm18-devel
@@ -12,7 +12,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="GPL-3.0-or-later"
 homepage="https://github.com/pop-os/xdg-desktop-portal-cosmic"
 distfiles="https://github.com/pop-os/xdg-desktop-portal-cosmic/archive/refs/tags/epoch-${version}.tar.gz"
-checksum=b80b6f443ddb1a43b6c02bb1e81ab1b9c1e93724990576ac88d88ef1ccc9c699
+checksum=5befa4beda6ee231ebaa553b3db53d794500b5646de385fd1f576a7406242f16
 
 do_install() {
 	just cargo-target-dir="target/${RUST_TARGET}" rootdir="${DESTDIR}" prefix=/usr install

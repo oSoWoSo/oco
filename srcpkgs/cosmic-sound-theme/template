@@ -1,6 +1,6 @@
 # Template file for 'cosmic-sound-theme'
 pkgname=cosmic-sound-theme
-version=1.10.0
+version=1.11.0
 revision=1
 build_style=meson
 short_desc="Sound theme for the COSMIC desktop environment"
@@ -8,4 +8,4 @@ maintainer="zenobit <zen@osowoso.org>"
 license="CC-BY-SA-4.0"
 homepage="https://github.com/pop-os/cosmic-sound-theme"
 distfiles="https://github.com/pop-os/cosmic-sound-theme/archive/refs/tags/epoch-${version}.tar.gz"
-checksum=4639c1e496e5c4387a9798f85f52ed2a9e0d466fddc5d0857a1d619e9d76dccb
+checksum=b523afe23c4b5bb58261156564b7527a1f719bc9b9917f9c6bd3c763d823291c

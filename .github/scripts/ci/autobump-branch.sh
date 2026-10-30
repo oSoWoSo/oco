@@ -42,7 +42,9 @@ done <"$plan"
 ./ocoman -u
 git add README.md
 if ! git diff --cached --quiet; then
-  git commit -m "CI: update"
+  # The README is regenerated for the batch: amend it into the last
+  # package commit instead of leaving a standalone "CI: update" commit.
+  git commit --amend --no-edit
 fi
 
 git push --force "https://x-access-token:${OCO_TOKEN}@github.com/${GH_REPO}.git" "HEAD:${BRANCH}"

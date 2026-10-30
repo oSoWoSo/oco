@@ -4,8 +4,6 @@ version=1.1.18
 revision=1
 build_style=cargo
 build_wrksrc="llmfit-tui"
-# tests assert exact f64 equality; differ by 1 ulp in release x86_64 builds
-make_check_args="-- --skip mcp_server::tests::plan_json_reports_disk_size_at_the_requested_quant --skip serve_api::tests::plan_json_reports_disk_size_at_the_requested_quant"
 make_install_args="--force"
 hostmakedepends="nodejs"
 short_desc="Hundreds of models & providers, easy to find what fits your hardware"

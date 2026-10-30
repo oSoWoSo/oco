@@ -35,17 +35,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Refuse production cleanup from non-OCO refs
-        if: inputs.repository_prefix == '' && github.ref != 'refs/heads/OCO'
-        env:
-          REF: ${{ github.ref }}
-        run: |
-          test "$REF" = refs/heads/OCO || { echo "::error::Production cleanup is only allowed on OCO (got: $REF)"; exit 1; }
 
       - name: Checkout request source
         uses: actions/checkout@v7
         with:
           persist-credentials: false
+
+      - name: Refuse production cleanup from non-OCO refs
+        if: inputs.repository_prefix == '' && github.ref != 'refs/heads/OCO'
+        env:
+          REF: ${{ github.ref }}
+        run: bash .github/scripts/ci/guard-oco-ref.sh
 
       - name: Create cleanup request
         env:
@@ -53,19 +53,9 @@ jobs:
           PREFIX: ${{ inputs.repository_prefix }}
           SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
-        run: |
-          set -eu
-          case "$PREFIX" in '' ) destination=production ;; testing ) destination=testing ;; *) echo "::error::Unsupported repository prefix"; exit 1 ;; esac
-          mkdir -p "$RUNNER_TEMP/surfer-publication"
-          python3 - "$RUNNER_TEMP/surfer-publication" "$destination" "$SHA" "$RUN_ID" "$PACKAGES" <<'PY'
-          import json, pathlib, sys
-          root = pathlib.Path(sys.argv[1])
-          packages = sys.argv[5].split()
-          manifest = {"schema_version": 1, "destination": sys.argv[2], "source_sha": sys.argv[3], "source_run_id": sys.argv[4], "package_arches": [], "result_arches": [], "purge_packages": packages, "update_arch_pages": False, "update_feed": False, "update_main_index": False}
-          (root / "manifest.json").write_text(json.dumps(manifest) + "\n")
-          if packages:
-              (root / "purge-packages.txt").write_text("\n".join(packages) + "\n")
-          PY
+          RUNNER_TEMP: ${{ runner.temp }}
+        run: bash .github/scripts/ci/cleanup-request.sh
+
 
       - uses: actions/upload-artifact@v7
         with:

@@ -7,9 +7,6 @@ on:
     paths:
       - 'srcpkgs/**'
 
-permissions:
-  contents: read
-
 jobs:
   validate:
     name: PR check
@@ -18,7 +15,6 @@ jobs:
     container:
       image: ghcr.io/osowoso/oco-builder-x86_64:latest
       options: >-
-        --privileged
         --volume /dev:/dev
 
     steps:
@@ -109,6 +105,17 @@ jobs:
             echo 'No package templates changed; skipping build.'
             exit 0
           }
+          # xbps-uchroot(1) enters a new mount namespace, which needs
+          # CAP_SYS_ADMIN. The shared Codeberg runners do not grant it and
+          # the Forgejo runner drops --privileged from container.options, so
+          # fail with a readable reason instead of 'Failed to mount / private'.
+          if ! sudo -Eu builder xbps-uchroot /void-packages/masterdir-x86_64 \
+            /bin/true >/dev/null 2>&1; then
+            echo '::error::Cannot enter a mount namespace: this runner does not' \
+              'grant CAP_SYS_ADMIN, which xbps-uchroot(1) requires to build.' \
+              'Building needs a runner with container.privileged enabled.'
+            exit 1
+          fi
           order=$(sudo -Eu builder ./xbps-src -Q sort-dependencies $packages)
           for package in $order; do
             echo "==> Building $package"

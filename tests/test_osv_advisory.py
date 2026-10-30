@@ -75,16 +75,43 @@ def test_affected_ranges_and_withdrawn_are_rendered():
     report = osv.make_report("demo", "2.0", "findings", [{
         "id": "OSV-1", "summary": "issue", "withdrawn": "2024-01-02T00:00:00Z",
         "affected": [{
-            "versions": ["1.0", "1.1"],
+            # The exhaustive version list must not be dumped into the report;
+            # only the compact range boundaries survive.
+            "versions": ["1.0", "1.1"] + [f"1.0.{i}" for i in range(500)],
             "ranges": [{"type": "SEMVER", "events": [
                 {"introduced": "0"}, {"fixed": "1.2.0"}
             ]}],
         }],
     }], all_upstream=True)
-    assert r"WITHDRAWN 2024\-01\-02T00:00:00Z" in report
-    assert r"versions: 1\.0, 1\.1" in report
+    assert r"**WITHDRAWN**" in report
+    assert "1.0, 1.1" not in report
+    assert "1.0.499" not in report
     assert r"SEMVER: introduced 0; fixed 1\.2\.0" in report
     assert "currently open" not in report
+
+
+def test_advisory_ids_link_to_osv_records():
+    report = osv.make_report("demo", "2.0", "findings", [
+        {"id": "GHSA-1234-5678-9abc", "aliases": ["CVE-2024-0001"],
+         "summary": "fixed issue",
+         "affected": [{"ranges": [{"type": "SEMVER", "events": [
+             {"introduced": "0"}, {"fixed": "1.2.0"}]}]}]},
+    ], all_upstream=True)
+    assert "[GHSA\\-1234\\-5678\\-9abc](https://osv.dev/vulnerability/GHSA-1234-5678-9abc)" in report
+    assert "[CVE\\-2024\\-0001](https://osv.dev/vulnerability/CVE-2024-0001)" in report
+    assert r"fixed 1\.2\.0" in report
+
+
+def test_report_is_capped_at_max_chars():
+    findings = [{"id": f"OSV-2024-{i:04d}", "summary": "x" * 200,
+                 "affected": [{"ranges": [{"type": "SEMVER", "events": [
+                     {"introduced": "0"}, {"fixed": f"1.{i}.0"}]}]}]}
+                for i in range(60)]
+    report = osv.make_report("demo", "1.0", "findings", findings, all_upstream=True,
+                             max_chars=1000)
+    assert len(report) <= 1000 + 400  # only the truncation note may push past the cap
+    assert "Report truncated" in report
+    assert "via the record links above" in report
 
 
 def test_fixed_and_open_advisories_are_highlighted():
@@ -100,8 +127,8 @@ def test_fixed_and_open_advisories_are_highlighted():
             "affected": [{"ranges": [{"events": [{"introduced": "0"}]}]}],
         },
     ], all_upstream=True)
-    assert "- 🟢 **FIXED** — **CVE\\-2024\\-0001**" in report
-    assert "- 🔴 **OPEN** — **CVE\\-2024\\-0002**" in report
+    assert "- 🟢 **FIXED** — **[CVE\\-2024\\-0001](https://osv.dev/vulnerability/CVE-2024-0001)**" in report
+    assert "- 🔴 **OPEN** — **[CVE\\-2024\\-0002](https://osv.dev/vulnerability/CVE-2024-0002)**" in report
 
 def test_pagination_finds_later_page_and_sends_token():
     path = mapping_file({"packages": {"demo": {
@@ -280,6 +307,9 @@ def test_repository_mappings_have_template_evidence_and_valid_identity_schema():
 if __name__ == "__main__":
     for test in [test_findings_and_query_identity,
                  test_all_upstream_omits_version_and_marks_scope,
+                 test_affected_ranges_and_withdrawn_are_rendered,
+                 test_advisory_ids_link_to_osv_records,
+                 test_report_is_capped_at_max_chars,
                  test_fixed_and_open_advisories_are_highlighted,
                  test_pagination_finds_later_page_and_sends_token,
                  test_pagination_rejects_malformed_and_repeated_tokens,

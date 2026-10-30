@@ -1,6 +1,6 @@
 # Template file for 'quickbox-gtk4'
 pkgname=quickbox-gtk4
-version=1.3.8
+version=1.3.10
 revision=1
 #archs="i686 x86_64"
 depends="gtk4 python3-gobject quickemu"
@@ -9,7 +9,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://github.com/musqz/quickbox"
 distfiles="https://github.com/musqz/quickbox/archive/refs/tags/v${version}.tar.gz"
-checksum=24a9b0a8939184c0b432f5a1b8a9d0955a216b59a6f3c690c8ca8e11798e965c
+checksum=10e77329e7ef4f81fbf05e141846e255d7bbb58f59f147efe59e140ecd00e679
 
 do_install() {
 	vbin quickbox

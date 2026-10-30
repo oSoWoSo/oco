@@ -1,6 +1,6 @@
 # Template file for 'cosmic-greeter'
 pkgname=cosmic-greeter
-version=1.10.0
+version=1.11.0
 revision=1
 build_style=cargo
 configure_args="--all"
@@ -12,7 +12,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="GPL-3.0-only"
 homepage="https://github.com/pop-os/cosmic-greeter"
 distfiles="https://github.com/pop-os/cosmic-greeter/archive/refs/tags/epoch-${version}.tar.gz"
-checksum=b4dcf23c2bc9719de4aa2c4c315ed30d1d142477b213fcca3d61856ef46dd9b8
+checksum=f31c5bac8e50ed5df75cb7d07fb8167e7835dc22b3438a48c8c1f27e7de36e48
 conf_files="/etc/pam.d/cosmic-greeter /etc/greetd/cosmic-greeter.toml"
 
 export VERGEN_GIT_COMMIT_DATE="${version}_${revision}"

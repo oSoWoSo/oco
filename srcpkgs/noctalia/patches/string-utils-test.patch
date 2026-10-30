@@ -1,0 +1,11 @@
+--- a/tests/string_utils_test.cpp
++++ b/tests/string_utils_test.cpp
+@@ -37,7 +37,7 @@
+       return false;
+     }
+     if (*actual != expected) {
+-      std::println(stderr, "string_utils_test: {}: expected {}, got {}", message, expected, *actual);
++      std::println(stderr, "string_utils_test: {}: expected {} words, got {} words", message, expected.size(), actual->size());
+       return false;
+     }
+     return true;

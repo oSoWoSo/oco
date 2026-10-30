@@ -12,11 +12,13 @@ on:
     branches: [OCO]
     paths:
       - srcpkgs/**
+      - .github/scripts/ci/lint-autobump-symlinks.sh
       - .github/scripts/lint-autobump-symlinks.sh
       - .github/workflows/lint-autobump-symlinks.yml
   pull_request:
     paths:
       - srcpkgs/**
+      - .github/scripts/ci/lint-autobump-symlinks.sh
       - .github/scripts/lint-autobump-symlinks.sh
       - .github/workflows/lint-autobump-symlinks.yml
   #schedule:
@@ -40,11 +42,4 @@ jobs:
           token: ${{ secrets.BOT }}
 
       - name: Run symlink lint
-        run: |
-          .github/scripts/lint-autobump-symlinks.sh 2>&1 | tee -a TMP
-          status=${PIPESTATUS[0]}
-          if [ "$status" -ne 0 ]; then
-            echo '### error:  ' >> "$GITHUB_STEP_SUMMARY"
-            grep -i 'error:' TMP | cut -d' ' -f2 | cut -d'/' -f2 >> "$GITHUB_STEP_SUMMARY"
-          fi
-          exit "$status"
+        run: bash .github/scripts/ci/lint-autobump-symlinks.sh

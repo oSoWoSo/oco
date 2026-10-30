@@ -1,18 +1,20 @@
 # Template file for 'bun'
 pkgname=bun
-version=1.4.2
+version=1.4.4
 revision=1
 archs="aarch64* x86_64*"
-hostmakedepends="bun-bootstrap cargo clang21 llvm21 lld21 rustup cmake ninja
+_llvm=23
+hostmakedepends="bun-bootstrap cargo clang${_llvm} llvm${_llvm} lld${_llvm} rustup cmake ninja
  pkg-config perl python3 tar unzip git nasm"
-makedepends="llvm21-devel compiler-rt21"
+makedepends="llvm${_llvm}-devel compiler-rt${_llvm}"
 checkdepends="procps-ng"
 short_desc="JavaScript runtime, bundler, transpiler, and package manager"
 maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://bun.sh"
 distfiles="https://github.com/oven-sh/bun/archive/refs/tags/bun-v${version}.tar.gz"
-checksum=e14670b117d69012d828514d657f0a3133d1c25d13d69461184d05b6a8e9a876
+checksum=00ce37fa5ac393a7d225bcf847365982fceb818b56a19b6884fefd67918468ff
+nocross="Use nocross"
 nopie_files="/usr/bin/bun"
 replaces="bun-bin>=0 bun-musl-bin>=0 bun-arm-bin>=0 bun-arm-musl-bin>=0"
 
@@ -25,8 +27,6 @@ do_patch() {
 	rustup toolchain install nightly-2026-07-20 --profile minimal
 	rustup component add rust-src --toolchain nightly-2026-07-20
 
-	# Initialize git repo in extracted source so bun can get GIT_SHA
-	# The tarball doesn't have git history which breaks compile-time constants
 	cd /builddir/bun-${version}
 	git init -q
 	git config user.email "build@voidlinux.org"
@@ -35,26 +35,36 @@ do_patch() {
 	git commit -q -m "Initial commit for build"
 }
 
+pre_configure() {
+	if [ "$XBPS_TARGET_MACHINE" = 'x86_64-musl' ] || [ "$XBPS_TARGET_MACHINE" = 'aarch64-musl' ]; then
+		install -m 0644 /dev/null /etc/alpine-release
+	fi
+}
+
 do_configure() {
 	export RUSTUP_HOME="${XBPS_BUILDDIR}/.rustup"
 	export CARGO_HOME="${XBPS_BUILDDIR}/.cargo"
-	export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/lib/llvm/21/bin:$PATH"
+	export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/lib/llvm/${_llvm}/bin:$PATH"
 	bun scripts/build.ts --profile=release --configure-only
 }
 
 do_build() {
 	export RUSTUP_HOME="${XBPS_BUILDDIR}/.rustup"
 	export CARGO_HOME="${XBPS_BUILDDIR}/.cargo"
-	export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/lib/llvm/21/bin:$PATH"
-	# Ensure bytecode directory exists
-	mkdir -p build/release/rust-target/x86_64-unknown-linux-gnu/release/deps
+	export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/lib/llvm/${_llvm}/bin:$PATH"
 	ninja -C build/release
+}
+
+post_build() {
+	if [ "$XBPS_TARGET_MACHINE" = 'x86_64-musl' ] || [ "$XBPS_TARGET_MACHINE" = 'aarch64-musl' ]; then
+		rm -f /etc/alpine-release
+	fi
 }
 
 do_check() {
 	export RUSTUP_HOME="${XBPS_BUILDDIR}/.rustup"
 	export CARGO_HOME="${XBPS_BUILDDIR}/.cargo"
-	export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/lib/llvm/21/bin:$PATH"
+	export PATH="${CARGO_HOME}/bin:${RUSTUP_HOME}/bin:/usr/lib/llvm/${_llvm}/bin:$PATH"
 	ninja -C build/release check
 }
 

@@ -817,12 +817,8 @@ esac
 EOF
 chmod +x "$_detect_wd/bin/git"
 
-# Extract precisely this step's shell body through the matrix output line.
-awk '
-	/^          \. src\/pkg-helpers\.sh$/ { p=1 }
-	p { sub(/^          /, ""); print }
-	p && /echo "matrix=/ { exit }
-' "$SCRIPT_DIR/src/build.yml.in" > "$_detect_wd/detect.sh"
+# Run the real Detect changed packages script rather than a reimplementation.
+cp "$SCRIPT_DIR/.github/scripts/ci/build-detect.sh" "$_detect_wd/detect.sh"
 
 _run_detect_case() {
 	_case_name=$1 _before=$2 _ref=${3:-refs/heads/OCO} _event=${4:-push} _target=${5:-production}
@@ -975,6 +971,18 @@ it 'visited guard prevents re-entry'
 _mknc_tpl pkg_guard
 _cnc_visited=" pkg_guard"
 _check_nocross_chain pkg_guard; assert_rc $? 1
+
+echo
+echo '== Forgejo workflow compatibility =='
+
+# Forgejo ignores the `permissions` key entirely and shows a warning on every
+# affected job (workflow-level or job-level). Grant capabilities with
+# Authorized Integrations instead, so the key must not come back here.
+for _fw in "$SCRIPT_DIR"/.forgejo/workflows/*.yml; do
+	[ -f "$_fw" ] || continue
+	it "no permissions field in ${_fw##*/}"
+	assert_eq "$(grep -c '^[[:space:]]*permissions:' "$_fw"; true)" '0'
+done
 
 echo
 echo '== close-update-issues.py =='
@@ -1447,6 +1455,12 @@ unset FAKE_SURFER_ARGV FAKE_SURFER_SCRIPT FAKE_SURFER_COUNT
 
 echo '== detect-update.sh =='
 python3 "$SCRIPT_DIR/tests/test_detect_update.py" || _FAIL=$((_FAIL + 1))
+
+echo '== autobump-batch.py =='
+python3 "$SCRIPT_DIR/tests/test_autobump_batch.py" || _FAIL=$((_FAIL + 1))
+
+echo '== autobump-release.py =='
+python3 "$SCRIPT_DIR/tests/test_autobump_release.py" || _FAIL=$((_FAIL + 1))
 
 echo '== surfer-publish.py =='
 python3 "$SCRIPT_DIR/tests/test_surfer_publish.py" || _FAIL=$((_FAIL + 1))

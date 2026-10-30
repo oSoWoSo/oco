@@ -8,9 +8,14 @@ import re
 import sys
 from pathlib import Path
 from urllib.error import HTTPError, URLError
+from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 OSV_QUERY_URL = "https://api.osv.dev/v1/query"
+OSV_RECORD_URL = "https://osv.dev/vulnerability/{id}"
+# GitHub refuses PR/issue bodies longer than 65536 characters; the OSV
+# section shares the body with the package table and build order.
+DEFAULT_MAX_CHARS = 20000
 
 
 def markdown_text(value: object) -> str:
@@ -88,7 +93,13 @@ def query_osv(query: dict, opener=urlopen):
 
 
 def affected_details(item) -> str:
-    """Render OSV affected versions and range boundaries without inferring status."""
+    """Render compact range boundaries; the explicit version list is skipped.
+
+    OSV advisories for large projects (e.g. llama.cpp) enumerate thousands of
+    versions, which would blow past GitHub's PR body size limit. The range
+    boundaries (introduced/fixed/last_affected) plus the record link carry the
+    same signal in a few characters; the full list stays one click away.
+    """
     affected = item.get("affected", [])
     if not isinstance(affected, list):
         return ""
@@ -96,30 +107,33 @@ def affected_details(item) -> str:
     for entry in affected:
         if not isinstance(entry, dict):
             continue
-        parts = []
-        versions = entry.get("versions", [])
-        if isinstance(versions, list) and versions:
-            parts.append("versions: " + ", ".join(markdown_text(v) for v in versions))
         ranges = entry.get("ranges", [])
-        if isinstance(ranges, list):
-            for range_entry in ranges:
-                if not isinstance(range_entry, dict):
-                    continue
-                range_type = markdown_text(range_entry.get("type", "range"))
-                events = range_entry.get("events", [])
-                boundaries = []
-                if isinstance(events, list):
-                    for event in events:
-                        if isinstance(event, dict):
-                            boundaries.extend(
-                                f"{markdown_text(kind)} {markdown_text(value)}"
-                                for kind, value in event.items()
-                            )
-                if boundaries:
-                    parts.append(f"{range_type}: " + "; ".join(boundaries))
+        if not isinstance(ranges, list):
+            continue
+        parts = []
+        for range_entry in ranges:
+            if not isinstance(range_entry, dict):
+                continue
+            range_type = markdown_text(range_entry.get("type", "range"))
+            events = range_entry.get("events", [])
+            boundaries = []
+            if isinstance(events, list):
+                for event in events:
+                    if isinstance(event, dict):
+                        boundaries.extend(
+                            f"{markdown_text(kind)} {markdown_text(value)}"
+                            for kind, value in event.items()
+                        )
+            if boundaries:
+                parts.append(f"{range_type}: " + "; ".join(boundaries))
         if parts:
             details.append("; ".join(parts))
     return "Affected: " + " | ".join(details) if details else ""
+
+
+def advisory_link(identifier: str) -> str:
+    """Inert link to the full osv.dev record for an advisory."""
+    return f"[{markdown_text(identifier)}]({OSV_RECORD_URL.format(id=quote(identifier))})"
 
 
 def advisory_status(item) -> str:
@@ -144,8 +158,19 @@ def advisory_status(item) -> str:
     return "🔴 **OPEN**"
 
 
+def _cap_length(report: str, package: str, version: str, max_chars: int) -> str:
+    """Trim a report that would overflow the PR body, keeping the tray tail."""
+    if max_chars and len(report) > max_chars:
+        shown = report[:max_chars].rstrip() + "\n"
+        note = (f"\n_(Report truncated: the full **{markdown_text(package)} "
+                f"{markdown_text(version)}** OSV listing is available per-advisory "
+                "via the record links above.)_\n")
+        return shown + note
+    return report
+
+
 def make_report(package: str, version: str, status: str, findings=None, error=None,
-                all_upstream=False) -> str:
+                all_upstream=False, max_chars=DEFAULT_MAX_CHARS) -> str:
     title = f"OSV advisory check: {markdown_text(package)} {markdown_text(version)}"
     scope = ("Scope: **all upstream advisories** for the reviewed package identity; "
              "the displayed bumped version is contextual only.\n\n" if all_upstream else "")
@@ -160,38 +185,38 @@ def make_report(package: str, version: str, status: str, findings=None, error=No
     else:
         rows = []
         for item in sorted(findings or [], key=lambda row: str(row.get("id", ""))):
-            identifier = markdown_text(item.get("id", "(missing ID)"))
+            identifier = str(item.get("id", "(missing ID)"))
             summary = markdown_text(item.get("summary") or "No summary provided.")
             aliases = sorted(str(alias) for alias in item.get("aliases", []) if alias)
-            ids = [identifier] + [markdown_text(alias) for alias in aliases]
-            withdrawn = item.get("withdrawn")
-            label = f" — **WITHDRAWN {markdown_text(withdrawn)}**" if withdrawn else ""
+            ids = [advisory_link(identifier)] + [advisory_link(alias) for alias in aliases]
+            label = " — **WITHDRAWN**" if item.get("withdrawn") else ""
             affected = affected_details(item)
             detail = f"\n  {affected}" if affected else ""
             rows.append(f"- {advisory_status(item)} — **{'**, **'.join(ids)}**{label} — {summary}{detail}")
         body = "Advisories (informational; this does not block autobump):\n\n" + "\n".join(rows)
-    return f"### {title}\n\n{scope}{body}\n"
+    return _cap_length(f"### {title}\n\n{scope}{body}\n", package, version, max_chars)
 
 
 def check(mapping_path: Path, package: str, version: str, opener=urlopen,
-          all_upstream=False) -> str:
+          all_upstream=False, max_chars=DEFAULT_MAX_CHARS) -> str:
     try:
         query = load_identity(mapping_path, package, version, include_version=not all_upstream)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         return make_report(package, version, "error", error=f"invalid identity mapping: {exc}",
-                           all_upstream=all_upstream)
+                           all_upstream=all_upstream, max_chars=max_chars)
     if query is None:
-        return make_report(package, version, "unmapped", all_upstream=all_upstream)
+        return make_report(package, version, "unmapped", all_upstream=all_upstream,
+                           max_chars=max_chars)
     try:
         result = query_osv(query, opener=opener)
         vulns = result.get("vulns", [])
         if not isinstance(vulns, list):
             raise ValueError("OSV response field 'vulns' is not a list")
         return make_report(package, version, "findings" if vulns else "no_matches", vulns,
-                           all_upstream=all_upstream)
+                           all_upstream=all_upstream, max_chars=max_chars)
     except (HTTPError, URLError, TimeoutError, OSError, ValueError, json.JSONDecodeError) as exc:
         return make_report(package, version, "error", error=str(exc),
-                           all_upstream=all_upstream)
+                           all_upstream=all_upstream, max_chars=max_chars)
 
 
 def main() -> int:
@@ -202,8 +227,12 @@ def main() -> int:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--all-upstream", action="store_true",
                         help="report all advisories for the reviewed upstream identity, regardless of version")
+    parser.add_argument("--max-chars", type=int, default=DEFAULT_MAX_CHARS,
+                        help="cap the report length so the autobump PR body stays "
+                             "under GitHub's limit (default: %(default)s)")
     args = parser.parse_args()
-    report = check(args.mapping, args.package, args.version, all_upstream=args.all_upstream)
+    report = check(args.mapping, args.package, args.version, all_upstream=args.all_upstream,
+                   max_chars=args.max_chars)
     if args.output:
         args.output.write_text(report, encoding="utf-8")
     else:

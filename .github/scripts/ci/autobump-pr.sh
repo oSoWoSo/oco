@@ -8,7 +8,7 @@ printf '| package | change | version |\n|:-------|:-------|:-------|\n' \
   >>"$RUNNER_TEMP/pr-body.md"
 while IFS=$'\t' read -r package version kind _order; do
   [[ -n $package ]] || continue
-  template_url="https://github.com/${GH_REPO}/blob/OCO/srcpkgs/${package}/template"
+  template_url="https://github.com/${GH_REPO}/blob/${BRANCH}/srcpkgs/${package}/template"
   if [[ $kind == version ]]; then
     printf '| [`%s`](%s) | version | %s |\n' \
       "$package" "$template_url" "$version" >>"$RUNNER_TEMP/pr-body.md"

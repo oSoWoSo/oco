@@ -1048,6 +1048,20 @@ print("%s,%s,%s" % (m.has_skip_marker(comments, "1.2"),
                     m.has_skip_marker(comments, "1.3"),
                     m.has_skip_marker(comments, "")))
 ' "$SCRIPT_DIR/src/close-update-issues.py")" 'True,False,False'
+	it 'close_reason: exact build closes, older issue superseded'
+	assert_eq "$(python3 -c '
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("cui", sys.argv[1])
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+ok = {"demo": {"2.0"}}
+fail = {"broken": {"1.0"}}
+print(m.close_reason(ok, fail, "demo", "2.0", {}))
+print(m.close_reason(ok, fail, "demo", "1.9", {"demo": "2.0"}))
+print(m.close_reason(ok, fail, "demo", "2.1", {}))
+print(m.close_reason(ok, fail, "broken", "1.0", {}))
+print(m.close_reason(ok, fail, "demo", "2.0", {"demo": "2.0"}))
+' "$SCRIPT_DIR/src/close-update-issues.py")" "$(printf 'built at 2.0\nsuperseded by 2.0\nNone\nNone\nbuilt at 2.0')"
 
 	it 'autobump:no marker remains version-independent'
 	assert_eq "$(python3 -c '

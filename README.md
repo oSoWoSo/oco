@@ -261,7 +261,7 @@ Create PR
 | kairo | 1.7.3 | [home](https://github.com/programmersd21/kairo) | nerdyslacker |  | Fast, keyboard-first terminal task manager |
 | kando | 3.0.1 | [home](https://kando.menu) | zenobit | x86_64 aarch64 | Do things with utmost efficiency |
 | kernwatch | 0.4.1 | [home](https://www.netwatchlabs.com) | zenobit |  | Linux kernel observability in your terminal |
-| kmscon | 10.0.4 | [home](https://github.com/kmscon/kmscon) | zenobit |  | Linux KMS/DRM based virtual Console Emulator |
+| kmscon | 10.1.0 | [home](https://github.com/kmscon/kmscon) | zenobit |  | Linux KMS/DRM based virtual Console Emulator |
 | lazyrsync | 0.4.0 | [home](https://github.com/westpoint-io/lazyrsync) | zenobit |  | Friendly terminal UI for rsync |
 | lemonade-server | 2026.43.3 | [home](https://github.com/lemonade-sdk/lemonade) | zenobit |  | Local LLM Serving with GPU and NPU acceleration (Server) |
 | lgogdownloader | 3.19 | [home](https://github.com/Sude-/lgogdownloader) | zenobit |  | Unofficial downloader to GOG.com for Linux users |

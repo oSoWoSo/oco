@@ -16,6 +16,9 @@ with source rows `name<TAB>version<TAB>status` and binary rows
 lists open issues carrying the `package-update` label, and closes each
 one whose package was built successfully (an `ok` result with no `fail`
 on any arch) at exactly the upstream version requested in the issue body.
+Older open issues for the same template are closed as superseded too: the
+repository has moved past the version they ask for, so they can never be
+satisfied.
 
 The package and requested version come from the hidden markers
 `<!-- package-update:NAME -->` and `<!-- upstream-version:VERSION -->`,
@@ -293,6 +296,24 @@ def list_stale(repo: str, token: str, srcpkgs: str) -> int:
     return 0
 
 
+def close_reason(ok: dict[str, set[str]], fail: dict[str, set[str]],
+                 pkg: str, ver: str, newest_built: dict[str, str]) -> str | None:
+    """Return why an issue for pkg@ver should be closed, or None.
+
+    A request is satisfied when its exact version built cleanly, or when a
+    newer request for the same template was built (the repository has moved
+    past what this issue asks for, so it can never be satisfied).
+    """
+    key = pkg.lower()
+    built = ver in ok.get(key, set())
+    if built and ver not in fail.get(key, set()):
+        return f"built at {ver}"
+    newest = newest_built.get(key)
+    if newest and _cmpver(newest, ver) > 0:
+        return f"superseded by {newest}"
+    return None
+
+
 def extract_pkg_version(body: str) -> tuple[str | None, str | None]:
     pkg = PKG_RE.search(body)
     if pkg:
@@ -354,7 +375,13 @@ def main() -> int:
         sys.stderr.write(f"error: {exc}\n")
         return 1
 
-    closed = kept = unparsed = 0
+    # A package built at a new version resolves every older open issue for
+    # the same template: the repository has moved past their request, so
+    # they can never be satisfied. Track the newest built version per
+    # package; when several issues for one package appear in the same batch,
+    # the newest request keeps its own "built at" resolution and older ones
+    # are closed as superseded.
+    newest_built: dict[str, str] = {}
     for issue in issues:
         number = issue.get("number", "?")
         title = (issue.get("title") or "").strip()
@@ -366,28 +393,45 @@ def main() -> int:
         key = pkg.lower()
         built = ver in ok.get(key, set())
         if built and ver not in fail.get(key, set()):
-            print(f"  #{number}: {pkg} built at {ver} -> closing")
-            if args.dry_run:
-                closed += 1
-                continue
-            # The PATCH result is the only evidence the issue is actually
-            # closed; a 403 here used to be counted as a success.
-            if api(args.repo, token, "PATCH",
-                   f"/issues/{number}", {"state": "closed"}) is None:
-                sys.stderr.write(f"  #{number}: close request failed\n")
-                kept += 1
-                print(f"  #{number}: {pkg} built at {ver} -> close FAILED, kept open")
-                continue
-            closed += 1
-            print(f"  #{number}: {pkg} built at {ver} -> closed")
-            comment = f"Resolved: **{pkg}** built at `{ver}`. <!-- resolved:v{ver} -->"
-            for _ in range(3):
-                if api(args.repo, token, "POST",
-                       f"/issues/{number}/comments", {"body": comment}) is not None:
-                    break
-        else:
+            current = newest_built.get(key)
+            if current is None or _cmpver(ver, current) > 0:
+                newest_built[key] = ver
+
+    closed = kept = unparsed = 0
+    for issue in issues:
+        number = issue.get("number", "?")
+        title = (issue.get("title") or "").strip()
+        pkg, ver = extract_pkg_version(issue.get("body") or "")
+        if not pkg or not ver:
+            unparsed += 1
+            print(f"  #{number}: {title}: no package/-version markers, kept open")
+            continue
+        reason = close_reason(ok, fail, pkg, ver, newest_built)
+        if reason is None:
             kept += 1
             print(f"  #{number}: {pkg}@{ver} not built (or failed), kept open")
+            continue
+
+        print(f"  #{number}: {pkg} {reason} -> closing")
+        if args.dry_run:
+            closed += 1
+            continue
+        # The PATCH result is the only evidence the issue is actually
+        # closed; a 403 here used to be counted as a success.
+        if api(args.repo, token, "PATCH",
+               f"/issues/{number}", {"state": "closed"}) is None:
+            sys.stderr.write(f"  #{number}: close request failed\n")
+            kept += 1
+            print(f"  #{number}: {pkg} {reason} -> close FAILED, kept open")
+            continue
+        closed += 1
+        print(f"  #{number}: {pkg} {reason} -> closed")
+        marker = "resolved:v" + ver
+        comment = f"Resolved: **{pkg}** {reason}. <!-- {marker} -->"
+        for _ in range(3):
+            if api(args.repo, token, "POST",
+                   f"/issues/{number}/comments", {"body": comment}) is not None:
+                break
 
     if args.dry_run:
         print(f"Dry run: {closed} to close, {kept} kept open, {unparsed} unparsed")

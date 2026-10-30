@@ -7,14 +7,9 @@ create_wrksrc=yes
 build_wrksrc="rustdesk-${version}"
 hostmakedepends="pkg-config cargo clang21 python3"
 makedepends="autoconf automake curl git glib-devel gst-plugins-base1-devel gstreamer1-devel gtk+3-devel libtool nasm pam-devel pulseaudio-devel tar unzip zip"
-if [ "$XBPS_LIBC" = "musl" ]; then
-	makedepends+=" cmake ninja"
-	noshlibcounts=yes
-fi
-depends=""
 short_desc="Alternative to AnyDesk"
 maintainer="Bella109 <belladev109@proton.me>"
-license="AGPL-3.0"
+license="AGPL-3.0-only"
 homepage="https://github.com/rustdesk/rustdesk"
 distfiles="https://github.com/rustdesk/rustdesk/archive/refs/tags/${version}.tar.gz
 https://raw.githubusercontent.com/c-smile/sciter-sdk/master/bin.lnx/x64/libsciter-gtk.so
@@ -23,6 +18,11 @@ checksum="1fb38be58a9513ddb298835a880033785f6278e6132d3c5f1039de3fef5189d6
  a1682fbf55e004f1862d6ace31b5220121d20906bdbf308d0a9237b451e4db86
  8b2155e81c1fcdeaca6c02a0ed88af7701b2e07f513b8bba8a62ab1e0053672d"
 skip_extraction="libsciter-gtk.so"
+
+if [ "$XBPS_LIBC" = "musl" ]; then
+	makedepends+=" cmake ninja"
+	noshlibcounts=yes
+fi
 
 post_extract() {
 	git clone https://github.com/microsoft/vcpkg rustdesk-${version}/vcpkg

@@ -125,9 +125,16 @@ def mirror_pr(event: dict, source_forge: str, api, push_branch):
     push_branch(head["repo"]["clone_url"], head["sha"], target_branch)
 
     owner, _name = REPOSITORY.split("/", 1)
+    if target_forge == "codeberg":
+        # Forgejo filters PRs by bare branch name; "owner:branch" is
+        # GitHub-only syntax and silently matches nothing, which would make
+        # every update attempt re-create a PR and hit HTTP 409.
+        head_filter = target_branch
+    else:
+        head_filter = f"{owner}:{target_branch}"
     query = urlencode({
         "state": "all",
-        "head": f"{owner}:{target_branch}",
+        "head": head_filter,
         "base": BASE_BRANCH,
         "limit": 50,
         "per_page": 50,

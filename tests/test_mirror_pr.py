@@ -122,11 +122,31 @@ class MirrorPullRequestTests(unittest.TestCase):
         self.assertEqual(payload["state"], "open")
         self.assertEqual(self.pushed[0][2], "mirror/codeberg/pr-12")
 
-    def test_lookup_is_scoped_to_mirror_branch_and_base(self):
+    def test_lookup_for_codeberg_target_is_scoped_to_mirror_branch_and_base(self):
+        # Forgejo ignores the owner-prefixed head filter, so lookups against
+        # Codeberg must pass the bare branch name or existing mirror PRs are
+        # never found and creation duplicates them with HTTP 409.
         mirror.mirror_pr(self.event, "github", self.api, self.push)
 
         query = parse_qs(urlparse(self.calls[0][1]).query)
-        self.assertEqual(query["head"], ["oSoWoSo:mirror/github/pr-12"])
+        self.assertEqual(query["head"], ["mirror/github/pr-12"])
+        self.assertEqual(query["base"], ["OCO"])
+        self.assertEqual(query["state"], ["all"])
+
+    def test_lookup_for_github_target_uses_owner_qualified_branch(self):
+        # GitHub matches PRs by "owner:branch"; the bare branch name returns
+        # nothing there, so the Codeberg->GitHub direction keeps the prefix.
+        self.event["pull_request"]["head"]["repo"]["clone_url"] = (
+            "https://codeberg.org/contributor/oco.git"
+        )
+        self.event["pull_request"]["html_url"] = (
+            "https://codeberg.org/oSoWoSo/oco/pulls/12"
+        )
+
+        mirror.mirror_pr(self.event, "codeberg", self.api, self.push)
+
+        query = parse_qs(urlparse(self.calls[0][1]).query)
+        self.assertEqual(query["head"], ["oSoWoSo:mirror/codeberg/pr-12"])
         self.assertEqual(query["base"], ["OCO"])
         self.assertEqual(query["state"], ["all"])
 

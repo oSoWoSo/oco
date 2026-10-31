@@ -196,6 +196,7 @@ class BatchPlanTests(unittest.TestCase):
             self.plan("real-devel")
         self.assertIn("symlink alias", str(exc.exception))
 
+        self.fake_detector({})
         rows, _component = self.plan("real", force=True)
         self.assertEqual(rows, [])
 

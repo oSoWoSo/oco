@@ -3,7 +3,7 @@ set -euo pipefail
 
 git config user.name "oSoWoSo-bot"
 git config user.email "mail@osowoso.org"
-git add .gitignore README.md .github/workflows/build.yml Manual.md
+git add .gitignore README.md .github/workflows/build.yml .github/workflows/autobump.yml Manual.md
 if ! git diff --cached --quiet; then
   git commit -m "CI: update"
   git push

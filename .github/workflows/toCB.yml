@@ -1,8 +1,13 @@
 name: 🫸Codeberg
 on:
+  push:
+    branches: [OCO]
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: push-to-codeberg-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   push-to-codeberg:

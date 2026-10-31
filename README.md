@@ -368,6 +368,8 @@ Create PR to Codeberg or GitHub
 | shattered-pixel-dungeon | 4.0.2 | [home](https://github.com/00-Evan/shattered-pixel-dungeon) | zenobit |  | Open-source roguelike dungeon crawler with randomized levels and enemies |
 | simplex-chat | 7.0.0 | [home](https://simplex.chat) | rayfadh | ~i686 | Private and secure messaging application (CLI) |
 | simplex-chat-desktop | 7.0.0 | [home](https://simplex.chat) | rayfadh | ~i686 | Private and secure messaging application (CLI) |
+| sonic-activities | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-activities) | zenobit |  | Core activity management components for SonicDE |
+| sonic-activities-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-activities) | zenobit |  | Core activity management components for SonicDE |
 | sonic-frameworks-cmake-modules | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-cmake-modules) | zenobit |  | Extended CMake modules and build utilities for SonicDE frameworks |
 | sonic-frameworks-core-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |
 | sonic-frameworks-core-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |

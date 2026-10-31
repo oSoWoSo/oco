@@ -1,11 +1,11 @@
 # Template file for 'fcitx5-lotus'
 pkgname=fcitx5-lotus
 version=6.0.4
-revision=1
+revision=2
 build_style=cmake
 configure_args="-DLOTUS_UINPUT_PROXY_USER=_uinput_proxy -DINSTALL_RUNIT=ON -DRUNIT_SV_DIR=/usr/share/examples/sv -DLOTUS_BYTECOMPILE_PYTHON=OFF"
 hostmakedepends="extra-cmake-modules pkgconf gettext"
-makedepends="libfcitx5-devel libinput-devel eudev-libudev-devel libevdev-devel libnotify-devel"
+makedepends="libfcitx5-devel libinput-devel eudev-libudev-devel libevdev-devel libnotify-devel dbus-devel"
 depends="fcitx5 acl-progs"
 short_desc="Fcitx5 - Vietnamese IME"
 maintainer="Coolllyn <leanhduc673@gmail.com>"

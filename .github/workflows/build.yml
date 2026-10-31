@@ -251,6 +251,7 @@ on:
         - shaderc
         - shattered-pixel-dungeon
         - simplex-chat
+        - sonic-frameworks-cmake-modules
         - surfer-cli
         - surfer-server
         - surge-xt

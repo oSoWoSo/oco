@@ -1,7 +1,7 @@
 # Template file for 'sf-icon-themes'
 pkgname=sf-icon-themes
 version=6.31.0.1
-revision=2
+revision=1
 build_style=cmake
 configure_args="-DKDE_INSTALL_QMLDIR=lib/qt6/qml -DKDE_INSTALL_QTPLUGINDIR=lib/qt6/plugins"
 hostmakedepends="gettext qt6-base qt6-declarative-host-tools qt6-tools

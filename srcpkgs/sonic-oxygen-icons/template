@@ -15,3 +15,8 @@ checksum=b841145ddcfe84886577868b9d6445f0f1a0d7dccda8b2bd6fcd6be46164e9c6
 provides="oxygen-icons-${version}_${revision}"
 conflicts="oxygen-icons"
 replaces="oxygen-icons>=0"
+
+post_patch() {
+	. /usr/libexec/sonic-namespace/sonic-namespace.sh
+	sonic_namespace_patch
+}

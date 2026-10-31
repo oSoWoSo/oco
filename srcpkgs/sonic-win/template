@@ -1,6 +1,6 @@
 # Template file for 'sonic-win'
 pkgname=sonic-win
-version=6.8.0
+version=6.8.0.2
 revision=1
 build_style=cmake
 build_helper=qemu
@@ -27,7 +27,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="LGPL-2.0-or-later"
 homepage="https://github.com/Sonic-DE/sonic-win"
 distfiles="https://github.com/Sonic-DE/sonic-win/archive/refs/tags/${version}.tar.gz"
-checksum=2bf178b8c194c63593b7d68654a18ea0bfae5adb38f503353ba5844b3061074c
+checksum=fcd4d0165b415a0e47e664d8d227967c8c5726bbee37c2716eedd2228651a8e8
 makedepends+=" layer-shell-qt-devel sonic-screen-library-devel"
 provides="kwin-x11-${version}_${revision}"
 conflicts="kwin-x11"

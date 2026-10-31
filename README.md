@@ -384,7 +384,7 @@ Create PR to Codeberg or GitHub
 | sonic-daemon-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-daemon) | zenobit |  | Central daemon of Sonic work spaces |
 | sonic-decoration | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-decoration) | zenobit |  | Plugin based library to create window decorations |
 | sonic-decoration-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-decoration) | zenobit |  | Plugin based library to create window decorations |
-| sonic-desktop-interface | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-desktop-interface) | zenobit |  | Sonic Desktop Interface |
+| sonic-desktop-interface | 6.8.0.3 | [home](https://github.com/Sonic-DE/sonic-desktop-interface) | zenobit |  | Sonic Desktop Interface |
 | sonic-disks | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-disks) | zenobit |  | Monitors S.M.A.R.T. capable devices for imminent failure |
 | sonic-dr-robotnik | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-dr-robotnik) | zenobit |  | Crash handler for Sonic software |
 | sonic-drawing-tablet | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-drawing-tablet) | zenobit |  | GUI for Wacom Linux drivers with different button/pen layout profiles |
@@ -479,10 +479,10 @@ Create PR to Codeberg or GitHub
 | sonic-frameworks-quick-charts-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-charts) | zenobit |  | QtQuick plugin providing high-performance charts |
 | sonic-frameworks-quick-desktop-style | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-desktop-style) | zenobit |  | Qt Quick Controls 2: Desktop Style |
 | sonic-frameworks-quick-desktop-style-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-desktop-style) | zenobit |  | Qt Quick Controls 2: Desktop Style |
-| sonic-frameworks-quick-ui | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-ui) | zenobit |  | QtQuick component set for SonicDE frameworks |
+| sonic-frameworks-quick-ui | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-ui) | zenobit |  | QtQuick component set for SonicDE frameworks |
 | sonic-frameworks-quick-ui-addons | 1.13.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-ui-addons) | zenobit |  | Add-ons for the Sonic quick ui framework |
 | sonic-frameworks-quick-ui-addons-devel | 1.13.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-ui-addons) | zenobit |  | Add-ons for the Sonic quick ui framework |
-| sonic-frameworks-quick-ui-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-ui) | zenobit |  | QtQuick component set for SonicDE frameworks |
+| sonic-frameworks-quick-ui-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-ui) | zenobit |  | QtQuick component set for SonicDE frameworks |
 | sonic-frameworks-root-shell | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-root-shell) | zenobit |  | User interface for running shell commands with root privileges |
 | sonic-frameworks-root-shell-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-root-shell) | zenobit |  | User interface for running shell commands with root privileges |
 | sonic-frameworks-runner | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-runner) | zenobit |  | Framework for providing actions based on query strings (SonicDE runner) |
@@ -526,9 +526,9 @@ Create PR to Codeberg or GitHub
 | sonic-frameworks-xml-gui-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-xml-gui) | zenobit |  | Framework for managing menu and toolbar actions |
 | sonic-frameworks-zeroconf | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-zeroconf) | zenobit |  | Network service discovery using Zeroconf |
 | sonic-frameworks-zeroconf-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-zeroconf) | zenobit |  | Network service discovery using Zeroconf |
-| sonic-gtk-theme-bridge | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-gtk-theme-bridge) | zenobit |  | Syncs Sonic settings to GTK applications |
-| sonic-interface-libraries | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-interface-libraries) | zenobit |  | SonicDE library and runtime components |
-| sonic-interface-libraries-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-interface-libraries) | zenobit |  | SonicDE library and runtime components |
+| sonic-gtk-theme-bridge | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-gtk-theme-bridge) | zenobit |  | Syncs Sonic settings to GTK applications |
+| sonic-interface-libraries | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-interface-libraries) | zenobit |  | SonicDE library and runtime components |
+| sonic-interface-libraries-devel | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-interface-libraries) | zenobit |  | SonicDE library and runtime components |
 | sonic-keybind-daemon | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-keybind-daemon) | zenobit |  | Daemon providing global keyboard shortcut functionality for SonicDE |
 | sonic-keybind-daemon-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-keybind-daemon) | zenobit |  | Daemon providing global keyboard shortcut functionality for SonicDE |
 | sonic-launcher-menu-edit | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-launcher-menu-edit) | zenobit |  | Menu Editor for Sonic Workspaces |
@@ -558,9 +558,9 @@ Create PR to Codeberg or GitHub
 | sonic-screen | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-screen) | zenobit |  | SonicDE screen management software |
 | sonic-screen-library | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-screen-library) | zenobit |  | Screen management library for SonicDE Workspaces |
 | sonic-screen-library-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-screen-library) | zenobit |  | Screen management library for SonicDE Workspaces |
-| sonic-screenies | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-screenies) | zenobit |  | Screenshot capture utility |
-| sonic-screenlocker | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-screenlocker) | zenobit |  | Library and components for secure lock screen architecture |
-| sonic-screenlocker-devel | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-screenlocker) | zenobit |  | Library and components for secure lock screen architecture |
+| sonic-screenies | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-screenies) | zenobit |  | Screenshot capture utility |
+| sonic-screenlocker | 6.8.0.2 | [home](https://github.com/Sonic-DE/sonic-screenlocker) | zenobit |  | Library and components for secure lock screen architecture |
+| sonic-screenlocker-devel | 6.8.0.2 | [home](https://github.com/Sonic-DE/sonic-screenlocker) | zenobit |  | Library and components for secure lock screen architecture |
 | sonic-silver | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-silver) | zenobit |  | Customizable theme for Sonic Desktop |
 | sonic-silver-gtk | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-silver-gtk) | zenobit |  | Silver widget theme for GTK 2 and 3 |
 | sonic-silver-sddm | 1.1.0 | [home](https://github.com/Sonic-DE/silver-sddm) | zenobit |  | Sonic Silver SDDM Theme (KDE Plasma 6) |
@@ -576,14 +576,14 @@ Create PR to Codeberg or GitHub
 | sonic-thunderbolt | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-thunderbolt) | zenobit |  | Sonic integration for controlling Thunderbolt devices |
 | sonic-tv-interface | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-tv-interface) | zenobit |  | Interface for large screens such as TVs |
 | sonic-vault | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-vault) | zenobit |  | Sonic applet and services for creating encrypted vaults |
-| sonic-win | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-win) | zenobit |  | KWin X11 fork with Sonic patches |
-| sonic-win-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-win) | zenobit |  | KWin X11 fork with Sonic patches |
-| sonic-workspace | 6.8.0.3 | [home](https://github.com/Sonic-DE/sonic-workspace) | zenobit |  | Sonic Plasma Workspace (X11-focused) |
+| sonic-win | 6.8.0.2 | [home](https://github.com/Sonic-DE/sonic-win) | zenobit |  | KWin X11 fork with Sonic patches |
+| sonic-win-devel | 6.8.0.2 | [home](https://github.com/Sonic-DE/sonic-win) | zenobit |  | KWin X11 fork with Sonic patches |
+| sonic-workspace | 6.8.0.4 | [home](https://github.com/Sonic-DE/sonic-workspace) | zenobit |  | Sonic Plasma Workspace (X11-focused) |
 | sonic-workspace-addons | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-workspace-addons) | zenobit |  | All kinds of addons to improve SonicDE experience |
-| sonic-workspace-devel | 6.8.0.3 | [home](https://github.com/Sonic-DE/sonic-workspace) | zenobit |  | Sonic Plasma Workspace (X11-focused) |
-| sonic-workspace-library | 6.8.0.3 | [home](https://github.com/Sonic-DE/sonic-workspace) | zenobit |  | Sonic Plasma Workspace (X11-focused) |
+| sonic-workspace-devel | 6.8.0.4 | [home](https://github.com/Sonic-DE/sonic-workspace) | zenobit |  | Sonic Plasma Workspace (X11-focused) |
+| sonic-workspace-library | 6.8.0.4 | [home](https://github.com/Sonic-DE/sonic-workspace) | zenobit |  | Sonic Plasma Workspace (X11-focused) |
 | sonic-workspace-wallpapers | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-workspace-wallpapers) | zenobit |  | Additional wallpapers for the Sonic Workspace |
-| sonic-workspace-x11 | 6.8.0.3 | [home](https://github.com/Sonic-DE/sonic-workspace) | zenobit |  | Sonic Plasma Workspace (X11-focused) |
+| sonic-workspace-x11 | 6.8.0.4 | [home](https://github.com/Sonic-DE/sonic-workspace) | zenobit |  | Sonic Plasma Workspace (X11-focused) |
 | sonic-write-daemon | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-write-daemon) | zenobit |  | Listen to traditional system notifications |
 | sonicde-meta | 6.8 | [home](https://github.com/Sonic-DE) | zenobit |  | Meta package for Sonic Desktop Environment (X11-focused KDE fork) |
 | surfer-cli | 7.4.0 | [home](https://github.com/cloudron-io/surfer) | zenobit |  | Command line interface for surfer |

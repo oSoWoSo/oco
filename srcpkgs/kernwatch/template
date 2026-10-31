@@ -1,6 +1,6 @@
 # Template file for 'kernwatch'
 pkgname=kernwatch
-version=0.5.0
+version=0.5.1
 revision=1
 build_style=cargo
 hostmakedepends="pkg-config nasm"
@@ -11,7 +11,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://www.netwatchlabs.com"
 distfiles="https://github.com/matthart1983/kernwatch/archive/refs/tags/v${version}.tar.gz"
-checksum=1329282a4a9a12af411e4d1ecf2abfb7666ba9bf0830c30dfbb3e4e6fde176a5
+checksum=9596b3b28b8764e4320d0d8e5ec0528cb82733e8f1587c949d82ae1bcb47c1b3
 
 post_install() {
 	vdoc README.md

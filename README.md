@@ -262,7 +262,7 @@ Create PR to Codeberg or GitHub
 | iruka-xbps | 0.2.0 | [home](https://github.com/javiercplus/iruka-xbps) | zenobit |  | Graphical front-end for the XBPS package manager |
 | kairo | 1.7.3 | [home](https://github.com/programmersd21/kairo) | nerdyslacker |  | Fast, keyboard-first terminal task manager |
 | kando | 3.0.1 | [home](https://kando.menu) | zenobit | x86_64 aarch64 | Do things with utmost efficiency |
-| kernwatch | 0.5.0 | [home](https://www.netwatchlabs.com) | zenobit |  | Linux kernel observability in your terminal |
+| kernwatch | 0.5.1 | [home](https://www.netwatchlabs.com) | zenobit |  | Linux kernel observability in your terminal |
 | kmscon | 10.0.4 | [home](https://github.com/kmscon/kmscon) | zenobit |  | Linux KMS/DRM based virtual Console Emulator |
 | lazyrsync | 0.4.0 | [home](https://github.com/westpoint-io/lazyrsync) | zenobit |  | Friendly terminal UI for rsync |
 | lemonade-server | 2026.43.3 | [home](https://github.com/lemonade-sdk/lemonade) | zenobit |  | Local LLM Serving with GPU and NPU acceleration (Server) |

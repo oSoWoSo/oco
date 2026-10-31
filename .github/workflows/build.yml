@@ -252,6 +252,7 @@ on:
         - shattered-pixel-dungeon
         - simplex-chat
         - sonic-frameworks-cmake-modules
+        - sonic-oxygen-icons
         - surfer-cli
         - surfer-server
         - surge-xt

@@ -4,7 +4,8 @@ set -euo pipefail
 mkdir -p out
 
 mapfile -t pkgs < <(
-  grep -vE '^\s*(#|$)' src/autobump-pkgs
+  find srcpkgs -maxdepth 1 -mindepth 1 -type d -printf '%f\n' | sed 's|.*/||' \
+    | grep -vxF -f <(grep -vE '^\s*(#|$)' src/autobump-blacklist)
 )
 
 if [ -n "$SCAN_PKG" ]; then

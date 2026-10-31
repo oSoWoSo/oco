@@ -5,11 +5,11 @@
 #
 # Usage: bump-template.sh <pkgname> <newversion> [repo-root]
 #
-# This is the xgensum subset the autobump whitelist needs: the templates in
-# src/autobump-pkgs carry plain sha256 digests (no checksum_type), so the
-# digests are computed with sha256sum instead of pulling in xgensum -- which
-# would want a bootstrapped $XBPS_DISTDIR masterdir for a checksum we can get
-# from the distfile itself.
+# This is the xgensum subset the autobump automation needs: bumpable
+# templates carry plain sha256 digests (no checksum_type), so the digests are
+# computed with sha256sum instead of pulling in xgensum -- which would want a
+# bootstrapped $XBPS_DISTDIR masterdir for a checksum we can get from the
+# distfile itself.
 #
 # The distfiles are expanded by sourcing the template, because some of them
 # derive URLs from variables (librewolf-bin's ${_distver}) and because the

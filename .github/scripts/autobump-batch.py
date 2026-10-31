@@ -2,8 +2,8 @@
 """Plan and apply a dependency-connected autobump batch for one target package.
 
 The batch is the connected component of the target in the repository's
-template dependency graph, restricted to the packages that can actually be
-bumped upstream (src/autobump-pkgs). Every package in that set with a newer
+template dependency graph, restricted to the packages that are not excluded
+upstream (src/autobump-blacklist). Every package in that set with a newer
 upstream release gets a version bump; every package that directly depends on
 a bumped package gets a revision bump, so the rebuilt binaries are picked up
 by their consumers.
@@ -156,9 +156,9 @@ class Repository:
             edges[name] = resolved
         return edges
 
-    def whitelist(self) -> set[str]:
-        """Return the packages that may be bumped upstream."""
-        listing = self.root / "src" / "autobump-pkgs"
+    def blacklist(self) -> set[str]:
+        """Return the packages that are excluded from upstream bumps."""
+        listing = self.root / "src" / "autobump-blacklist"
         packages = set()
         for line in listing.read_text(encoding="utf-8").splitlines():
             line = line.strip()
@@ -311,18 +311,24 @@ def plan_batch(
     open pull request already covers.
     """
     repository = Repository(root)
+    if target in repository.aliases:
+        if not force:
+            raise ValueError(f"target is a symlink alias, not bumpable: {target}")
+        target = repository.resolve(target)
+        if target is None:
+            raise ValueError(f"target is a symlink alias to an unknown package: {target}")
     if target not in repository.templates:
         raise ValueError(f"target is not a real package template: {target}")
 
-    allowed = repository.whitelist()
+    excluded = repository.blacklist()
     if force:
-        allowed.add(target)
-    if target not in allowed:
-        raise ValueError(f"target is not in src/autobump-pkgs: {target}")
+        excluded.discard(target)
+    if target in excluded:
+        raise ValueError(f"target is in src/autobump-blacklist: {target}")
 
     graph = repository.dependencies()
     reachable = component(graph, target)
-    candidates = sorted(reachable & allowed)
+    candidates = sorted(reachable - excluded)
 
     updated = detect_updates(root, candidates)
     if not updated:
@@ -440,7 +446,7 @@ def main() -> int:
     parser.add_argument(
         "--force",
         action="store_true",
-        help="bump the target even when it is not in src/autobump-pkgs",
+        help="bump the target even when it is in src/autobump-blacklist",
     )
     args = parser.parse_args()
     root = args.repo_root.resolve()

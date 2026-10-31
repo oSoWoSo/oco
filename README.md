@@ -215,7 +215,7 @@ Create PR to Codeberg or GitHub
 | glaze | 8.2.0 | [home](https://github.com/stephenberry/glaze) | zenobit |  | Extremely fast, in memory, JSON and interface library for modern C++ |
 | glaze7 | 7.2.0 | [home](https://github.com/stephenberry/glaze) | zenobit |  | Extremely fast, in memory, JSON and interface library for modern C++ |
 | gofer | 0.5.1 | [home](https://codeberg.org/JakeAtLinux/Gofer) | zenobit |  | Fast, minimal application launcher written in pure Go. Supports both Way |
-| gradle9 | 9.8.0 | [home](https://gradle.org) | zenobit |  | Build system for Java/C/C++ software |
+| gradle9 | 9.8.2 | [home](https://gradle.org) | zenobit |  | Build system for Java/C/C++ software |
 | graphite-gtk-theme | 2026.08.23 | [home](https://github.com/vinceliuice/Graphite-gtk-theme) | zenobit |  | Material design inspired GTK theme with light and dark variants |
 | graphite-gtk-theme-all | 2026.08.23 | [home](https://github.com/vinceliuice/Graphite-gtk-theme) | zenobit |  | Material design inspired GTK theme with light and dark variants |
 | graphite-gtk-theme-black | 2026.08.23 | [home](https://github.com/vinceliuice/Graphite-gtk-theme) | zenobit |  | Material design inspired GTK theme with light and dark variants |

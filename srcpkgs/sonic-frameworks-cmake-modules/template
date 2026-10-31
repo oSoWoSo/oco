@@ -1,10 +1,12 @@
 # Template file for 'sonic-frameworks-cmake-modules'
 pkgname=sonic-frameworks-cmake-modules
 version=6.31.0
-revision=2
+revision=1
 build_style=cmake
-configure_args="-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_HTML_DOCS=ON -DBUILD_QTHELP_DOCS=ON -DBUILD_TESTING=OFF"
-hostmakedepends="python3-requests python3-Sphinx qt6-tools qt6-base qt6-plugin-sqlite"
+configure_args="-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_HTML_DOCS=ON
+ -DBUILD_QTHELP_DOCS=ON -DBUILD_TESTING=OFF"
+hostmakedepends="cmake python3-requests python3-Sphinx qt6-tools"
+depends="cmake"
 short_desc="Extended CMake modules and build utilities for SonicDE frameworks"
 maintainer="zenobit <zen@osowoso.org>"
 license="LGPL-2.0-or-later"

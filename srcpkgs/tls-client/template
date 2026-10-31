@@ -1,6 +1,6 @@
 # Template file for 'tls-client'
 pkgname=tls-client
-version=1.17.0
+version=1.18.0
 revision=1
 build_style=go
 go_import_path="github.com/bogdanfinn/tls-client"
@@ -9,7 +9,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="BSD-4-Clause"
 homepage="https://github.com/bogdanfinn/tls-client"
 distfiles="https://github.com/bogdanfinn/tls-client/archive/refs/tags/v${version}.tar.gz"
-checksum=9bf12559775605cb765b2e51e673ce1d33510f66d05909a2e994416f00a87ea2
+checksum=58b5df7080289c98807017d25b452aca1972cb789eeeb61210341c6c8c11b090
 
 # Run tests, skipping integration tests that depend on external servers
 do_check() {

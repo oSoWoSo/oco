@@ -1,7 +1,7 @@
 # Template file for 'linuxcommandlibrary'
 pkgname=linuxcommandlibrary
 version=4.9.1
-revision=1
+revision=2
 archs="x86_64 aarch64"
 hostmakedepends="openjdk21 gradle9 android-sdk gnupg python3-charset-normalizer llvm21 tar"
 depends="virtual?java-runtime"

@@ -19,7 +19,7 @@ on:
         -
         __TEMPLATE_OPTIONS__
       force:
-        description: 'Ignore src/autobump-pkgs whitelist'
+        description: 'Bump even when the package is in src/autobump-blacklist'
         required: false
         default: false
         type: boolean
@@ -72,17 +72,17 @@ jobs:
           GH_TOKEN: ${{ secrets.BOT }}
         run: bash .github/scripts/ci/autobump-marker.sh
 
-      - name: Whitelist check
-        id: whitelist
+      - name: Blacklist check
+        id: blacklist
         if: steps.marker.outputs.handled == 'false'
         env:
           FORCE: ${{ inputs.force }}
           REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
-        run: bash .github/scripts/ci/autobump-whitelist.sh
+        run: bash .github/scripts/ci/autobump-blacklist.sh
 
       - name: Plan the dependency batch
         id: plan
-        if: steps.whitelist.outputs.in_list == 'true'
+        if: steps.blacklist.outputs.in_list == 'true'
         timeout-minutes: 30
         env:
           GH_TOKEN: ${{ secrets.BOT }}
@@ -98,7 +98,7 @@ jobs:
 
       - name: Apply the batch
         id: bump
-        if: steps.whitelist.outputs.in_list == 'true' && steps.plan.outputs.bumped == 'true'
+        if: steps.blacklist.outputs.in_list == 'true' && steps.plan.outputs.bumped == 'true'
         timeout-minutes: 30
         env:
           GH_TOKEN: ${{ secrets.BOT }}
@@ -111,18 +111,18 @@ jobs:
         run: bash .github/scripts/ci/autobump-osv.sh
 
       - name: Nothing to bump
-        if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.plan.outputs.bumped != 'true'
+        if: steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.plan.outputs.bumped != 'true'
         run: bash .github/scripts/ci/autobump-nothing.sh
       - name: Create branch + push
         id: branch
-        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
           VERSION: ${{ steps.plan.outputs.version }}
         run: bash .github/scripts/ci/autobump-branch.sh
 
       - name: Open PR
         id: pr
-        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
           GH_TOKEN: ${{ inputs.automerge && secrets.BOT || secrets.WORKFLOWS }}
           AUTOMERGE: ${{ inputs.automerge }}
@@ -135,7 +135,7 @@ jobs:
           BATCH_PR: ${{ steps.pr.outputs.number }}
         run: bash .github/scripts/ci/autobump-consolidate.sh
       - name: Comment on issue
-        if: github.event_name != 'workflow_dispatch' && steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        if: github.event_name != 'workflow_dispatch' && steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
           GH_TOKEN: ${{ secrets.WORKFLOWS }}
           PR_NUMBER: ${{ steps.pr.outputs.number || steps.existing.outputs.number }}

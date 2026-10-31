@@ -17,8 +17,6 @@ on:
         type: choice
         options:
         -
-        - adw-gtk3
-        - android-sdk
         - aquamarine
         - better-sqlite3
         - blocaled
@@ -34,15 +32,12 @@ on:
         - cc-switch
         - cliamp
         - clitest
-        - Community-Repositories-Collection
         - corekeyboard
         - cosign
         - cosmic-applets
         - cosmic-applibrary
         - cosmic-bg
         - cosmic-comp
-        - cosmic-desktop-full
-        - cosmic-desktop-minimal
         - cosmic-edit
         - cosmic-files
         - cosmic-greeter
@@ -79,26 +74,19 @@ on:
         - dragonfly-reverb
         - drako
         - dux-calendar
-        - dux-files
-        - dux-gop
-        - dux-search
         - dux-shell
         - easybashgui
         - faugus-launcher
-        - Favnyr
         - fcitx5-lotus
         - floorp-bin
         - flyline
         - forgejo-runner
         - FreeTube
-        - fresh
         - ftxui
         - gama
         - gh-dash
         - gh-lazy
         - ghgrab
-        - glaze
-        - glaze7
         - gofer
         - gradle9
         - graphite-gtk-theme
@@ -135,27 +123,22 @@ on:
         - lgogdownloader
         - libcprime
         - libheif
-        - libkrun
-        - libkrunfw
         - librewolf-bin
         - libspng
         - libtsm
         - linuxcommandlibrary
         - llama.cpp
         - llmfit
-        - logseq
         - lunasvg
         - ly
         - lycan
         - menu-themes
         - mesa-amber
-        - morewaita-icon-theme
         - morgenwm
         - nano-syntax-highlighting
         - nebula-gtk
         - noctalia
         - noctalia-greeter
-        - notesnook
         - NuvioDesktop
         - nvchecker
         - nwg-bar
@@ -172,15 +155,10 @@ on:
         - nwg-shell
         - nwg-shell-config
         - nwg-shell-wallpapers
-        - oco-removed-packages
-        - odin2
-        - omniroute
-        - opencode
         - opencode2
         - OpenShell
         - patchance
         - pi
-        - pinguintv-installer-git
         - pop-fonts
         - pop-icons
         - pop-launcher
@@ -215,8 +193,6 @@ on:
         - shaderc
         - shattered-pixel-dungeon
         - simplex-chat
-        - sonic-frameworks-cmake-modules
-        - sonic-oxygen-icons
         - surfer-cli
         - surfer-server
         - surge-xt
@@ -234,17 +210,9 @@ on:
         - tuisic
         - typobuster
         - umbriel-git
-        - undelete-btrfs
-        - vbm
         - vibepanel
         - Vish
         - vm-curator
-        - void-hardwaremanager-git
-        - void-live-creator-git
-        - void-software-store
-        - void-software-store-git
-        - void-src-builder-git
-        - void-user-manager-git
         - vote
         - vtm
         - waterfox-bin
@@ -253,11 +221,10 @@ on:
         - xdg-desktop-portal-hyprland
         - xdg-desktop-portal-umbriel-git
         - xut
-        - xxtools-git
         - zen-browser-bin
         - zig
       force:
-        description: 'Ignore src/autobump-pkgs whitelist'
+        description: 'Bump even when the package is in src/autobump-blacklist'
         required: false
         default: false
         type: boolean
@@ -310,17 +277,17 @@ jobs:
           GH_TOKEN: ${{ secrets.BOT }}
         run: bash .github/scripts/ci/autobump-marker.sh
 
-      - name: Whitelist check
-        id: whitelist
+      - name: Blacklist check
+        id: blacklist
         if: steps.marker.outputs.handled == 'false'
         env:
           FORCE: ${{ inputs.force }}
           REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
-        run: bash .github/scripts/ci/autobump-whitelist.sh
+        run: bash .github/scripts/ci/autobump-blacklist.sh
 
       - name: Plan the dependency batch
         id: plan
-        if: steps.whitelist.outputs.in_list == 'true'
+        if: steps.blacklist.outputs.in_list == 'true'
         timeout-minutes: 30
         env:
           GH_TOKEN: ${{ secrets.BOT }}
@@ -336,7 +303,7 @@ jobs:
 
       - name: Apply the batch
         id: bump
-        if: steps.whitelist.outputs.in_list == 'true' && steps.plan.outputs.bumped == 'true'
+        if: steps.blacklist.outputs.in_list == 'true' && steps.plan.outputs.bumped == 'true'
         timeout-minutes: 30
         env:
           GH_TOKEN: ${{ secrets.BOT }}
@@ -349,18 +316,18 @@ jobs:
         run: bash .github/scripts/ci/autobump-osv.sh
 
       - name: Nothing to bump
-        if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.plan.outputs.bumped != 'true'
+        if: steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.plan.outputs.bumped != 'true'
         run: bash .github/scripts/ci/autobump-nothing.sh
       - name: Create branch + push
         id: branch
-        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
           VERSION: ${{ steps.plan.outputs.version }}
         run: bash .github/scripts/ci/autobump-branch.sh
 
       - name: Open PR
         id: pr
-        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
           GH_TOKEN: ${{ inputs.automerge && secrets.BOT || secrets.WORKFLOWS }}
           AUTOMERGE: ${{ inputs.automerge }}
@@ -373,7 +340,7 @@ jobs:
           BATCH_PR: ${{ steps.pr.outputs.number }}
         run: bash .github/scripts/ci/autobump-consolidate.sh
       - name: Comment on issue
-        if: github.event_name != 'workflow_dispatch' && steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        if: github.event_name != 'workflow_dispatch' && steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
           GH_TOKEN: ${{ secrets.WORKFLOWS }}
           PR_NUMBER: ${{ steps.pr.outputs.number || steps.existing.outputs.number }}

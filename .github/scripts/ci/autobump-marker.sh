@@ -10,7 +10,7 @@ request_ver=$(printf '%s\n' "${ISSUE_BODY:-}" |
 echo "request_ver=$request_ver" >>"$GITHUB_OUTPUT"
 
 if [[ -n ${ISSUE_BODY:-} ]] && printf '%s\n' "$ISSUE_BODY" | grep -q '<!-- autobump:no -->'; then
-  echo "Feed-only issue ($TEMPLATE is not in src/autobump-pkgs): nothing to do"
+  echo "Feed-only issue ($TEMPLATE is in src/autobump-blacklist): nothing to do"
   echo "handled=true" >>"$GITHUB_OUTPUT"
   exit 0
 fi

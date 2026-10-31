@@ -11,6 +11,6 @@ set -euo pipefail
       echo "| \`$pkg\` | $old | **$new** |"
     done <out/found
   else
-    echo "All whitelisted templates are up to date."
+    echo "All non-blacklisted templates are up to date."
   fi
 } >>"$GITHUB_STEP_SUMMARY"

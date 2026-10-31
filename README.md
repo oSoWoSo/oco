@@ -369,6 +369,8 @@ Create PR to Codeberg or GitHub
 | simplex-chat | 7.0.0 | [home](https://simplex.chat) | rayfadh | ~i686 | Private and secure messaging application (CLI) |
 | simplex-chat-desktop | 7.0.0 | [home](https://simplex.chat) | rayfadh | ~i686 | Private and secure messaging application (CLI) |
 | sonic-frameworks-cmake-modules | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-cmake-modules) | zenobit |  | Extended CMake modules and build utilities for SonicDE frameworks |
+| sonic-frameworks-settings | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
+| sonic-frameworks-settings-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
 | sonic-oxygen-icons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-oxygen-icons) | zenobit |  | Oxygen icon theme |
 | surfer-cli | 7.4.0 | [home](https://github.com/cloudron-io/surfer) | zenobit |  | Command line interface for surfer |
 | surfer-server | 7.4.0 | [home](https://github.com/cloudron-io/surfer) | zenobit |  | Simple static file server with web interface and resumable uploads |

@@ -307,6 +307,8 @@
 !/srcpkgs/simplex-chat
 !/srcpkgs/simplex-chat-desktop
 !/srcpkgs/sonic-frameworks-cmake-modules
+!/srcpkgs/sonic-frameworks-settings
+!/srcpkgs/sonic-frameworks-settings-devel
 !/srcpkgs/sonic-oxygen-icons
 !/srcpkgs/surfer-cli
 !/srcpkgs/surfer-server

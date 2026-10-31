@@ -193,6 +193,9 @@ on:
         - shaderc
         - shattered-pixel-dungeon
         - simplex-chat
+        - sonic-activities
+        - sonic-frameworks-core-addons
+        - sonic-frameworks-settings
         - surfer-cli
         - surfer-server
         - surge-xt

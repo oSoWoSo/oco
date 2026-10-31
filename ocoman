@@ -19,8 +19,10 @@ TEMPLATES_LIST='/tmp/oco-templates-list'
 REPODATA_LIST_PY="${SCRIPT_DIR}/src/repodata-list.py"
 REPODATA_STRIP_PY="${SCRIPT_DIR}/src/repodata-strip.py"
 BUILD_TEMPLATE="${SCRIPT_DIR}/src/build.yml.in"
+AUTOBUMP_TEMPLATE="${SCRIPT_DIR}/src/autobump.yml.in"
 README="${SCRIPT_DIR}/README.md"
 WORKFLOW="${SCRIPT_DIR}/.github/workflows/build.yml"
+AUTOBUMP_WORKFLOW="${SCRIPT_DIR}/.github/workflows/autobump.yml"
 FEED_OPML="${SCRIPT_DIR}/src/feed.opml"
 NVCONF="${SCRIPT_DIR}/.nvchecker/nvchecker.toml"
 
@@ -723,6 +725,31 @@ generate_build_yml() {
 
 	rm -f "$_opts"
 	echo 'build.yml: updated'
+}
+generate_autobump_yml() {
+	[ -f "$AUTOBUMP_TEMPLATE" ] || fatal "not found: ${AUTOBUMP_TEMPLATE}"
+	[ -f "$TEMPLATES_LIST" ] || fatal "not found: ${TEMPLATES_LIST}"
+
+	mkdir -p "$(dirname "$AUTOBUMP_WORKFLOW")"
+
+	_opts=$(mktemp)
+	while IFS= read -r _pkg; do
+	        [ -z "$_pkg" ] && continue
+	        [ -L "${SCRIPT_DIR}/${SRCPKGS}/${_pkg}" ] && continue
+	        printf '        - %s\n' "$_pkg"
+	done < "$TEMPLATES_LIST" > "$_opts"
+
+	awk -v opts="$_opts" '
+	        /^[[:space:]]*__TEMPLATE_OPTIONS__[[:space:]]*$/ {
+	                while ((getline ln < opts) > 0) print ln
+	                close(opts)
+	                next
+	        }
+	        { print }
+	' "$AUTOBUMP_TEMPLATE" > "$AUTOBUMP_WORKFLOW"
+
+	rm -f "$_opts"
+	echo 'autobump.yml: updated'
 }
 
 detect_changes() {
@@ -1764,6 +1791,7 @@ main() {
 		generate_list
 		generate_readme
 		generate_build_yml
+		generate_autobump_yml
 		detect_changes
 		suggest_feeds
 	fi

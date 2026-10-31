@@ -1,6 +1,6 @@
 # Template file for 'noctalia'
 pkgname=noctalia
-version=5.4.0
+version=5.4.1
 revision=1
 build_style=meson
 build_helper=qemu
@@ -20,7 +20,7 @@ license="MIT AND Apache-2.0"
 homepage="https://noctalia.dev"
 changelog="https://noctalia.dev/changelogs/v${version}"
 distfiles="https://github.com/noctalia-dev/noctalia/archive/refs/tags/v${version}.tar.gz"
-checksum=47130d9cf1cdd637f5fe6f88f1706e7be900faa3e62c83390499d3daef32de59
+checksum="6069d922e9d72488c74e4ce335314ce2203f08bd4641380bfe1bd137004597fa"
 
 if [ "$XBPS_TARGET_LIBC" = glibc ]; then
 	makedepends+=" jemalloc-devel"

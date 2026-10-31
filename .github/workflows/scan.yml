@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       pkg:
-        description: 'Only scan this package (empty = whole whitelist)'
+        description: 'Only scan this package (empty = all non-blacklisted)'
         required: false
         default: ''
         type: string

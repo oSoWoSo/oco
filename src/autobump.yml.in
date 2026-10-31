@@ -1,0 +1,143 @@
+name: 🛰️ autobump
+run-name: >-
+  ${{
+    github.event_name == 'workflow_dispatch' && (inputs.pkg != '' && format('🛰️ {0}', inputs.pkg) ||
+     '🛰️') ||
+    github.event_name == 'issues' && format('🛰️ {0} (#{1})', github.event.issue.title, github.event.issue.number) ||
+    '🛰️'
+  }}
+on:
+  issues:
+    types: [opened, labeled, edited]
+  workflow_dispatch:
+    inputs:
+      pkg:
+        description: 'Package name to autobump'
+        required: false
+        type: choice
+        options:
+        -
+        __TEMPLATE_OPTIONS__
+      force:
+        description: 'Bump even when the package is in src/autobump-blacklist'
+        required: false
+        default: false
+        type: boolean
+      automerge:
+        description: 'Open as oSoWoSo-bot so a successful build auto-merges'
+        required: false
+        default: false
+        type: boolean
+# Apply changes in src/autobump.yml.in instead.
+# .github/workflows/autobump.yml is generated from this file by `ocoman -u`.
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+concurrency:
+  group: autobump-${{ inputs.pkg || github.event.issue.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  autobump:
+    name: 🛰️ ${{ inputs.pkg || github.event.issue.number }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.issue.labels.*.name, 'package-update')
+    env:
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      ISSUE_BODY: ${{ github.event.issue.body }}
+      OCO_TOKEN: ${{ secrets.WORKFLOWS }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Require a package on manual dispatch
+        if: github.event_name == 'workflow_dispatch' && inputs.pkg == ''
+        run: |-
+          echo "::error::pick a package from the list to autobump"
+          exit 1
+
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.BOT }}
+
+      - name: Extract template from issue body
+        id: template
+        env:
+          INPUT_PKG: ${{ inputs.pkg }}
+        run: bash .github/scripts/ci/autobump-template.sh
+      - name: Skip if dismissed or already handled
+        id: marker
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
+        run: bash .github/scripts/ci/autobump-marker.sh
+
+      - name: Blacklist check
+        id: blacklist
+        if: steps.marker.outputs.handled == 'false'
+        env:
+          FORCE: ${{ inputs.force }}
+          REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
+        run: bash .github/scripts/ci/autobump-blacklist.sh
+
+      - name: Plan the dependency batch
+        id: plan
+        if: steps.blacklist.outputs.in_list == 'true'
+        timeout-minutes: 30
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
+          FORCE: ${{ inputs.force }}
+        run: bash .github/scripts/ci/autobump-plan.sh
+
+      - name: Skip when the batch is already open
+        id: existing
+        if: steps.marker.outputs.handled == 'false' && steps.plan.outputs.bumped == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
+        run: bash .github/scripts/ci/autobump-existing.sh
+
+      - name: Apply the batch
+        id: bump
+        if: steps.blacklist.outputs.in_list == 'true' && steps.plan.outputs.bumped == 'true'
+        timeout-minutes: 30
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
+        run: bash .github/scripts/ci/autobump-apply.sh
+
+      - name: Check OSV advisories (informational)
+        id: osv
+        if: steps.bump.outputs.bumped == 'true'
+        continue-on-error: true
+        run: bash .github/scripts/ci/autobump-osv.sh
+
+      - name: Nothing to bump
+        if: steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.plan.outputs.bumped != 'true'
+        run: bash .github/scripts/ci/autobump-nothing.sh
+      - name: Create branch + push
+        id: branch
+        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: bash .github/scripts/ci/autobump-branch.sh
+
+      - name: Open PR
+        id: pr
+        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        env:
+          GH_TOKEN: ${{ inputs.automerge && secrets.BOT || secrets.WORKFLOWS }}
+          AUTOMERGE: ${{ inputs.automerge }}
+        run: bash .github/scripts/ci/autobump-pr.sh
+
+      - name: Consolidate related package PRs
+        if: steps.pr.outputs.number != '' && steps.existing.outputs.handled == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
+          BATCH_PR: ${{ steps.pr.outputs.number }}
+        run: bash .github/scripts/ci/autobump-consolidate.sh
+      - name: Comment on issue
+        if: github.event_name != 'workflow_dispatch' && steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
+          PR_NUMBER: ${{ steps.pr.outputs.number || steps.existing.outputs.number }}
+          REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
+        run: bash .github/scripts/ci/autobump-comment.sh

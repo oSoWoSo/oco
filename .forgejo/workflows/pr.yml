@@ -31,9 +31,9 @@ jobs:
         run: |
           set -eu
           ./ocoman -u
-          if ! git diff --quiet -- README.md .github/workflows/build.yml; then
+          if ! git diff --quiet -- README.md .github/workflows/build.yml .github/workflows/autobump.yml; then
             echo 'Generated files are out of date. Run ./ocoman -u and commit the result.' >&2
-            git diff -- README.md .github/workflows/build.yml
+            git diff -- README.md .github/workflows/build.yml .github/workflows/autobump.yml
             exit 1
           fi
 

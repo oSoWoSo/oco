@@ -1,7 +1,8 @@
 name: 🛰️ autobump
 run-name: >-
   ${{
-    github.event_name == 'workflow_dispatch' && format('🛰️ {0}', inputs.pkg) ||
+    github.event_name == 'workflow_dispatch' && (inputs.pkg != '' && format('🛰️ {0}', inputs.pkg) ||
+     '🛰️') ||
     github.event_name == 'issues' && format('🛰️ {0} (#{1})', github.event.issue.title, github.event.issue.number) ||
     '🛰️'
   }}
@@ -12,10 +13,218 @@ on:
     inputs:
       pkg:
         description: 'Package name to autobump'
-        required: true
-        type: string
+        required: false
+        type: choice
+        options:
+        -
+        - aquamarine
+        - better-sqlite3
+        - blocaled
+        - BoxBuddy
+        - brave-browser-bin
+        - brow6el
+        - btrfs-progs
+        - bulletty
+        - bun
+        - bun-bootstrap
+        - caerus
+        - candy-icons-git
+        - cc-switch
+        - cliamp
+        - clitest
+        - corekeyboard
+        - cosign
+        - cosmic-applets
+        - cosmic-applibrary
+        - cosmic-bg
+        - cosmic-comp
+        - cosmic-edit
+        - cosmic-files
+        - cosmic-greeter
+        - cosmic-icons
+        - cosmic-idle
+        - cosmic-initial-setup
+        - cosmic-launcher
+        - cosmic-monitor
+        - cosmic-notifications
+        - cosmic-osd
+        - cosmic-osk
+        - cosmic-panel
+        - cosmic-player
+        - cosmic-randr
+        - cosmic-screenshot
+        - cosmic-session
+        - cosmic-settings
+        - cosmic-settings-daemon
+        - cosmic-sound-theme
+        - cosmic-store
+        - cosmic-term
+        - cosmic-tweaks
+        - cosmic-viewer
+        - cosmic-wallpapers
+        - cosmic-workspaces-epoch
+        - crush
+        - cwal
+        - dashy
+        - default-cursors
+        - desktop-tui
+        - devedeng
+        - diskwatch
+        - distrobox
+        - dragonfly-reverb
+        - drako
+        - dux-calendar
+        - dux-shell
+        - easybashgui
+        - faugus-launcher
+        - fcitx5-lotus
+        - floorp-bin
+        - flyline
+        - forgejo-runner
+        - FreeTube
+        - ftxui
+        - gama
+        - gh-dash
+        - gh-lazy
+        - ghgrab
+        - gofer
+        - gradle9
+        - graphite-gtk-theme
+        - gum-panel
+        - helium-browser-bin
+        - hister
+        - hyprcursor
+        - hyprdynamicmonitors
+        - hyprgraphics
+        - hypridle
+        - hyprland
+        - hyprland-guiutils
+        - hyprland-protocols
+        - hyprland-qt-support
+        - hyprlang
+        - hyprlock
+        - hyprmoncfg
+        - hyprpaper
+        - hyprpicker
+        - hyprpolkitagent
+        - hyprsunset
+        - hyprsysteminfo
+        - hyprtoolkit
+        - hyprutils
+        - hyprwayland-scanner
+        - hyprwire
+        - iruka-xbps
+        - kairo
+        - kando
+        - kernwatch
+        - kmscon
+        - lazyrsync
+        - lemonade-server
+        - lgogdownloader
+        - libcprime
+        - libheif
+        - librewolf-bin
+        - libspng
+        - libtsm
+        - linuxcommandlibrary
+        - llama.cpp
+        - llmfit
+        - lunasvg
+        - ly
+        - lycan
+        - menu-themes
+        - mesa-amber
+        - morgenwm
+        - nano-syntax-highlighting
+        - nebula-gtk
+        - noctalia
+        - noctalia-greeter
+        - NuvioDesktop
+        - nvchecker
+        - nwg-bar
+        - nwg-clipman
+        - nwg-displays
+        - nwg-dock
+        - nwg-dock-hyprland
+        - nwg-drawer
+        - nwg-hello
+        - nwg-icon-picker
+        - nwg-menu
+        - nwg-panel
+        - nwg-readme-browser
+        - nwg-shell
+        - nwg-shell-config
+        - nwg-shell-wallpapers
+        - opencode2
+        - OpenShell
+        - patchance
+        - pi
+        - pop-fonts
+        - pop-icons
+        - pop-launcher
+        - pop-sounds-theme
+        - proxelar
+        - python3-anysqlite
+        - python3-geographiclib
+        - python3-geopy
+        - python3-hishel
+        - python3-inline-snapshot
+        - python3-linkify-it-py
+        - python3-PyGithub
+        - python3-structlog
+        - python3-textual
+        - python3-uc-micro-py
+        - qrunsvmgr
+        - quickbox-gtk4
+        - quickbox-qt
+        - quickemu
+        - quickosdl
+        - quickshell+
+        - radicle
+        - raysession
+        - rebos
+        - rgc
+        - river-compositor
+        - runkit
+        - rustdesk
+        - sdkmanager
+        - seamonkey-bin
+        - sfizz-git
+        - shaderc
+        - shattered-pixel-dungeon
+        - simplex-chat
+        - surfer-cli
+        - surfer-server
+        - surge-xt
+        - sv-helper
+        - svi
+        - svlog
+        - SysMan
+        - syswatch
+        - tdf
+        - tiki
+        - tls-client
+        - Trilium
+        - tufw
+        - tuios
+        - tuisic
+        - typobuster
+        - umbriel-git
+        - vibepanel
+        - Vish
+        - vm-curator
+        - vote
+        - vtm
+        - waterfox-bin
+        - wpgtk
+        - xdg-desktop-portal-cosmic
+        - xdg-desktop-portal-hyprland
+        - xdg-desktop-portal-umbriel-git
+        - xut
+        - zen-browser-bin
+        - zig
       force:
-        description: 'Ignore src/autobump-pkgs whitelist'
+        description: 'Bump even when the package is in src/autobump-blacklist'
         required: false
         default: false
         type: boolean
@@ -24,12 +233,14 @@ on:
         required: false
         default: false
         type: boolean
+# Apply changes in src/autobump.yml.in instead.
+# .github/workflows/autobump.yml is generated from this file by `ocoman -u`.
 permissions:
   contents: write
   issues: write
   pull-requests: write
 concurrency:
-  group: autobump-${{ inputs.pkg || github.event.issue.number }}
+  group: autobump-${{ inputs.pkg || github.event.issue.number || github.run_id }}
   cancel-in-progress: true
 
 jobs:
@@ -44,6 +255,12 @@ jobs:
       OCO_TOKEN: ${{ secrets.WORKFLOWS }}
       GH_REPO: ${{ github.repository }}
     steps:
+      - name: Require a package on manual dispatch
+        if: github.event_name == 'workflow_dispatch' && inputs.pkg == ''
+        run: |-
+          echo "::error::pick a package from the list to autobump"
+          exit 1
+
       - name: Checkout repo
         uses: actions/checkout@v7
         with:
@@ -60,17 +277,17 @@ jobs:
           GH_TOKEN: ${{ secrets.BOT }}
         run: bash .github/scripts/ci/autobump-marker.sh
 
-      - name: Whitelist check
-        id: whitelist
+      - name: Blacklist check
+        id: blacklist
         if: steps.marker.outputs.handled == 'false'
         env:
           FORCE: ${{ inputs.force }}
           REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
-        run: bash .github/scripts/ci/autobump-whitelist.sh
+        run: bash .github/scripts/ci/autobump-blacklist.sh
 
       - name: Plan the dependency batch
         id: plan
-        if: steps.whitelist.outputs.in_list == 'true'
+        if: steps.blacklist.outputs.in_list == 'true'
         timeout-minutes: 30
         env:
           GH_TOKEN: ${{ secrets.BOT }}
@@ -86,7 +303,7 @@ jobs:
 
       - name: Apply the batch
         id: bump
-        if: steps.whitelist.outputs.in_list == 'true' && steps.plan.outputs.bumped == 'true'
+        if: steps.blacklist.outputs.in_list == 'true' && steps.plan.outputs.bumped == 'true'
         timeout-minutes: 30
         env:
           GH_TOKEN: ${{ secrets.BOT }}
@@ -99,18 +316,18 @@ jobs:
         run: bash .github/scripts/ci/autobump-osv.sh
 
       - name: Nothing to bump
-        if: steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.plan.outputs.bumped != 'true'
+        if: steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.plan.outputs.bumped != 'true'
         run: bash .github/scripts/ci/autobump-nothing.sh
       - name: Create branch + push
         id: branch
-        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
           VERSION: ${{ steps.plan.outputs.version }}
         run: bash .github/scripts/ci/autobump-branch.sh
 
       - name: Open PR
         id: pr
-        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        if: steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
           GH_TOKEN: ${{ inputs.automerge && secrets.BOT || secrets.WORKFLOWS }}
           AUTOMERGE: ${{ inputs.automerge }}
@@ -123,7 +340,7 @@ jobs:
           BATCH_PR: ${{ steps.pr.outputs.number }}
         run: bash .github/scripts/ci/autobump-consolidate.sh
       - name: Comment on issue
-        if: github.event_name != 'workflow_dispatch' && steps.marker.outputs.handled == 'false' && steps.whitelist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
+        if: github.event_name != 'workflow_dispatch' && steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.bump.outputs.bumped == 'true'
         env:
           GH_TOKEN: ${{ secrets.WORKFLOWS }}
           PR_NUMBER: ${{ steps.pr.outputs.number || steps.existing.outputs.number }}

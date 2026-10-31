@@ -39,11 +39,11 @@ class BatchPlanTests(unittest.TestCase):
             shutil.copy(ROOT / ".github" / "scripts" / script,
                         self.tmp / ".github" / "scripts" / script)
 
-    def build_repo(self, templates: dict, whitelist: list[str]) -> None:
+    def build_repo(self, templates: dict, blacklist: list[str] | None = None) -> None:
         for name, body in templates.items():
             write_template(self.tmp, name, body)
-        (self.tmp / "src" / "autobump-pkgs").write_text(
-            "\n".join(whitelist) + "\n", encoding="utf-8")
+        (self.tmp / "src" / "autobump-blacklist").write_text(
+            "\n".join(blacklist or []) + "\n", encoding="utf-8")
 
     def fake_detector(self, updates: dict) -> None:
         """Replace detect-update.sh with a script that reports fixed versions."""
@@ -103,7 +103,7 @@ class BatchPlanTests(unittest.TestCase):
             "real": "pkgname=real\nversion=1.0\nrevision=1\n",
             "user": "pkgname=user\nversion=1.0\nrevision=1\n"
                     "depends=\"real-devel\"\n",
-        }, ["real", "user"])
+        })
         (self.tmp / "srcpkgs" / "real-devel").symlink_to("real")
 
         repository = batch.Repository(self.tmp)
@@ -116,7 +116,7 @@ class BatchPlanTests(unittest.TestCase):
             "beta": "pkgname=beta\nversion=1.0\nrevision=1\ndepends=\"alpha\"\n",
             "gamma": "pkgname=gamma\nversion=1.0\nrevision=1\ndepends=\"beta\"\n",
             "lonely": "pkgname=lonely\nversion=1.0\nrevision=1\n",
-        }, ["alpha", "beta", "gamma", "lonely"])
+        })
         self.fake_detector({"alpha": "1.1", "beta": "2.0", "lonely": "9.9"})
 
         rows, component = self.plan("alpha")
@@ -135,7 +135,7 @@ class BatchPlanTests(unittest.TestCase):
         self.build_repo({
             "alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n",
             "consumer": "pkgname=consumer\nversion=1.0\nrevision=4\ndepends=\"alpha\"\n",
-        }, ["alpha", "consumer"])
+        })
         self.fake_detector({"alpha": "1.1"})
 
         rows, _component = self.plan("alpha")
@@ -146,7 +146,7 @@ class BatchPlanTests(unittest.TestCase):
         self.build_repo({
             "alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n",
             "consumer": "pkgname=consumer\nversion=1.0\nrevision=4\ndepends=\"alpha\"\n",
-        }, ["alpha", "consumer"])
+        })
         self.fake_detector({"alpha": "1.1", "consumer": "3.0"})
 
         rows, _component = self.plan("alpha")
@@ -159,7 +159,7 @@ class BatchPlanTests(unittest.TestCase):
             "alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n",
             "meta": "pkgname=meta\nversion=1.0\nrevision=1\nmetapackage=\"yes\"\n"
                     "depends=\"alpha\"\n",
-        }, ["alpha", "meta"])
+        })
         self.fake_detector({"alpha": "1.1"})
 
         rows, _component = self.plan("alpha")
@@ -170,24 +170,40 @@ class BatchPlanTests(unittest.TestCase):
         self.build_repo({
             "alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n",
             "beta": "pkgname=beta\nversion=1.0\nrevision=1\ndepends=\"alpha\"\n",
-        }, ["alpha", "beta"])
+        })
         self.fake_detector({"alpha": "1.1", "beta": "2.0"})
 
         rows, _component = self.plan("alpha")
         order = {package: position for package, _v, _k, position in rows}
         self.assertLess(order["alpha"], order["beta"])
 
-    def test_target_outside_the_whitelist_is_refused(self):
+    def test_target_in_the_blacklist_is_refused(self):
         self.build_repo({
             "alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n",
-        }, [])
-        with self.assertRaises(ValueError):
+        }, ["alpha"])
+        with self.assertRaises(ValueError) as exc:
             self.plan("alpha")
+        self.assertIn("autobump-blacklist", str(exc.exception))
+
+    def test_symlink_alias_target_is_refused_without_listing_it(self):
+        """Aliases are excluded automatically; force still bumps the real one."""
+        self.build_repo({
+            "real": "pkgname=real\nversion=1.0\nrevision=1\n",
+        })
+        (self.tmp / "srcpkgs" / "real-devel").symlink_to("real")
+
+        with self.assertRaises(ValueError) as exc:
+            self.plan("real-devel")
+        self.assertIn("symlink alias", str(exc.exception))
+
+        self.fake_detector({})
+        rows, _component = self.plan("real", force=True)
+        self.assertEqual(rows, [])
 
     def test_plan_is_empty_when_nothing_is_new(self):
         self.build_repo({
             "alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n",
-        }, ["alpha"])
+        })
         self.fake_detector({})
 
         rows, component = self.plan("alpha")
@@ -234,7 +250,7 @@ class BatchApplyTests(unittest.TestCase):
                        "pkgname=alpha\nversion=1.0\nrevision=1\n")
         write_template(self.tmp, "consumer",
                        "pkgname=consumer\nversion=1.0\nrevision=1\ndepends=\"alpha\"\n")
-        (self.tmp / "src" / "autobump-pkgs").write_text("alpha\nconsumer\n", encoding="utf-8")
+        (self.tmp / "src" / "autobump-blacklist").write_text("# none\n", encoding="utf-8")
 
         rows = [("alpha", "1.1", "version", 0), ("consumer", "", "revision", 1)]
         plan_file = self.tmp / "plan.tsv"

@@ -199,8 +199,8 @@ Create PR to Codeberg or GitHub
 | easybashgui | 15.0.2 | [home](https://github.com/BashGui/easybashgui) | zenobit |  | Bash functions library that aims to give simple GUI functions |
 | faugus-launcher | 2.5.5 | [home](https://github.com/Faugus/faugus-launcher) | zenobit |  | Simple and lightweight app for running Windows games using UMU-Launcher |
 | Favnyr | 0.3.7 | [home](https://github.com/GlitchAwakened/Favnyr) | zenobit |  | Modern and lightweight file manager for Windows and Linux |
-| fcitx5-lotus | 6.0.3 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
-| fcitx5-lotus-settings | 6.0.3 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
+| fcitx5-lotus | 6.0.4 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
+| fcitx5-lotus-settings | 6.0.4 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
 | floorp-bin | 12.21.0 | [home](https://github.com/Floorp-Projects/Floorp) | zenobit | x86_64 aarch64 | Browser built for keeping the Open, Private and Sustainable Web alive |
 | flyline | 1.10.0 | [home](https://github.com/HalFrgrd/flyline) | zenobit |  | Bash plugin to replace readline for a modern line editing experience |
 | forgejo-runner | 13.2.1 | [home](https://code.forgejo.org/forgejo/runner) | zenobit |  | Continuous integration for Forgejo |
@@ -262,10 +262,10 @@ Create PR to Codeberg or GitHub
 | iruka-xbps | 0.2.0 | [home](https://github.com/javiercplus/iruka-xbps) | zenobit |  | Graphical front-end for the XBPS package manager |
 | kairo | 1.7.3 | [home](https://github.com/programmersd21/kairo) | nerdyslacker |  | Fast, keyboard-first terminal task manager |
 | kando | 3.0.1 | [home](https://kando.menu) | zenobit | x86_64 aarch64 | Do things with utmost efficiency |
-| kernwatch | 0.5.0 | [home](https://www.netwatchlabs.com) | zenobit |  | Linux kernel observability in your terminal |
+| kernwatch | 0.5.1 | [home](https://www.netwatchlabs.com) | zenobit |  | Linux kernel observability in your terminal |
 | kmscon | 10.0.4 | [home](https://github.com/kmscon/kmscon) | zenobit |  | Linux KMS/DRM based virtual Console Emulator |
 | lazyrsync | 0.4.0 | [home](https://github.com/westpoint-io/lazyrsync) | zenobit |  | Friendly terminal UI for rsync |
-| lemonade-server | 2026.43.3 | [home](https://github.com/lemonade-sdk/lemonade) | zenobit |  | Local LLM Serving with GPU and NPU acceleration (Server) |
+| lemonade-server | 2026.44.1 | [home](https://github.com/lemonade-sdk/lemonade) | zenobit |  | Local LLM Serving with GPU and NPU acceleration (Server) |
 | lgogdownloader | 3.19 | [home](https://github.com/Sude-/lgogdownloader) | zenobit |  | Unofficial downloader to GOG.com for Linux users |
 | libbtrfs | 7.1 | [home](https://btrfs.wiki.kernel.org/index.php/Main_Page) | Enno Boland |  | Btrfs filesystem utilities |
 | libbtrfs-devel | 7.1 | [home](https://btrfs.wiki.kernel.org/index.php/Main_Page) | Enno Boland |  | Btrfs filesystem utilities |
@@ -385,7 +385,7 @@ Create PR to Codeberg or GitHub
 | syswatch | 0.14.4 | [home](https://www.netwatchlabs.com) | zenobit |  | Single-host system diagnostics TUI |
 | tdf | 0.5.0 | [home](https://github.com/itsjunetime/tdf) | zenobit |  | TUI PDF viewer |
 | tiki | 0.6.1 | [home](https://github.com/boolean-maybe/tiki) | zenobit |  | Terminal Markdown-based shapeless workflow builder |
-| tls-client | 1.17.0 | [home](https://github.com/bogdanfinn/tls-client) | zenobit |  | Net/http.Client like HTTP Client |
+| tls-client | 1.18.0 | [home](https://github.com/bogdanfinn/tls-client) | zenobit |  | Net/http.Client like HTTP Client |
 | Trilium | 0.106.1 | [home](https://github.com/TriliumNext/Trilium) | zenobit |  | Build your personal knowledge base with Trilium Notes |
 | tufw | 0.2.8 | [home](https://github.com/peltho/tufw) | zenobit |  | Terminal UI for ufw |
 | tuios | 0.12.0 | [home](https://github.com/Gaurav-Gosain/tuios) | zenobit |  | Terminal UI OS (Terminal Multiplexer) |

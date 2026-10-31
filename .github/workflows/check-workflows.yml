@@ -6,12 +6,12 @@ run-name: >-
     '📡'
   }}
 on:
-  push:
-    paths:
-      - '.github/workflows/**'
-  pull_request:
-    paths:
-      - '.github/workflows/**'
+  #push:
+  #  paths:
+  #    - '.github/workflows/**'
+  #pull_request:
+  #  paths:
+  #    - '.github/workflows/**'
   schedule:
     - cron: '0 6 * * 1'
   workflow_dispatch:

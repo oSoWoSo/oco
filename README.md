@@ -368,8 +368,224 @@ Create PR to Codeberg or GitHub
 | shattered-pixel-dungeon | 4.0.2 | [home](https://github.com/00-Evan/shattered-pixel-dungeon) | zenobit |  | Open-source roguelike dungeon crawler with randomized levels and enemies |
 | simplex-chat | 7.0.0 | [home](https://simplex.chat) | rayfadh | ~i686 | Private and secure messaging application (CLI) |
 | simplex-chat-desktop | 7.0.0 | [home](https://simplex.chat) | rayfadh | ~i686 | Private and secure messaging application (CLI) |
+| sonic-activities | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-activities) | zenobit |  | Core activity management components for SonicDE |
+| sonic-activities-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-activities) | zenobit |  | Core activity management components for SonicDE |
+| sonic-activities-stats | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-activities-stats) | zenobit |  | Library for accessing the usage data collected by the activities system |
+| sonic-activities-stats-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-activities-stats) | zenobit |  | Library for accessing the usage data collected by the activities system |
+| sonic-activity-manager-daemon | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-activity-manager-daemon) | zenobit |  | System service to manage user's activities, track the usage patterns |
+| sonic-audio-applet-pulse | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-audio-applet-pulse) | zenobit |  | SonicDE applet for audio volume management using PulseAudio |
+| sonic-bluetooth-runtime | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-bluetooth-runtime) | zenobit |  | Bluetooth capabilities for Sonic |
+| sonic-breeze | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-breeze) | zenobit |  | Artwork, styles and assets for the Silver visual style of Sonic Desktop |
+| sonic-breeze-sddm | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-breeze-sddm) | zenobit |  | Breeze SDDM theme |
+| sonic-browser-integration | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-browser-integration) | zenobit |  | Components necessary to integrate browsers into the Sonic Desktop |
+| sonic-crypto-library | 2.3.12 | [home](https://github.com/Sonic-DE/sonic-crypto-library) | zenobit |  | Qt Cryptographic Architecture |
+| sonic-crypto-library-devel | 2.3.12 | [home](https://github.com/Sonic-DE/sonic-crypto-library) | zenobit |  | Qt Cryptographic Architecture |
+| sonic-daemon | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-daemon) | zenobit |  | Central daemon of Sonic work spaces |
+| sonic-daemon-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-daemon) | zenobit |  | Central daemon of Sonic work spaces |
+| sonic-decoration | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-decoration) | zenobit |  | Plugin based library to create window decorations |
+| sonic-decoration-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-decoration) | zenobit |  | Plugin based library to create window decorations |
+| sonic-desktop-interface | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-desktop-interface) | zenobit |  | Sonic Desktop Interface |
+| sonic-disks | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-disks) | zenobit |  | Monitors S.M.A.R.T. capable devices for imminent failure |
+| sonic-dr-robotnik | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-dr-robotnik) | zenobit |  | Crash handler for Sonic software |
+| sonic-drawing-tablet | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-drawing-tablet) | zenobit |  | GUI for Wacom Linux drivers with different button/pen layout profiles |
+| sonic-ecco | 26.08.2 | [home](https://github.com/Sonic-DE/sonic-ecco) | zenobit |  | File manager for Sonic |
+| sonic-exiv2-library | 26.08.2 | [home](https://github.com/Sonic-DE/sonic-exiv2-library) | zenobit |  | Wrapper around Exiv2 library to manipulate picture metadata |
+| sonic-exiv2-library-devel | 26.08.2 | [home](https://github.com/Sonic-DE/sonic-exiv2-library) | zenobit |  | Wrapper around Exiv2 library to manipulate picture metadata |
+| sonic-firewall | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-firewall) | zenobit |  | Control Panel for your system firewall |
+| sonic-frameworks-addons-downloader | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-addons-downloader) | zenobit |  | Framework for downloading and sharing additional application data |
+| sonic-frameworks-addons-downloader-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-addons-downloader) | zenobit |  | Framework for downloading and sharing additional application data |
+| sonic-frameworks-app-info | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-app-info) | zenobit |  | Query info about installed applications and their associated file types |
+| sonic-frameworks-app-info-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-app-info) | zenobit |  | Query info about installed applications and their associated file types |
+| sonic-frameworks-archive | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-archive) | zenobit |  | Qt addon providing access to numerous types of archives |
+| sonic-frameworks-archive-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-archive) | zenobit |  | Qt addon providing access to numerous types of archives |
+| sonic-frameworks-auth | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
+| sonic-frameworks-auth-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
+| sonic-frameworks-auth-tools | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
+| sonic-frameworks-autocomplete | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
+| sonic-frameworks-autocomplete-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
+| sonic-frameworks-barcode | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-barcode) | zenobit |  | Barcode API to produce QRCode barcodes and DataMatrix barcodes |
+| sonic-frameworks-barcode-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-barcode) | zenobit |  | Barcode API to produce QRCode barcodes and DataMatrix barcodes |
+| sonic-frameworks-bluetooth | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-bluetooth) | zenobit |  | Qt wrapper for Bluez 5 D-Bus API |
+| sonic-frameworks-bluetooth-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-bluetooth) | zenobit |  | Qt wrapper for Bluez 5 D-Bus API |
+| sonic-frameworks-bookmarks | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
+| sonic-frameworks-bookmarks-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
 | sonic-frameworks-cmake-modules | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-cmake-modules) | zenobit |  | Extended CMake modules and build utilities for SonicDE frameworks |
+| sonic-frameworks-color-scheme | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
+| sonic-frameworks-color-scheme-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
+| sonic-frameworks-core-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |
+| sonic-frameworks-core-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |
+| sonic-frameworks-crash-handler | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-crash-handler) | zenobit |  | Graceful handling of application crashes |
+| sonic-frameworks-crash-handler-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-crash-handler) | zenobit |  | Graceful handling of application crashes |
+| sonic-frameworks-data-models | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-data-models) | zenobit |  | Item models extending the Qt model-view framework |
+| sonic-frameworks-data-models-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-data-models) | zenobit |  | Item models extending the Qt model-view framework |
+| sonic-frameworks-data-views | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-data-views) | zenobit |  | Item views extending the Qt model-view framework |
+| sonic-frameworks-data-views-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-data-views) | zenobit |  | Item views extending the Qt model-view framework |
+| sonic-frameworks-dbus | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-dbus) | zenobit |  | KDE Convenience classes for DBus |
+| sonic-frameworks-dbus-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-dbus) | zenobit |  | KDE Convenience classes for DBus |
+| sonic-frameworks-device-integration | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-device-integration) | zenobit |  | Hardware integration and detection |
+| sonic-frameworks-device-integration-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-device-integration) | zenobit |  | Hardware integration and detection |
+| sonic-frameworks-doctools | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-doctools) | zenobit |  | DocBook-based documentation generation tools for SonicDE frameworks |
+| sonic-frameworks-doctools-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-doctools) | zenobit |  | DocBook-based documentation generation tools for SonicDE frameworks |
+| sonic-frameworks-feeds | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-feeds) | zenobit |  | RSS/Atom parser library |
+| sonic-frameworks-feeds-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-feeds) | zenobit |  | RSS/Atom parser library |
+| sonic-frameworks-file-metadata | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-file-metadata) | zenobit |  | Library for extracting file metadata |
+| sonic-frameworks-file-metadata-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-file-metadata) | zenobit |  | Library for extracting file metadata |
+| sonic-frameworks-file-search | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-file-search) | zenobit |  | Framework for searching and managing metadata |
+| sonic-frameworks-file-search-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-file-search) | zenobit |  | Framework for searching and managing metadata |
+| sonic-frameworks-gui-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
+| sonic-frameworks-gui-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
+| sonic-frameworks-gui-addons-geo-uri-handler | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
+| sonic-frameworks-holidays | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-holidays) | zenobit |  | Library to assist determining when holidays occur |
+| sonic-frameworks-holidays-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-holidays) | zenobit |  | Library to assist determining when holidays occur |
+| sonic-frameworks-icon-themes | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-icon-themes) | zenobit |  | Icon GUI utilities |
+| sonic-frameworks-icon-themes-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-icon-themes) | zenobit |  | Icon GUI utilities |
+| sonic-frameworks-idle-tracker | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-idle-tracker) | zenobit |  | Framework for detection and notification of device idle time |
+| sonic-frameworks-idle-tracker-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-idle-tracker) | zenobit |  | Framework for detection and notification of device idle time |
+| sonic-frameworks-image-formats | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-image-formats) | zenobit |  | Plugins to allow QImage to support extra file formats |
+| sonic-frameworks-internationalization | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-internationalization) | zenobit |  | Gettext-based UI text internationalization |
+| sonic-frameworks-internationalization-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-internationalization) | zenobit |  | Gettext-based UI text internationalization |
+| sonic-frameworks-io | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-io) | zenobit |  | Resource and network access abstraction layer for SonicDE |
+| sonic-frameworks-io-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-io) | zenobit |  | Resource and network access abstraction layer for SonicDE |
+| sonic-frameworks-io-extras | 26.08.2 | [home](https://github.com/Sonic-DE/sonic-frameworks-io-extras) | zenobit |  | Extended I/O components for SonicDE frameworks (kio-extras replacement) |
+| sonic-frameworks-io-fuse | 6.0.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-io-fuse) | zenobit |  | FUSE Interface for Sonic Frameworks IO |
+| sonic-frameworks-keybind | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keybind) | zenobit |  | Global workspace shortcut system for SonicDE |
+| sonic-frameworks-keybind-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keybind) | zenobit |  | Global workspace shortcut system for SonicDE |
+| sonic-frameworks-keyring | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keyring) | zenobit |  | Safe desktop-wide storage for passwords |
+| sonic-frameworks-keyring-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keyring) | zenobit |  | Safe desktop-wide storage for passwords |
+| sonic-frameworks-keyring-pam | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keyring-pam) | zenobit |  | PAM Integration for Sonic keyring |
+| sonic-frameworks-modemmanager | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-modemmanager) | zenobit |  | Qt wrapper for ModemManager DBus API |
+| sonic-frameworks-modemmanager-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-modemmanager) | zenobit |  | Qt wrapper for ModemManager DBus API |
+| sonic-frameworks-networkmanager | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-networkmanager) | zenobit |  | Qt wrapper for NetworkManager API |
+| sonic-frameworks-networkmanager-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-networkmanager) | zenobit |  | Qt wrapper for NetworkManager API |
+| sonic-frameworks-notification-settings | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-notification-settings) | zenobit |  | Configuration dialog for desktop notification |
+| sonic-frameworks-notification-settings-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-notification-settings) | zenobit |  | Configuration dialog for desktop notification |
+| sonic-frameworks-notifications | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-notifications) | zenobit |  | Sonic Desktop notifications |
+| sonic-frameworks-notifications-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-notifications) | zenobit |  | Sonic Desktop notifications |
+| sonic-frameworks-open-collab | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-open-collab) | zenobit |  | Qt library implementing Open Collaboration Services API (SonicDE fork) |
+| sonic-frameworks-open-collab-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-open-collab) | zenobit |  | Qt library implementing Open Collaboration Services API (SonicDE fork) |
+| sonic-frameworks-package | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-package) | zenobit |  | Installation and loading of additional content as packages |
+| sonic-frameworks-package-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-package) | zenobit |  | Installation and loading of additional content as packages |
+| sonic-frameworks-progress-ui | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-progress-ui) | zenobit |  | Widgets for showing progress of asynchronous jobs |
+| sonic-frameworks-progress-ui-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-progress-ui) | zenobit |  | Widgets for showing progress of asynchronous jobs |
+| sonic-frameworks-pseudo-terminal | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-pseudo-terminal) | zenobit |  | Interfacing with pseudo terminal devices |
+| sonic-frameworks-pseudo-terminal-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-pseudo-terminal) | zenobit |  | Interfacing with pseudo terminal devices |
+| sonic-frameworks-purpose | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-purpose) | zenobit |  | Framework for providing abstractions to get the dev's purposes fulfilled |
+| sonic-frameworks-purpose-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-purpose) | zenobit |  | Framework for providing abstractions to get the dev's purposes fulfilled |
+| sonic-frameworks-qml-bridge | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-qml-bridge) | zenobit |  | Integration of QML and Sonic work spaces |
+| sonic-frameworks-qml-bridge-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-qml-bridge) | zenobit |  | Integration of QML and Sonic work spaces |
+| sonic-frameworks-qt-integration | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-qt-integration) | zenobit |  | Framework to integrate applications with a KDE Workspace |
+| sonic-frameworks-qt-integration-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-qt-integration) | zenobit |  | Framework to integrate applications with a KDE Workspace |
+| sonic-frameworks-quick-charts | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-charts) | zenobit |  | QtQuick plugin providing high-performance charts |
+| sonic-frameworks-quick-charts-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-charts) | zenobit |  | QtQuick plugin providing high-performance charts |
+| sonic-frameworks-quick-desktop-style | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-desktop-style) | zenobit |  | Qt Quick Controls 2: Desktop Style |
+| sonic-frameworks-quick-desktop-style-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-desktop-style) | zenobit |  | Qt Quick Controls 2: Desktop Style |
+| sonic-frameworks-quick-ui | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-ui) | zenobit |  | QtQuick component set for SonicDE frameworks |
+| sonic-frameworks-quick-ui-addons | 1.13.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-ui-addons) | zenobit |  | Add-ons for the Sonic quick ui framework |
+| sonic-frameworks-quick-ui-addons-devel | 1.13.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-ui-addons) | zenobit |  | Add-ons for the Sonic quick ui framework |
+| sonic-frameworks-quick-ui-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-quick-ui) | zenobit |  | QtQuick component set for SonicDE frameworks |
+| sonic-frameworks-root-shell | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-root-shell) | zenobit |  | User interface for running shell commands with root privileges |
+| sonic-frameworks-root-shell-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-root-shell) | zenobit |  | User interface for running shell commands with root privileges |
+| sonic-frameworks-runner | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-runner) | zenobit |  | Framework for providing actions based on query strings (SonicDE runner) |
+| sonic-frameworks-runner-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-runner) | zenobit |  | Framework for providing actions based on query strings (SonicDE runner) |
+| sonic-frameworks-settings | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
+| sonic-frameworks-settings-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
+| sonic-frameworks-settings-ui | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
+| sonic-frameworks-settings-ui-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
+| sonic-frameworks-settings-utils | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-utils) | zenobit |  | Utilities for Sonic System Settings modules |
+| sonic-frameworks-settings-utils-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-utils) | zenobit |  | Utilities for Sonic System Settings modules |
+| sonic-frameworks-silver-icons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
+| sonic-frameworks-silver-icons-library | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
+| sonic-frameworks-silver-icons-library-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
+| sonic-frameworks-spell-check | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-spell-check) | zenobit |  | Multi-language spell checker |
+| sonic-frameworks-spell-check-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-spell-check) | zenobit |  | Multi-language spell checker |
+| sonic-frameworks-sso | 8.61.2.3 | [home](https://github.com/Sonic-DE/sonic-frameworks-sso) | zenobit |  | Daemon providing SSO over D-Bus for the gSSO framework |
+| sonic-frameworks-sso-devel | 8.61.2.3 | [home](https://github.com/Sonic-DE/sonic-frameworks-sso) | zenobit |  | Daemon providing SSO over D-Bus for the gSSO framework |
+| sonic-frameworks-status-notification | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-status-notification) | zenobit |  | Implementation of Status Notifier Items |
+| sonic-frameworks-status-notification-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-status-notification) | zenobit |  | Implementation of Status Notifier Items |
+| sonic-frameworks-svg | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-svg) | zenobit |  | Library for rendering SVG-based themes |
+| sonic-frameworks-svg-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-svg) | zenobit |  | Library for rendering SVG-based themes |
+| sonic-frameworks-syntax-highlighting | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-syntax-highlighting) | zenobit |  | Syntax highlighting Engine for Structured Text and Code |
+| sonic-frameworks-syntax-highlighting-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-syntax-highlighting) | zenobit |  | Syntax highlighting Engine for Structured Text and Code |
+| sonic-frameworks-text-codec | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-codec) | zenobit |  | Collection of methods to manipulate strings using various encodings |
+| sonic-frameworks-text-codec-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-codec) | zenobit |  | Collection of methods to manipulate strings using various encodings |
+| sonic-frameworks-text-editor | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-editor) | zenobit |  | Full text editor component |
+| sonic-frameworks-text-editor-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-editor) | zenobit |  | Full text editor component |
+| sonic-frameworks-text-widgets | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-widgets) | zenobit |  | Text editing widgets |
+| sonic-frameworks-text-widgets-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-widgets) | zenobit |  | Text editing widgets |
+| sonic-frameworks-ui-components | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-ui-components) | zenobit |  | Plugin framework for user interface components |
+| sonic-frameworks-ui-components-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-ui-components) | zenobit |  | Plugin framework for user interface components |
+| sonic-frameworks-unit-conversion | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-unit-conversion) | zenobit |  | Physical units converter |
+| sonic-frameworks-unit-conversion-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-unit-conversion) | zenobit |  | Physical units converter |
+| sonic-frameworks-user-feedback | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-user-feedback) | zenobit |  | Framework for collecting user feedback via telemetry and surveys |
+| sonic-frameworks-user-feedback-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-user-feedback) | zenobit |  | Framework for collecting user feedback via telemetry and surveys |
+| sonic-frameworks-widgets-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-widgets-addons) | zenobit |  | Large set of desktop widgets |
+| sonic-frameworks-widgets-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-widgets-addons) | zenobit |  | Large set of desktop widgets |
+| sonic-frameworks-windowsystem | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-windowsystem) | zenobit |  | Access to the windowing system (SonicDE framework fork) |
+| sonic-frameworks-windowsystem-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-windowsystem) | zenobit |  | Access to the windowing system (SonicDE framework fork) |
+| sonic-frameworks-xml-gui | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-xml-gui) | zenobit |  | Framework for managing menu and toolbar actions |
+| sonic-frameworks-xml-gui-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-xml-gui) | zenobit |  | Framework for managing menu and toolbar actions |
+| sonic-frameworks-zeroconf | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-zeroconf) | zenobit |  | Network service discovery using Zeroconf |
+| sonic-frameworks-zeroconf-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-zeroconf) | zenobit |  | Network service discovery using Zeroconf |
+| sonic-gtk-theme-bridge | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-gtk-theme-bridge) | zenobit |  | Syncs Sonic settings to GTK applications |
+| sonic-interface-libraries | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-interface-libraries) | zenobit |  | SonicDE library and runtime components |
+| sonic-interface-libraries-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-interface-libraries) | zenobit |  | SonicDE library and runtime components |
+| sonic-keybind-daemon | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-keybind-daemon) | zenobit |  | Daemon providing global keyboard shortcut functionality for SonicDE |
+| sonic-keybind-daemon-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-keybind-daemon) | zenobit |  | Daemon providing global keyboard shortcut functionality for SonicDE |
+| sonic-launcher-menu-edit | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-launcher-menu-edit) | zenobit |  | Menu Editor for Sonic Workspaces |
+| sonic-login-manager | 6.8.0.3 | [home](https://github.com/Sonic-DE/sonic-login-manager) | zenobit |  | Sonic Login Manager |
+| sonic-network-manager | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-network-manager) | zenobit |  | SonicDE applet written in QML for managing network connections |
+| sonic-night-light | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-night-light) | zenobit |  | Helpers for scheduling the dark-light cycle |
+| sonic-night-light-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-night-light) | zenobit |  | Helpers for scheduling the dark-light cycle |
+| sonic-oxygen | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-oxygen) | zenobit |  | Classic style for Qt and Sonic applications |
 | sonic-oxygen-icons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-oxygen-icons) | zenobit |  | Oxygen icon theme |
+| sonic-oxygen-sounds | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-oxygen-sounds) | zenobit |  | Oxygen Sound Theme |
+| sonic-partition-manager | 26.08.2 | [home](https://github.com/Sonic-DE/sonic-partition-manager) | zenobit |  | Manage the disk devices, partitions and file systems on your computer |
+| sonic-pipewire | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-pipewire) | zenobit |  | Components to use PipeWire in Qt projects |
+| sonic-pipewire-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-pipewire) | zenobit |  | Components to use PipeWire in Qt projects |
+| sonic-plasma5-support-library | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-plasma5-support-library) | zenobit |  | Support components for porting from KF5/Qt5 to KF6/Qt6 |
+| sonic-plasma5-support-library-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-plasma5-support-library) | zenobit |  | Support components for porting from KF5/Qt5 to KF6/Qt6 |
+| sonic-polkit | 0.201.2 | [home](https://github.com/Sonic-DE/sonic-polkit) | zenobit |  | Qt wrapper around Polkit-1 client libraries |
+| sonic-polkit-agent | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-polkit-agent) | zenobit |  | Daemon providing a Polkit authentication UI for Sonic |
+| sonic-polkit-devel | 0.201.2 | [home](https://github.com/Sonic-DE/sonic-polkit) | zenobit |  | Qt wrapper around Polkit-1 client libraries |
+| sonic-pulseaudio-library | 1.8.1 | [home](https://github.com/Sonic-DE/sonic-pulseaudio-library) | zenobit |  | Qt bindings for Pulseaudio |
+| sonic-pulseaudio-library-devel | 1.8.1 | [home](https://github.com/Sonic-DE/sonic-pulseaudio-library) | zenobit |  | Qt bindings for Pulseaudio |
+| sonic-qt-accounts-library | 1.17.2 | [home](https://github.com/Sonic-DE/sonic-qt-accounts-library) | zenobit |  | Qt-based client library for the accounts database |
+| sonic-qt-accounts-library-devel | 1.17.2 | [home](https://github.com/Sonic-DE/sonic-qt-accounts-library) | zenobit |  | Qt-based client library for the accounts database |
+| sonic-qt-theme-bridge | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-qt-theme-bridge) | zenobit |  | Qt platform theme integration plugins for Sonic Workspaces |
+| sonic-quick-image-editor | 0.7.0.1 | [home](https://github.com/Sonic-DE/sonic-quick-image-editor) | zenobit |  | QtQuick-based image editing components |
+| sonic-quick-image-editor-devel | 0.7.0.1 | [home](https://github.com/Sonic-DE/sonic-quick-image-editor) | zenobit |  | QtQuick-based image editing components |
+| sonic-rdp | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-rdp-server) | zenobit |  | Library and examples for creating an RDP server |
+| sonic-screen | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-screen) | zenobit |  | SonicDE screen management software |
+| sonic-screen-library | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-screen-library) | zenobit |  | Screen management library for SonicDE Workspaces |
+| sonic-screen-library-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-screen-library) | zenobit |  | Screen management library for SonicDE Workspaces |
+| sonic-screenies | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-screenies) | zenobit |  | Screenshot capture utility |
+| sonic-screenlocker | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-screenlocker) | zenobit |  | Library and components for secure lock screen architecture |
+| sonic-screenlocker-devel | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-screenlocker) | zenobit |  | Library and components for secure lock screen architecture |
+| sonic-silver | 6.8.0.1 | [home](https://github.com/Sonic-DE/sonic-silver) | zenobit |  | Customizable theme for Sonic Desktop |
+| sonic-silver-gtk | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-silver-gtk) | zenobit |  | Silver widget theme for GTK 2 and 3 |
+| sonic-silver-sddm | 1.1.0 | [home](https://github.com/Sonic-DE/silver-sddm) | zenobit |  | Sonic Silver SDDM Theme (KDE Plasma 6) |
+| sonic-ssh-password-prompt | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-ssh-password-prompt) | zenobit |  | Ssh-add helper for QtKeychain |
+| sonic-system-info | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-system-info) | zenobit |  | System information tool for Sonic Desktop |
+| sonic-system-log | 26.08.2 | [home](https://github.com/Sonic-DE/sonic-system-log) | zenobit |  | Sonic SystemLog Viewer |
+| sonic-system-monitor | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-system-monitor) | zenobit |  | Application for monitoring system resources |
+| sonic-system-monitor-library | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-system-monitor-library) | zenobit |  | Library to retrieve info on the current status of computer hardware |
+| sonic-system-monitor-library-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-system-monitor-library) | zenobit |  | Library to retrieve info on the current status of computer hardware |
+| sonic-system-stats | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-system-stats) | zenobit |  | Plugin based system monitoring daemon |
+| sonic-terminal | 26.08.2 | [home](https://github.com/Sonic-DE/sonic-terminal) | zenobit |  | Terminal emulator for SonicDE |
+| sonic-terminal-tools | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-terminal-tools) | zenobit |  | Tools based on Sonic Frameworks to better interact with the system |
+| sonic-thunderbolt | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-thunderbolt) | zenobit |  | Sonic integration for controlling Thunderbolt devices |
+| sonic-tv-interface | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-tv-interface) | zenobit |  | Interface for large screens such as TVs |
+| sonic-vault | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-vault) | zenobit |  | Sonic applet and services for creating encrypted vaults |
+| sonic-win | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-win) | zenobit |  | KWin X11 fork with Sonic patches |
+| sonic-win-devel | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-win) | zenobit |  | KWin X11 fork with Sonic patches |
+| sonic-workspace | 6.8.0.3 | [home](https://github.com/Sonic-DE/sonic-workspace) | zenobit |  | Sonic Plasma Workspace (X11-focused) |
+| sonic-workspace-addons | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-workspace-addons) | zenobit |  | All kinds of addons to improve SonicDE experience |
+| sonic-workspace-devel | 6.8.0.3 | [home](https://github.com/Sonic-DE/sonic-workspace) | zenobit |  | Sonic Plasma Workspace (X11-focused) |
+| sonic-workspace-library | 6.8.0.3 | [home](https://github.com/Sonic-DE/sonic-workspace) | zenobit |  | Sonic Plasma Workspace (X11-focused) |
+| sonic-workspace-wallpapers | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-workspace-wallpapers) | zenobit |  | Additional wallpapers for the Sonic Workspace |
+| sonic-workspace-x11 | 6.8.0.3 | [home](https://github.com/Sonic-DE/sonic-workspace) | zenobit |  | Sonic Plasma Workspace (X11-focused) |
+| sonic-write-daemon | 6.8.0 | [home](https://github.com/Sonic-DE/sonic-write-daemon) | zenobit |  | Listen to traditional system notifications |
+| sonicde-meta | 6.8 | [home](https://github.com/Sonic-DE) | zenobit |  | Meta package for Sonic Desktop Environment (X11-focused KDE fork) |
 | surfer-cli | 7.4.0 | [home](https://github.com/cloudron-io/surfer) | zenobit |  | Command line interface for surfer |
 | surfer-server | 7.4.0 | [home](https://github.com/cloudron-io/surfer) | zenobit |  | Simple static file server with web interface and resumable uploads |
 | surge-xt | 1.3.4 | [home](https://surge-synthesizer.github.io/) | Trve_AY |  | Subtractive hybrid synthesizer |
@@ -409,6 +625,7 @@ Create PR to Codeberg or GitHub
 | wpgtk | 6.7.1 | [home](https://github.com/deviantfero/wpgtk/) | zenobit |  | Colorscheme, wallpaper and template manager for *nix |
 | xdg-desktop-portal-cosmic | 1.11.0 | [home](https://github.com/pop-os/xdg-desktop-portal-cosmic) | zenobit |  | Backend implementation for xdg-desktop-portal for COSMIC |
 | xdg-desktop-portal-hyprland | 1.4.1 | [home](https://github.com/hyprwm/xdg-desktop-portal-hyprland) | zenobit |  | Backend of xdg-desktop-portal for Hyprland |
+| xdg-desktop-portal-sonicde | 6.8.0 | [home](https://github.com/Sonic-DE/xdg-desktop-portal-sonicde) | zenobit |  | Backend implementation for xdg-desktop-portal that is using Qt/Sonic |
 | xdg-desktop-portal-umbriel-git | 0.1.0.20261030 | [home](https://github.com/noctalia-dev/xdg-desktop-portal-umbriel) | Coolllyn |  | XDG Desktop Portal backend for the Umbriel compositor |
 | xut | 0.4.2 | [home](https://codeberg.org/mobinmob/xut) | mobinmob |  | Work with templates from unofficial repositories |
 | xxtools-git | 0.0.0 | [home](https://github.com/Piraty/xxtools) | zenobit |  | Tools to ease packaging tasks for Void Linux |

@@ -1,8 +1,8 @@
 # PRs welcome 🤗
 
 ## This is:
-- vOid Community repOsitory (oco)
-- aka
+- vOid Community repOsitory (oco)  
+aka  
 - Void User Repository
 - VUR
 - testing repo
@@ -62,9 +62,11 @@ sudo cp /tmp/oco-repo-key.plist /var/db/xbps/keys/df:ec:10:ef:5c:03:e9:e0:9e:86:
 Running `./ocoman -i` will clone void-packages and oco into ~/void
 PS: Destination could be changed look at `./ocoman -h`
 
-### Clone manualy
-Clone Codeberg repo
-`git clone https://codeberg.org/oSoWoSo/oco`
+### Clone manualy A or B
+A) Clone Codeberg repo  
+`git clone https://codeberg.org/oSoWoSo/oco`  
+B) Clone GitHub repo  
+`git clone https://codeberg.org/oSoWoSo/oco`  
 Copy srcpkgs directory to cloned [void-packages](https://github.com/void-linux/void-packages)
 
 Then:
@@ -82,7 +84,7 @@ When you add new shlib add it only to `shlibe_append`
 After adding template, run `./ocoman -u` to regenerate templates list and table
 One commit per template, mesage: `<pkgname> <version>`
 
-Create PR
+Create PR to Codeberg or GitHub
 
 ## Void official documentation
 - [Manual](https://github.com/void-linux/void-packages/blob/master/Manual.md)

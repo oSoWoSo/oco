@@ -303,6 +303,8 @@
 !/srcpkgs/sf-cmake-modules
 !/srcpkgs/sf-settings
 !/srcpkgs/sf-settings-devel
+!/srcpkgs/sf-text-codec
+!/srcpkgs/sf-text-codec-devel
 !/srcpkgs/sfizz-cli
 !/srcpkgs/sfizz-git
 !/srcpkgs/sfizz-lib

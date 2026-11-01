@@ -415,6 +415,8 @@ Create PR to Codeberg or GitHub
 | sf-cmake-modules | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-cmake-modules) | zenobit |  | Extended CMake modules and build utilities for SonicDE frameworks |
 | sf-settings | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
 | sf-settings-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
+| sf-text-codec | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-codec) | zenobit |  | Collection of methods to manipulate strings using various encodings |
+| sf-text-codec-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-codec) | zenobit |  | Collection of methods to manipulate strings using various encodings |
 | sfizz-cli | 1.2.3 | [home](https://sfztools.github.io/sfizz/) | Trve_AY |  | SFZ sampler |
 | sfizz-git | 1.2.3 | [home](https://sfztools.github.io/sfizz/) | Trve_AY |  | SFZ sampler |
 | sfizz-lib | 1.2.3 | [home](https://sfztools.github.io/sfizz/) | Trve_AY |  | SFZ sampler |

@@ -254,6 +254,7 @@ on:
         - shattered-pixel-dungeon
         - simplex-chat
         - sonic-frameworks-cmake-modules
+        - sonic-namespace
         - sonic-oxygen-icons
         - surfer-cli
         - surfer-server

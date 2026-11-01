@@ -412,41 +412,7 @@ Create PR to Codeberg or GitHub
 | rustdesk | 1.4.9 | [home](https://github.com/rustdesk/rustdesk) | Bella109 | x86_64* | Alternative to AnyDesk |
 | sdkmanager | 0.7.1 | [home](https://gitlab.com/fdroid/sdkmanager) | zenobit |  | Drop-in replacement for Android sdkmanager written in Python |
 | seamonkey-bin | 2.53.24 | [home](https://www.seamonkey-project.org/) | zenobit | x86_64 | All-in-one internet application suite |
-| sf-archive | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-archive) | zenobit |  | Qt addon providing access to numerous types of archives |
-| sf-archive-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-archive) | zenobit |  | Qt addon providing access to numerous types of archives |
-| sf-auth | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
-| sf-auth-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
-| sf-auth-tools | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
-| sf-autocomplete | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
-| sf-autocomplete-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
-| sf-bookmarks | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
-| sf-bookmarks-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
 | sf-cmake-modules | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-cmake-modules) | zenobit |  | Extended CMake modules and build utilities for SonicDE frameworks |
-| sf-color-scheme | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
-| sf-color-scheme-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
-| sf-core-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |
-| sf-core-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |
-| sf-crash-handler | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-crash-handler) | zenobit |  | Graceful handling of application crashes |
-| sf-crash-handler-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-crash-handler) | zenobit |  | Graceful handling of application crashes |
-| sf-dbus | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-dbus) | zenobit |  | KDE Convenience classes for DBus |
-| sf-dbus-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-dbus) | zenobit |  | KDE Convenience classes for DBus |
-| sf-doctools | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-doctools) | zenobit |  | DocBook-based documentation generation tools for SonicDE frameworks |
-| sf-doctools-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-doctools) | zenobit |  | DocBook-based documentation generation tools for SonicDE frameworks |
-| sf-gui-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
-| sf-gui-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
-| sf-gui-addons-geo-uri-handler | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
-| sf-internationalization | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-internationalization) | zenobit |  | Gettext-based UI text internationalization |
-| sf-internationalization-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-internationalization) | zenobit |  | Gettext-based UI text internationalization |
-| sf-settings | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
-| sf-settings-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
-| sf-settings-ui | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
-| sf-settings-ui-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
-| sf-text-codec | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-codec) | zenobit |  | Collection of methods to manipulate strings using various encodings |
-| sf-text-codec-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-codec) | zenobit |  | Collection of methods to manipulate strings using various encodings |
-| sf-widgets-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-widgets-addons) | zenobit |  | Large set of desktop widgets |
-| sf-widgets-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-widgets-addons) | zenobit |  | Large set of desktop widgets |
-| sf-windowsystem | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-windowsystem) | zenobit |  | Access to the windowing system (SonicDE framework fork) |
-| sf-windowsystem-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-windowsystem) | zenobit |  | Access to the windowing system (SonicDE framework fork) |
 | sfizz-cli | 1.2.3 | [home](https://sfztools.github.io/sfizz/) | Trve_AY |  | SFZ sampler |
 | sfizz-git | 1.2.3 | [home](https://sfztools.github.io/sfizz/) | Trve_AY |  | SFZ sampler |
 | sfizz-lib | 1.2.3 | [home](https://sfztools.github.io/sfizz/) | Trve_AY |  | SFZ sampler |

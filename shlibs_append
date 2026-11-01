@@ -57,3 +57,4 @@ libSF6DocTools.so.6 sf-doctools-6.31.0_1
 libpolkit-qt6-core-1.so.1 sonic-polkit-0.201.2_1
 libpolkit-qt6-gui-1.so.1 sonic-polkit-0.201.2_1
 libpolkit-qt6-agent-1.so.1 sonic-polkit-0.201.2_1
+libSF6WindowSystem.so.6 sf-windowsystem-6.31.0_1

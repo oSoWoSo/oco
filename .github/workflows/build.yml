@@ -254,6 +254,7 @@ on:
         - sf-cmake-modules
         - sf-color-scheme
         - sf-core-addons
+        - sf-doctools
         - sf-gui-addons
         - sf-internationalization
         - sf-settings

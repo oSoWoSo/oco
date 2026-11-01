@@ -251,6 +251,7 @@ on:
         - seamonkey-bin
         - sf-cmake-modules
         - sf-settings
+        - sf-text-codec
         - sfizz-git
         - shaderc
         - shattered-pixel-dungeon

@@ -303,6 +303,8 @@
 !/srcpkgs/sf-gui-addons
 !/srcpkgs/sf-gui-addons-devel
 !/srcpkgs/sf-gui-addons-geo-uri-handler
+!/srcpkgs/sf-internationalization
+!/srcpkgs/sf-internationalization-devel
 !/srcpkgs/sf-settings
 !/srcpkgs/sf-settings-devel
 !/srcpkgs/sf-text-codec

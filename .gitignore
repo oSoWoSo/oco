@@ -300,6 +300,8 @@
 !/srcpkgs/sdkmanager
 !/srcpkgs/seamonkey-bin
 !/srcpkgs/sf-cmake-modules
+!/srcpkgs/sf-settings
+!/srcpkgs/sf-settings-devel
 !/srcpkgs/sfizz-cli
 !/srcpkgs/sfizz-git
 !/srcpkgs/sfizz-lib

@@ -210,8 +210,6 @@
 !/srcpkgs/libbtrfsutil
 !/srcpkgs/libbtrfsutil-devel
 !/srcpkgs/libcprime
-!/srcpkgs/libheif
-!/srcpkgs/libheif-devel
 !/srcpkgs/libkrun
 !/srcpkgs/libkrun-devel
 !/srcpkgs/libkrunfw

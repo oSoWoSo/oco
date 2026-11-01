@@ -122,7 +122,6 @@ on:
         - lemonade-server
         - lgogdownloader
         - libcprime
-        - libheif
         - librewolf-bin
         - libspng
         - libtsm

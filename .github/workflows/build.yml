@@ -170,7 +170,6 @@ on:
         - lemonade-server
         - lgogdownloader
         - libcprime
-        - libheif
         - libkrun
         - libkrunfw
         - librewolf-bin

@@ -272,8 +272,6 @@ Create PR to Codeberg or GitHub
 | libbtrfsutil | 7.1 | [home](https://btrfs.wiki.kernel.org/index.php/Main_Page) | Enno Boland |  | Btrfs filesystem utilities |
 | libbtrfsutil-devel | 7.1 | [home](https://btrfs.wiki.kernel.org/index.php/Main_Page) | Enno Boland |  | Btrfs filesystem utilities |
 | libcprime | 5.0.1 | [home](https://gitlab.com/cubocore/libcprime) | zenobit |  | Library for bookmarking, saving activities, sharing files and more |
-| libheif | 1.23.6 | [home](https://github.com/strukturag/libheif) | zenobit |  | HEIF file format decoder and encoder + Dav1d encoding |
-| libheif-devel | 1.23.6 | [home](https://github.com/strukturag/libheif) | zenobit |  | HEIF file format decoder and encoder + Dav1d encoding |
 | libkrun | 1.19.6 | [home](https://github.com/libkrun/libkrun) | zenobit |  | Library providing Virtualization-based process isolation capabilities |
 | libkrun-devel | 1.19.6 | [home](https://github.com/libkrun/libkrun) | zenobit |  | Library providing Virtualization-based process isolation capabilities |
 | libkrunfw | 5.6.2 | [home](https://github.com/libkrun/libkrunfw) | zenobit |  | Dynamic library bundling the guest payload consumed by libkrun |

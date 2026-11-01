@@ -418,6 +418,8 @@ Create PR to Codeberg or GitHub
 | sf-color-scheme-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
 | sf-core-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |
 | sf-core-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |
+| sf-doctools | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-doctools) | zenobit |  | DocBook-based documentation generation tools for SonicDE frameworks |
+| sf-doctools-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-doctools) | zenobit |  | DocBook-based documentation generation tools for SonicDE frameworks |
 | sf-gui-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
 | sf-gui-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
 | sf-gui-addons-geo-uri-handler | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |

@@ -412,6 +412,9 @@ Create PR to Codeberg or GitHub
 | sdkmanager | 0.7.1 | [home](https://gitlab.com/fdroid/sdkmanager) | zenobit |  | Drop-in replacement for Android sdkmanager written in Python |
 | seamonkey-bin | 2.53.24 | [home](https://www.seamonkey-project.org/) | zenobit | x86_64 | All-in-one internet application suite |
 | sf-cmake-modules | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-cmake-modules) | zenobit |  | Extended CMake modules and build utilities for SonicDE frameworks |
+| sf-gui-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
+| sf-gui-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
+| sf-gui-addons-geo-uri-handler | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
 | sf-settings | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
 | sf-settings-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
 | sf-text-codec | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-codec) | zenobit |  | Collection of methods to manipulate strings using various encodings |

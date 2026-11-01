@@ -300,6 +300,9 @@
 !/srcpkgs/sdkmanager
 !/srcpkgs/seamonkey-bin
 !/srcpkgs/sf-cmake-modules
+!/srcpkgs/sf-gui-addons
+!/srcpkgs/sf-gui-addons-devel
+!/srcpkgs/sf-gui-addons-geo-uri-handler
 !/srcpkgs/sf-settings
 !/srcpkgs/sf-settings-devel
 !/srcpkgs/sf-text-codec

@@ -315,6 +315,8 @@
 !/srcpkgs/sf-core-addons-devel
 !/srcpkgs/sf-crash-handler
 !/srcpkgs/sf-crash-handler-devel
+!/srcpkgs/sf-dbus
+!/srcpkgs/sf-dbus-devel
 !/srcpkgs/sf-doctools
 !/srcpkgs/sf-doctools-devel
 !/srcpkgs/sf-gui-addons

@@ -132,6 +132,26 @@ else
   packages=$(all_packages)
 fi
 
+# A push to a branch that already has an open pull request will be built by the
+# pull_request (synchronize) event, which runs the identical matrix in test-pr.
+# Skip the redundant push-event build so a branch with a PR only runs CI once.
+if [ "$EVENT_NAME" = "push" ] && [ -n "$CURRENT_BRANCH" ] && [ "$CURRENT_BRANCH" != "OCO" ]; then
+  if [ -n "${GH_TOKEN:-}" ] && command -v jq >/dev/null 2>&1 && command -v gh >/dev/null 2>&1; then
+    _branch_pr=""
+    for _try in 1 2 3 4 5; do
+      _prs=$(gh api "repos/${GITHUB_REPOSITORY}/pulls?state=open&head=${GITHUB_REPOSITORY%%/*}:${CURRENT_BRANCH}&per_page=100" 2>/dev/null || true)
+      _branch_pr=$(printf '%s\n' "$_prs" | jq -r --arg base "OCO" '.[]? | select(.base.ref == $base) | .number' 2>/dev/null | head -n1 || true)
+      [ -n "$_branch_pr" ] && break
+      sleep 3
+    done
+    if [ -n "$_branch_pr" ]; then
+      echo "::notice::Branch ${CURRENT_BRANCH} has open PR #${_branch_pr}; skipping push-build (run by pull_request synchronize)"
+      packages=""
+      removed=""
+    fi
+  fi
+fi
+
 _filtered=""
 for _pkg in $packages; do
   if [ -L "srcpkgs/$_pkg" ]; then

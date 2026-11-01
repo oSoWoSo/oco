@@ -191,6 +191,7 @@ on:
         - rustdesk
         - sdkmanager
         - seamonkey-bin
+        - sf-archive
         - sf-cmake-modules
         - sf-color-scheme
         - sf-core-addons

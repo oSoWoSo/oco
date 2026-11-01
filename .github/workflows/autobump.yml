@@ -214,7 +214,6 @@ on:
         - shattered-pixel-dungeon
         - simplex-chat
         - sonic-namespace
-        - sonic-polkit
         - surfer-cli
         - surfer-server
         - surge-xt

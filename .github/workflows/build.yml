@@ -250,6 +250,7 @@ on:
         - sdkmanager
         - seamonkey-bin
         - sf-archive
+        - sf-auth
         - sf-cmake-modules
         - sf-color-scheme
         - sf-core-addons

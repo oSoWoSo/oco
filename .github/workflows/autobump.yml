@@ -193,6 +193,7 @@ on:
         - seamonkey-bin
         - sf-archive
         - sf-auth
+        - sf-autocomplete
         - sf-bookmarks
         - sf-cmake-modules
         - sf-color-scheme

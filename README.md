@@ -412,6 +412,8 @@ Create PR to Codeberg or GitHub
 | rustdesk | 1.4.9 | [home](https://github.com/rustdesk/rustdesk) | Bella109 | x86_64* | Alternative to AnyDesk |
 | sdkmanager | 0.7.1 | [home](https://gitlab.com/fdroid/sdkmanager) | zenobit |  | Drop-in replacement for Android sdkmanager written in Python |
 | seamonkey-bin | 2.53.24 | [home](https://www.seamonkey-project.org/) | zenobit | x86_64 | All-in-one internet application suite |
+| sf-archive | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-archive) | zenobit |  | Qt addon providing access to numerous types of archives |
+| sf-archive-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-archive) | zenobit |  | Qt addon providing access to numerous types of archives |
 | sf-cmake-modules | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-cmake-modules) | zenobit |  | Extended CMake modules and build utilities for SonicDE frameworks |
 | sf-color-scheme | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
 | sf-color-scheme-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |

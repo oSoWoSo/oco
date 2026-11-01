@@ -1,6 +1,6 @@
 # Template file for 'drako'
 pkgname=drako
-version=0.4.2
+version=0.4.3
 revision=1
 build_style=go
 go_import_path="github.com/lucky7xz/drako"
@@ -11,7 +11,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="AGPL-3.0-only"
 homepage="https://github.com/lucky7xz/drako"
 distfiles="https://github.com/lucky7xz/drako/archive/refs/tags/v${version}.tar.gz"
-checksum=b80bdf5eb93e0f6fde640aa34ebcba100de2dd5a6bb364a53114a1bc9f91c68d
+checksum=88154c606b9d66ba920a77bb5769830cd26d60feba8528c0f613a22e799a5f60
 
 do_check() {
 	go vet ./...

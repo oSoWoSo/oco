@@ -200,6 +200,7 @@ on:
         - sf-color-scheme
         - sf-core-addons
         - sf-crash-handler
+        - sf-dbus
         - sf-doctools
         - sf-gui-addons
         - sf-internationalization

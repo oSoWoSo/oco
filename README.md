@@ -413,6 +413,8 @@ Create PR to Codeberg or GitHub
 | sdkmanager | 0.7.1 | [home](https://gitlab.com/fdroid/sdkmanager) | zenobit |  | Drop-in replacement for Android sdkmanager written in Python |
 | seamonkey-bin | 2.53.24 | [home](https://www.seamonkey-project.org/) | zenobit | x86_64 | All-in-one internet application suite |
 | sf-cmake-modules | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-cmake-modules) | zenobit |  | Extended CMake modules and build utilities for SonicDE frameworks |
+| sf-color-scheme | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
+| sf-color-scheme-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
 | sf-gui-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
 | sf-gui-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
 | sf-gui-addons-geo-uri-handler | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |

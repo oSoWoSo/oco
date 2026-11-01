@@ -305,6 +305,8 @@
 !/srcpkgs/sf-auth
 !/srcpkgs/sf-auth-devel
 !/srcpkgs/sf-auth-tools
+!/srcpkgs/sf-autocomplete
+!/srcpkgs/sf-autocomplete-devel
 !/srcpkgs/sf-bookmarks
 !/srcpkgs/sf-bookmarks-devel
 !/srcpkgs/sf-cmake-modules

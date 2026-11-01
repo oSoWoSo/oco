@@ -195,6 +195,7 @@ on:
         - shaderc
         - shattered-pixel-dungeon
         - simplex-chat
+        - sonic-namespace
         - surfer-cli
         - surfer-server
         - surge-xt

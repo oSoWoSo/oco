@@ -420,6 +420,7 @@ Create PR to Codeberg or GitHub
 | shattered-pixel-dungeon | 4.0.2 | [home](https://github.com/00-Evan/shattered-pixel-dungeon) | zenobit |  | Open-source roguelike dungeon crawler with randomized levels and enemies |
 | simplex-chat | 7.0.0 | [home](https://simplex.chat) | rayfadh | ~i686 | Private and secure messaging application (CLI) |
 | simplex-chat-desktop | 7.0.0 | [home](https://simplex.chat) | rayfadh | ~i686 | Private and secure messaging application (CLI) |
+| sonic-namespace | 1 | [home](https://github.com/Sonic-DE) | zenobit |  | SonicDE namespace transformation helper for package builds |
 | sonic-frameworks-cmake-modules | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-cmake-modules) | zenobit |  | Extended CMake modules and build utilities for SonicDE frameworks |
 | sonic-oxygen-icons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-oxygen-icons) | zenobit |  | Oxygen icon theme |
 | surfer-cli | 7.4.1 | [home](https://github.com/cloudron-io/surfer) | zenobit |  | Command line interface for surfer |

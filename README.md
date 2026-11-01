@@ -417,6 +417,8 @@ Create PR to Codeberg or GitHub
 | sf-auth | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
 | sf-auth-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
 | sf-auth-tools | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
+| sf-autocomplete | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
+| sf-autocomplete-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
 | sf-bookmarks | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
 | sf-bookmarks-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
 | sf-cmake-modules | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-cmake-modules) | zenobit |  | Extended CMake modules and build utilities for SonicDE frameworks |

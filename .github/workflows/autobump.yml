@@ -198,6 +198,7 @@ on:
         - sf-gui-addons
         - sf-internationalization
         - sf-settings
+        - sf-settings-ui
         - sf-text-codec
         - sf-widgets-addons
         - sfizz-git

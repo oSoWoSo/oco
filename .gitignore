@@ -312,6 +312,8 @@
 !/srcpkgs/sf-internationalization-devel
 !/srcpkgs/sf-settings
 !/srcpkgs/sf-settings-devel
+!/srcpkgs/sf-settings-ui
+!/srcpkgs/sf-settings-ui-devel
 !/srcpkgs/sf-text-codec
 !/srcpkgs/sf-text-codec-devel
 !/srcpkgs/sf-widgets-addons

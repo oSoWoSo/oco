@@ -907,12 +907,35 @@ case "$1" in
 esac
 EOF
 chmod +x "$_detect_wd/bin/git"
+cat >"$_detect_wd/bin/gh" <<'EOF'
+#!/bin/sh
+# Mock the pull-request lookup: branches starting with "haspr" have an open PR.
+case "$*" in
+	*"haspr"*) printf '%s\n' '[{"number":42,"state":"open","base":{"ref":"OCO"}}]' ;;
+	*) printf '%s\n' '[]' ;;
+esac
+EOF
+cat >"$_detect_wd/bin/jq" <<'EOF'
+#!/bin/sh
+python3 -c '
+import json, sys
+try:
+    data = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+if isinstance(data, list):
+    for item in data:
+        if item.get("base", {}).get("ref") == "OCO":
+            print(item.get("number", ""))
+'
+EOF
+chmod +x "$_detect_wd/bin/git" "$_detect_wd/bin/gh" "$_detect_wd/bin/jq"
 
 # Run the real Detect changed packages script rather than a reimplementation.
 cp "$SCRIPT_DIR/.github/scripts/ci/build-detect.sh" "$_detect_wd/detect.sh"
 
 _run_detect_case() {
-	_case_name=$1 _before=$2 _ref=${3:-refs/heads/OCO} _event=${4:-push} _target=${5:-production}
+	_case_name=$1 _before=$2 _ref=${3:-refs/heads/OCO} _event=${4:-push} _target=${5:-production} _branch=${6:-OCO}
 	mkdir -p "$_detect_wd/out-$_case_name"
 	: >"$_detect_wd/git-$_case_name.log"
 	(
@@ -921,11 +944,13 @@ _run_detect_case() {
 		GIT_LOG="$_detect_wd/git-$_case_name.log"
 		GITHUB_OUTPUT="$_detect_wd/out-$_case_name/output"
 		GITHUB_STEP_SUMMARY="$_detect_wd/out-$_case_name/summary"
-		GITHUB_SERVER_URL=https://example.invalid GITHUB_REPOSITORY=o/r GITHUB_REF_NAME=OCO GITHUB_REF="$_ref"
+		GITHUB_SERVER_URL=https://example.invalid GITHUB_REPOSITORY=o/r
+		GITHUB_REF_NAME="$_branch" GITHUB_REF="$_ref"
 		INPUT_ALL=false INPUT_TEMPLATE='' INPUT_TEMPLATES='' INPUT_RUNNER=amd64
-		INPUT_PUBLISH_TARGET="$_target" EVENT_NAME="$_event" CURRENT_BRANCH=OCO PUSH_BEFORE="$_before"
-		PUSH_AFTER=after PR_BASE_SHA='' PR_HEAD_SHA=''
-		export PATH GIT_LOG GITHUB_OUTPUT GITHUB_STEP_SUMMARY GITHUB_SERVER_URL
+		INPUT_PUBLISH_TARGET="$_target" EVENT_NAME="$_event" CURRENT_BRANCH="$_branch"
+		PUSH_BEFORE="$_before" PUSH_AFTER=after PR_BASE_SHA='' PR_HEAD_SHA=''
+		GH_TOKEN=fake-token
+		export PATH GIT_LOG GITHUB_OUTPUT GITHUB_STEP_SUMMARY GITHUB_SERVER_URL GH_TOKEN
 		export GITHUB_REPOSITORY GITHUB_REF_NAME GITHUB_REF INPUT_ALL INPUT_TEMPLATE INPUT_TEMPLATES
 		export INPUT_RUNNER INPUT_PUBLISH_TARGET EVENT_NAME CURRENT_BRANCH PUSH_BEFORE PUSH_AFTER PR_BASE_SHA PR_HEAD_SHA
 		bash ./detect.sh
@@ -981,6 +1006,16 @@ _run_detect_case feature 0000000000000000000000000000000000000000 refs/heads/fea
 it 'non-OCO push always selects isolated testing path'
 assert_eq "$(grep '^publish_target=' "$_detect_wd/out-feature/output" | cut -d= -f2-)" testing
 assert_eq "$(grep '^repository_prefix=' "$_detect_wd/out-feature/output" | cut -d= -f2-)" testing
+
+_run_detect_case haspr 0000000000000000000000000000000000000000 refs/heads/haspr push testing haspr >/dev/null 2>&1
+it 'feature-branch push with an open PR skips the build entirely'
+assert_eq "$(grep '^packages=' "$_detect_wd/out-haspr/output" | cut -d= -f2-)" ''
+assert_eq "$(grep '^removed=' "$_detect_wd/out-haspr/output" | cut -d= -f2-)" ''
+
+_run_detect_case nopr 0000000000000000000000000000000000000000 refs/heads/nopr push testing nopr >/dev/null 2>&1
+it 'feature-branch push without an open PR still builds'
+_expected=$(grep '^packages=' "$_detect_wd/out-feature/output" | cut -d= -f2-)
+assert_eq "$(grep '^packages=' "$_detect_wd/out-nopr/output" | cut -d= -f2-)" "$_expected"
 
 _run_detect_case manual-test 0000000000000000000000000000000000000000 refs/heads/OCO workflow_dispatch testing >/dev/null 2>&1
 it 'OCO manual dispatch can explicitly select testing'

@@ -305,6 +305,8 @@
 !/srcpkgs/sf-auth
 !/srcpkgs/sf-auth-devel
 !/srcpkgs/sf-auth-tools
+!/srcpkgs/sf-bookmarks
+!/srcpkgs/sf-bookmarks-devel
 !/srcpkgs/sf-cmake-modules
 !/srcpkgs/sf-color-scheme
 !/srcpkgs/sf-color-scheme-devel

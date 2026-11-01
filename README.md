@@ -426,6 +426,8 @@ Create PR to Codeberg or GitHub
 | sf-settings-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
 | sf-text-codec | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-codec) | zenobit |  | Collection of methods to manipulate strings using various encodings |
 | sf-text-codec-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-codec) | zenobit |  | Collection of methods to manipulate strings using various encodings |
+| sf-widgets-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-widgets-addons) | zenobit |  | Large set of desktop widgets |
+| sf-widgets-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-widgets-addons) | zenobit |  | Large set of desktop widgets |
 | sfizz-cli | 1.2.3 | [home](https://sfztools.github.io/sfizz/) | Trve_AY |  | SFZ sampler |
 | sfizz-git | 1.2.3 | [home](https://sfztools.github.io/sfizz/) | Trve_AY |  | SFZ sampler |
 | sfizz-lib | 1.2.3 | [home](https://sfztools.github.io/sfizz/) | Trve_AY |  | SFZ sampler |

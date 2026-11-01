@@ -314,6 +314,8 @@
 !/srcpkgs/sf-settings-devel
 !/srcpkgs/sf-text-codec
 !/srcpkgs/sf-text-codec-devel
+!/srcpkgs/sf-widgets-addons
+!/srcpkgs/sf-widgets-addons-devel
 !/srcpkgs/sfizz-cli
 !/srcpkgs/sfizz-git
 !/srcpkgs/sfizz-lib

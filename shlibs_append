@@ -43,3 +43,4 @@ libkrun.so.1 libkrun-1.19.6_1
 libSF6ConfigCore.so.6 sf-settings-6.31.0_1
 libSF6ConfigQml.so.6 sf-settings-6.31.0_1
 libSF6ConfigGui.so.6 sf-settings-6.31.0_1
+libSF6Codecs.so.6 sf-text-codec-6.31.0_1

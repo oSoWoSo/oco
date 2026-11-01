@@ -249,12 +249,12 @@ on:
         - rustdesk
         - sdkmanager
         - seamonkey-bin
+        - sf-cmake-modules
         - sfizz-git
         - shaderc
         - shattered-pixel-dungeon
         - simplex-chat
         - sonic-namespace
-        - sonic-frameworks-cmake-modules
         - sonic-oxygen-icons
         - surfer-cli
         - surfer-server

@@ -192,6 +192,7 @@ on:
         - sdkmanager
         - seamonkey-bin
         - sf-cmake-modules
+        - sf-settings
         - sfizz-git
         - shaderc
         - shattered-pixel-dungeon

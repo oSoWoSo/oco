@@ -266,6 +266,7 @@ on:
         - simplex-chat
         - sonic-namespace
         - sonic-oxygen-icons
+        - sonic-polkit
         - surfer-cli
         - surfer-server
         - surge-xt

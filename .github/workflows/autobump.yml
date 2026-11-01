@@ -198,6 +198,7 @@ on:
         - sf-internationalization
         - sf-settings
         - sf-text-codec
+        - sf-widgets-addons
         - sfizz-git
         - shaderc
         - shattered-pixel-dungeon

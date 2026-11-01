@@ -445,6 +445,8 @@ Create PR to Codeberg or GitHub
 | simplex-chat-desktop | 7.0.0 | [home](https://simplex.chat) | rayfadh | ~i686 | Private and secure messaging application (CLI) |
 | sonic-namespace | 1 | [home](https://github.com/Sonic-DE) | zenobit |  | SonicDE namespace transformation helper for package builds |
 | sonic-oxygen-icons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-oxygen-icons) | zenobit |  | Oxygen icon theme |
+| sonic-polkit | 0.201.2 | [home](https://github.com/Sonic-DE/sonic-polkit) | zenobit |  | Qt wrapper around Polkit-1 client libraries |
+| sonic-polkit-devel | 0.201.2 | [home](https://github.com/Sonic-DE/sonic-polkit) | zenobit |  | Qt wrapper around Polkit-1 client libraries |
 | surfer-cli | 7.4.1 | [home](https://github.com/cloudron-io/surfer) | zenobit |  | Command line interface for surfer |
 | surfer-server | 7.4.1 | [home](https://github.com/cloudron-io/surfer) | zenobit |  | Simple static file server with web interface and resumable uploads |
 | surge-xt | 1.3.4 | [home](https://surge-synthesizer.github.io/) | Trve_AY |  | Subtractive hybrid synthesizer |

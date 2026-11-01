@@ -303,6 +303,8 @@
 !/srcpkgs/sf-cmake-modules
 !/srcpkgs/sf-color-scheme
 !/srcpkgs/sf-color-scheme-devel
+!/srcpkgs/sf-core-addons
+!/srcpkgs/sf-core-addons-devel
 !/srcpkgs/sf-gui-addons
 !/srcpkgs/sf-gui-addons-devel
 !/srcpkgs/sf-gui-addons-geo-uri-handler

@@ -63,3 +63,4 @@ libSF6Bookmarks.so.6 sf-bookmarks-6.31.0_1
 libSF6BookmarksWidgets.so.6 sf-bookmarks-6.31.0_1
 libSF6Completion.so.6 sf-autocomplete-6.31.0_1
 libSF6Crash.so.6 sf-crash-handler-6.31.0_1
+libSF6DBusAddons.so.6 sf-dbus-6.31.0_1

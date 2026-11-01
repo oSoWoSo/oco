@@ -321,6 +321,8 @@
 !/srcpkgs/sf-text-codec-devel
 !/srcpkgs/sf-widgets-addons
 !/srcpkgs/sf-widgets-addons-devel
+!/srcpkgs/sf-windowsystem
+!/srcpkgs/sf-windowsystem-devel
 !/srcpkgs/sfizz-cli
 !/srcpkgs/sfizz-git
 !/srcpkgs/sfizz-lib

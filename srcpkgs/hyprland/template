@@ -41,7 +41,7 @@ makedepends="aquamarine-devel
  xcb-util-errors-devel
  xcb-util-renderutil-devel
  xcb-util-wm-devel
- xorg-server-xwayland"
+ xorg-server-xwayland libcanberra-devel sdbus-c++-devel"
 short_desc="Dynamic tiling Wayland compositor that doesn't sacrifice on its looks"
 maintainer="zenobit <zen@osowoso.org>"
 license="BSD-3-Clause"

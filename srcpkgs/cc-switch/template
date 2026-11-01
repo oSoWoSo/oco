@@ -1,6 +1,6 @@
 # Template file for 'cc-switch'
 pkgname=cc-switch
-version=4.0.22
+version=4.0.23
 revision=1
 archs="x86_64* aarch64*"
 build_helper="rust"
@@ -12,7 +12,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://github.com/farion1231/cc-switch"
 distfiles="https://github.com/farion1231/cc-switch/archive/refs/tags/v${version}.tar.gz"
-checksum=ac1da80f90e46579dec0b1542cdac3fff3742003aeeed00a8e70d274272f05bb
+checksum=27124b2b22b4657228df9eb0eeb2ca41748f80c9950a56587ba7784398c71156
 
 _setup_env() {
 	if [ -n "$CROSS_BUILD" ]; then

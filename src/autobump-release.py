@@ -93,8 +93,14 @@ def check_pr(pr: dict, files: list, *, repo: str, plan: dict, allow_merged: bool
     require(len(set(packages)) == len(packages), "Duplicate package template in PR file list")
     require(any(head_ref.startswith(f"autobump/{package}-") for package in packages),
             "Autobump branch target is not among the changed packages")
-    require(paths <= {"README.md", *template_paths}, "Unexpected modified files in autobump PR")
-    require(all(item["status"] == "modified" for item in files), "Unexpected added/deleted/renamed files")
+    def allowed_change(path: str) -> bool:
+        return path == "README.md" or any(
+            path.startswith(f"srcpkgs/{package}/") for package in packages)
+
+    require(all(allowed_change(path) for path in paths),
+            "Unexpected modified files in autobump PR")
+    require(all(item["status"] in {"added", "modified"} for item in files),
+            "Unexpected deleted/renamed files")
     require(set(plan["packages"].split()) == set(packages),
             "Build plan does not match the changed packages")
     require(not plan.get("removed", "").strip(), "Autobump PR unexpectedly removes packages")

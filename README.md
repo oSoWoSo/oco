@@ -4,8 +4,7 @@
 - vOid Community repOsitory (oco)  
 aka  
 - Void User Repository
-- VUR
-- testing repo
+- testing repository (CI candidate packages)
 - waiting list
 - void unstable
 
@@ -44,6 +43,14 @@ in https://repo.osowoso.org/`(architecture)`
 are easy to understand READMEs
 Just pick your architecture
 
+### Testing repository
+CI candidate packages are kept separate from production at
+`https://repo.osowoso.org/testing/<architecture>/`. Browse the
+[testing repository guide](https://repo.osowoso.org/testing.html) for target
+architectures, publication rules, and one-command install instructions. Install
+the OCO signing key first; the same key is used for both repositories.
+
+
 ### Install repository key
 xbps looks up repository keys by their RSA fingerprint, so the key file must
 be named `df:ec:10:ef:5c:03:e9:e0:9e:86:77:08:c2:b5:a8:cb.plist`.
@@ -81,6 +88,34 @@ We build for x86_64 and aarch64 + musl variants
 Add your changes
 When you change any shlib from upstream void-packages, changes must be reflected in `shlibs_remove` and `shlibe_append`
 When you add new shlib add it only to `shlibe_append`
+
+### Updating package groups
+`./bump.sh <group> <operation>` manages the package groups defined in
+`.github/autobump-packs.tsv` against the void-packages checkout at `~/void` by
+default. Add a group and its package-name glob patterns to that file to make
+the group available to both the helper and CI autobumping. Set `XBPS_DISTDIR`
+(or `CLONE_DEST`) to use another checkout; `sourceDir` and `destinationDir`
+can override the source and OCO template directories. Operations include
+`--lint`, `--build`, `--bump`, `--copy`, `--install`, `--order`, and `--all`.
+Review template and shlibs changes before committing them.
+
+The helper's `--order` and `--build` use `xbps-src sort-dependencies` to sort
+the XBPS-known dependency graph without compiling packages. XBPS evaluates
+template-declared dependencies and subpackages; runtime dependencies that are
+only discoverable from built binaries cannot be guaranteed before a build.
+Sonic's `sonic-*` pattern automatically includes new Sonic templates.
+
+The autobump workflow runs in the `oco-builder` image and resolves the current
+graph with `xbps-src show-build-deps`, without compiling packages. When a
+package in a configured pack has an upstream update, CI checks the whole pack
+for newer versions and revision-bumps only known direct consumers of changed
+packages. The resulting PR uses the ordinary template-change build workflow;
+XBPS can discover any remaining build-time dependencies there. Add a pattern
+row to `.github/autobump-packs.tsv` when introducing another pack.
+
+The GitHub build workflow detects changed templates under `srcpkgs/` and builds
+the affected packages with their required build dependencies in `oco-builder`
+images. The local `bump.sh` helper is not run directly by CI.
 After adding template, run `./ocoman -u` to regenerate templates list and table
 One commit per template, mesage: `<pkgname> <version>`
 

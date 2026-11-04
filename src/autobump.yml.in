@@ -34,6 +34,7 @@ permissions:
   contents: write
   issues: write
   pull-requests: write
+  packages: read
 concurrency:
   group: autobump-${{ inputs.pkg || github.event.issue.number || github.run_id }}
   cancel-in-progress: true
@@ -42,12 +43,21 @@ jobs:
   autobump:
     name: 🛰️ ${{ inputs.pkg || github.event.issue.number }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     if: github.event_name == 'workflow_dispatch' || contains(github.event.issue.labels.*.name, 'package-update')
+    container:
+      image: ghcr.io/osowoso/oco-builder-x86_64:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.BOT }}
+    defaults:
+      run:
+        working-directory: extra
     env:
       ISSUE_NUMBER: ${{ github.event.issue.number }}
       ISSUE_BODY: ${{ github.event.issue.body }}
       OCO_TOKEN: ${{ secrets.WORKFLOWS }}
+      XBPS_SRC: /void-packages/xbps-src
       GH_REPO: ${{ github.repository }}
     steps:
       - name: Require a package on manual dispatch
@@ -55,11 +65,13 @@ jobs:
         run: |-
           echo "::error::pick a package from the list to autobump"
           exit 1
+        working-directory: ${{ github.workspace }}
 
       - name: Checkout repo
         uses: actions/checkout@v7
         with:
           token: ${{ secrets.BOT }}
+          path: extra
 
       - name: Extract template from issue body
         id: template
@@ -79,6 +91,15 @@ jobs:
           FORCE: ${{ inputs.force }}
           REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
         run: bash .github/scripts/ci/autobump-blacklist.sh
+      - name: Prepare builder
+        if: steps.blacklist.outputs.in_list == 'true'
+        run: oco-prepare
+        working-directory: ${{ github.workspace }}
+
+      - name: Merge OCO templates into XBPS checkout
+        if: steps.blacklist.outputs.in_list == 'true'
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-merge-templates.sh"
+        working-directory: ${{ github.workspace }}
 
       - name: Plan the dependency batch
         id: plan

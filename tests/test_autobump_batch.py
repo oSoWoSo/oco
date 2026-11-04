@@ -110,6 +110,61 @@ class BatchPlanTests(unittest.TestCase):
         graph = repository.dependencies()
         self.assertEqual(graph["user"], {"real"})
 
+
+    def test_xbps_build_dependencies_include_template_logic(self):
+        """The XBPS resolver catches deps computed by build/template logic."""
+        self.build_repo({
+            "provider": "pkgname=provider\nversion=1.0\nrevision=1\n",
+            "consumer": "pkgname=consumer\nversion=1.0\nrevision=1\n",
+        })
+        resolver = self.tmp / "xbps-src"
+        resolver.write_text(
+            "#!/bin/sh\n"
+            "if [ \"$1\" = show-build-deps ] && [ \"$2\" = consumer ]; then\n"
+            "  printf 'provider\\n'\n"
+            "fi\n",
+            encoding="utf-8",
+        )
+        resolver.chmod(0o755)
+
+        graph = batch.Repository(self.tmp, xbps_src=resolver).dependencies()
+        self.assertEqual(graph["consumer"], {"provider"})
+
+    def test_pack_updates_are_limited_to_pack_and_rebuild_direct_consumers(self):
+        self.build_repo({
+            "sonic-core": "pkgname=sonic-core\nversion=1.0\nrevision=1\n",
+            "sonic-ui": "pkgname=sonic-ui\nversion=1.0\nrevision=1\n",
+            "consumer": "pkgname=consumer\nversion=1.0\nrevision=1\n",
+            "unrelated": "pkgname=unrelated\nversion=1.0\nrevision=1\n",
+        })
+        (self.tmp / ".github" / "autobump-packs.tsv").write_text(
+            "sonic\tsonic-*\n", encoding="utf-8")
+        resolver = self.tmp / "xbps-src"
+        resolver.write_text(
+            "#!/bin/sh\n"
+            "if [ \"$1\" = show-build-deps ] && [ \"$2\" = consumer ]; then\n"
+            "  printf 'sonic-core\\n'\n"
+            "fi\n",
+            encoding="utf-8",
+        )
+        resolver.chmod(0o755)
+        self.fake_detector({
+            "sonic-core": "1.1",
+            "sonic-ui": "1.1",
+            "consumer": "2.0",
+            "unrelated": "9.9",
+        })
+
+        rows, candidates = batch.plan_batch(
+            self.tmp, "sonic-core", force=False, xbps_src=resolver)
+        kinds = {package: kind for package, _version, kind, _order in rows}
+        self.assertEqual(set(candidates), {"sonic-core", "sonic-ui"})
+        self.assertEqual(kinds, {
+            "sonic-core": "version",
+            "sonic-ui": "version",
+            "consumer": "revision",
+        })
+
     def test_batch_groups_connected_packages_and_omits_unrelated_ones(self):
         self.build_repo({
             "alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n",

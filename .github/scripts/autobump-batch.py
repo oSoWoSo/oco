@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
-"""Plan and apply a dependency-connected autobump batch for one target package.
+"""Plan pack-aware autobumps using XBPS-resolved build dependencies.
 
-The batch is the connected component of the target in the repository's
-template dependency graph, restricted to the packages that are not excluded
-upstream (src/autobump-blacklist). Every package in that set with a newer
-upstream release gets a version bump; every package that directly depends on
-a bumped package gets a revision bump, so the rebuilt binaries are picked up
-by their consumers.
+The pack is the upstream-update detection boundary. Only changed packages
+and their direct build-dependent consumers are revised; XBPS resolves the
+dependency graph without requiring a full build.
 
 Usage:
     autobump-batch.py plan TARGET --output FILE [--repo-root DIR] [--force]
@@ -18,13 +15,14 @@ The plan file is TSV, one row per changed package:
 
 <kind> is "version" for an upstream version bump and "revision" for a
 revision-only bump, <version> is the new upstream version (empty for a
-revision bump) and <order> is the position in the dependency-respecting
-build order. An empty plan file means there is nothing to bump.
+revision bump) and <order> is the XBPS-resolved dependency order. An empty
+plan file means there is nothing to bump.
 """
 from __future__ import annotations
 
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import fnmatch
 import os
 from pathlib import Path
 import re
@@ -122,8 +120,9 @@ def template_is_metapackage(path: Path) -> bool:
 class Repository:
     """The template tree of one checkout."""
 
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, xbps_src: Path | None = None):
         self.root = root
+        self.xbps_src = xbps_src
         self.templates: dict[str, Path] = {}
         self.aliases: dict[str, str] = {}
         for entry in sorted((root / "srcpkgs").iterdir()):
@@ -139,17 +138,68 @@ class Repository:
             return None
         return target if target in self.templates else None
 
-    def dependencies(self) -> dict[str, set[str]]:
-        """Return the dependency edges between real packages.
+    def pack_members(self, package: str) -> set[str]:
+        """Return real templates in any configured pack containing package."""
+        listing = self.root / ".github" / "autobump-packs.tsv"
+        if not listing.is_file():
+            return set()
+        packs: dict[str, list[str]] = {}
+        for number, line in enumerate(listing.read_text(encoding="utf-8").splitlines(), 1):
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            fields = line.split()
+            if len(fields) != 2:
+                raise ValueError(f"malformed pack rule on line {number}: {line!r}")
+            pack, pattern = fields
+            packs.setdefault(pack, []).append(pattern)
+        matched = {
+            pack for pack, patterns in packs.items()
+            if any(fnmatch.fnmatchcase(package, pattern) for pattern in patterns)
+        }
+        return {
+            name for name in self.templates
+            if any(
+                fnmatch.fnmatchcase(name, pattern)
+                for pack in matched
+                for pattern in packs[pack]
+            )
+        }
 
-        Aliases (the -devel and subpackage symlinks) are resolved to the
-        package they point at, so a template that depends on hyprutils-devel
-        is connected to hyprutils, not to a symlink that is never bumped.
+    def _build_dependencies(self, package: str, template: Path) -> set[str]:
+        """Resolve dependencies with XBPS when available, otherwise parse literals."""
+        if self.xbps_src is None:
+            return template_dependencies(template)
+        result = subprocess.run(
+            [str(self.xbps_src), "show-build-deps", package],
+            cwd=self.xbps_src.parent,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode:
+            message = result.stderr.strip() or result.stdout.strip()
+            raise RuntimeError(
+                f"xbps-src show-build-deps failed for {package}: {message}"
+            )
+        return {
+            dependency
+            for line in result.stdout.splitlines()
+            for dependency in line.split()
+            if PACKAGE.fullmatch(dependency)
+        }
+
+    def dependencies(self) -> dict[str, set[str]]:
+        """Return build dependency edges between real packages.
+
+        In CI, `xbps-src show-build-deps` evaluates template/build-style
+        dependency logic without building. The literal parser remains for
+        isolated tests and local planning without an XBPS checkout.
         """
         edges: dict[str, set[str]] = {}
         for name, template in self.templates.items():
             resolved: set[str] = set()
-            for dependency in template_dependencies(template):
+            for dependency in self._build_dependencies(name, template):
                 target = self.resolve(dependency) or dependency
                 if target in self.templates and target != name:
                     resolved.add(target)
@@ -301,16 +351,19 @@ def apply_revision_bump(root: Path, package: str) -> None:
 
 
 def plan_batch(
-    root: Path, target: str, *, force: bool
+    root: Path,
+    target: str,
+    *,
+    force: bool,
+    xbps_src: Path | None = None,
 ) -> tuple[list[tuple[str, str, str, int]], list[str]]:
-    """Return the batch plan and the component it covers.
+    """Plan pack updates and revision bumps for direct build-dependent consumers.
 
-    The plan lists the packages that change; the component lists every
-    package the batch was planned for, including the ones that are already
-    up to date. The caller uses the component to recognise a batch that an
-    open pull request already covers.
+    For a configured pack, upstream detection is limited to its members;
+    outside-pack packages are included only when they need a rebuild.
+    Unpacked packages retain dependency-component batching.
     """
-    repository = Repository(root)
+    repository = Repository(root, xbps_src=xbps_src)
     if target in repository.aliases:
         if not force:
             raise ValueError(f"target is a symlink alias, not bumpable: {target}")
@@ -327,15 +380,14 @@ def plan_batch(
         raise ValueError(f"target is in src/autobump-blacklist: {target}")
 
     graph = repository.dependencies()
-    reachable = component(graph, target)
+    reachable = repository.pack_members(target) or component(graph, target)
     candidates = sorted(reachable - excluded)
-
     updated = detect_updates(root, candidates)
     if not updated:
         return [], candidates
 
-    # A package that depends on a bumped package has to be rebuilt, or the
-    # repository keeps serving binaries linked against the old dependency.
+    # Only direct build-dependent consumers need a revision bump for this
+    # package change; unrelated members of the dependency component do not.
     reverse: dict[str, set[str]] = {}
     for package, dependencies in graph.items():
         for dependency in dependencies:
@@ -402,11 +454,16 @@ def read_plan(path: Path) -> list[tuple[str, str, str, int]]:
 
 
 def command_plan(args: argparse.Namespace, root: Path) -> int:
-    rows, component = plan_batch(root, args.target, force=args.force)
+    rows, component = plan_batch(
+        root,
+        args.target,
+        force=args.force,
+        xbps_src=args.xbps_src,
+    )
     write_plan(args.output, rows)
     write_component(args.output.with_suffix(".component"), component)
     if not rows:
-        print(f"No updates detected in the dependency component of {args.target}")
+        print(f"No updates detected among packages selected for {args.target}")
         return 0
     for package, version, kind, order in rows:
         detail = version if kind == "version" else "revision bump"
@@ -444,11 +501,19 @@ def main() -> int:
         help="checkout to work in; defaults to the repository this script lives in",
     )
     parser.add_argument(
+        "--xbps-src",
+        type=Path,
+        default=Path(os.environ["XBPS_SRC"]) if os.environ.get("XBPS_SRC") else None,
+        help="use this xbps-src to resolve evaluated build dependencies",
+    )
+    parser.add_argument(
         "--force",
         action="store_true",
         help="bump the target even when it is in src/autobump-blacklist",
     )
     args = parser.parse_args()
+    if args.xbps_src:
+        args.xbps_src = args.xbps_src.resolve()
     root = args.repo_root.resolve()
 
     if args.command == "plan":

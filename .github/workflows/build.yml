@@ -356,6 +356,47 @@ jobs:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: bash "${GITHUB_WORKSPACE}/.github/scripts/ci/build-detect.sh"
 
+  lint:
+    name: Lint templates
+    permissions:
+      contents: read
+      packages: read
+    needs: detect
+    if: github.event_name == 'pull_request' && needs.detect.outputs.packages != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    container:
+      image: ghcr.io/osowoso/oco-builder-x86_64:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.BOT }}
+      options: --platform linux/amd64 --privileged
+      volumes:
+        - /dev:/dev
+      env:
+        ARCH: 'x86_64'
+        BOOTSTRAP: 'x86_64'
+        TEST: '1'
+        NATIVE: 'false'
+    steps:
+      - name: Checkout repo (PR head)
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: extra
+
+      - name: Prepare container
+        run: oco-prepare
+
+      - name: Merge templates and edit shlibs
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-merge-templates.sh"
+
+      - name: Lint templates
+        env:
+          PACKAGES: ${{ needs.detect.outputs.packages }}
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-lint.sh"
+
   test-pr:
     name: ${{ matrix.config.arch }} on ${{ matrix.config.host }}
     permissions:
@@ -396,12 +437,6 @@ jobs:
       - name: Merge templates and edit shlibs
         run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-merge-templates.sh"
 
-      - name: Lint templates
-        if: matrix.config.arch == 'x86_64'
-        env:
-          PACKAGES: ${{ needs.detect.outputs.packages }}
-        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-lint.sh"
-
       - name: Snapshot existing binaries
         if: startsWith(github.head_ref, 'autobump/') && github.event.pull_request.head.repo.full_name == github.repository
         run: |
@@ -441,7 +476,7 @@ jobs:
     name: 🏗️ build gate
     permissions:
       contents: read
-    needs: [detect, test-pr]
+    needs: [detect, lint, test-pr]
     if: always() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -450,6 +485,7 @@ jobs:
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           DETECT_RESULT: ${{ needs.detect.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
           TEST_RESULT: ${{ needs.test-pr.result }}
           PACKAGES: ${{ needs.detect.outputs.packages }}
           REMOVED: ${{ needs.detect.outputs.removed }}
@@ -459,7 +495,7 @@ jobs:
             echo "Build not required for this PR"
             exit 0
           fi
-          [[ "$DETECT_RESULT" == success && "$TEST_RESULT" == success && -n "$PACKAGES" && -z "$REMOVED" ]] || {
+          [[ "$DETECT_RESULT" == success && "$LINT_RESULT" == success && "$TEST_RESULT" == success && -n "$PACKAGES" && -z "$REMOVED" ]] || {
             echo "::error::Autobump package build/detection failed or no packages were detected"
             exit 1
           }

@@ -223,6 +223,32 @@ class CheckPrTests(unittest.TestCase):
             repo="oSoWoSo/oco", plan=self.plan, allow_merged=True)
         self.assertEqual(packages, ["alpha", "beta"])
 
+    def test_a_patch_file_under_a_changed_package_is_accepted(self):
+        plan = dict(self.plan, packages="alpha", head_ref="autobump/alpha-1.1")
+        pr = dict(self.pr, changed_files=3, head_ref="autobump/alpha-1.1")
+        pr["head"] = {"repo": {"full_name": "oSoWoSo/oco"}, "sha": "a" * 40,
+                      "ref": "autobump/alpha-1.1"}
+        packages = release.check_pr(
+            pr,
+            self.files(["README.md", "srcpkgs/alpha/template",
+                        "srcpkgs/alpha/patches/0001-fix.patch"]),
+            repo="oSoWoSo/oco", plan=plan, allow_merged=True)
+        self.assertEqual(packages, ["alpha"])
+
+    def test_a_new_package_with_a_patch_is_accepted(self):
+        plan = dict(self.plan, packages="alpha newpkg", head_ref="autobump/newpkg-1.0")
+        pr = dict(self.pr, changed_files=3, head_ref="autobump/newpkg-1.0")
+        pr["head"] = {"repo": {"full_name": "oSoWoSo/oco"}, "sha": "a" * 40,
+                      "ref": "autobump/newpkg-1.0"}
+        files = [
+            {"filename": "srcpkgs/alpha/template", "status": "modified"},
+            {"filename": "srcpkgs/newpkg/template", "status": "added"},
+            {"filename": "srcpkgs/newpkg/patches/0001-build.patch", "status": "added"},
+        ]
+        packages = release.check_pr(pr, files, repo="oSoWoSo/oco", plan=plan,
+                                    allow_merged=True)
+        self.assertEqual(packages, ["alpha", "newpkg"])
+
     def test_a_pr_that_touches_an_unexpected_file_is_rejected(self):
         with self.assertRaises(ValueError):
             release.check_pr(
@@ -231,12 +257,24 @@ class CheckPrTests(unittest.TestCase):
                             "src/other.txt"]),
                 repo="oSoWoSo/oco", plan=self.plan, allow_merged=True)
 
-    def test_a_pr_that_adds_a_template_is_rejected(self):
+    def test_an_added_template_outside_the_plan_is_rejected(self):
         files = self.files(["srcpkgs/alpha/template", "srcpkgs/beta/template"])
         files[0] = {"filename": "srcpkgs/alpha/template", "status": "added"}
+        plan = dict(self.plan, packages="beta")
+        pr = dict(self.pr, head_ref="autobump/beta-2.0")
+        pr["head"] = {"repo": {"full_name": "oSoWoSo/oco"}, "sha": "a" * 40,
+                      "ref": "autobump/beta-2.0"}
         with self.assertRaises(ValueError):
-            release.check_pr(self.pr, files, repo="oSoWoSo/oco", plan=self.plan,
+            release.check_pr(pr, files, repo="oSoWoSo/oco", plan=plan,
                              allow_merged=True)
+
+    def test_workflow_files_are_rejected(self):
+        with self.assertRaises(ValueError):
+            release.check_pr(
+                self.pr,
+                self.files(["srcpkgs/alpha/template",
+                            ".github/workflows/autobump.yml"]),
+                repo="oSoWoSo/oco", plan=self.plan, allow_merged=True)
 
     def test_a_plan_that_does_not_match_the_templates_is_rejected(self):
         with self.assertRaises(ValueError):

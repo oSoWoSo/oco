@@ -1,0 +1,21 @@
+# Template file for 'brush-shell'
+pkgname=brush-shell
+version=0.4.0
+revision=1
+build_style=cargo
+make_install_args="--path brush-shell"
+make_check_args="--lib --test brush-compat-tests --test brush-integration-tests
+ --test brush-version-tests --test brush-completion-tests"
+checkdepends="bash-completion"
+short_desc="Bash/POSIX-compatible shell written in Rust"
+maintainer="Coolllyn <leanhduc673@gmail.com>"
+license="MIT"
+homepage="https://github.com/reubeno/brush"
+changelog="https://raw.githubusercontent.com/reubeno/brush/main/CHANGELOG.md"
+distfiles="https://github.com/reubeno/brush/archive/refs/tags/brush-v${version}.tar.gz"
+checksum=69482f2a08ef7f5417fc5bd7d9789fa443d237b4e1185ba1fc8f2c07ad685c88
+register_shell="/usr/bin/brush"
+
+post_install() {
+	vlicense LICENSE
+}

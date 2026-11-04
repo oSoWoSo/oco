@@ -109,6 +109,7 @@ Create PR to Codeberg or GitHub
 | brave-origin-bin-qt5 | 1.98.63 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
 | brave-origin-bin-qt6 | 1.98.63 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |
 | brow6el | 0.3.5 | [home](https://brow6el.dev/) | zenobit | x86_64 | Minimalistic graphical terminal web browser using sixels |
+| brush-shell | 0.4.0 | [home](https://github.com/reubeno/brush) | Coolllyn |  | Bash/POSIX-compatible shell written in Rust |
 | btrfs-progs | 7.1 | [home](https://btrfs.wiki.kernel.org/index.php/Main_Page) | Enno Boland |  | Btrfs filesystem utilities |
 | bulletty | 0.3.0 | [home](https://github.com/crocidb/bulletty) | zenobit |  | Feed reader for the terminal that stores the articles as Markdown |
 | bun | 1.4.4 | [home](https://bun.sh) | zenobit | aarch64* x86_64* | JavaScript runtime, bundler, transpiler, and package manager |

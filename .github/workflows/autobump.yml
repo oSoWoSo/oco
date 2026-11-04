@@ -23,6 +23,7 @@ on:
         - BoxBuddy
         - brave-browser-bin
         - brow6el
+        - brush-shell
         - btrfs-progs
         - bulletty
         - bun

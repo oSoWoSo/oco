@@ -12,12 +12,14 @@ on:
     branches: [OCO]
     paths:
       - srcpkgs/**
+      - src/autobump-blacklist
       - .github/scripts/ci/lint-autobump-symlinks.sh
       - .github/scripts/lint-autobump-symlinks.sh
       - .github/workflows/lint-autobump-symlinks.yml
   pull_request:
     paths:
       - srcpkgs/**
+      - src/autobump-blacklist
       - .github/scripts/ci/lint-autobump-symlinks.sh
       - .github/scripts/lint-autobump-symlinks.sh
       - .github/workflows/lint-autobump-symlinks.yml

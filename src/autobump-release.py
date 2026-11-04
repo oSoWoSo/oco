@@ -20,7 +20,7 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 ARCHES = {"x86_64", "x86_64-musl", "aarch64", "aarch64-musl"}
-HOSTS = {"x86_64", "aarch64"}
+HOSTS = {"x86_64", "x86_64-musl", "aarch64", "aarch64-musl"}
 HEX_SHA = re.compile(r"^[a-f0-9]{40}$")
 PACKAGE_FILENAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+~-]*\.xbps$")
 PACKAGE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9+._-]*$")

@@ -24,8 +24,10 @@ jobs:
           SOURCE_FORGE: codeberg
           EVENT_ACTION: ${{ github.event.client_payload.action }}
           PR_NUMBER: ${{ github.event.client_payload.number }}
-          TARGET_TOKEN: ${{ github.token }}
+          # Use the repo bot PAT so mirrored PRs are authored by oSoWoSo-bot
+          # (like autobump PRs) instead of the GitHub Actions application.
+          TARGET_TOKEN: ${{ secrets.BOT }}
           TARGET_API_ROOT: https://api.github.com/repos/oSoWoSo/oco
           TARGET_GIT_URL: https://github.com/oSoWoSo/oco.git
-          TARGET_GIT_USERNAME: x-access-token
+          TARGET_GIT_USERNAME: oSoWoSo-bot
         run: python3 .github/scripts/ci/mirror-pr.py

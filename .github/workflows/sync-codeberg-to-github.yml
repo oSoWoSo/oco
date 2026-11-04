@@ -1,0 +1,76 @@
+name: 🔁Codeberg→GitHub
+on:
+  repository_dispatch:
+    types: [codeberg_push]
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Replace GitHub OCO even if it is ahead of Codeberg
+        required: false
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: sync-codeberg-to-github
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync OCO from Codeberg
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Determine the Codeberg OCO commit to mirror
+        id: determine
+        env:
+          DISPATCH_AFTER: ${{ github.event.client_payload.after }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${DISPATCH_AFTER:-}" ]]; then
+            echo "target=$DISPATCH_AFTER" >> "$GITHUB_OUTPUT"
+          else
+            # Manual run: pull the current Codeberg OCO head so a manual sync
+            # always reflects the latest Codeberg state.
+            CUR="$(git ls-remote https://codeberg.org/oSoWoSo/oco.git refs/heads/OCO | cut -f1)"
+            echo "target=$CUR" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout GitHub OCO
+        uses: actions/checkout@v7
+        with:
+          ref: OCO
+          fetch-depth: 1
+          # We push with the BOT token explicitly; keep it out of the checkout.
+          persist-credentials: false
+
+      - name: Fast-forward GitHub OCO to the Codeberg commit
+        id: sync
+        env:
+          TARGET_SHA: ${{ steps.determine.outputs.target }}
+          GH_PAT: ${{ secrets.BOT }}
+          FORCE: ${{ inputs.force }}
+        run: |
+          set -euo pipefail
+
+          git fetch --no-tags "https://codeberg.org/oSoWoSo/oco.git" "$TARGET_SHA"
+          git fetch origin +refs/heads/OCO:refs/remotes/origin/OCO
+
+          if [[ "${FORCE:-}" != "true" ]]; then
+            # A GitHub-originated push that reached Codeberg via toCB.yml is
+            # already present here; do nothing.
+            if git merge-base --is-ancestor "FETCH_HEAD" origin/OCO; then
+              echo "Codeberg OCO is already up to date on GitHub; nothing to do."
+              exit 0
+            fi
+            # Refuse to rewrite history unless explicitly asked to.
+            git merge-base --is-ancestor origin/OCO "FETCH_HEAD" || {
+              echo "::error::GitHub OCO is ahead of Codeberg OCO; not overwriting." \
+                   "Use 'force' to replace it anyway."
+              exit 1
+            }
+          fi
+
+          git push "https://x-access-token:${GH_PAT}@github.com/oSoWoSo/oco.git" \
+            "FETCH_HEAD:refs/heads/OCO" --force-with-lease

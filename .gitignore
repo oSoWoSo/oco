@@ -6,7 +6,6 @@
 !/.gitignore
 
 !/.github
-!/.forgejo
 !/wrangler.toml
 
 !/LICENSE

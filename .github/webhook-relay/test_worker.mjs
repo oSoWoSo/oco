@@ -21,6 +21,19 @@ function pullRequestPayload(overrides = {}) {
   };
 }
 
+const SHA = "bffeb74224043ba2feb48d137756c8a9331c449a";
+
+function pushPayload(overrides = {}) {
+  return {
+    ref: "refs/heads/OCO",
+    before: "0000000000000000000000000000000000000000",
+    after: SHA,
+    repository: { full_name: "oSoWoSo/oco" },
+    pusher: { login: "zenobit" },
+    ...overrides,
+  };
+}
+
 function signedRequest(payload, { event = "pull_request", secret = SECRET } = {}) {
   const body = JSON.stringify(payload);
   const signature = createHmac("sha256", secret).update(body).digest("hex");
@@ -96,12 +109,13 @@ test("unsupported actions, non-OCO bases, and mirror heads are ignored", async (
   }
 });
 
-test("wrong event type and invalid payload are rejected without dispatch", async () => {
+test("unknown event type and invalid payload are rejected without dispatch", async () => {
   const eventResponse = await worker.fetch(
-    signedRequest(pullRequestPayload(), { event: "push" }),
+    signedRequest(pullRequestPayload(), { event: "delete" }),
     ENV,
   );
   assert.equal(eventResponse.status, 202);
+  assert.deepEqual(await eventResponse.json(), { ignored: true });
 
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => assert.fail("invalid JSON must not call GitHub");
@@ -119,6 +133,57 @@ test("wrong event type and invalid payload are rejected without dispatch", async
     });
     const response = await worker.fetch(request, ENV);
     assert.equal(response.status, 400);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("valid OCO push dispatches codeberg_push with ref, SHAs, and pusher", async () => {
+  const originalFetch = globalThis.fetch;
+  let captured;
+  globalThis.fetch = async (url, options) => {
+    captured = { url, options };
+    return new Response(null, { status: 204 });
+  };
+  try {
+    const response = await worker.fetch(
+      signedRequest(pushPayload({ before: "28e1879d029cb852e4844d9c718537df08844e03" }), { event: "push" }),
+      ENV,
+    );
+    assert.equal(response.status, 202);
+    assert.deepEqual(await response.json(), { dispatched: true });
+    assert.equal(captured.url, "https://api.github.com/repos/oSoWoSo/oco/dispatches");
+    assert.deepEqual(JSON.parse(captured.options.body), {
+      event_type: "codeberg_push",
+      client_payload: {
+        ref: "refs/heads/OCO",
+        before: "28e1879d029cb852e4844d9c718537df08844e03",
+        after: SHA,
+        full_name: "oSoWoSo/oco",
+        pusher: "zenobit",
+      },
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("push on non-OCO refs and push with zero after SHA are ignored", async (t) => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async () => assert.fail("ignored push must not call GitHub");
+  const cases = [
+    ["non-OCO ref", pushPayload({ ref: "refs/heads/main" })],
+    ["branch deletion", pushPayload({ after: "0000000000000000000000000000000000000000", before: SHA })],
+    ["other repository", pushPayload({ repository: { full_name: "other/oco" } })],
+  ];
+  try {
+    for (const [name, payload] of cases) {
+      await t.test(name, async () => {
+        const response = await worker.fetch(signedRequest(payload, { event: "push" }), ENV);
+        assert.equal(response.status, 202);
+        assert.deepEqual(await response.json(), { ignored: true });
+      });
+    }
   } finally {
     globalThis.fetch = originalFetch;
   }

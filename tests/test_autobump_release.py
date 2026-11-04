@@ -121,6 +121,22 @@ class StageTests(unittest.TestCase):
         self.make_artifact("aarch64", "aarch64", rows)
         self.assertEqual(self.stage(), 2)
 
+    def test_four_arch_matrix_with_native_aarch64_musl_is_accepted(self):
+        # The build matrix runs aarch64-musl natively on arm runners
+        # (host == aarch64-musl), not as a cross from x86_64.
+        self.plan["matrix"]["config"] = [
+            {"arch": "x86_64", "host": "x86_64"},
+            {"arch": "x86_64-musl", "host": "x86_64"},
+            {"arch": "aarch64", "host": "aarch64"},
+            {"arch": "aarch64-musl", "host": "aarch64-musl"},
+        ]
+        self.plan_artifact()
+        rows = ["alpha\t1.1\tok", "beta\t2.0\tok"]
+        for arch, host in (("x86_64", "x86_64"), ("x86_64-musl", "x86_64"),
+                           ("aarch64", "aarch64"), ("aarch64-musl", "aarch64-musl")):
+            self.make_artifact(arch, host, rows)
+        self.assertEqual(self.stage(), 4)
+
     def test_a_package_without_a_result_is_rejected(self):
         self.plan_artifact()
         rows = ["alpha\t1.1\tok"]

@@ -1248,7 +1248,7 @@ print(m.collect_results(sys.argv[2]) == ({}, {}))
 
 	it 'cli: results_dir required unless --list-stale'
 	python3 "$SCRIPT_DIR/src/close-update-issues.py" \
-		--repo o/r --list-stale >/dev/null 2>&1
+		--repo o/r --list-stale --token "" >/dev/null 2>&1
 	assert_rc $? 2
 
 	it 'cmp_versions: dash revision, zero padding and rc suffix'

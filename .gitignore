@@ -16,8 +16,7 @@
 !/shlibs_remove
 
 !/tests
-*/__pycache__/
-*/*/__pycache__/
+**/__pycache__/
 !/src
 
 # Repository signing keys

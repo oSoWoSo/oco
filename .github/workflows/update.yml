@@ -11,6 +11,8 @@ on:
     paths:
       - 'srcpkgs/**'
       - 'src/build.yml.in'
+      - 'src/autobump.yml.in'
+      - 'src/autobump-blacklist'
       - 'ocoman'
       - '.gitignore'
   workflow_dispatch:

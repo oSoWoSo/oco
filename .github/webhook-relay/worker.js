@@ -1,5 +1,6 @@
 const GITHUB_DISPATCH_URL = "https://api.github.com/repos/oSoWoSo/oco/dispatches";
 const SUPPORTED_ACTIONS = new Set(["opened", "reopened", "synchronize", "edited"]);
+const SUPPORTED_EVENTS = new Set(["push", "pull_request"]);
 const MAX_PAYLOAD_BYTES = 1_048_576;
 
 function jsonResponse(status, body) {
@@ -63,6 +64,20 @@ function isRelevantPullRequest(payload) {
   );
 }
 
+function isRelevantPush(payload) {
+  const ref = payload.ref;
+  const after = payload.after;
+  // Branch creation/deletion pushes carry all-zero SHAs; only forward real
+  // updates to refs/heads/OCO.
+  return (
+    ref === "refs/heads/OCO" &&
+    typeof after === "string" &&
+    /^[0-9a-f]{40}$/.test(after) &&
+    !/^0+$/.test(after) &&
+    payload.repository?.full_name === "oSoWoSo/oco"
+  );
+}
+
 export default {
   async fetch(request, env) {
     if (request.method !== "POST") {
@@ -74,7 +89,8 @@ export default {
     if (request.headers.get("content-type")?.split(";")[0].trim() !== "application/json") {
       return jsonResponse(415, { error: "application/json required" });
     }
-    if (request.headers.get("x-forgejo-event") !== "pull_request") {
+    const event = request.headers.get("x-forgejo-event");
+    if (!SUPPORTED_EVENTS.has(event)) {
       return jsonResponse(202, { ignored: true });
     }
 
@@ -93,8 +109,29 @@ export default {
       return jsonResponse(400, { error: "Invalid JSON payload" });
     }
 
-    if (!isRelevantPullRequest(payload)) {
-      return jsonResponse(202, { ignored: true });
+    let eventType;
+    let clientPayload;
+    if (event === "push") {
+      if (!isRelevantPush(payload)) {
+        return jsonResponse(202, { ignored: true });
+      }
+      eventType = "codeberg_push";
+      clientPayload = {
+        ref: payload.ref,
+        before: payload.before,
+        after: payload.after,
+        full_name: payload.repository.full_name,
+        pusher: payload.pusher?.login ?? payload.sender?.login ?? "unknown",
+      };
+    } else {
+      if (!isRelevantPullRequest(payload)) {
+        return jsonResponse(202, { ignored: true });
+      }
+      eventType = "codeberg_pr";
+      clientPayload = {
+        action: payload.action,
+        number: payload.pull_request.number,
+      };
     }
 
     let response;
@@ -105,14 +142,11 @@ export default {
           accept: "application/vnd.github+json",
           authorization: `Bearer ${env.GITHUB_TOKEN}`,
           "content-type": "application/json",
-          "user-agent": "oco-codeberg-pr-webhook",
+          "user-agent": "oco-codeberg-webhook",
         },
         body: JSON.stringify({
-          event_type: "codeberg_pr",
-          client_payload: {
-            action: payload.action,
-            number: payload.pull_request.number,
-          },
+          event_type: eventType,
+          client_payload: clientPayload,
         }),
       });
     } catch {

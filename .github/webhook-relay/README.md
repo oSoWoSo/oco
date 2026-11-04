@@ -1,6 +1,13 @@
-# Codeberg PR webhook relay
+# Codeberg webhook relay
 
-This Worker receives Codeberg/Forgejo pull-request webhooks and dispatches the relevant events to GitHub Actions. Codeberg does not run a workflow for this integration.
+This Cloudflare Worker receives Codeberg/Forgejo webhooks and dispatches the relevant events to GitHub Actions, so Codeberg does not need to run any CI for these integrations. The relay is how the OCO repository keeps its PR and branch state in sync between Codeberg and GitHub:
+
+| Codeberg event | Worker dispatch | GitHub workflow |
+|---|---|---|
+| `pull_request` on `OCO` | `codeberg_pr` | `mirror-codeberg-pr.yml` → creates/updates the mirrored GitHub PR |
+| `push` to `OCO` | `codeberg_push` | `sync-codeberg-to-github.yml` → fast-forwards GitHub `OCO` |
+
+The reverse directions (GitHub → Codeberg) run natively on GitHub (`mirror-pr-to-codeberg.yml`, `toCB.yml`) and need no webhook.
 
 ## Deploy
 
@@ -29,10 +36,15 @@ In the `oSoWoSo/oco` repository settings, add a Forgejo webhook:
 - HTTP method: `POST`
 - POST content type: `application/json`
 - Secret: the value used for `FORGEJO_WEBHOOK_SECRET`
-- Trigger: **Pull Request Events**
+- Trigger: **Pull Request Events** and **Push Events**
 - Active: enabled
 
-The Worker verifies `X-Forgejo-Signature` over the raw request body, accepts only `pull_request` events for the `OCO` base branch and actions `opened`, `reopened`, `synchronize`, or `edited`, and ignores mirrored `mirror/*` heads. It then sends only the action and PR number to the existing GitHub `repository_dispatch` workflow. Unsupported events are acknowledged without dispatching.
+The Worker verifies `X-Forgejo-Signature` over the raw request body. It accepts:
+
+- **Push events** whose `ref` is `refs/heads/OCO`, dispatches `codeberg_push` with the new head SHA, and ignores branch creation/deletion and other refs.
+- **Pull request events** for the `OCO` base branch with actions `opened`, `reopened`, `synchronize`, `synchronized`, or `edited`, ignoring mirrored `mirror/*` heads, and dispatches `codeberg_pr` with only the action and PR number (mirror-pr normalizes Forgejo's `synchronized` to GitHub's `synchronize`).
+
+Unsupported events are acknowledged without dispatching.
 
 ## Local test
 

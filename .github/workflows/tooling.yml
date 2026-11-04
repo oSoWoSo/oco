@@ -55,5 +55,7 @@ jobs:
           token: ${{ secrets.BOT }}
       - name: Check website JavaScript syntax
         run: node --check src/main.js
+      - name: Install feed update runtime deps
+        run: python3 -m pip install -r requirements.txt
       - name: Run helper tests
         run: sh tests/run.sh

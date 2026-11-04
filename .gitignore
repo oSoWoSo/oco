@@ -18,6 +18,7 @@
 !/tests
 **/__pycache__/
 !/src
+!/requirements.txt
 
 # Repository signing keys
 !/oco-public.pem

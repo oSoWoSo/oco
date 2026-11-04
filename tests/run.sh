@@ -1669,6 +1669,9 @@ python3 "$SCRIPT_DIR/tests/test_mirror_pr.py" || _FAIL=$((_FAIL + 1))
 echo '== codeberg-status.py =='
 python3 "$SCRIPT_DIR/tests/test_codeberg_status.py" || _FAIL=$((_FAIL + 1))
 
+echo '== feedsparser.py =='
+python3 "$SCRIPT_DIR/tests/test_feedsparser.py" || _FAIL=$((_FAIL + 1))
+
 echo '== Codeberg webhook relay =='
 node --test "$SCRIPT_DIR/.github/webhook-relay/test_worker.mjs" || _FAIL=$((_FAIL + 1))
 

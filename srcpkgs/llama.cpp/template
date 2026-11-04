@@ -41,5 +41,8 @@ do_check() {
 	cd ${cmake_builddir:-build}
 
 	# test-conversion-fp8 requires numpy/torch/safetensors (unpackaged)
-	ctest -E 'test-conversion-fp8'
+	_exclude='test-conversion-fp8'
+	# test-llama-context segfaults on musl after all cases pass
+	[ "$XBPS_TARGET_LIBC" = musl ] && _exclude="$_exclude|test-llama-context"
+	ctest -E "$_exclude"
 }

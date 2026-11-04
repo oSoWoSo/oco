@@ -36,3 +36,10 @@ pre_check() {
 	cp -f ${XBPS_SRCDISTDIR}/${sourcepkg}-${version}/stories15M-q4_0.gguf \
 		${cmake_builddir:-build}/tinyllamas/
 }
+
+do_check() {
+	cd ${cmake_builddir:-build}
+
+	# test-conversion-fp8 requires numpy/torch/safetensors (unpackaged)
+	ctest -E 'test-conversion-fp8'
+}

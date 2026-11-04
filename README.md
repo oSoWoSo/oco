@@ -116,7 +116,7 @@ Create PR to Codeberg or GitHub
 | bun-bootstrap | 1.4.4 | [home](https://bun.sh) | zenobit | x86_64* aarch64* | Bootstrap package for bun (prebuilt binary) |
 | caerus | 0.8.2 | [home](https://github.com/mendescotta/Caerus) | zenobit |  | Package manager for Void Linux, inspired by Synaptic |
 | candy-icons-git | 0.11.1 | [home](https://www.opendesktop.org/p/1305251/) | Trve_AY |  | Sweet gradient icons, sweet rainbow folders included |
-| cc-switch | 4.0.23 | [home](https://github.com/farion1231/cc-switch) | zenobit | x86_64* aarch64* | Assistant for Claude Code, Codex, OpenCode, OpenClaw & Gemini CLI |
+| cc-switch | 4.0.25 | [home](https://github.com/farion1231/cc-switch) | zenobit | x86_64* aarch64* | Assistant for Claude Code, Codex, OpenCode, OpenClaw & Gemini CLI |
 | cliamp | 2.3.0 | [home](https://github.com/bjarneo/cliamp) | zenobit |  | Terminal music player inspired by winamp |
 | clitest | 0.5.0 | [home](https://github.com/aureliojargas/clitest) | zenobit |  | Command Line Tester |
 | Community-Repositories-Collection | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
@@ -176,7 +176,7 @@ Create PR to Codeberg or GitHub
 | CRC-xlibre | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | crush | 0.99.0 | [home](https://github.com/charmbracelet/crush) | zenobit |  | Glamourous AI coding agent for your favourite terminal |
 | cwal | 0.10.1 | [home](https://github.com/nitinbhat972/cwal) | zenobit |  | Blazing-fast pywal-like color palette generator written in C |
-| dankcalendar | 2.0.0 | [home](https://github.com/duxlabs-dev/dux-calendar) | zenobit |  | Calendar app that brings your calendars together in one place |
+| dankcalendar | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-calendar) | zenobit |  | Calendar app that brings your calendars together in one place |
 | DankMaterialShell | 2.0.0 | [home](https://duxlabs.dev) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
 | dashy | 4.9.15 | [home](https://dashy.to) | zenobit |  | Feature-rich, self-hostable dashboard for your services |
 | default-cursors | 1 | [home](https://www.voidlinux.org) | zenobit |  | Default cursor set |
@@ -192,7 +192,7 @@ Create PR to Codeberg or GitHub
 | dragonfly-reverb-vst | 3.2.10 | [home](https://michaelwillis.github.io/dragonfly-reverb) | Trve_AY |  | Collection of reverbs |
 | dragonfly-reverb-vst3 | 3.2.10 | [home](https://michaelwillis.github.io/dragonfly-reverb) | Trve_AY |  | Collection of reverbs |
 | drako | 0.4.3 | [home](https://github.com/lucky7xz/drako) | zenobit |  | Grid-based, customizable TUI-Deck launcher |
-| dux-calendar | 2.0.0 | [home](https://github.com/duxlabs-dev/dux-calendar) | zenobit |  | Calendar app that brings your calendars together in one place |
+| dux-calendar | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-calendar) | zenobit |  | Calendar app that brings your calendars together in one place |
 | dux-files | 2.0.0 | [home](https://github.com/duxlabs-dev/dux-files) | zenobit |  | File manager for the Dux Labs desktop |
 | dux-gop | 2.0.0 | [home](https://github.com/duxlabs-dev/dux-gop) | zenobit |  | API and CLI for system and process monitoring from Dux Labs |
 | dux-search | 2.0.0 | [home](https://duxlabs.dev/docs/dsearch/) | AvengeMedia |  | Blazingly fast filesystem search tool (Dux Shell) |
@@ -202,7 +202,7 @@ Create PR to Codeberg or GitHub
 | Favnyr | 0.3.7 | [home](https://github.com/GlitchAwakened/Favnyr) | zenobit |  | Modern and lightweight file manager for Windows and Linux |
 | fcitx5-lotus | 6.0.5 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
 | fcitx5-lotus-settings | 6.0.5 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
-| floorp-bin | 12.21.0 | [home](https://github.com/Floorp-Projects/Floorp) | zenobit | x86_64 aarch64 | Browser built for keeping the Open, Private and Sustainable Web alive |
+| floorp-bin | 12.21.1 | [home](https://github.com/Floorp-Projects/Floorp) | zenobit | x86_64 aarch64 | Browser built for keeping the Open, Private and Sustainable Web alive |
 | flyline | 1.10.0 | [home](https://github.com/HalFrgrd/flyline) | zenobit |  | Bash plugin to replace readline for a modern line editing experience |
 | forgejo-runner | 13.2.1 | [home](https://code.forgejo.org/forgejo/runner) | zenobit |  | Continuous integration for Forgejo |
 | FreeTube | 0.25.1 | [home](https://github.com/FreeTubeApp/FreeTube) | Bella109 | x86_64 | Client for watching YouTube Videos |
@@ -283,7 +283,7 @@ Create PR to Codeberg or GitHub
 | linuxcommandlibrary | 4.9.1 | [home](http://linuxcommandlibrary.com/) | zenobit | x86_64 aarch64 | Linux reference app with basics, tips and formatted man pages |
 | linuxcommandlibrary-desktop | 4.9.1 | [home](http://linuxcommandlibrary.com/) | zenobit | x86_64 aarch64 | Linux reference app with basics, tips and formatted man pages |
 | llama.cpp | 0.9.0 | [home](https://github.com/ggml-org/llama.cpp) | zenobit |  | LLM inference in C/C++ |
-| llmfit | 1.1.18 | [home](https://github.com/AlexsJones/llmfit) | zenobit |  | Hundreds of models & providers, easy to find what fits your hardware |
+| llmfit | 1.1.20 | [home](https://github.com/AlexsJones/llmfit) | zenobit |  | Hundreds of models & providers, easy to find what fits your hardware |
 | logseq | 2.0.2 | [home](https://logseq.com) | zenobit |  | Privacy-first, open-source knowledge management platform |
 | lunasvg | 3.5.0 | [home](https://github.com/sammycage/lunasvg) | zenobit |  | SVG rendering and manipulation library in C++ |
 | lunasvg-devel | 3.5.0 | [home](https://github.com/sammycage/lunasvg) | zenobit |  | SVG rendering and manipulation library in C++ |

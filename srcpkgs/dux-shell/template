@@ -1,6 +1,6 @@
 # Template file for 'dux-shell'
 pkgname=dux-shell
-version=2.0.0
+version=2.1.0
 revision=1
 build_style=go
 build_helper=qemu
@@ -18,8 +18,8 @@ homepage="https://duxlabs.dev"
 changelog="https://github.com/duxlabs-dev/dux-shell/releases"
 distfiles="https://github.com/duxlabs-dev/dux-shell/archive/refs/tags/v${version}.tar.gz>dux-shell.tar.gz
  https://github.com/duxlabs-dev/dux-qml-common/archive/refs/tags/v${version}.tar.gz>dux-qml-common.tar.gz"
-checksum="e81b0b496b3a6a5a08a6b045ef04d79b3a36f9b07bbfdf475e7dceb80228aca4
- dc08721f6df0fbd7717486e1fd3aa29e0b6ec0c687c68efd6b4576751b0752ca"
+checksum="0df73c2cf4ce79ab5152b88c71fdb2180f9e0f410342e39d6ab0c3fec9488254
+ 57d8750c66e914c107da2f542f5ab0e713df09af2faebc8edac18b2c4ddcbc04"
 replaces="DankMaterialShell>=0"
 
 post_extract() {

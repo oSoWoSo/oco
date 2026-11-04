@@ -4,3 +4,7 @@ name = "oco"
 main = ".github/webhook-relay/worker.js"
 compatibility_date = "2026-10-29"
 workers_dev = true
+
+# Workers Builds deploys PR previews with `npx wrangler preview`, which fails
+# without this block. It can be empty; nothing here is preview-specific.
+[previews]

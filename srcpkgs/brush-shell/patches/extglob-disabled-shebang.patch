@@ -1,0 +1,9 @@
+--- a/brush-shell/tests/cases/compat/patterns/filename_expansion.yaml
++++ b/brush-shell/tests/cases/compat/patterns/filename_expansion.yaml
+@@ -108,5 +108,6 @@
+       - path: "f.txt"
+       - path: "script.sh"
+         contents: |
++          #!/bin/sh
+           echo !(a*)
+           echo "result: $?"

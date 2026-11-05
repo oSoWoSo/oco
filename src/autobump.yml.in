@@ -91,10 +91,6 @@ jobs:
           FORCE: ${{ inputs.force }}
           REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
         run: bash .github/scripts/ci/autobump-blacklist.sh
-      - name: Prepare builder
-        if: steps.blacklist.outputs.in_list == 'true'
-        run: oco-prepare
-        working-directory: ${{ github.workspace }}
 
       - name: Merge OCO templates into XBPS checkout
         if: steps.blacklist.outputs.in_list == 'true'

@@ -1,8 +1,8 @@
 # PRs welcome 🤗
 
 ## This is:
-- vOid Community repOsitory (oco)  
-aka  
+- vOid Community repOsitory (oco)
+aka
 - Void User Repository
 - testing repository (CI candidate packages)
 - waiting list
@@ -85,10 +85,10 @@ Running `./ocoman -i` will clone void-packages and oco into ~/void
 PS: Destination could be changed look at `./ocoman -h`
 
 ### Clone manualy A or B
-A) Clone Codeberg repo  
-`git clone https://codeberg.org/oSoWoSo/oco`  
-B) Clone GitHub repo  
-`git clone https://codeberg.org/oSoWoSo/oco`  
+A) Clone Codeberg repo
+`git clone https://codeberg.org/oSoWoSo/oco`
+B) Clone GitHub repo
+`git clone https://codeberg.org/oSoWoSo/oco`
 Copy srcpkgs directory to cloned [void-packages](https://github.com/void-linux/void-packages)
 
 Then:
@@ -146,8 +146,8 @@ Create PR to Codeberg or GitHub
 |:--------|:--------|:-----|:-----------|:------|:------|
 | adw-gtk3 | 6.5 | [home](https://github.com/lassekongo83/adw-gtk3) | Coolllyn |  | Libadwaita-styled theme ported to GTK 3 |
 | android-sdk | 36 | [home](https://developer.android.com/studio) | zenobit | x86_64 | Android SDK platform 36 and build-tools 29.0.3 |
-| aquamarine | 0.15.1 | [home](https://github.com/hyprwm/aquamarine) | zenobit |  | Aquamarine is a very light linux rendering backend library |
-| aquamarine-devel | 0.15.1 | [home](https://github.com/hyprwm/aquamarine) | zenobit |  | Aquamarine is a very light linux rendering backend library |
+| aquamarine | 0.16.0 | [home](https://github.com/hyprwm/aquamarine) | zenobit |  | Aquamarine is a very light linux rendering backend library |
+| aquamarine-devel | 0.16.0 | [home](https://github.com/hyprwm/aquamarine) | zenobit |  | Aquamarine is a very light linux rendering backend library |
 | better-sqlite3 | 13.0.3 | [home](https://github.com/WiseLibs/better-sqlite3) | zenobit |  | Fastest and simplest SQLite library for Node.js |
 | better-sqlite3-devel | 13.0.3 | [home](https://github.com/WiseLibs/better-sqlite3) | zenobit |  | Fastest and simplest SQLite library for Node.js |
 | blocaled | 0.7 | [home](https://github.com/lfs-book/blocaled) | zenobit |  | Standalone implementation of the localed D-Bus service |
@@ -289,18 +289,18 @@ Create PR to Codeberg or GitHub
 | hister | 0.21.0 | [home](https://github.com/asciimoo/hister) | zenobit |  | Your own search engine |
 | hyprcursor | 0.1.13 | [home](https://github.com/hyprwm/hyprcursor) | zenobit |  | Hyprland cursor format, library and utilities |
 | hyprdynamicmonitors | 1.4.0 | [home](https://github.com/fiffeek/hyprdynamicmonitors) | zenobit |  | Hyprland configuration based on connected displays, power and lid state |
-| hyprgraphics | 0.5.1 | [home](https://github.com/hyprwm/hyprgraphics) | zenobit |  | Hyprland graphics resources and utilities |
+| hyprgraphics | 0.6.0 | [home](https://github.com/hyprwm/hyprgraphics) | zenobit |  | Hyprland graphics resources and utilities |
 | hypridle | 0.1.8 | [home](https://github.com/hyprwm/hypridle) | zenobit |  | Hyprland's idle daemon |
-| hyprland | 0.57.0 | [home](https://hyprland.org/) | zenobit |  | Dynamic tiling Wayland compositor that doesn't sacrifice on its looks |
-| hyprland-devel | 0.57.0 | [home](https://hyprland.org/) | zenobit |  | Dynamic tiling Wayland compositor that doesn't sacrifice on its looks |
+| hyprland | 0.57.1 | [home](https://hyprland.org/) | zenobit |  | Dynamic tiling Wayland compositor that doesn't sacrifice on its looks |
+| hyprland-devel | 0.57.1 | [home](https://hyprland.org/) | zenobit |  | Dynamic tiling Wayland compositor that doesn't sacrifice on its looks |
 | hyprland-guiutils | 0.2.2 | [home](https://github.com/hyprwm/hyprland-guiutils) | zenobit |  | Qt/QML utility apps for Hyprland |
 | hyprland-protocols | 0.8.0 | [home](https://github.com/hyprwm/hyprland-protocols) | zenobit |  | Wayland protocol extensions for Hyprland |
 | hyprland-qt-support | 0.1.0 | [home](https://github.com/hyprwm/hyprland-qt-support) | zenobit |  | QML style provider for Hypr* QT apps |
 | hyprlang | 0.6.8 | [home](https://github.com/hyprwm/hyprlang) | zenobit |  | Official implementation library for the hypr config language |
-| hyprlock | 0.9.6 | [home](https://github.com/hyprwm/hyprlock) | zenobit |  | Hyprland's GPU-accelerated screen locking utility |
+| hyprlock | 0.9.7 | [home](https://github.com/hyprwm/hyprlock) | zenobit |  | Hyprland's GPU-accelerated screen locking utility |
 | hyprmoncfg | 1.28.0 | [home](https://github.com/crmne/hyprmoncfg/) | zenobit |  | Terminal-first monitor configurator and daemon for Hyprland |
-| hyprpaper | 0.8.4 | [home](https://github.com/hyprwm/hyprpaper) | zenobit |  | Fast wallpaper utility for wlroots compositors with IPC controls |
-| hyprpicker | 0.4.7 | [home](https://github.com/hyprwm/hyprpicker) | zenobit |  | Wlroots-compatible Wayland color picker that does not suck |
+| hyprpaper | 0.8.5 | [home](https://github.com/hyprwm/hyprpaper) | zenobit |  | Fast wallpaper utility for wlroots compositors with IPC controls |
+| hyprpicker | 0.4.8 | [home](https://github.com/hyprwm/hyprpicker) | zenobit |  | Wlroots-compatible Wayland color picker that does not suck |
 | hyprpolkitagent | 0.2.0 | [home](https://github.com/hyprwm/hyprpolkitagent) | zenobit |  | Simple polkit authentication agent for Hyprland, written in QT/QML |
 | hyprsunset | 0.4.0 | [home](https://github.com/hyprwm/hyprsunset) | zenobit |  | Application to enable a blue-light filter on Hyprland |
 | hyprsysteminfo | 0.2.0 | [home](https://github.com/hyprwm/hyprsysteminfo) | zenobit |  | Tiny qt6/qml application to display system informations |

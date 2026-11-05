@@ -10,22 +10,15 @@ go_package="${go_import_path}/cmd/dms"
 go_build_tags="distro_binary"
 go_ldflags="-X main.Version=${version}"
 hostmakedepends="make tar"
-depends="quickshell accountsservice dux-gop matugen dbus elogind mesa-dri"
+depends="quickshell+ accountsservice dux-gop matugen dbus elogind mesa-dri dux-qml-common"
 short_desc="Dux Shell — Material 3 desktop shell for Wayland"
 maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
-homepage="https://duxlabs.dev"
+homepage="https://github.com/duxlabs-dev/dux-shell"
 changelog="https://github.com/duxlabs-dev/dux-shell/releases"
-distfiles="https://github.com/duxlabs-dev/dux-shell/archive/refs/tags/v${version}.tar.gz>dux-shell.tar.gz
- https://github.com/duxlabs-dev/dux-qml-common/archive/refs/tags/v${version}.tar.gz>dux-qml-common.tar.gz"
-checksum="0df73c2cf4ce79ab5152b88c71fdb2180f9e0f410342e39d6ab0c3fec9488254
- 57d8750c66e914c107da2f542f5ab0e713df09af2faebc8edac18b2c4ddcbc04"
+distfiles="https://github.com/duxlabs-dev/dux-shell/archive/refs/tags/v${version}.tar.gz"
+checksum=0df73c2cf4ce79ab5152b88c71fdb2180f9e0f410342e39d6ab0c3fec9488254
 replaces="DankMaterialShell>=0"
-
-post_extract() {
-	cp -r dux-shell-${version}/* ./
-	cp -r dux-qml-common-${version} dux-qml-common/
-}
 
 post_install() {
 	cd ..

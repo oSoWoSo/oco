@@ -228,7 +228,7 @@ Create PR to Codeberg or GitHub
 | crush | 0.100.0 | [home](https://github.com/charmbracelet/crush) | zenobit |  | Glamourous AI coding agent for your favourite terminal |
 | cwal | 0.10.1 | [home](https://github.com/nitinbhat972/cwal) | zenobit |  | Blazing-fast pywal-like color palette generator written in C |
 | dankcalendar | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-calendar) | zenobit |  | Calendar app that brings your calendars together in one place |
-| DankMaterialShell | 2.1.0 | [home](https://duxlabs.dev) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
+| DankMaterialShell | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-shell) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
 | dashy | 4.9.15 | [home](https://dashy.to) | zenobit |  | Feature-rich, self-hostable dashboard for your services |
 | default-cursors | 1 | [home](https://www.voidlinux.org) | zenobit |  | Default cursor set |
 | desktop-tui | 0.3.2 | [home](https://github.com/Julien-cpsn/desktop-tui) | zenobit |  | Desktop environment without graphics |
@@ -249,7 +249,7 @@ Create PR to Codeberg or GitHub
 | dux-greeter | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-greeter) | zenobit |  | Greetd login screen with the Dux Shell aesthetic |
 | dux-qml-common | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-qml-common) | zenobit |  | Common QML assets for Dux Shell and Dux Labs apps |
 | dux-search | 2.1.0 | [home](https://duxlabs.dev/docs/dsearch/) | AvengeMedia |  | Blazingly fast filesystem search tool (Dux Shell) |
-| dux-shell | 2.1.0 | [home](https://duxlabs.dev) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
+| dux-shell | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-shell) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
 | easybashgui | 15.0.2 | [home](https://github.com/BashGui/easybashgui) | zenobit |  | Bash functions library that aims to give simple GUI functions |
 | faugus-launcher | 2.5.7 | [home](https://github.com/Faugus/faugus-launcher) | zenobit |  | Simple and lightweight app for running Windows games using UMU-Launcher |
 | Favnyr | 0.3.7 | [home](https://github.com/GlitchAwakened/Favnyr) | zenobit |  | Modern and lightweight file manager for Windows and Linux |

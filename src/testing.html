@@ -61,6 +61,13 @@
   -R https://repo.osowoso.org/testing/x86_64 \
   package-name</code></pre>
       <p>Replace <code>x86_64</code> with your architecture and <code>package-name</code> with the package you want to test. This command does not add the testing repository to your permanent XBPS configuration.</p>
+      <p>To keep the testing channel enabled for several installs, create a temporary repository file and remove it when finished:</p>
+      <pre><code>printf 'repository=https://repo.osowoso.org/testing/x86_64\n' | \
+  sudo tee /etc/xbps.d/99-oco-testing.conf
+sudo xbps-install -S package-name
+sudo rm /etc/xbps.d/99-oco-testing.conf
+sudo xbps-install -S</code></pre>
+      <p>The testing channel may contain newer or in-progress builds than production, so prefer it only for validation.</p>
     </section>
   </div>
 

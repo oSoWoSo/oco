@@ -47,8 +47,23 @@ Just pick your architecture
 CI candidate packages are kept separate from production at
 `https://repo.osowoso.org/testing/<architecture>/`. Browse the
 [testing repository guide](https://repo.osowoso.org/testing.html) for target
-architectures, publication rules, and one-command install instructions. Install
-the OCO signing key first; the same key is used for both repositories.
+architectures, publication rules, and install instructions. Install the OCO
+signing key first; the same key is used for both repositories.
+
+For a one-off install without changing permanent configuration:
+
+```sh
+sudo xbps-install -S -R https://repo.osowoso.org/testing/x86_64 package-name
+```
+
+For several installs, temporarily enable the channel and remove it afterwards:
+
+```sh
+printf 'repository=https://repo.osowoso.org/testing/x86_64\n' | sudo tee /etc/xbps.d/99-oco-testing.conf
+sudo xbps-install -S package-name
+sudo rm /etc/xbps.d/99-oco-testing.conf
+sudo xbps-install -S
+```
 
 
 ### Install repository key
@@ -202,6 +217,7 @@ Create PR to Codeberg or GitHub
 | CRC-lazy | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-librewolf | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-noid | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
+| CRC-oco-testing | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-odyssey | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-sofijacom | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
 | CRC-sonicde | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |

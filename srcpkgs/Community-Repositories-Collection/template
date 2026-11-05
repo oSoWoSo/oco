@@ -1,7 +1,7 @@
 # Template file for 'Community-Repositories-Collection'
 pkgname=Community-Repositories-Collection
 version=1
-revision=10
+revision=11
 metapackage=yes
 short_desc="CRC: Collection of community repositories"
 maintainer="zenobit <zen@osowoso.org>"
@@ -38,6 +38,17 @@ CRC-brgvos-testing_package() {
 		vmkdir etc/xbps.d
 		echo "repository=https://repository.brgv-os.ro/repository-test/" > \
 			${PKGDESTDIR}/etc/xbps.d/20-CRC-brgvos.conf
+	}
+}
+
+CRC-oco-testing_package() {
+	archs="x86_64* aarch64*"
+	short_desc="${short_desc} - OCO testing repository"
+	homepage="https://repo.osowoso.org/testing.html"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://repo.osowoso.org/testing/${XBPS_TARGET_MACHINE}" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-oco-testing.conf
 	}
 }
 

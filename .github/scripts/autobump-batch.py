@@ -248,32 +248,54 @@ def component(graph: dict[str, set[str]], start: str) -> set[str]:
     return seen
 
 
+def _bulk_sortdeps_edges(graph: dict[str, set[str]], packages: set[str]) -> list[str]:
+    """Emit the tsort input `xbps-src sort-dependencies` would build.
+
+    Mirrors `bulk_sortdeps` in common/xbps-src/shutils/bulk.sh: walk the
+    given packages and, for each one, emit a `pkg dep` relation for every
+    build dependency that is part of the batch; a package without in-batch
+    dependencies gets a self relation so it still appears in the output.
+    The CI build passes the batch in alphabetical order, so the packages
+    are walked alphabetically.  `show-build-deps` reports the dependencies
+    in template order, which is lost once they are collapsed into a set,
+    so the dependencies are walked alphabetically; for unambiguous graphs
+    like the Hyprland family this reproduces the real build order.
+    """
+    relations: list[str] = []
+    for package in sorted(packages):
+        dependencies = sorted(graph.get(package, ()) & packages)
+        for dependency in dependencies:
+            relations.append(f"{package} {dependency}")
+        if not dependencies:
+            relations.append(f"{package} {package}")
+    return relations
+
+
 def build_order(graph: dict[str, set[str]], packages: set[str]) -> list[str]:
     """Order the packages so every dependency precedes its dependents.
 
     This mirrors the order `xbps-src sort-dependencies` produces for the
-    build: dependencies first. The CI build still resolves the order with
-    xbps-src itself, this only makes the commit sequence and the pull
-    request body readable and deterministic.
+    build: `bulk_sortdeps` feeds the `pkg dep` relations to `tsort`, whose
+    output is then reversed with `tac`.  Reusing the same `tsort` binary (a
+    coreutils dependency the builder image already has) makes the planned
+    order match the real build order instead of a home-grown traversal.
+    A dependency cycle is broken the same way tsort breaks it, by removing
+    one relation.
     """
-    ordered: list[str] = []
-    visited: set[str] = set()
-
-    def visit(name: str, stack: tuple[str, ...]) -> None:
-        if name in visited:
-            return
-        if name in stack:
-            # A dependency cycle is not ours to resolve; break it and keep
-            # the deterministic order of the remaining packages.
-            return
-        for dependency in sorted(graph.get(name, ()) & packages):
-            visit(dependency, stack + (name,))
-        visited.add(name)
-        ordered.append(name)
-
-    for name in sorted(packages):
-        visit(name, ())
-    return ordered
+    relations = "\n".join(_bulk_sortdeps_edges(graph, packages)) + "\n"
+    result = subprocess.run(
+        ["tsort"],
+        input=relations,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise RuntimeError(
+            "tsort failed to order the batch: "
+            f"{result.stderr.strip() or result.stdout.strip()}"
+        )
+    return result.stdout.split()[::-1]
 
 
 def detect_update(root: Path, package: str) -> str | None:

@@ -1,7 +1,7 @@
 # Template file for 'hyprdynamicmonitors'
 pkgname=hyprdynamicmonitors
 version=1.4.0
-revision=2
+revision=3
 build_style=go
 go_import_path="github.com/fiffeek/hyprdynamicmonitors"
 hostmakedepends="pkg-config dbus-x11 hyprland upower python3-cfgv python3-distlib python3-filelock python3-identify"
@@ -14,6 +14,7 @@ homepage="https://github.com/fiffeek/hyprdynamicmonitors"
 #changelog=""
 distfiles="https://github.com/fiffeek/hyprdynamicmonitors/archive/refs/tags/v${version}.tar.gz"
 checksum=93ba3920214b17e33003354717b0051faee50939dfae62d99979fcb26f69c470
+make_check=no # needs D-Bus session bus + vhs/HDM_BINARY_PATH harness
 
 post_install() {
 	vlicense LICENSE

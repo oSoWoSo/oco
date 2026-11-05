@@ -1,12 +1,13 @@
 # Template file for 'hyprland'
 pkgname=hyprland
-version=0.57.0
+version=0.57.1
 revision=1
 build_style=cmake
 configure_args="-DNO_SYSTEMD:BOOL=true -Dglaze_DIR:PATH=/usr/share/glaze"
 hostmakedepends="pkg-config cpio glslang hyprwayland-scanner hyprwire-devel jq python3 xxd"
 makedepends="aquamarine-devel
  cairo-devel
+ file-devel
  glaze7
  glslang-devel
  hwids
@@ -22,9 +23,15 @@ makedepends="aquamarine-devel
  libei-devel
  libgbm-devel
  libglvnd-devel
+ libheif-devel
  libinput-devel
+ libjpeg-turbo-devel
+ libjxl-devel
  libliftoff-devel
+ libpng-devel
+ librsvg-devel
  libseat-devel
+ libwebp-devel
  libxcb-devel
  libXcursor-devel
  libxkbcommon-devel
@@ -48,7 +55,7 @@ license="BSD-3-Clause"
 homepage="https://hyprland.org/"
 changelog="https://github.com/hyprwm/Hyprland/releases"
 distfiles="https://github.com/hyprwm/Hyprland/releases/download/v${version}/source-v${version}.tar.gz"
-checksum=82d006ba9264fe67266c7d583c16f1a6c64d51424dbdc472c3e9c9d5ddfcd559
+checksum=24e7428f83115e58e5fc81f100f6b73691dcaaf7a503087391e44327a71c43ab
 make_check=no # cant run in sandbox
 
 if [ "$XBPS_TARGET_LIBC" = "musl" ]; then

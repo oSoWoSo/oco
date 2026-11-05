@@ -1,13 +1,16 @@
 # Template file for 'hyprpolkitagent'
 pkgname=hyprpolkitagent
 version=0.2.0
-revision=3
+revision=4
 build_style=cmake
 configure_args="--no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=/usr"
 hostmakedepends="pkg-config qt6-base qt6-declarative-devel"
-makedepends="aquamarine-devel abseil-cpp-devel hyprgraphics hyprlang
- hyprtoolkit-devel hyprutils-devel iniparser-devel polkit-qt6-devel
- qt6-base-devel qt6-declarative-devel sdbus-c++-devel"
+makedepends="aquamarine-devel abseil-cpp-devel cairo-devel file-devel hyprgraphics hyprlang
+ hyprtoolkit-devel hyprutils-devel iniparser-devel libdrm-devel libgbm-devel
+ libglvnd-devel libheif-devel libjpeg-turbo-devel libjxl-devel libpng-devel
+ librsvg-devel libwebp-devel libxkbcommon-devel pango-devel pixman-devel
+ polkit-qt6-devel qt6-base-devel qt6-declarative-devel sdbus-c++-devel
+ wayland-devel wayland-protocols"
 depends="hyprland-qt-support"
 short_desc="Simple polkit authentication agent for Hyprland, written in QT/QML"
 maintainer="zenobit <zen@osowoso.org>"

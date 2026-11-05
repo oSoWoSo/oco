@@ -118,6 +118,7 @@ on:
         - dux-calendar
         - dux-files
         - dux-gop
+        - dux-qml-common
         - dux-search
         - dux-shell
         - easybashgui

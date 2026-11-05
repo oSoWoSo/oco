@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -126,9 +127,25 @@ class BatchPlanTests(unittest.TestCase):
             encoding="utf-8",
         )
         resolver.chmod(0o755)
+        fake_bin = self.tmp / "bin"
+        fake_bin.mkdir()
+        fake_sudo = fake_bin / "sudo"
+        fake_sudo.write_text(
+            "#!/bin/sh\n"
+            "[ \"$1\" = -Eu ] && [ \"$2\" = builder ] || exit 90\n"
+            "shift 2\n"
+            "exec \"$@\"\n",
+            encoding="utf-8",
+        )
+        fake_sudo.chmod(0o755)
 
-        graph = batch.Repository(self.tmp, xbps_src=resolver).dependencies()
+        with patch.object(batch.os, "geteuid", return_value=0), patch.dict(
+            os.environ, {"PATH": f"{fake_bin}:{os.environ['PATH']}"}
+        ):
+            graph = batch.Repository(self.tmp, xbps_src=resolver).dependencies()
+
         self.assertEqual(graph["consumer"], {"provider"})
+
 
     def test_pack_updates_are_limited_to_pack_and_rebuild_direct_consumers(self):
         self.build_repo({

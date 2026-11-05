@@ -170,8 +170,13 @@ class Repository:
         """Resolve dependencies with XBPS when available, otherwise parse literals."""
         if self.xbps_src is None:
             return template_dependencies(template)
+        command = [str(self.xbps_src), "show-build-deps", package]
+        if os.geteuid() == 0:
+            # xbps-src deliberately refuses root. The autobump job runs as root
+            # in its container, while the prepared checkout belongs to builder.
+            command = ["sudo", "-Eu", "builder", *command]
         result = subprocess.run(
-            [str(self.xbps_src), "show-build-deps", package],
+            command,
             cwd=self.xbps_src.parent,
             check=False,
             capture_output=True,

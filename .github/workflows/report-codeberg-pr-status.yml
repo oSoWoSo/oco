@@ -16,7 +16,7 @@ jobs:
     steps:
       - name: Read the triggering workflow run context
         id: context
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           # Read-only via workflow_run token; scripts never touch secrets here.
           github-token: ${{ github.token }}

@@ -7,7 +7,7 @@ configure_args="--no-warn-unused-cli -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_
 hostmakedepends="pkg-config hyprwayland-scanner"
 makedepends="hwids hyprutils-devel hyprwayland-scanner libdisplay-info-devel
  libdrm-devel libgbm-devel libglvnd-devel libinput-devel libseat-devel
- libudev-devel pixman-devel wayland-devel wayland-protocols"
+ eudev-libudev-devel pixman-devel wayland-devel wayland-protocols"
 short_desc="Aquamarine is a very light linux rendering backend library"
 maintainer="zenobit <zen@osowoso.org>"
 license="BSD-3-Clause"

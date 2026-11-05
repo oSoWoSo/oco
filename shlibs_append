@@ -2,7 +2,7 @@ libaquamarine.so.15 aquamarine-0.16.0_1
 libayatana-appindicator-glib.so.2 libayatana-appindicator-glib-2.0.1_1
 libhyprcursor.so.0 hyprcursor-0.1.13_1
 libhyprlang.so.2 hyprlang-0.6.4_2
-libhyprgraphics.so.4 hyprgraphics-0.5.1_1
+libhyprgraphics.so.5 hyprgraphics-0.6.0_1
 libhyprtoolkit.so.6 hyprtoolkit-0.6.0_1
 libhyprutils.so.13 hyprutils-0.14.2_1
 libhyprwire.so.3 hyprwire-0.3.1_2

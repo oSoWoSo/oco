@@ -54,18 +54,21 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Capture the Codeberg head right away: the next fetch overwrites
+          # FETCH_HEAD, so referencing it below would clobber the target.
           git fetch --no-tags "https://codeberg.org/oSoWoSo/oco.git" "$TARGET_SHA"
+          codeberg_head="$(git rev-parse FETCH_HEAD)"
           git fetch origin +refs/heads/OCO:refs/remotes/origin/OCO
 
           if [[ "${FORCE:-}" != "true" ]]; then
             # A GitHub-originated push that reached Codeberg via toCB.yml is
             # already present here; do nothing.
-            if git merge-base --is-ancestor "FETCH_HEAD" origin/OCO; then
+            if git merge-base --is-ancestor "$codeberg_head" origin/OCO; then
               echo "Codeberg OCO is already up to date on GitHub; nothing to do."
               exit 0
             fi
             # Refuse to rewrite history unless explicitly asked to.
-            git merge-base --is-ancestor origin/OCO "FETCH_HEAD" || {
+            git merge-base --is-ancestor origin/OCO "$codeberg_head" || {
               echo "::error::GitHub OCO is ahead of Codeberg OCO; not overwriting." \
                    "Use 'force' to replace it anyway."
               exit 1
@@ -73,4 +76,4 @@ jobs:
           fi
 
           git push "https://x-access-token:${GH_PAT}@github.com/oSoWoSo/oco.git" \
-            "FETCH_HEAD:refs/heads/OCO" --force-with-lease
+            "$codeberg_head:refs/heads/OCO" --force-with-lease

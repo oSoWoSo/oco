@@ -3,6 +3,7 @@
 
 import importlib.util
 import json
+import os
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -78,6 +79,29 @@ class CodebergStatusTests(unittest.TestCase):
             with self.assertRaises(RuntimeError) as ctx:
                 status.post_status("bad-token", "a" * 40, "failure", "", "")
         self.assertIn("401", str(ctx.exception))
+
+    def test_404_commit_is_a_skip_not_a_failure(self):
+        def fake_urlopen(request, timeout):
+            raise HTTPError(
+                "https://codeberg.org/api/v1/repos/oSoWoSo/oco/statuses/" + "a" * 40,
+                404,
+                "Not Found",
+                {},
+                None,
+            )
+
+        with patch.object(status, "urlopen", fake_urlopen):
+            with self.assertRaises(status.CommitUnavailableError):
+                status.post_status("t", "a" * 40, "success", "", "")
+            with patch.dict(
+                os.environ,
+                {
+                    "CODEBERG_TOKEN": "t",
+                    "COMMIT_SHA": "b" * 40,
+                    "STATUS_STATE": "success",
+                },
+            ):
+                self.assertEqual(status.main(), 0)
 
 
 class _FakeResponse:

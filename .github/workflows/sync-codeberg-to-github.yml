@@ -75,5 +75,15 @@ jobs:
             }
           fi
 
-          git push "https://x-access-token:${GH_PAT}@github.com/oSoWoSo/oco.git" \
-            "$codeberg_head:refs/heads/OCO" --force-with-lease
+          # The guard above guarantees a fast-forward: origin/OCO is an
+          # ancestor of $codeberg_head. A plain push is enough; --force-with-
+          # lease against a URL cannot resolve a remote-tracking lease and
+          # fails with "stale info", so use it only for the force path (with
+          # the explicit expected value).
+          if [[ "${FORCE:-}" == "true" ]]; then
+            git push "https://x-access-token:${GH_PAT}@github.com/oSoWoSo/oco.git" \
+              "$codeberg_head:refs/heads/OCO" --force-with-lease="refs/heads/OCO:$(git rev-parse origin/OCO)"
+          else
+            git push "https://x-access-token:${GH_PAT}@github.com/oSoWoSo/oco.git" \
+              "$codeberg_head:refs/heads/OCO"
+          fi

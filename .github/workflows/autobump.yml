@@ -75,6 +75,7 @@ on:
         - dragonfly-reverb
         - drako
         - dux-calendar
+        - dux-greeter
         - dux-qml-common
         - dux-shell
         - easybashgui

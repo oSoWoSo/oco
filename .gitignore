@@ -134,6 +134,7 @@
 !/srcpkgs/dux-calendar
 !/srcpkgs/dux-files
 !/srcpkgs/dux-gop
+!/srcpkgs/dux-greeter
 !/srcpkgs/dux-qml-common
 !/srcpkgs/dux-search
 !/srcpkgs/dux-shell

@@ -1,7 +1,7 @@
 # Template file for 'brush-shell'
 pkgname=brush-shell
 version=0.4.0
-revision=1
+revision=2
 build_style=cargo
 make_install_args="--path brush-shell"
 make_check_args="--lib --test brush-compat-tests --test brush-integration-tests
@@ -16,6 +16,11 @@ distfiles="https://github.com/reubeno/brush/archive/refs/tags/brush-v${version}.
 checksum=69482f2a08ef7f5417fc5bd7d9789fa443d237b4e1185ba1fc8f2c07ad685c88
 register_shell="/usr/bin/brush"
 
+post_build() {
+	cargo run --locked --package xtask -- gen docs man --output-dir man
+}
+
 post_install() {
 	vlicense LICENSE
+	vman man/brush.1
 }

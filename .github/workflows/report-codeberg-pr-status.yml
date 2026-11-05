@@ -14,6 +14,12 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - name: Checkout trusted default-branch revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
       - name: Read the triggering workflow run context
         id: context
         uses: actions/github-script@v9

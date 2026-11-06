@@ -1,6 +1,6 @@
 # Template file for 'dux-files'
 pkgname=dux-files
-version=2.1.0
+version=2.1.1
 revision=1
 build_style=go
 build_helper=qemu
@@ -16,7 +16,12 @@ license="MIT"
 homepage="https://github.com/duxlabs-dev/dux-files"
 changelog="https://github.com/duxlabs-dev/dux-files/releases"
 distfiles="https://github.com/duxlabs-dev/dux-files/archive/refs/tags/v${version}.tar.gz>dux-files.tar.gz"
-checksum=90e81547bd517eef2be7081fb4fef135acdb60633f9a4b65086348e807f54352
+checksum=400c2f2fb3b88ae793535f81ca1e528686814991a7096a74c28488842280534c
+
+pre_check() {
+	mkdir -p /host/tmp
+	export TMPDIR=/host/tmp
+}
 
 post_install() {
 	# Desktop integration (UI isn't embedded in the binary! QML install?)

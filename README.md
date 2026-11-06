@@ -244,7 +244,7 @@ Create PR to Codeberg or GitHub
 | dragonfly-reverb-vst3 | 3.2.10 | [home](https://michaelwillis.github.io/dragonfly-reverb) | Trve_AY |  | Collection of reverbs |
 | drako | 0.4.3 | [home](https://github.com/lucky7xz/drako) | zenobit |  | Grid-based, customizable TUI-Deck launcher |
 | dux-calendar | 2.1.1 | [home](https://github.com/duxlabs-dev/dux-calendar) | zenobit |  | Calendar app that brings your calendars together in one place |
-| dux-files | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-files) | zenobit |  | File manager for the Dux Labs desktop |
+| dux-files | 2.1.1 | [home](https://github.com/duxlabs-dev/dux-files) | zenobit |  | File manager for the Dux Labs desktop |
 | dux-greeter | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-greeter) | zenobit |  | Greetd login screen with the Dux Shell aesthetic |
 | dux-shell | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-shell) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
 | dux-gop | 2.1.1 | [home](https://github.com/duxlabs-dev/dux-gop) | zenobit |  | API and CLI for system and process monitoring from Dux Labs |

@@ -15,20 +15,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up SSH
+      - name: Push branch to Codeberg
         env:
           SSH_PRIVATE_KEY: ${{ secrets.CODEBERG_SSH_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.CODEBERG_KNOWN_HOSTS }}
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
-
-      - name: Push branch to Codeberg
-        env:
           CODEBERG_REPO: ${{ vars.CODEBERG_REPO }}
           BRANCH: ${{ github.ref_name }}
-        run: |
-          git remote add codeberg "$CODEBERG_REPO"
-          git push codeberg "HEAD:refs/heads/$BRANCH" --force
+          FORCE: "1"
+        run: bash .github/scripts/ci/push-codeberg.sh

@@ -1,0 +1,51 @@
+# Templates excluded from automated autobumps. One package name per
+# line, '#' for comments.
+#
+# Everything not listed here is eligible: a `package-update` issue or a
+# manual dispatch can autobump any template. Symlink aliases (srcpkgs/*
+# entries that point at another template) are excluded automatically and
+# must not be listed here. Add a real template here only when it must never
+# be bumped by the automation — for example:
+#   * its `update` file can't yield a safe candidate version
+#   * its selected version does not follow `xxautobump` (`sort -V`)
+#   * its distfiles URL does not derive from ${version}, or a distfile is
+#     not a plain sha256 download
+#   * it is only maintained by hand / feed-only
+#
+# A blacklisted template can still be bumped with --force.
+#
+# To re-run the automation for an issue, edit the issue body (e.g. bump
+# the version) — the workflow re-triggers on `edited` events.
+Community-Repositories-Collection
+Favnyr
+adw-gtk3
+android-sdk
+cosmic-desktop-full
+cosmic-desktop-minimal
+dux-files
+dux-gop
+dux-search
+fresh
+glaze
+glaze7
+libkrun
+libkrunfw
+logseq
+morewaita-icon-theme
+notesnook
+oco-removed-packages
+odin2
+omniroute
+opencode
+pinguintv-installer-git
+sonic-frameworks-cmake-modules
+sonic-oxygen-icons
+undelete-btrfs
+vbm
+void-hardwaremanager-git
+void-live-creator-git
+void-software-store
+void-software-store-git
+void-src-builder-git
+void-user-manager-git
+xxtools-git

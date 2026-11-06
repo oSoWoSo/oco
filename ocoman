@@ -19,8 +19,11 @@ TEMPLATES_LIST='/tmp/oco-templates-list'
 REPODATA_LIST_PY="${SCRIPT_DIR}/src/repodata-list.py"
 REPODATA_STRIP_PY="${SCRIPT_DIR}/src/repodata-strip.py"
 BUILD_TEMPLATE="${SCRIPT_DIR}/src/build.yml.in"
+AUTOBUMP_TEMPLATE="${SCRIPT_DIR}/src/autobump.yml.in"
+AUTOBUMP_BLACKLIST="${SCRIPT_DIR}/src/autobump-blacklist"
 README="${SCRIPT_DIR}/README.md"
 WORKFLOW="${SCRIPT_DIR}/.github/workflows/build.yml"
+AUTOBUMP_WORKFLOW="${SCRIPT_DIR}/.github/workflows/autobump.yml"
 FEED_OPML="${SCRIPT_DIR}/src/feed.opml"
 NVCONF="${SCRIPT_DIR}/.nvchecker/nvchecker.toml"
 
@@ -370,7 +373,7 @@ usage() {
 	  -t, --test <pkg...>  Without <pkg> gum menu to choose, then trigger GitHub CI build
 	  autobump <pkg> [--force]
 	                      Autobump a package via GitHub workflow_dispatch
-	                      (--force ignores src/autobump-pkgs whitelist)
+	                      (--force ignores src/autobump-blacklist)
 
 	Compound: $prog -uw   (update + build)
 
@@ -723,6 +726,35 @@ generate_build_yml() {
 
 	rm -f "$_opts"
 	echo 'build.yml: updated'
+}
+generate_autobump_yml() {
+	[ -f "$AUTOBUMP_TEMPLATE" ] || fatal "not found: ${AUTOBUMP_TEMPLATE}"
+	[ -f "$TEMPLATES_LIST" ] || fatal "not found: ${TEMPLATES_LIST}"
+
+	mkdir -p "$(dirname "$AUTOBUMP_WORKFLOW")"
+
+	_blck=$(mktemp)
+	grep -vE '^\s*(#|$)' "$AUTOBUMP_BLACKLIST" > "$_blck" || true
+	_opts=$(mktemp)
+	while IFS= read -r _pkg; do
+	        [ -z "$_pkg" ] && continue
+	        [ -L "${SCRIPT_DIR}/${SRCPKGS}/${_pkg}" ] && continue
+	        grep -qxF "$_pkg" "$_blck" && continue
+	        printf '        - %s\n' "$_pkg"
+	done < "$TEMPLATES_LIST" > "$_opts"
+	rm -f "$_blck"
+
+	awk -v opts="$_opts" '
+	        /^[[:space:]]*__TEMPLATE_OPTIONS__[[:space:]]*$/ {
+	                while ((getline ln < opts) > 0) print ln
+	                close(opts)
+	                next
+	        }
+	        { print }
+	' "$AUTOBUMP_TEMPLATE" > "$AUTOBUMP_WORKFLOW"
+
+	rm -f "$_opts"
+	echo 'autobump.yml: updated'
 }
 
 detect_changes() {
@@ -1671,7 +1703,7 @@ do_autobump() {
 	echo "  Repository: $_repo"
 	echo "  Branch:     $_ref"
 	echo "  Package:    $_pkg"
-	[ "$_force" = 1 ] && echo '  Force:      yes (ignore src/autobump-pkgs whitelist)'
+	[ "$_force" = 1 ] && echo '  Force:      yes (ignore src/autobump-blacklist)'
 	echo ''
 
 	if [ "$_force" = 1 ]; then
@@ -1764,6 +1796,7 @@ main() {
 		generate_list
 		generate_readme
 		generate_build_yml
+		generate_autobump_yml
 		detect_changes
 		suggest_feeds
 	fi

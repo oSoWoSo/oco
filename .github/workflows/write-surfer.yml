@@ -32,25 +32,22 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.BOT }}
     steps:
+      - name: Checkout CI scripts
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
       - name: Reject unsupported destination
         env:
           DESTINATION: ${{ inputs.destination }}
-        run: |
-          case "$DESTINATION" in
-            production|testing) ;;
-            *) echo "::error::Unsupported publication destination: $DESTINATION"; exit 1 ;;
-          esac
+        run: bash .github/scripts/ci/write-surfer-destination-guard.sh
 
       - name: Restrict production writes to trusted OCO runs
         if: inputs.destination == 'production'
         env:
           EVENT_NAME: ${{ github.event_name }}
           REF: ${{ github.ref }}
-        run: |
-          case "$EVENT_NAME:$REF" in
-            push:refs/heads/OCO|workflow_dispatch:refs/heads/OCO|repository_dispatch:refs/heads/OCO|workflow_run:refs/heads/OCO) ;;
-            *) echo "::error::Production writes are restricted to trusted OCO runs ($EVENT_NAME $REF)"; exit 1 ;;
-          esac
+        run: bash .github/scripts/ci/write-surfer-production-guard.sh
 
       - name: Download publication request
         uses: actions/download-artifact@v8
@@ -68,9 +65,7 @@ jobs:
         id: request
         env:
           DESTINATION: ${{ inputs.destination }}
-        run: |
-          python3 validator/src/surfer-publish.py publication --destination "$DESTINATION" > "$RUNNER_TEMP/manifest.json"
-          python3 -c 'import json,os; d=json.load(open(os.environ["RUNNER_TEMP"]+"/manifest.json")); print("source_sha="+d["source_sha"]); print("source_run_id="+d["source_run_id"]); print("package_arches="+" ".join(d["package_arches"])); print("purge_packages="+" ".join(d["purge_packages"])); print("auto_detect_purge="+str(not d["package_arches"] and not d["result_arches"] and not d["purge_packages"] and not d["update_arch_pages"] and not d["update_feed"] and not d["update_main_index"]).lower()); print("update_arch_pages="+str(d["update_arch_pages"]).lower()); print("update_feed="+str(d["update_feed"]).lower()); print("update_main_index="+str(d["update_main_index"]).lower())' >> "$GITHUB_OUTPUT"
+        run: bash .github/scripts/ci/write-surfer-validate.sh
 
       - name: Checkout publication source
         uses: actions/checkout@v7
@@ -82,7 +77,7 @@ jobs:
       - name: Validate request against checked-out source
         env:
           DESTINATION: ${{ inputs.destination }}
-        run: python3 extra/src/surfer-publish.py publication --destination "$DESTINATION"
+        run: bash .github/scripts/ci/write-surfer-validate.sh source
 
       - name: Publish package and purge operations
         if: steps.request.outputs.package_arches != '' || steps.request.outputs.purge_packages != '' || steps.request.outputs.auto_detect_purge == 'true'
@@ -94,27 +89,7 @@ jobs:
           PRIV_KEY: ${{ secrets.PRIV_KEY }}
           SURFER_USER: ${{ secrets.SURFER_USER }}
           SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
-        run: |
-          set -eu
-          export PATH="/opt/xbps/usr/bin:$PATH"
-          case "$DESTINATION" in production) export SURF_PATH_PREFIX='' ;; testing) export SURF_PATH_PREFIX=testing ;; esac
-          export SURF_PURGE_PACKAGES="$PURGES"
-          . extra/src/oco-key.sh
-          oco_key_write /tmp/private.pem
-          for arch in $ARCHES; do
-            export ARCH="$arch" XBPS_ARCH="$arch" XBPS_TARGET_ARCH="$arch"
-            dir="$GITHUB_WORKSPACE/publication/packages/$arch"
-            xbps-rindex -S --privkey /tmp/private.pem "$dir"/*.xbps
-            (cd extra && BUILDDIR="$dir" ./ocoman -p)
-          done
-          if [ -n "$PURGES" ] || [ "$AUTO_DETECT_PURGE" = true ]; then
-            mkdir -p "$RUNNER_TEMP/empty"
-            export SURF_PURGE_PACKAGES="$PURGES"
-            for arch in x86_64 x86_64-musl aarch64 aarch64-musl; do
-              export ARCH="$arch" XBPS_ARCH="$arch" XBPS_TARGET_ARCH="$arch"
-              (cd extra && BUILDDIR="$RUNNER_TEMP/empty" ./ocoman -p)
-            done
-          fi
+        run: bash .github/scripts/ci/write-surfer-publish.sh
 
       - name: Regenerate architecture pages
         if: steps.request.outputs.update_arch_pages == 'true'
@@ -122,10 +97,7 @@ jobs:
           DESTINATION: ${{ inputs.destination }}
           SURFER_USER: ${{ secrets.SURFER_USER }}
           SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
-        run: |
-          set -eu
-          [ "$DESTINATION" = testing ] && export SURF_PATH_PREFIX=testing || export SURF_PATH_PREFIX=''
-          (cd extra && ./ocoman -a)
+        run: bash .github/scripts/ci/write-surfer-arch-pages.sh
 
       - name: Update RSS feed
         if: steps.request.outputs.update_feed == 'true'
@@ -134,73 +106,7 @@ jobs:
           RUN_ID: ${{ fromJSON(steps.request.outputs.source_run_id || '0') }}
           SURFER_USER: ${{ secrets.SURFER_USER }}
           SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
-        run: |
-          set -eu
-          mkdir -p "$RUNNER_TEMP/feed-results"
-          for file in publication/results/*.tsv; do
-            arch=${file##*/}; arch=${arch%.tsv}
-            mkdir -p "$RUNNER_TEMP/feed-results/build-results-$arch"
-            cp "$file" "$RUNNER_TEMP/feed-results/build-results-$arch/results.tsv"
-          done
-
-          feed_url=https://repo.osowoso.org/_webdav/feed.xml
-          feed_file="$RUNNER_TEMP/feed.xml"
-          download_body="$RUNNER_TEMP/feed-download.body"
-          upload_body="$RUNNER_TEMP/feed-upload.body"
-          echo "::group::Download existing RSS feed"
-          if download_result=$(curl --silent --show-error --connect-timeout 15 --max-time 120 \
-            --user "${SURFER_USER}:${SURFER_TOKEN}" --output "$download_body" \
-            --write-out '%{http_code} %{time_total}' "$feed_url"); then
-            set -- $download_result
-            http_code=$1
-            elapsed=$2
-            echo "WebDAV GET returned HTTP $http_code in ${elapsed}s"
-          else
-            curl_rc=$?
-            echo "::error::RSS feed WebDAV GET failed (curl exit $curl_rc)"
-            [ ! -s "$download_body" ] || cat "$download_body"
-            exit "$curl_rc"
-          fi
-          case "$http_code" in
-            200) mv "$download_body" "$feed_file" ;;
-            404)
-              echo "::notice::No existing feed.xml (HTTP 404); generating an initial feed"
-              rm -f "$download_body"
-              ;;
-            *)
-              echo "::error::RSS feed WebDAV GET returned unexpected HTTP $http_code"
-              [ ! -s "$download_body" ] || cat "$download_body"
-              exit 1
-              ;;
-          esac
-          echo "::endgroup::"
-
-          echo "::group::Generate RSS feed"
-          python3 extra/src/gen-feed.py update "$feed_file" "$RUNNER_TEMP/feed-results" "$RUN_ID" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" extra/srcpkgs
-          echo "::endgroup::"
-
-          echo "::group::Upload updated RSS feed"
-          if upload_result=$(curl --silent --show-error --fail-with-body --connect-timeout 15 --max-time 120 \
-            --user "${SURFER_USER}:${SURFER_TOKEN}" --output "$upload_body" \
-            --write-out '%{http_code} %{time_total}' --upload-file "$feed_file" "$feed_url"); then
-            set -- $upload_result
-            http_code=$1
-            elapsed=$2
-          else
-            curl_rc=$?
-            echo "::error::RSS feed WebDAV PUT failed (curl exit $curl_rc)"
-            [ ! -s "$upload_body" ] || cat "$upload_body"
-            exit "$curl_rc"
-          fi
-          case "$http_code" in
-            2[0-9][0-9]) echo "WebDAV PUT succeeded: HTTP $http_code in ${elapsed}s" ;;
-            *)
-              echo "::error::RSS feed WebDAV PUT returned unexpected HTTP $http_code"
-              [ ! -s "$upload_body" ] || cat "$upload_body"
-              exit 1
-              ;;
-          esac
-          echo "::endgroup::"
+        run: bash .github/scripts/ci/write-surfer-feed.sh
 
       - name: Regenerate main index
         if: steps.request.outputs.update_main_index == 'true'
@@ -208,7 +114,4 @@ jobs:
           DESTINATION: ${{ inputs.destination }}
           SURFER_USER: ${{ secrets.SURFER_USER }}
           SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
-        run: |
-          set -eu
-          [ "$DESTINATION" = testing ] && export SURF_PATH_PREFIX=testing || export SURF_PATH_PREFIX=''
-          (cd extra && ./ocoman -m)
+        run: bash .github/scripts/ci/write-surfer-main-index.sh

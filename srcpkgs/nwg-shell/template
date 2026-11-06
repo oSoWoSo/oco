@@ -1,7 +1,7 @@
 # Template file for 'nwg-shell'
 pkgname=nwg-shell
 version=0.5.50
-revision=2
+revision=3
 build_style=python3-pep517
 hostmakedepends="go python3-setuptools"
 makedepends="python3-gobject-devel gtk+3-devel gtk-layer-shell-devel"

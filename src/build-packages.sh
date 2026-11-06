@@ -9,7 +9,7 @@ export PATH="/opt/xbps/usr/bin/:$PATH"
 
 if [ -n "${RESULT_FILE:-}" ]; then
 	mkdir -p "$(dirname "$RESULT_FILE")"
-	: > "$RESULT_FILE"
+	: >"$RESULT_FILE"
 fi
 
 cd /void-packages
@@ -34,7 +34,7 @@ if [ -z "$PKGS" ]; then
 	exit 1
 fi
 
-echo "==> Build order with dependencies:"
+echo "==> xbps-src sort-dependencies result (pre-build; autodetected dependencies may change runtime work):"
 echo "$PKGS"
 echo
 
@@ -44,30 +44,30 @@ for pkg in $PKGS; do
 	_ver=$(grep '^version=' "srcpkgs/$pkg/template" 2>/dev/null | head -n1 | cut -d= -f2- | tr -d '"' | tr -d ' ')
 	if ! pkg_arch_ok "$pkg" "$ARCH"; then
 		echo "==> Skipping ${pkg}: not available for ${ARCH}"
-		[ -n "${RESULT_FILE:-}" ] && printf '%s\t%s\tskip\n' "$pkg" "$_ver" >> "$RESULT_FILE"
+		[ -n "${RESULT_FILE:-}" ] && printf '%s\t%s\tskip\n' "$pkg" "$_ver" >>"$RESULT_FILE"
 		continue
 	fi
 
 	arch_flag=''
 	if [ "$BOOTSTRAP" != "$ARCH" ]; then
 		case "$BOOTSTRAP/$ARCH" in
-			x86_64/x86_64-musl)
-				arch_flag="-A $ARCH"
-				;;
-			*)
-				# - Avoid '-A' (amd64 runners lack qemu binfmt -> 'Exec format error').
-				arch_flag="-a $ARCH"
-				;;
+		x86_64/x86_64-musl)
+			arch_flag="-A $ARCH"
+			;;
+		*)
+			# - Avoid '-A' (amd64 runners lack qemu binfmt -> 'Exec format error').
+			arch_flag="-a $ARCH"
+			;;
 		esac
 	fi
 
 	echo "==> Building ${pkg}"
 	if sudo -Eu builder ./xbps-src -j"$(nproc)" -s $force_flag $arch_flag $xbps_test pkg "$pkg"; then
 		BUILT=true
-		[ -n "${RESULT_FILE:-}" ] && printf '%s\t%s\tok\n' "$pkg" "$_ver" >> "$RESULT_FILE"
+		[ -n "${RESULT_FILE:-}" ] && printf '%s\t%s\tok\n' "$pkg" "$_ver" >>"$RESULT_FILE"
 	else
 		FAILED=true
-		[ -n "${RESULT_FILE:-}" ] && printf '%s\t%s\tfail\n' "$pkg" "$_ver" >> "$RESULT_FILE"
+		[ -n "${RESULT_FILE:-}" ] && printf '%s\t%s\tfail\n' "$pkg" "$_ver" >>"$RESULT_FILE"
 	fi
 	echo
 done
@@ -85,7 +85,7 @@ if [ -n "${RESULT_FILE:-}" ]; then
 	fi
 fi
 
-[ -n "${GITHUB_OUTPUT:-}" ] && printf 'built=%s\n' "$BUILT" >> "$GITHUB_OUTPUT"
+[ -n "${GITHUB_OUTPUT:-}" ] && printf 'built=%s\n' "$BUILT" >>"$GITHUB_OUTPUT"
 if [ "$FAILED" = true ]; then
 	exit 1
 fi

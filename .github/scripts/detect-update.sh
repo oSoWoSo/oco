@@ -58,7 +58,6 @@ fi
 tpl="srcpkgs/$pkg/template"
 [ -f "$tpl" ] || fail "template not found: $tpl"
 
-
 export XBPS_USE_BUILD_MTIME=1
 
 old=$(sed -n 's/^version=//p' "$tpl" | head -1 | tr -d '"')
@@ -97,6 +96,9 @@ new=$(printf '%s\n' "$out" |
 	sort -V |
 	tail -n1 |
 	sed "s/${pkg}-//")
+# Upstream build numbers such as librewolf's "158.0.1-1" are stored with a
+# dot ("158.0.1.1") so the template's version-derived distver keeps working.
+new=$(printf '%s' "$new" | sed -E 's/-([0-9]+)$/.\1/')
 : "${new:="$old"}"
 
 if [ "$new" = "$old" ]; then

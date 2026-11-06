@@ -1,0 +1,20 @@
+# Template file for 'Favnyr'
+pkgname=Favnyr
+version=0.3.7
+revision=2
+build_style=cargo
+make_install_args="--path crates/favnyr-gui"
+hostmakedepends="pkg-config"
+makedepends="fontconfig-devel"
+checkdepends="dejavu-fonts-ttf"
+short_desc="Modern and lightweight file manager for Windows and Linux"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-3.0-only"
+homepage="https://github.com/GlitchAwakened/Favnyr"
+distfiles="https://github.com/GlitchAwakened/Favnyr/archive/refs/tags/v${version}.tar.gz"
+checksum=001247a87906ed556e3bf31aa60cbb4325e6e88c647c0d663005746c9154c2e7
+
+post_install() {
+	vinstall crates/favnyr-gui/assets/favnyr.svg 644 usr/share/icons/hicolor/scalable/apps
+	vinstall packaging/favnyr.desktop 644 usr/share/applications
+}

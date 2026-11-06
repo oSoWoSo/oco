@@ -1,0 +1,17 @@
+# Group<TAB>package-name glob. Add a row for each new pack pattern.
+# Pack members are checked together for upstream updates; affected reverse
+# dependencies are revision-bumped by the dependency graph.
+cosmic	cosmic-*
+cosmic	blocaled
+cosmic	default-cursors
+cosmic	pop-launcher
+hypr	hypr*
+hypr	aquamarine
+hypr	glaze
+hypr	libspng
+nwg	nwg-*
+nwg	python3-dasbus
+nwg	python3-geographiclib
+nwg	python3-geopy
+sonic	sonic-*
+sonic	sf-*

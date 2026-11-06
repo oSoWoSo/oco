@@ -6,7 +6,7 @@
 !/.gitignore
 
 !/.github
-!/.forgejo
+!/wrangler.toml
 
 !/LICENSE
 !/README.md
@@ -16,9 +16,9 @@
 !/shlibs_remove
 
 !/tests
-*/__pycache__/
-*/*/__pycache__/
+**/__pycache__/
 !/src
+!/requirements.txt
 
 # Repository signing keys
 !/oco-public.pem
@@ -32,6 +32,7 @@
 /srcpkgs/*
 
 # Start of templates list
+!/srcpkgs/adw-gtk3
 !/srcpkgs/android-sdk
 !/srcpkgs/aquamarine
 !/srcpkgs/aquamarine-devel
@@ -46,6 +47,7 @@
 !/srcpkgs/brave-origin-bin-qt5
 !/srcpkgs/brave-origin-bin-qt6
 !/srcpkgs/brow6el
+!/srcpkgs/brush-shell
 !/srcpkgs/btrfs-progs
 !/srcpkgs/bulletty
 !/srcpkgs/bun
@@ -96,11 +98,14 @@
 !/srcpkgs/CRC-cereus-extra
 !/srcpkgs/CRC-cosmic
 !/srcpkgs/CRC-d77void
+!/srcpkgs/CRC-dms
+!/srcpkgs/CRC-dux
 !/srcpkgs/CRC-hyprland
 !/srcpkgs/CRC-jake
 !/srcpkgs/CRC-lazy
 !/srcpkgs/CRC-librewolf
 !/srcpkgs/CRC-noid
+!/srcpkgs/CRC-oco-testing
 !/srcpkgs/CRC-odyssey
 !/srcpkgs/CRC-sofijacom
 !/srcpkgs/CRC-sonicde
@@ -126,8 +131,16 @@
 !/srcpkgs/dragonfly-reverb-vst
 !/srcpkgs/dragonfly-reverb-vst3
 !/srcpkgs/drako
+!/srcpkgs/dux-calendar
+!/srcpkgs/dux-files
+!/srcpkgs/dux-gop
+!/srcpkgs/dux-greeter
+!/srcpkgs/dux-qml-common
+!/srcpkgs/dux-search
+!/srcpkgs/dux-shell
 !/srcpkgs/easybashgui
 !/srcpkgs/faugus-launcher
+!/srcpkgs/Favnyr
 !/srcpkgs/fcitx5-lotus
 !/srcpkgs/fcitx5-lotus-settings
 !/srcpkgs/floorp-bin
@@ -201,8 +214,6 @@
 !/srcpkgs/libbtrfsutil
 !/srcpkgs/libbtrfsutil-devel
 !/srcpkgs/libcprime
-!/srcpkgs/libheif
-!/srcpkgs/libheif-devel
 !/srcpkgs/libkrun
 !/srcpkgs/libkrun-devel
 !/srcpkgs/libkrunfw
@@ -214,6 +225,7 @@
 !/srcpkgs/linuxcommandlibrary-desktop
 !/srcpkgs/llama.cpp
 !/srcpkgs/llmfit
+!/srcpkgs/logseq
 !/srcpkgs/lunasvg
 !/srcpkgs/lunasvg-devel
 !/srcpkgs/ly
@@ -226,6 +238,7 @@
 !/srcpkgs/nebula-gtk
 !/srcpkgs/noctalia
 !/srcpkgs/noctalia-greeter
+!/srcpkgs/notesnook
 !/srcpkgs/NuvioDesktop
 !/srcpkgs/nvchecker
 !/srcpkgs/nwg-bar
@@ -295,6 +308,8 @@
 !/srcpkgs/shattered-pixel-dungeon
 !/srcpkgs/simplex-chat
 !/srcpkgs/simplex-chat-desktop
+!/srcpkgs/sonic-frameworks-cmake-modules
+!/srcpkgs/sonic-oxygen-icons
 !/srcpkgs/surfer-cli
 !/srcpkgs/surfer-server
 !/srcpkgs/surge-xt

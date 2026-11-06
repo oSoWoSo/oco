@@ -1,6 +1,6 @@
 # Template file for 'Trilium'
 pkgname=Trilium
-version=0.106.0
+version=0.106.1
 revision=1
 hostmakedepends="nodejs pnpm"
 short_desc="Build your personal knowledge base with Trilium Notes"
@@ -8,7 +8,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="AGPL-3.0-only"
 homepage="https://github.com/TriliumNext/Trilium"
 distfiles="https://github.com/TriliumNext/Trilium/archive/refs/tags/v${version}.tar.gz"
-checksum=3f0616182e921a8d3a8dbfec9edd7b21b9174203d6955891426f90d5062d7389
+checksum=ef184ac2307b748e9e19d051c53b7ddc16517bc5fb443d78c5afb50d1ed5df09
 nodebug=1
 nostrip=1
 noshlibprovides=1

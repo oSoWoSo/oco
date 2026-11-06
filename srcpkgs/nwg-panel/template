@@ -1,17 +1,17 @@
 # Template file for 'nwg-panel'
 pkgname=nwg-panel
-version=0.12.1
+version=0.12.3
 revision=1
 build_style=python3-pep517
 hostmakedepends="pkg-config python3-setuptools python3-wheel python3-dasbus"
 makedepends="cairo-devel python3-cairo-devel"
-depends="python3-gobject"
+depends="python3-gobject python3-i3ipc python3-psutil python3-requests"
 short_desc="GTK based panel for sway and Hyprland Wayland compositors"
 maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://nwg-piotr.github.io/nwg-shell/nwg-panel"
 distfiles="https://github.com/nwg-piotr/nwg-panel/archive/refs/tags/v${version}.tar.gz"
-checksum=e208de34a9f8c7c3557e68e2893852ace01ca9ca61577bdf4be924876e733657
+checksum=545de0ef6623987152e3f510ce06afb67e1fc983f915cbff2a19436d25a5aceb
 make_check=no # No checks provided
 
 post_install() {

@@ -1,0 +1,44 @@
+# Template file for 'dux-files'
+pkgname=dux-files
+version=2.1.0
+revision=1
+build_style=go
+build_helper=qemu
+build_wrksrc="core"
+go_import_path="github.com/duxlabs-dev/dux-files/core"
+go_package="${go_import_path}/cmd/dfiles"
+#go_build_tags="withshell"
+go_ldflags="-X main.Version=${version}"
+depends="quickshell+ qt6-declarative dux-qml-common"
+short_desc="File manager for the Dux Labs desktop"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/duxlabs-dev/dux-files"
+changelog="https://github.com/duxlabs-dev/dux-files/releases"
+distfiles="https://github.com/duxlabs-dev/dux-files/archive/refs/tags/v${version}.tar.gz>dux-files.tar.gz"
+checksum=90e81547bd517eef2be7081fb4fef135acdb60633f9a4b65086348e807f54352
+
+post_install() {
+	# Desktop integration (UI isn't embedded in the binary! QML install?)
+	cd ..
+	vmkdir usr/share/quickshell/dfiles
+	for q in ../quickshell/*; do
+		[ "$(basename "$q")" = "DCommon" ] && continue
+		[ -e "$q" ] || [ -L "$q" ] || continue
+		vcopy "$q" usr/share/quickshell/dfiles
+	done
+	vinstall assets/dev.duxlabs.files.desktop 644 usr/share/applications
+	vinstall assets/dev.duxlabs.files.svg 644 usr/share/icons/hicolor/scalable/apps
+	vinstall assets/dev.duxlabs.files.metainfo.xml 644 usr/share/metainfo
+	vinstall assets/dev.duxlabs.files.policy 644 usr/share/polkit-1/actions
+	vinstall assets/dbus/dev.duxlabs.files.FileManager1.service 644 usr/share/dbus-1/services
+	vinstall assets/dbus/org.freedesktop.impl.portal.desktop.dfiles.service 644 usr/share/dbus-1/services
+	vinstall assets/portal/dfiles.portal 644 usr/share/xdg-desktop-portal/portals
+
+	for shell in bash fish zsh; do
+		vtargetrun ${DESTDIR}/usr/bin/dfiles completion ${shell} > ${pkgname}.${shell}
+		vcompletion ${pkgname}.${shell} ${shell}
+	done
+
+	vlicense LICENSE
+}

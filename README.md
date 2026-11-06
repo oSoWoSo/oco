@@ -247,9 +247,9 @@ Create PR to Codeberg or GitHub
 | dux-files | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-files) | zenobit |  | File manager for the Dux Labs desktop |
 | dux-gop | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-gop) | zenobit |  | API and CLI for system and process monitoring from Dux Labs |
 | dux-greeter | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-greeter) | zenobit |  | Greetd login screen with the Dux Shell aesthetic |
-| dux-qml-common | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-qml-common) | zenobit |  | Common QML assets for Dux Shell and Dux Labs apps |
 | dux-search | 2.1.0 | [home](https://duxlabs.dev/docs/dsearch/) | AvengeMedia |  | Blazingly fast filesystem search tool (Dux Shell) |
 | dux-shell | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-shell) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
+| dux-qml-common | 2.1.1 | [home](https://github.com/duxlabs-dev/dux-qml-common) | zenobit |  | Common QML assets for Dux Shell and Dux Labs apps |
 | easybashgui | 15.0.2 | [home](https://github.com/BashGui/easybashgui) | zenobit |  | Bash functions library that aims to give simple GUI functions |
 | faugus-launcher | 2.5.7 | [home](https://github.com/Faugus/faugus-launcher) | zenobit |  | Simple and lightweight app for running Windows games using UMU-Launcher |
 | Favnyr | 0.3.7 | [home](https://github.com/GlitchAwakened/Favnyr) | zenobit |  | Modern and lightweight file manager for Windows and Linux |

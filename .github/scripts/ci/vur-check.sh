@@ -124,6 +124,14 @@ push_template() {
         # be used directly as a void-packages contribution.
         git checkout --quiet -B "ci-${template}" origin/master
 
+        # Track whether the package already exists upstream so the commit
+        # message can follow void-packages CONTRIBUTING.md.
+        if [ -e "srcpkgs/${template}/template" ]; then
+                upstream_template=1
+        else
+                upstream_template=0
+        fi
+
         # Overlay the OCO template directory.
         rm -rf "srcpkgs/${template}"
         cp -a "$src" "srcpkgs/${template}"
@@ -168,7 +176,17 @@ push_template() {
         fi
 
         version="$(sed -n 's/^version=//p' "srcpkgs/${template}/template" | head -n1 | tr -d '"' | tr -d ' ')"
-        git commit --quiet -m "${pkgname} ${version} (from OCO)"
+        # Follow void-packages CONTRIBUTING.md: 'New package:' when upstream
+        # does not have the template yet, '<pkgname>: update to <version>.'
+        # otherwise. The ci-<template> branch is a clean contribution branch
+        # (based on void-packages master), so the message must not carry OCO
+        # metadata.
+        if [ "$upstream_template" -eq 0 ]; then
+                commit_msg="New package: ${pkgname}-${version}"
+        else
+                commit_msg="${pkgname}: update to ${version}."
+        fi
+        git commit --quiet -m "$commit_msg"
         # Record the newest run already on the branch so the wait loop can
         # tell our fresh run apart from a stale completed one (the API can
         # briefly lag behind the push).

@@ -118,7 +118,7 @@ push_template() {
         pkgname="${pkgname:-$template}"
 
         # Rebase the test branch on the latest VUR (synced from void master).
-        git checkout --quiet -B "OCO/${template}" origin/VUR 2>/dev/null
+        git checkout --quiet -B "ci-${template}" origin/VUR 2>/dev/null
 
         # Overlay the OCO template directory.
         rm -rf "srcpkgs/${template}"
@@ -171,8 +171,8 @@ push_template() {
         before_run_id[$template]="$(curl -fsS -H "Authorization: Bearer ${VUR_TOKEN}" \
                 "${API_ROOT}/actions/workflows/check-anywhere.yml/runs?branch=OCO%2F${template}&per_page=1" \
                 2>/dev/null | jq -r '.workflow_runs[0].id // 0')"
-        git push --quiet --force origin "HEAD:OCO/${template}"
-        echo "::notice::pushed https://github.com/${VUR_REPO}/tree/OCO/${template}"
+        git push --quiet --force origin "HEAD:ci-${template}"
+        echo "::notice::pushed https://github.com/${VUR_REPO}/tree/ci-${template}"
         pushed_branches+=("${template}")
 }
 

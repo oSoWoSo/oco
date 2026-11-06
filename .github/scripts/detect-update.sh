@@ -79,8 +79,17 @@ if [ -n "${GH_TOKEN:-}" ]; then
 	export CURL_HOME="$_curlhome"
 fi
 
+update_check=("$engine" update-check "$pkg")
+if [ "$(id -u)" -eq 0 ]; then
+	update_check=(sudo -Eu builder "${update_check[@]}")
+	if [ -n "${_curlhome:-}" ]; then
+		chown -R builder:builder "$_curlhome" ||
+			fail "could not make update-check credentials readable by builder"
+	fi
+fi
+
 set +e
-out=$("$engine" update-check "$pkg")
+out=$("${update_check[@]}")
 rc=$?
 set -e
 

@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import fnmatch
+import hashlib
 import os
 from pathlib import Path
 import re
@@ -166,6 +167,87 @@ class Repository:
             )
         }
 
+    def dependency_manifest(self) -> Path:
+        return self.root / ".github" / "autobump-dependencies.tsv"
+
+    def _template_hash(self, package: str) -> str:
+        return hashlib.sha256(self.templates[package].read_bytes()).hexdigest()
+
+    def _load_manifest(self) -> dict[str, tuple[str, set[str]]]:
+        path = self.dependency_manifest()
+        if not path.exists():
+            return {}
+        rows: dict[str, tuple[str, set[str]]] = {}
+        lines = path.read_text(encoding="utf-8").splitlines()
+        if not lines or lines[0] != "# autobump-dependencies-v1":
+            raise ValueError(f"invalid dependency manifest header: {path}")
+        for number, line in enumerate(lines[1:], 2):
+            fields = line.split("\t")
+            if len(fields) != 3:
+                raise ValueError(f"malformed dependency manifest row {number}: {line!r}")
+            package, digest, dependencies = fields
+            if not PACKAGE.fullmatch(package) or not re.fullmatch(r"[0-9a-f]{64}", digest):
+                raise ValueError(f"invalid dependency manifest row {number}: {line!r}")
+            if package in rows:
+                raise ValueError(f"duplicate dependency manifest package on line {number}: {package}")
+            deps = dependencies.split() if dependencies else []
+            if any(not PACKAGE.fullmatch(dep) for dep in deps):
+                raise ValueError(f"invalid dependency name on manifest line {number}")
+            if deps != sorted(set(deps)):
+                raise ValueError(f"dependencies are not unique and sorted on manifest line {number}")
+            rows[package] = (digest, set(deps))
+        return rows
+
+    def _write_manifest(self, rows: dict[str, tuple[str, set[str]]]) -> None:
+        path = self.dependency_manifest()
+        lines = ["# autobump-dependencies-v1"]
+        for package in sorted(rows):
+            digest, dependencies = rows[package]
+            lines.append(f"{package}\t{digest}\t{' '.join(sorted(dependencies))}")
+        path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    def dependencies(self) -> dict[str, set[str]]:
+        """Return build dependency edges between real packages."""
+        edges: dict[str, set[str]] = {}
+        for name, template in self.templates.items():
+            resolved: set[str] = set()
+            for dependency in self._build_dependencies(name, template):
+                target = self.resolve(dependency) or dependency
+                if target in self.templates and target != name:
+                    resolved.add(target)
+            edges[name] = resolved
+        return edges
+
+    def cached_dependencies(self) -> dict[str, set[str]]:
+        """Load or incrementally refresh the complete real-template graph."""
+        manifest = self._load_manifest()
+        current: dict[str, tuple[str, set[str]]] = {}
+        for name, (digest, dependencies) in manifest.items():
+            if name not in self.templates:
+                continue
+            canonical = {self.resolve(dep) or dep for dep in dependencies}
+            canonical.discard(name)
+            canonical.intersection_update(self.templates)
+            current[name] = (digest, canonical)
+        for name, template in sorted(self.templates.items()):
+            digest = self._template_hash(name)
+            cached = current.get(name)
+            if cached is not None and cached[0] == digest:
+                continue
+            try:
+                resolved = self._build_dependencies(name, template)
+            except (OSError, RuntimeError) as error:
+                print(f"warning: dependency resolution failed for {name}; using template parser: {error}", file=sys.stderr)
+                resolved = template_dependencies(template)
+            dependencies = set()
+            for dependency in resolved:
+                target = self.resolve(dependency) or dependency
+                if target in self.templates and target != name:
+                    dependencies.add(target)
+            current[name] = (digest, dependencies)
+        self._write_manifest(current)
+        return {name: set(row[1]) for name, row in current.items()}
+
     def _build_dependencies(self, package: str, template: Path) -> set[str]:
         """Resolve dependencies with XBPS when available, otherwise parse literals."""
         if self.xbps_src is None:
@@ -194,22 +276,6 @@ class Repository:
             if PACKAGE.fullmatch(dependency)
         }
 
-    def dependencies(self) -> dict[str, set[str]]:
-        """Return build dependency edges between real packages.
-
-        In CI, `xbps-src show-build-deps` evaluates template/build-style
-        dependency logic without building. The literal parser remains for
-        isolated tests and local planning without an XBPS checkout.
-        """
-        edges: dict[str, set[str]] = {}
-        for name, template in self.templates.items():
-            resolved: set[str] = set()
-            for dependency in self._build_dependencies(name, template):
-                target = self.resolve(dependency) or dependency
-                if target in self.templates and target != name:
-                    resolved.add(target)
-            edges[name] = resolved
-        return edges
 
     def blacklist(self) -> set[str]:
         """Return the packages that are excluded from upstream bumps."""
@@ -384,11 +450,10 @@ def plan_batch(
     force: bool,
     xbps_src: Path | None = None,
 ) -> tuple[list[tuple[str, str, str, int]], list[str]]:
-    """Plan pack updates and revision bumps for direct build-dependent consumers.
+    """Plan a singleton target or configured pack and direct consumer revisions.
 
-    For a configured pack, upstream detection is limited to its members;
-    outside-pack packages are included only when they need a rebuild.
-    Unpacked packages retain dependency-component batching.
+    Pack plans detect updates only among configured members and use the cached
+    complete graph for reverse consumers. Ungrouped targets skip resolution.
     """
     repository = Repository(root, xbps_src=xbps_src)
     if target in repository.aliases:
@@ -405,16 +470,20 @@ def plan_batch(
         excluded.discard(target)
     if target in excluded:
         raise ValueError(f"target is in src/autobump-blacklist: {target}")
+    pack = repository.pack_members(target)
+    if not pack:
+        updated = detect_updates(root, [target])
+        if target not in updated:
+            return [], [target]
+        row = (target, updated[target], "version", 0)
+        return [row], [target]
 
-    graph = repository.dependencies()
-    reachable = repository.pack_members(target) or component(graph, target)
-    candidates = sorted(reachable - excluded)
+    graph = repository.cached_dependencies()
+    candidates = sorted(pack - excluded)
     updated = detect_updates(root, candidates)
     if not updated:
         return [], candidates
 
-    # Only direct build-dependent consumers need a revision bump for this
-    # package change; unrelated members of the dependency component do not.
     reverse: dict[str, set[str]] = {}
     for package, dependencies in graph.items():
         for dependency in dependencies:
@@ -423,7 +492,7 @@ def plan_batch(
     revbumped: set[str] = set()
     for package in updated:
         for dependent in reverse.get(package, ()):
-            if dependent in updated:
+            if dependent in updated or dependent in excluded:
                 continue
             if template_is_metapackage(repository.templates[dependent]):
                 continue

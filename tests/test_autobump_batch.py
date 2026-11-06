@@ -28,7 +28,7 @@ def write_template(root: Path, name: str, body: str) -> Path:
 
 
 class BatchPlanTests(unittest.TestCase):
-    """The planner groups by dependency and bumps reverse dependencies."""
+    """The planner selects pack updates and bumps reverse consumers."""
 
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
@@ -71,6 +71,94 @@ class BatchPlanTests(unittest.TestCase):
         )
         self.addCleanup(os.environ.pop, "FAKE_UPDATES", None)
 
+
+    def configure_pack(self, *packages: str) -> None:
+        (self.tmp / ".github" / "autobump-packs.tsv").write_text(
+            "".join(f"test\t{package}\n" for package in packages), encoding="utf-8")
+
+    def test_ungrouped_target_skips_dependency_resolver(self):
+        self.build_repo({
+            "plain": "pkgname=plain\nversion=1.0\nrevision=1\n",
+            "consumer": "pkgname=consumer\nversion=1.0\nrevision=1\ndepends=\"plain\"\n",
+        })
+        self.fake_detector({"plain": "1.1"})
+        with patch.object(batch.Repository, "_build_dependencies",
+                          side_effect=AssertionError("resolver must not run")):
+            rows, candidates = self.plan("plain", xbps_src=Path("/unused/xbps-src"))
+        self.assertEqual(rows, [("plain", "1.1", "version", 0)])
+        self.assertEqual(candidates, ["plain"])
+
+    def test_pack_bootstrap_falls_back_and_revises_external_consumer(self):
+        self.build_repo({
+            "alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n",
+            "beta": "pkgname=beta\nversion=1.0\nrevision=1\n",
+            "broken": "pkgname=broken\nversion=1.0\nrevision=1\ndepends=\"alpha\"\n",
+            "consumer": "pkgname=consumer\nversion=1.0\nrevision=1\n",
+        })
+        self.configure_pack("alpha", "beta")
+        self.fake_detector({"alpha": "1.1"})
+
+        def resolver(_repo, package, _template):
+            if package == "broken":
+                raise RuntimeError("unrelated resolver failure")
+            if package == "consumer":
+                return {"alpha"}
+            return set()
+
+        with patch.object(batch.Repository, "_build_dependencies", resolver), \
+             patch("sys.stderr") as stderr:
+            rows, _ = self.plan("alpha", xbps_src=Path("/fake/xbps-src"))
+        self.assertEqual(
+            {package: kind for package, _version, kind, _order in rows},
+            {"alpha": "version", "broken": "revision", "consumer": "revision"})
+        manifest = (self.tmp / ".github" / "autobump-dependencies.tsv").read_text()
+        self.assertIn("broken\t", manifest)
+        self.assertIn("alpha\n", manifest)
+        self.assertTrue(any("broken" in str(call) for call in stderr.write.call_args_list))
+
+    def test_cached_graph_reused_and_only_stale_template_resolved(self):
+        self.build_repo({
+            "alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n",
+            "beta": "pkgname=beta\nversion=1.0\nrevision=1\n",
+        })
+        self.configure_pack("alpha", "beta")
+        self.fake_detector({"alpha": "1.1"})
+        calls = []
+
+        def resolver(_repo, package, _template):
+            calls.append(package)
+            if package == "beta":
+                return {"alpha"}
+            return set()
+
+        with patch.object(batch.Repository, "_build_dependencies", resolver):
+            first, order1 = self.plan("alpha", xbps_src=Path("/fake/xbps-src"))
+        self.assertEqual(set(calls), {"alpha", "beta"})
+        calls.clear()
+        with patch.object(batch.Repository, "_build_dependencies", resolver):
+            second, order2 = self.plan("alpha", xbps_src=Path("/fake/xbps-src"))
+        self.assertEqual(calls, [])
+        self.assertEqual((first, order1), (second, order2))
+
+        write_template(self.tmp, "beta",
+                       "pkgname=beta\nversion=1.0\nrevision=1\ndepends=\"alpha\"\n")
+        with patch.object(batch.Repository, "_build_dependencies", resolver):
+            self.plan("alpha", xbps_src=Path("/fake/xbps-src"))
+        self.assertEqual(calls, ["beta"])
+        rows = batch.Repository(self.tmp)._load_manifest()
+        self.assertEqual(rows["beta"][1], {"alpha"})
+
+    def test_manifest_rejects_duplicate_rows(self):
+        self.build_repo({"alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n"})
+        self.configure_pack("alpha")
+        manifest = self.tmp / ".github" / "autobump-dependencies.tsv"
+        digest = batch.hashlib.sha256(
+            (self.tmp / "srcpkgs/alpha/template").read_bytes()).hexdigest()
+        manifest.write_text(
+            f"# autobump-dependencies-v1\nalpha\t{digest}\t\nalpha\t{digest}\t\n")
+        self.fake_detector({})
+        with self.assertRaisesRegex(ValueError, "duplicate dependency manifest"):
+            self.plan("alpha")
     def plan(self, target: str, **kwargs):
         kwargs.setdefault("force", False)
         return batch.plan_batch(self.tmp, target, **kwargs)
@@ -110,6 +198,15 @@ class BatchPlanTests(unittest.TestCase):
         repository = batch.Repository(self.tmp)
         graph = repository.dependencies()
         self.assertEqual(graph["user"], {"real"})
+        cached_graph = repository.cached_dependencies()
+        self.assertEqual(cached_graph["user"], {"real"})
+        manifest_row = (self.tmp / ".github" / "autobump-dependencies.tsv").read_text()
+        manifest_rows = [
+            line.split("\t") for line in manifest_row.splitlines()[1:]
+        ]
+        self.assertEqual(
+            next(row[2] for row in manifest_rows if row[0] == "user"), "real")
+        self.assertNotIn("real-devel", manifest_row)
 
 
     def test_xbps_build_dependencies_include_template_logic(self):
@@ -189,6 +286,7 @@ class BatchPlanTests(unittest.TestCase):
             "gamma": "pkgname=gamma\nversion=1.0\nrevision=1\ndepends=\"beta\"\n",
             "lonely": "pkgname=lonely\nversion=1.0\nrevision=1\n",
         })
+        self.configure_pack("alpha", "beta", "gamma")
         self.fake_detector({"alpha": "1.1", "beta": "2.0", "lonely": "9.9"})
 
         rows, component = self.plan("alpha")
@@ -208,6 +306,7 @@ class BatchPlanTests(unittest.TestCase):
             "alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n",
             "consumer": "pkgname=consumer\nversion=1.0\nrevision=4\ndepends=\"alpha\"\n",
         })
+        self.configure_pack("alpha")
         self.fake_detector({"alpha": "1.1"})
 
         rows, _component = self.plan("alpha")
@@ -219,6 +318,7 @@ class BatchPlanTests(unittest.TestCase):
             "alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n",
             "consumer": "pkgname=consumer\nversion=1.0\nrevision=4\ndepends=\"alpha\"\n",
         })
+        self.configure_pack("alpha", "consumer")
         self.fake_detector({"alpha": "1.1", "consumer": "3.0"})
 
         rows, _component = self.plan("alpha")
@@ -232,6 +332,7 @@ class BatchPlanTests(unittest.TestCase):
             "meta": "pkgname=meta\nversion=1.0\nrevision=1\nmetapackage=\"yes\"\n"
                     "depends=\"alpha\"\n",
         })
+        self.configure_pack("alpha")
         self.fake_detector({"alpha": "1.1"})
 
         rows, _component = self.plan("alpha")
@@ -243,6 +344,7 @@ class BatchPlanTests(unittest.TestCase):
             "alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n",
             "beta": "pkgname=beta\nversion=1.0\nrevision=1\ndepends=\"alpha\"\n",
         })
+        self.configure_pack("alpha", "beta")
         self.fake_detector({"alpha": "1.1", "beta": "2.0"})
 
         rows, _component = self.plan("alpha")

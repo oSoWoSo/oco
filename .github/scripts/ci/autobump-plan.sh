@@ -2,8 +2,8 @@
 set -euo pipefail
 
 : "${XBPS_SRC:?XBPS_SRC is required for pack dependency resolution}"
-# Pack members are checked for upstream updates. Direct build-dependent
-# consumers of changed packages get revision bumps.
+# Pack members are checked for upstream updates; direct consumers are
+# revision-bumped only when the target belongs to a configured pack.
 plan="$RUNNER_TEMP/autobump-plan.tsv"
 args=(plan "$TEMPLATE" --output "$plan")
 if [[ ${FORCE:-false} == true ]]; then args+=(--force); fi
@@ -11,7 +11,7 @@ if [[ ${FORCE:-false} == true ]]; then args+=(--force); fi
 
 if [[ ! -s $plan ]]; then
 	echo "bumped=false" >>"$GITHUB_OUTPUT"
-	echo "No newer version found in the selected pack or dependency component of $TEMPLATE"
+	echo "No newer version found for the selected autobump target/pack: $TEMPLATE"
 	exit 0
 fi
 

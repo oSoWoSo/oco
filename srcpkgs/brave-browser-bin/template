@@ -130,7 +130,7 @@ do_install() {
 }
 
 brave-origin-bin_package() {
-	short_desc+=" Minimalist version (binary)"
+	short_desc+=" - minimalist version"
 	pkg_install() {
 		vmove opt/brave-origin
 		for size in 16 24 32 48 64 128 256; do
@@ -143,28 +143,28 @@ brave-origin-bin_package() {
 }
 
 brave-browser-bin-qt5_package() {
-	short_desc+=" - Qt5 integration shim"
+	short_desc+=" - Qt5 integration"
 	pkg_install() {
 		vmove opt/brave/libqt5_shim.so
 	}
 }
 
 brave-browser-bin-qt6_package() {
-	short_desc+=" - Qt6 integration shim"
+	short_desc+=" - Qt6 integration"
 	pkg_install() {
 		vmove opt/brave/libqt6_shim.so
 	}
 }
 
 brave-origin-bin-qt5_package() {
-	short_desc+=" - Qt5 integration shim"
+	short_desc+=" - minimalist version - Qt5 integration"
 	pkg_install() {
 		vmove opt/brave-origin/libqt5_shim.so
 	}
 }
 
 brave-origin-bin-qt6_package() {
-	short_desc+=" - Qt6 integration shim"
+	short_desc+=" - minimalist version - Qt6 integration"
 	pkg_install() {
 		vmove opt/brave-origin/libqt6_shim.so
 	}

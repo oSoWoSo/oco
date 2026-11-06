@@ -245,9 +245,9 @@ Create PR to Codeberg or GitHub
 | drako | 0.4.3 | [home](https://github.com/lucky7xz/drako) | zenobit |  | Grid-based, customizable TUI-Deck launcher |
 | dux-calendar | 2.1.1 | [home](https://github.com/duxlabs-dev/dux-calendar) | zenobit |  | Calendar app that brings your calendars together in one place |
 | dux-files | 2.1.1 | [home](https://github.com/duxlabs-dev/dux-files) | zenobit |  | File manager for the Dux Labs desktop |
-| dux-greeter | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-greeter) | zenobit |  | Greetd login screen with the Dux Shell aesthetic |
 | dux-shell | 2.1.0 | [home](https://github.com/duxlabs-dev/dux-shell) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
 | dux-gop | 2.1.1 | [home](https://github.com/duxlabs-dev/dux-gop) | zenobit |  | API and CLI for system and process monitoring from Dux Labs |
+| dux-greeter | 2.1.1 | [home](https://github.com/duxlabs-dev/dux-greeter) | zenobit |  | Greetd login screen with the Dux Shell aesthetic |
 | dux-qml-common | 2.1.1 | [home](https://github.com/duxlabs-dev/dux-qml-common) | zenobit |  | Common QML assets for Dux Shell and Dux Labs apps |
 | dux-search | 2.1.1 | [home](https://duxlabs.dev/docs/dsearch/) | AvengeMedia |  | Blazingly fast filesystem search tool (Dux Shell) |
 | easybashgui | 15.0.2 | [home](https://github.com/BashGui/easybashgui) | zenobit |  | Bash functions library that aims to give simple GUI functions |

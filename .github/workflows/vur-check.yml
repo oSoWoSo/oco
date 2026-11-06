@@ -1,10 +1,17 @@
 name: 🧪 VUR check
 run-name: >-
   ${{
+    github.event_name == 'pull_request' && format('🧪 VUR check PR #{0}', github.event.pull_request.number) ||
     inputs.template != '' && format('🧪 {0}', inputs.template) ||
     '🧪 VUR check'
   }}
 on:
+  # Every PR targeting OCO gets its changed templates tested on VUR using
+  # the official void-packages CI. Forks simply skip: secrets.BOT is empty
+  # in pull_request events from forks, so vur-check.sh exits early.
+  pull_request:
+    branches: [OCO]
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       template:
@@ -12,22 +19,38 @@ on:
         required: true
         type: string
 
+concurrency:
+  group: vur-check-${{ github.event.pull_request.number || github.ref_name }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
+  pull-requests: read
+  statuses: write
+  checks: write
 
 jobs:
-  push-to-vur:
-    name: Push OCO/${{ inputs.template }} to VUR
+  vur-check:
+    name: VUR check
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 360
     steps:
-      - name: Checkout OCO
+      - name: Checkout PR head
         uses: actions/checkout@v7
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+          fetch-depth: 0
 
-      - name: Copy template to VUR branch
+      - name: Notify PR CI in VUR
         env:
+          EVENT_NAME: ${{ github.event_name }}
           VUR_TOKEN: ${{ secrets.BOT }}
           TEMPLATE: ${{ inputs.template }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ github.token }}
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
         run: bash "${GITHUB_WORKSPACE}/.github/scripts/ci/vur-check.sh"

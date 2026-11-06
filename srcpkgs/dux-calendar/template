@@ -1,7 +1,7 @@
 # Template file for 'dux-calendar'
 pkgname=dux-calendar
-version=2.1.0
-revision=2
+version=2.1.1
+revision=1
 build_style=go
 build_helper=qemu
 build_wrksrc="core"
@@ -15,7 +15,7 @@ license="MIT"
 homepage="https://github.com/duxlabs-dev/dux-calendar"
 changelog="https://github.com/duxlabs-dev/dux-calendar/releases"
 distfiles="https://github.com/duxlabs-dev/dux-calendar/archive/refs/tags/v${version}.tar.gz"
-checksum=3dc36a1fdeb5420eef327e95f142d0b97038d445525e65bf01a75658eb507f18
+checksum=999b4cf5b582b045dd3445c8a40b76b932b82ecae55b871c8e633dea92d6357c
 replaces="dankcalendar>=0"
 
 post_install() {

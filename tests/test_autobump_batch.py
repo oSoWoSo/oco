@@ -400,6 +400,44 @@ class HelperTests(unittest.TestCase):
             self.assertTrue(result.stdout.strip().endswith("desktop 1.1"))
             self.assertIn("version=1.1", template.read_text(encoding="utf-8"))
 
+    def test_build_order_matches_xbps_bulk_sortdeps(self):
+        """The planner's order must equal xbps-src's sort-dependencies.
+
+        Regression for the autobump of the Hyprland family (PR #814): the
+        old post-order DFS did not reproduce the order xbps-src resolves
+        (`tsort` of the pkg->dep relations, reversed with `tac`), so the
+        body's planned order disagreed with the CI build order.  The
+        expected list is the build sequence of the real run
+        (github.com/oSoWoSo/oco/actions/runs/42100385344).
+        """
+        graph = {
+            "hyprutils": set(),
+            "aquamarine": {"hyprutils"},
+            "hyprgraphics": {"hyprutils"},
+            "hyprtoolkit": {"aquamarine", "hyprgraphics", "hyprutils"},
+            "hyprland": {"aquamarine", "hyprgraphics", "hyprutils"},
+            "xdg-desktop-portal-hyprland": {
+                "aquamarine", "hyprgraphics", "hyprtoolkit", "hyprutils"},
+            "hyprsysteminfo": {"aquamarine", "hyprtoolkit", "hyprutils"},
+            "hyprpolkitagent": {
+                "aquamarine", "hyprgraphics", "hyprtoolkit", "hyprutils"},
+            "hyprpicker": {"hyprutils"},
+            "hyprpaper": {
+                "aquamarine", "hyprgraphics", "hyprtoolkit", "hyprutils"},
+            "hyprlock": {"hyprgraphics", "hyprutils"},
+            "hyprland-guiutils": {
+                "aquamarine", "hyprgraphics", "hyprtoolkit", "hyprutils"},
+            "hyprdynamicmonitors": {"hyprland"},
+        }
+        expected = [
+            "hyprutils", "aquamarine", "hyprgraphics", "hyprtoolkit",
+            "hyprland", "xdg-desktop-portal-hyprland", "hyprsysteminfo",
+            "hyprpolkitagent", "hyprpicker", "hyprpaper", "hyprlock",
+            "hyprland-guiutils", "hyprdynamicmonitors",
+        ]
+        order = batch.build_order(graph, set(graph))
+        self.assertEqual(order, expected)
+
 
 if __name__ == "__main__":
     sys.exit(unittest.main())

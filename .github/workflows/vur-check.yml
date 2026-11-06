@@ -1,0 +1,33 @@
+name: 🧪 VUR check
+run-name: >-
+  ${{
+    inputs.template != '' && format('🧪 {0}', inputs.template) ||
+    '🧪 VUR check'
+  }}
+on:
+  workflow_dispatch:
+    inputs:
+      template:
+        description: 'Template to test (srcpkgs/<template>)'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  push-to-vur:
+    name: Push OCO/${{ inputs.template }} to VUR
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout OCO
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Copy template to VUR branch
+        env:
+          VUR_TOKEN: ${{ secrets.BOT }}
+          TEMPLATE: ${{ inputs.template }}
+        run: bash "${GITHUB_WORKSPACE}/.github/scripts/ci/vur-check.sh"

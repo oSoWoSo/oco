@@ -26,7 +26,7 @@ def post_status(token: str, sha: str, state: str, description: str, target_url: 
 
     payload = {
         "state": state,
-        "context": "ci/github",
+        "context": os.environ.get("STATUS_CONTEXT", "ci/github")[:64],
         "description": description[:140],
         "target_url": target_url,
     }

@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
-# Push OCO template(s) to oSoWoSo/VUR so VUR's check-anywhere workflow
-# (the official void-packages checks) runs against them, then report the
-# run results back as commit statuses on the OCO PR (GitHub + Codeberg).
+# Push OCO template(s) to oSoWoSo/VUR so VUR's official build.yaml (the
+# void-packages checks) runs against them, then report the run results back
+# as commit statuses on the OCO PR (GitHub + Codeberg).
 #
 # Two modes:
 #   - workflow_dispatch: tests the single TEMPLATE input.
 #   - pull_request: tests every srcpkgs/* template changed between the PR
 #     base and head (diff PR_BASE_SHA..PR_HEAD_SHA).
 #
-# Every push to OCO/<template> in VUR triggers check-anywhere (it runs on
-# any push touching srcpkgs/**); we wait for that run and post its outcome
-# as ci/vur/<template> on the PR head SHA on both forges.
+# Every push to ci-<template> in VUR triggers the official build.yaml
+# (it runs on push to ci-** branches touching srcpkgs/**); we wait for that
+# run and post its outcome as ci/vur/<template> on the PR head SHA on both
+# forges.
 #
 # Required env: VUR_TOKEN. Plus, for PR events: PR_BASE_SHA, PR_HEAD_SHA,
 # HEAD_SHA, GITHUB_TOKEN, CODEBERG_TOKEN, PR_NUMBER.
@@ -92,12 +93,12 @@ report() {
         fi
 }
 
-# --- Push each template and wait for VUR's check-anywhere -----------------
+# --- Push each template and wait for VUR's official build -----------------
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
 
-git clone --quiet --depth 1 --branch VUR \
+git clone --quiet --depth 1 --branch master \
         "$VUR_GIT_URL" \
         "$WORK/vur"
 cd "$WORK/vur"
@@ -117,8 +118,11 @@ push_template() {
         pkgname="$(sed -n 's/^pkgname=//p' "$src/template" | head -n1 | tr -d '"' | tr -d ' ')"
         pkgname="${pkgname:-$template}"
 
-        # Rebase the test branch on the latest VUR (synced from void master).
-        git checkout --quiet -B "ci-${template}" origin/VUR 2>/dev/null
+        # Branch the test branch off origin/master: VUR's master tracks
+        # void-packages master (hourly sync), so the ci-<template> branch
+        # carries only this template change on a clean upstream base and can
+        # be used directly as a void-packages contribution.
+        git checkout --quiet -B "ci-${template}" origin/master
 
         # Overlay the OCO template directory.
         rm -rf "srcpkgs/${template}"
@@ -169,7 +173,7 @@ push_template() {
         # tell our fresh run apart from a stale completed one (the API can
         # briefly lag behind the push).
         before_run_id[$template]="$(curl -fsS -H "Authorization: Bearer ${VUR_TOKEN}" \
-                "${API_ROOT}/actions/workflows/check-anywhere.yml/runs?branch=OCO%2F${template}&per_page=1" \
+                "${API_ROOT}/actions/workflows/build.yaml/runs?branch=ci-${template}&per_page=1" \
                 2>/dev/null | jq -r '.workflow_runs[0].id // 0')"
         git push --quiet --force origin "HEAD:ci-${template}"
         echo "::notice::pushed https://github.com/${VUR_REPO}/tree/ci-${template}"
@@ -184,26 +188,26 @@ if [ "$EVENT_NAME" != "pull_request" ] || [ "${#pushed_branches[@]}" -eq 0 ]; th
         exit 0
 fi
 
-# --- Wait for check-anywhere runs on the pushed branches ------------------
+# --- Wait for build.yaml runs on the pushed branches ----------------------
 
-# The check-anywhere run triggered by our push is the newest one whose id is
+# The build.yaml run triggered by our push is the newest one whose id is
 # greater than the run that existed on the branch before the push (the API
 # can briefly lag behind the push). It begins as 'queued' and moves to
 # 'completed'. Poll up to 30 minutes.
 update_run_result() {
         local template="$1" min_id="$2"
         curl -fsS -H "Authorization: Bearer ${VUR_TOKEN}" \
-                "${API_ROOT}/actions/workflows/check-anywhere.yml/runs?branch=OCO%2F${template}&per_page=3" \
+                "${API_ROOT}/actions/workflows/build.yaml/runs?branch=ci-${template}&per_page=3" \
                 2>/dev/null | jq -r --argjson min "$min_id" \
                 '[.workflow_runs[] | select(.id > $min)] | .[0] | [.status, (.conclusion // ""), .id, .html_url] | @tsv' |
                 head -n1
 }
 
 for template in "${pushed_branches[@]}"; do
-        echo "::group::Waiting for VUR check-anywhere: ${template}"
+        echo "::group::Waiting for VUR build: ${template}"
         report "$HEAD_SHA" pending "ci/vur/${template}" \
-                "VUR check-anywhere queued" \
-                "https://github.com/${VUR_REPO}/actions/workflows/check-anywhere.yml"
+                "VUR build queued" \
+                "https://github.com/${VUR_REPO}/actions/workflows/build.yaml"
         result=""
         min_id="${before_run_id[$template]:-0}"
         for _ in $(seq 1 180); do
@@ -213,19 +217,19 @@ for template in "${pushed_branches[@]}"; do
                         if [ "$conclusion" = "success" ]; then
                                 result="success"
                                 report "$HEAD_SHA" success "ci/vur/${template}" \
-                                        "VUR check-anywhere passed" "$html_url"
+                                        "VUR build passed" "$html_url"
                         else
                                 result="failure"
                                 report "$HEAD_SHA" failure "ci/vur/${template}" \
-                                        "VUR check-anywhere ${conclusion:-failed}" "$html_url"
+                                        "VUR build ${conclusion:-failed}" "$html_url"
                         fi
                         break
                 fi
         done
         if [ -z "$result" ]; then
                 report "$HEAD_SHA" error "ci/vur/${template}" \
-                        "VUR check-anywhere timed out after 30m" \
-                        "https://github.com/${VUR_REPO}/actions/workflows/check-anywhere.yml"
+                        "VUR build timed out after 30m" \
+                        "https://github.com/${VUR_REPO}/actions/workflows/build.yaml"
         fi
         echo "::endgroup::"
 done

@@ -55,7 +55,7 @@ ARCHES='x86_64 x86_64-musl aarch64 aarch64-musl'
 # --- Init / clone (env-overridable) ---
 VOID_URL='https://github.com/void-linux/void-packages'
 OCO_URL='https://codeberg.org/oSoWoSo/oco'
-CLONE_DEST="${CLONE_DEST:-$HOME/void}"
+CLONE_DEST="${CLONE_DEST:-${XBPS_DISTDIR:-$HOME/void}}"
 CLONE_TEMP="${CLONE_TEMP:-/tmp}"
 CLONE_DEPTH="${CLONE_DEPTH:-}"
 OCO_BRANCH="${OCO_BRANCH:-OCO}"
@@ -378,7 +378,7 @@ usage() {
 	Compound: $prog -uw   (update + build)
 
 	Environment variables for -i and -l:
-	  CLONE_DEST    destination directory  (default: ~/void)
+	  CLONE_DEST    destination directory  (default: $XBPS_DISTDIR or ~/void)
 	  CLONE_TEMP    temp directory         (default: /tmp)
 	  CLONE_DEPTH   git clone depth        (default: full)
 	  OCO_BRANCH    local and remote branch name for OCO  (default: OCO)
@@ -1669,10 +1669,20 @@ _pkg_version() {
 do_to_void() {
 	[ $# -gt 0 ] || fatal 'Usage: ocoman to-void <package...>'
 	for _pkg in "$@"; do
-		git -C "$CLONE_DEST" checkout "$OCO_BRANCH" -- "srcpkgs/${_pkg}/" \
-			|| { _g "  skipping ${_pkg} (not found in ${OCO_BRANCH})"; continue; }
-		_ver=$(_pkg_version "$_pkg")
-		git -C "$CLONE_DEST" commit -m "New package: ${_pkg}-${_ver}"
+		_src="${SCRIPT_DIR}/${SRCPKGS}/${_pkg}"
+		_dst="${CLONE_DEST}/${SRCPKGS}/${_pkg}"
+		if [ ! -d "$_src" ]; then
+			_g "  skipping ${_pkg} (not found in ${_src})"
+			continue
+		fi
+		# Sync the package directory verbatim (including symlinks) into the
+		# target void tree, regardless of git state.
+		rm -rf "$_dst"
+		mkdir -p "$(dirname "$_dst")"
+		cp -a "$_src" "$_dst" \
+			|| { _g "  skipping ${_pkg} (copy failed)"; continue; }
+		_g "  synced ${_pkg} -> ${_dst}"
+		# Do not create commits; only sync files.
 	done
 }
 

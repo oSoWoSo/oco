@@ -1151,6 +1151,88 @@ do_upload() {
 				;;
 		esac
 
+		# Sanity check + auto-repair
+		if [ -f "${ARCH}-repodata" ]; then
+			_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+			_remote_count=$(printf '%s\n' "$_remote_list" | grep -c '\.xbps$' || true)
+			echo "  remote repodata advertises ${_rd_count} packages; remote dir lists ${_remote_count} files"
+			_depleted=0
+			if [ "${_remote_count}" -gt 0 ] && [ "$_rd_count" -lt $(( _remote_count / 2 )) ]; then
+				_depleted=1
+			fi
+			if [ "${_remote_count}" -gt 0 ] && [ ! -s "${ARCH}-repodata" ]; then
+				_depleted=1
+			fi
+			if [ "$_depleted" -eq 1 ]; then
+				echo "  ==> Index appears depleted; repairing by re-downloading all ${_remote_count} remote packages"
+				_repair_failed=0
+				printf '%s\n' "$_remote_list" | while IFS= read -r _rp; do
+					[ -n "$_rp" ] || continue
+					_rp_path=$(surf_api_path "${_arch_dir}/${_rp}") || continue
+					surf_cli get "$_rp_path" > "${_rp}" 2>/dev/null || true
+					surf_cli get "${_rp_path}.sig2" > "${_rp}.sig2" 2>/dev/null || true
+				done
+				rm -f "${ARCH}-repodata"
+				if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+					xbps-rindex -a ./*."${ARCH}".xbps 2>/dev/null || _repair_failed=1
+				fi
+				if [ "$_repair_failed" -ne 0 ]; then
+					fatal "==> index repair failed"
+				fi
+				_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+				echo "  repaired repodata advertises ${_rd_count} packages"
+			fi
+		fi
+
+		# Guard: srcpkgs must not be empty
+		_srcpkgs_count=$(find "${SCRIPT_DIR}/${SRCPKGS}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+		if [ "${_srcpkgs_count}" -eq 0 ]; then
+			fatal "==> refusing to publish: srcpkgs directory is empty or missing"
+		fi
+
+		# Sanity check: the downloaded index should advertise roughly as many
+		# packages as the remote directory lists. A large gap means the index
+		# is stale or truncated and publishing now would shrink the repo.
+		if [ -f "${ARCH}-repodata" ]; then
+			_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+			_remote_count=$(printf '%s\n' "$_remote_list" | grep -c '\.xbps$' || true)
+			echo "  remote repodata advertises ${_rd_count} packages; remote dir lists ${_remote_count} files"
+			_depleted=0
+			if [ "${_remote_count}" -gt 0 ] && [ "$_rd_count" -lt $(( _remote_count / 2 )) ]; then
+				_depleted=1
+			fi
+			if [ "${_remote_count}" -gt 0 ] && [ ! -s "${ARCH}-repodata" ]; then
+				_depleted=1
+			fi
+			if [ "$_depleted" -eq 1 ]; then
+				echo "  ==> Index appears depleted; repairing by re-downloading all ${_remote_count} remote packages"
+				_repair_failed=0
+				printf '%s\n' "$_remote_list" | while IFS= read -r _rp; do
+					[ -n "$_rp" ] || continue
+					_rp_path=$(surf_api_path "${_arch_dir}/${_rp}") || continue
+					if ! surf_cli get "$_rp_path" > "${_rp}" 2>/dev/null; then
+						echo "  failed to download ${_rp}" >&2
+					fi
+					if [ ! -s "${_rp}" ]; then
+						echo "  empty download for ${_rp}" >&2
+					fi
+					# signature
+					surf_cli get "${_rp_path}.sig2" > "${_rp}.sig2" 2>/dev/null || true
+				done
+				# Rebuild repodata from scratch using downloaded files
+				rm -f "${ARCH}-repodata"
+				if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+					xbps-rindex -a ./*."${ARCH}".xbps 2>/dev/null || _repair_failed=1
+				fi
+				if [ "$_repair_failed" -ne 0 ]; then
+					fatal "==> index repair failed"
+				fi
+				echo "  ==> repair complete"
+				_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+				echo "  repaired repodata advertises ${_rd_count} packages"
+			fi
+		fi
+
 		# xbps-src drops every architecture into one binpkgs/, so an
 		# unqualified glob would republish other arches' .xbps into our
 		# ${ARCH} directory. Filter on the filename's architecture suffix.
@@ -1161,6 +1243,10 @@ do_upload() {
 			echo '==> No new packages to upload'
 		fi
 
+		_srcpkgs_count=$(find "${SCRIPT_DIR}/${SRCPKGS}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+		if [ "${_srcpkgs_count}" -eq 0 ]; then
+			fatal "==> refusing to publish: srcpkgs directory is empty or missing; cannot safely prune orphans"
+		fi
 		prune_orphans "$_remote_list" "${PWD}/orphans.txt"
 		if [ -n "$SURF_PURGE_PACKAGES" ]; then
 			# Caller (cleanup workflow) explicitly named packages to strip,
@@ -1239,9 +1325,28 @@ do_upload() {
 		for _file in ./*-repodata; do
 			[ -f "$_file" ] || continue
 			_fname=$(basename "$_file")
+			# Surfer's `put` skips a fixed-name file when the remote copy looks
+			# newer/equal (mtime/size). Force a fresh mtime so the client always
+			# uploads and overwrites the remote index (rewrite, not delete).
+			touch -- "$_file"
 			upload_file "$_file" "${_arch_dir}" \
 				|| fatal "==> Error: failed to upload ${_fname}"
 		done
+
+		# Verify the published index actually landed and did not shrink the repo.
+		_verify_tmp=$(mktemp)
+		if fetch_repodata "${_arch_dir}/${ARCH}-repodata" "$_verify_tmp" >/dev/null 2>&1; then
+			_new_rd_count=$(python3 "${REPODATA_LIST_PY}" "$_verify_tmp" 2>/dev/null | wc -l)
+			echo "  published repodata advertises ${_new_rd_count} packages"
+			if [ "${_rd_count:-0}" -gt 0 ] && [ "$_new_rd_count" -lt "${_rd_count}" ]; then
+				rm -f "$_verify_tmp"
+				fatal "==> published index shrank (${_rd_count} -> ${_new_rd_count}); refusing to continue"
+			fi
+		else
+			rm -f "$_verify_tmp"
+			fatal "==> could not re-fetch published repodata for verification"
+		fi
+		rm -f "$_verify_tmp"
 
 		# Garbage-collect old versions only after every replacement package and
 		# the updated index have been successfully published.
@@ -1275,6 +1380,8 @@ do_upload() {
 	[ "$_upload_status" -eq 0 ] || return "$_upload_status"
 	echo "==> Done: ${SURFER_URL}/${ARCH}/"
 }
+
+
 
 # --- Check upstream ---
 

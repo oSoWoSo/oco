@@ -101,6 +101,28 @@ def push_source_branch(
             env=environment,
         )
 
+TEMPLATE_LINK_RE = re.compile(
+    r"https://(?:github\.com|codeberg\.org)/oSoWoSo/oco/"
+    r"(?:blob|src/branch)/(.+?)/srcpkgs/([^/\s)]+)/template"
+)
+
+
+def rewrite_template_links(body: str, target_forge: str, target_branch: str) -> str:
+    """Point template links in a PR body at the target PR branch."""
+    def replacement(match):
+        package = match.group(2)
+        if target_forge == "github":
+            return (
+                f"https://github.com/{REPOSITORY}/blob/"
+                f"{target_branch}/srcpkgs/{package}/template"
+            )
+        return (
+            f"https://codeberg.org/{REPOSITORY}/src/branch/"
+            f"{target_branch}/srcpkgs/{package}/template"
+        )
+
+    return TEMPLATE_LINK_RE.sub(replacement, body)
+
 
 def mirror_pr(event: dict, source_forge: str, api, push_branch):
     """Create or update the matching PR; API and git effects are injected for tests."""
@@ -119,6 +141,7 @@ def mirror_pr(event: dict, source_forge: str, api, push_branch):
     target_branch = f"mirror/{source_forge}/pr-{source_number}"
     source_url = pr["html_url"]
     body = (pr.get("body") or "").rstrip()
+    body = rewrite_template_links(body, target_forge, target_branch)
     target_body = f"{body}\n\n---\nMirrored from {source_url}" if body else f"Mirrored from {source_url}"
     title = pr["title"]
 

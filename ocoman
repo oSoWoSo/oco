@@ -1116,44 +1116,7 @@ target_serve() {
 
 # --- Upload ---
 
-webdav_mount() {
-	_wdm_point="$1"
-	mkdir -p "$_wdm_point"
-	if [ -z "${SURFER_USER:-}" ] || [ -z "${SURFER_TOKEN:-}" ]; then
-		return 1
-	fi
-	_wdm_secrets="/tmp/davfs-secrets-$$"
-	printf 'https://repo.osowoso.org/_webdav/ %s %s\n' "$SURFER_USER" "$SURFER_TOKEN" > "$_wdm_secrets"
-	chmod 600 "$_wdm_secrets"
-	# Disable cache for consistency; no locks (single writer)
-	if mount -t davfs -o "conf=/dev/null,secrets=$_wdm_secrets,use_locks=0,cache_size=0,delay_upload=0" 		https://repo.osowoso.org/_webdav/ "$_wdm_point" 2>/dev/null; then
-		rm -f "$_wdm_secrets"
-		return 0
-	fi
-	rm -f "$_wdm_secrets"
-	return 1
-}
-
-webdav_umount() {
-	umount "$1" 2>/dev/null || true
-}
-
 do_upload() {
-	# Try WebDAV mount for direct filesystem access (most robust).
-	# Falls back to Surfer API if mount fails or credentials unavailable.
-	_wd_mount="/tmp/ocoman-webdav-${ARCH}"
-	if webdav_mount "$_wd_mount" 2>/dev/null; then
-		echo "==> WebDAV mount succeeded; using direct filesystem mode"
-		do_upload_webdav "$_wd_mount"
-		_wd_rc=$?
-		webdav_umount "$_wd_mount"
-		return "$_wd_rc"
-	fi
-	echo "==> WebDAV mount unavailable; using Surfer API mode"
-	do_upload_surfer
-}
-
-do_upload_surfer() {
 	[ -n "$ARCH" ]         || fatal 'ARCH is required'
 	# xbps-rindex selects repodata from XBPS_ARCH, which differs from the
 	# runner's native architecture for cross-arch cleanup jobs.
@@ -1187,6 +1150,45 @@ do_upload_surfer() {
 				fatal "==> Error: repodata fetch failed (deadline ${SURF_DEADLINE}s exhausted)"
 				;;
 		esac
+
+		# Sanity check + auto-repair
+		if [ -f "${ARCH}-repodata" ]; then
+			_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+			_remote_count=$(printf '%s\n' "$_remote_list" | grep -c '\.xbps$' || true)
+			echo "  remote repodata advertises ${_rd_count} packages; remote dir lists ${_remote_count} files"
+			_depleted=0
+			if [ "${_remote_count}" -gt 0 ] && [ "$_rd_count" -lt $(( _remote_count / 2 )) ]; then
+				_depleted=1
+			fi
+			if [ "${_remote_count}" -gt 0 ] && [ ! -s "${ARCH}-repodata" ]; then
+				_depleted=1
+			fi
+			if [ "$_depleted" -eq 1 ]; then
+				echo "  ==> Index appears depleted; repairing by re-downloading all ${_remote_count} remote packages"
+				_repair_failed=0
+				printf '%s\n' "$_remote_list" | while IFS= read -r _rp; do
+					[ -n "$_rp" ] || continue
+					_rp_path=$(surf_api_path "${_arch_dir}/${_rp}") || continue
+					surf_cli get "$_rp_path" > "${_rp}" 2>/dev/null || true
+					surf_cli get "${_rp_path}.sig2" > "${_rp}.sig2" 2>/dev/null || true
+				done
+				rm -f "${ARCH}-repodata"
+				if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+					xbps-rindex -a ./*."${ARCH}".xbps 2>/dev/null || _repair_failed=1
+				fi
+				if [ "$_repair_failed" -ne 0 ]; then
+					fatal "==> index repair failed"
+				fi
+				_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+				echo "  repaired repodata advertises ${_rd_count} packages"
+			fi
+		fi
+
+		# Guard: srcpkgs must not be empty
+		_srcpkgs_count=$(find "${SCRIPT_DIR}/${SRCPKGS}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+		if [ "${_srcpkgs_count}" -eq 0 ]; then
+			fatal "==> refusing to publish: srcpkgs directory is empty or missing"
+		fi
 
 		# Sanity check: the downloaded index should advertise roughly as many
 		# packages as the remote directory lists. A large gap means the index
@@ -1378,6 +1380,8 @@ do_upload_surfer() {
 	[ "$_upload_status" -eq 0 ] || return "$_upload_status"
 	echo "==> Done: ${SURFER_URL}/${ARCH}/"
 }
+
+
 
 # --- Check upstream ---
 

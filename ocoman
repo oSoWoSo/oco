@@ -1240,22 +1240,12 @@ do_upload() {
 			[ -f "$_file" ] || continue
 			_fname=$(basename "$_file")
 			# Surfer's `put` skips a fixed-name file when the remote copy looks
-			# newer/equal (mtime/size), which leaves stale repodata advertised.
-			# Delete first (best effort), then POST directly so the server always
-			# overwrites regardless of mtime/size comparison.
+			# newer/equal (mtime/size). Delete first (best effort) and force a
+			# fresh mtime so the client always uploads.
 			delete_remote "${_arch_dir}/${_fname}"
-			_uf_path=$(surf_api_path "${_arch_dir}/${_fname}") || \
-				fatal "==> Error: invalid API path for ${_fname}"
-			echo "  Uploading: ${_fname}"
-			_http_code=$(curl -sS --retry 5 --retry-delay 3 --retry-all-errors \
-				-o /dev/null -w '%{http_code}' \
-				-X POST "${SURFER_URL}/api/files${_uf_path}?access_token=${SURFER_TOKEN}" \
-				-F "file=@${_file}") || _http_code=000
-			case "$_http_code" in
-				201) ;;
-				*) echo "::error::Failed to upload ${_fname} (HTTP ${_http_code})" >&2
-					fatal "==> Error: failed to upload ${_fname}" ;;
-			esac
+			touch -- "$_file"
+			upload_file "$_file" "${_arch_dir}" \
+				|| fatal "==> Error: failed to upload ${_fname}"
 		done
 
 		# Garbage-collect old versions only after every replacement package and

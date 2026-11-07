@@ -508,6 +508,21 @@ it 'a failed repodata-strip aborts the upload instead of republishing a stale in
 assert_eq "$(printf '%s' "$_DOUPLOAD" | grep -c 'fatal "==> repodata-strip failed')" '1'
 assert_eq "$(printf '%s' "$_DOUPLOAD" | grep -c "|| echo '  Warning: repodata-strip failed")" '0'
 
+it 'the pre-strip index snapshot is captured before orphans are stripped'
+# Regression: the publish shrink guard budgets deliberate index removals via
+# pruned_present (orphans that WERE in the remote index). The snapshot it is
+# matched against used to be taken AFTER the strip, so a real removal read as
+# pruned_present=0 and the published index tripped a false shrink error
+# ("published index below expected (272 expected, got 271)") on aarch64-musl.
+_snap_line=$(printf '%s\n' "$_DOUPLOAD" | grep -n '_pre_index_list=\$(mktemp)' | head -n1 | cut -d: -f1)
+_strip_line=$(printf '%s\n' "$_DOUPLOAD" | grep -n 'REPODATA_STRIP_PY' | head -n1 | cut -d: -f1)
+if [ -n "$_snap_line" ] && [ -n "$_strip_line" ] && [ "$_snap_line" -lt "$_strip_line" ]; then
+        assert_eq 'ok' 'ok'
+else
+        assert_eq "snapshot at ${_snap_line}, strip at ${_strip_line}" 'ok'
+fi
+assert_eq "$(printf '%s\n' "$_DOUPLOAD" | grep -c '_pre_index_list=\$(mktemp)')" '1'
+
 echo '== init destination safety =='
 eval "$(awk '
 	/^init_destination_guard\(\)/ {p=1}

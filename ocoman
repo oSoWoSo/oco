@@ -1258,6 +1258,17 @@ do_upload() {
 			done
 			sort -u -o "${PWD}/orphans.txt" "${PWD}/orphans.txt" 2>/dev/null || true
 		fi
+
+		# Snapshot the remote index BEFORE stripping orphans. The strip block below
+		# deletes the orphan entries from the local repodata, so a snapshot taken
+		# after it would no longer contain them: the guard's "deliberately removed"
+		# budget would undercount (pruned_present = 0 for a real removal) and every
+		# rename/removal would trip a false shrink error after a successful publish.
+		if [ -f "${ARCH}-repodata" ]; then
+			_pre_index_list=$(mktemp)
+			python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null \
+				| sort -u > "$_pre_index_list" || true
+		fi
 		# NOTE: the orphan .xbps files are deleted only AFTER the new index
 		# is live (see "Deleting purged package files" below). Deleting first
 		# leaves the published index advertising downloads that 404 whenever
@@ -1290,15 +1301,6 @@ do_upload() {
 			if [ "$_still_missing" -ne 0 ]; then
 				fatal "==> orphan entries still present after strip; refusing to upload ${ARCH}-repodata"
 			fi
-		fi
-
-		# Remember which remote index entries we deliberately remove and which
-		# new packages we add, so the post-publish shrink guard can tell an
-		# intentional rename/removal apart from a stale or truncated index.
-		if [ -f "${ARCH}-repodata" ]; then
-			_pre_index_list=$(mktemp)
-			python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null \
-				| sort -u > "$_pre_index_list" || true
 		fi
 		_pruned_present=0
 		if [ -s "${PWD}/orphans.txt" ] && [ -f "$_pre_index_list" ]; then

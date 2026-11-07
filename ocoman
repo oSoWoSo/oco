@@ -1116,44 +1116,7 @@ target_serve() {
 
 # --- Upload ---
 
-webdav_mount() {
-	_wdm_point="$1"
-	mkdir -p "$_wdm_point"
-	if [ -z "${SURFER_USER:-}" ] || [ -z "${SURFER_TOKEN:-}" ]; then
-		return 1
-	fi
-	_wdm_secrets="/tmp/davfs-secrets-$$"
-	printf 'https://repo.osowoso.org/_webdav/ %s %s\n' "$SURFER_USER" "$SURFER_TOKEN" > "$_wdm_secrets"
-	chmod 600 "$_wdm_secrets"
-	# Disable cache for consistency; no locks (single writer)
-	if mount -t davfs -o "conf=/dev/null,secrets=$_wdm_secrets,use_locks=0,cache_size=0,delay_upload=0" 		https://repo.osowoso.org/_webdav/ "$_wdm_point" 2>/dev/null; then
-		rm -f "$_wdm_secrets"
-		return 0
-	fi
-	rm -f "$_wdm_secrets"
-	return 1
-}
-
-webdav_umount() {
-	umount "$1" 2>/dev/null || true
-}
-
 do_upload() {
-	# Try WebDAV mount for direct filesystem access (most robust).
-	# Falls back to Surfer API if mount fails or credentials unavailable.
-	_wd_mount="/tmp/ocoman-webdav-${ARCH}"
-	if webdav_mount "$_wd_mount" 2>/dev/null; then
-		echo "==> WebDAV mount succeeded; using direct filesystem mode"
-		do_upload_webdav "$_wd_mount"
-		_wd_rc=$?
-		webdav_umount "$_wd_mount"
-		return "$_wd_rc"
-	fi
-	echo "==> WebDAV mount unavailable; using Surfer API mode"
-	do_upload_surfer
-}
-
-do_upload_surfer() {
 	[ -n "$ARCH" ]         || fatal 'ARCH is required'
 	# xbps-rindex selects repodata from XBPS_ARCH, which differs from the
 	# runner's native architecture for cross-arch cleanup jobs.
@@ -1417,6 +1380,8 @@ do_upload_surfer() {
 	[ "$_upload_status" -eq 0 ] || return "$_upload_status"
 	echo "==> Done: ${SURFER_URL}/${ARCH}/"
 }
+
+
 
 # --- Check upstream ---
 

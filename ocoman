@@ -1116,7 +1116,44 @@ target_serve() {
 
 # --- Upload ---
 
+webdav_mount() {
+	_wdm_point="$1"
+	mkdir -p "$_wdm_point"
+	if [ -z "${SURFER_USER:-}" ] || [ -z "${SURFER_TOKEN:-}" ]; then
+		return 1
+	fi
+	_wdm_secrets="/tmp/davfs-secrets-$$"
+	printf 'https://repo.osowoso.org/_webdav/ %s %s\n' "$SURFER_USER" "$SURFER_TOKEN" > "$_wdm_secrets"
+	chmod 600 "$_wdm_secrets"
+	# Disable cache for consistency; no locks (single writer)
+	if mount -t davfs -o "conf=/dev/null,secrets=$_wdm_secrets,use_locks=0,cache_size=0,delay_upload=0" 		https://repo.osowoso.org/_webdav/ "$_wdm_point" 2>/dev/null; then
+		rm -f "$_wdm_secrets"
+		return 0
+	fi
+	rm -f "$_wdm_secrets"
+	return 1
+}
+
+webdav_umount() {
+	umount "$1" 2>/dev/null || true
+}
+
 do_upload() {
+	# Try WebDAV mount for direct filesystem access (most robust).
+	# Falls back to Surfer API if mount fails or credentials unavailable.
+	_wd_mount="/tmp/ocoman-webdav-${ARCH}"
+	if webdav_mount "$_wd_mount" 2>/dev/null; then
+		echo "==> WebDAV mount succeeded; using direct filesystem mode"
+		do_upload_webdav "$_wd_mount"
+		_wd_rc=$?
+		webdav_umount "$_wd_mount"
+		return "$_wd_rc"
+	fi
+	echo "==> WebDAV mount unavailable; using Surfer API mode"
+	do_upload_surfer
+}
+
+do_upload_surfer() {
 	[ -n "$ARCH" ]         || fatal 'ARCH is required'
 	# xbps-rindex selects repodata from XBPS_ARCH, which differs from the
 	# runner's native architecture for cross-arch cleanup jobs.
@@ -1151,6 +1188,49 @@ do_upload() {
 				;;
 		esac
 
+		# Sanity check: the downloaded index should advertise roughly as many
+		# packages as the remote directory lists. A large gap means the index
+		# is stale or truncated and publishing now would shrink the repo.
+		if [ -f "${ARCH}-repodata" ]; then
+			_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+			_remote_count=$(printf '%s\n' "$_remote_list" | grep -c '\.xbps$' || true)
+			echo "  remote repodata advertises ${_rd_count} packages; remote dir lists ${_remote_count} files"
+			_depleted=0
+			if [ "${_remote_count}" -gt 0 ] && [ "$_rd_count" -lt $(( _remote_count / 2 )) ]; then
+				_depleted=1
+			fi
+			if [ "${_remote_count}" -gt 0 ] && [ ! -s "${ARCH}-repodata" ]; then
+				_depleted=1
+			fi
+			if [ "$_depleted" -eq 1 ]; then
+				echo "  ==> Index appears depleted; repairing by re-downloading all ${_remote_count} remote packages"
+				_repair_failed=0
+				printf '%s\n' "$_remote_list" | while IFS= read -r _rp; do
+					[ -n "$_rp" ] || continue
+					_rp_path=$(surf_api_path "${_arch_dir}/${_rp}") || continue
+					if ! surf_cli get "$_rp_path" > "${_rp}" 2>/dev/null; then
+						echo "  failed to download ${_rp}" >&2
+					fi
+					if [ ! -s "${_rp}" ]; then
+						echo "  empty download for ${_rp}" >&2
+					fi
+					# signature
+					surf_cli get "${_rp_path}.sig2" > "${_rp}.sig2" 2>/dev/null || true
+				done
+				# Rebuild repodata from scratch using downloaded files
+				rm -f "${ARCH}-repodata"
+				if ls ./*.xbps >/dev/null 2>&1; then
+					xbps-rindex -a ./*.xbps 2>/dev/null || _repair_failed=1
+				fi
+				if [ "$_repair_failed" -ne 0 ]; then
+					fatal "==> index repair failed"
+				fi
+				echo "  ==> repair complete"
+				_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+				echo "  repaired repodata advertises ${_rd_count} packages"
+			fi
+		fi
+
 		# xbps-src drops every architecture into one binpkgs/, so an
 		# unqualified glob would republish other arches' .xbps into our
 		# ${ARCH} directory. Filter on the filename's architecture suffix.
@@ -1161,6 +1241,10 @@ do_upload() {
 			echo '==> No new packages to upload'
 		fi
 
+		_srcpkgs_count=$(find "${SCRIPT_DIR}/${SRCPKGS}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+		if [ "${_srcpkgs_count}" -eq 0 ]; then
+			fatal "==> refusing to publish: srcpkgs directory is empty or missing; cannot safely prune orphans"
+		fi
 		prune_orphans "$_remote_list" "${PWD}/orphans.txt"
 		if [ -n "$SURF_PURGE_PACKAGES" ]; then
 			# Caller (cleanup workflow) explicitly named packages to strip,
@@ -1247,6 +1331,21 @@ do_upload() {
 				|| fatal "==> Error: failed to upload ${_fname}"
 		done
 
+		# Verify the published index actually landed and did not shrink the repo.
+		_verify_tmp=$(mktemp)
+		if fetch_repodata "${_arch_dir}/${ARCH}-repodata" "$_verify_tmp" >/dev/null 2>&1; then
+			_new_rd_count=$(python3 "${REPODATA_LIST_PY}" "$_verify_tmp" 2>/dev/null | wc -l)
+			echo "  published repodata advertises ${_new_rd_count} packages"
+			if [ "${_rd_count:-0}" -gt 0 ] && [ "$_new_rd_count" -lt "${_rd_count}" ]; then
+				rm -f "$_verify_tmp"
+				fatal "==> published index shrank (${_rd_count} -> ${_new_rd_count}); refusing to continue"
+			fi
+		else
+			rm -f "$_verify_tmp"
+			fatal "==> could not re-fetch published repodata for verification"
+		fi
+		rm -f "$_verify_tmp"
+
 		# Garbage-collect old versions only after every replacement package and
 		# the updated index have been successfully published.
 		if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
@@ -1278,6 +1377,51 @@ do_upload() {
 	rm -rf "$_work_dir"
 	[ "$_upload_status" -eq 0 ] || return "$_upload_status"
 	echo "==> Done: ${SURFER_URL}/${ARCH}/"
+}
+
+
+do_upload_webdav() {
+	_wdw_mount="$1"
+	[ -n "$ARCH" ] || fatal 'ARCH is required'
+	export XBPS_ARCH="$ARCH" XBPS_TARGET_ARCH="$ARCH"
+	surf_auth_check
+	[ -n "$PRIV_KEY" ] || fatal 'PRIV_KEY is required'
+
+	_builddir="${BUILDDIR:-$(pwd)}"
+	_repo_dir="$_wdw_mount/${ARCH}"
+	# Ensure remote dir exists
+	mkdir -p "$_repo_dir" 2>/dev/null || true
+
+	echo "==> WebDAV mode: rebuilding index from all files on server"
+
+	# Copy new packages to mount
+	if ls "${_builddir}"/*."${ARCH}".xbps >/dev/null 2>&1; then
+		cp "${_builddir}"/*."${ARCH}".xbps "$_repo_dir/" 2>/dev/null || true
+		cp "${_builddir}"/*."${ARCH}".xbps.sig2 "$_repo_dir/" 2>/dev/null || true
+	fi
+
+	# Rebuild index from ALL files on server (upstream style)
+	echo "==> Rebuilding repository index from all packages"
+	xbps-rindex -a "$_repo_dir"/*."${ARCH}".xbps 2>/dev/null \
+		|| fatal "==> Error: xbps-rindex failed to add packages"
+
+	# Sign
+	echo "==> Signing repository"
+	. "${SCRIPT_DIR}/src/oco-key.sh"
+	oco_key_write private.pem || fatal '==> Error: failed to write signing key'
+	xbps-rindex -s --signedby "$SIGNED_BY" --privkey private.pem "$_repo_dir" \
+		|| fatal "==> Error: xbps-rindex failed to sign repository"
+
+	# Delete orphans via Surfer API (WebDAV delete is buggy)
+	echo "==> Cleaning orphans via Surfer API"
+	_remote_list=$( (cd / && surf_cli get "$(surf_api_path "/${ARCH}")" 2>/dev/null | grep '\.xbps$' | sed 's|.*/||') )
+	# Use existing prune/delete logic but via Surfer API
+	_wdw_work=$(mktemp -d)
+	prune_orphans "$_remote_list" "${_wdw_work}/orphans.txt"
+	delete_orphan_files "${_wdw_work}/orphans.txt" "$_remote_list"
+	rm -rf "$_wdw_work"
+
+	echo "==> Done (WebDAV): https://repo.osowoso.org/${ARCH}/"
 }
 
 # --- Check upstream ---

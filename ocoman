@@ -18,6 +18,7 @@ SRCPKGS='srcpkgs'
 TEMPLATES_LIST='/tmp/oco-templates-list'
 REPODATA_LIST_PY="${SCRIPT_DIR}/src/repodata-list.py"
 REPODATA_STRIP_PY="${SCRIPT_DIR}/src/repodata-strip.py"
+REPODATA_CLEAN_STAGE_PY="${SCRIPT_DIR}/src/repodata-clean-stage.py"
 BUILD_TEMPLATE="${SCRIPT_DIR}/src/build.yml.in"
 AUTOBUMP_TEMPLATE="${SCRIPT_DIR}/src/autobump.yml.in"
 AUTOBUMP_BLACKLIST="${SCRIPT_DIR}/src/autobump-blacklist"
@@ -1291,10 +1292,75 @@ do_upload() {
 			fi
 		fi
 
+		# Remember which remote index entries we deliberately remove and which
+		# new packages we add, so the post-publish shrink guard can tell an
+		# intentional rename/removal apart from a stale or truncated index.
+		if [ -f "${ARCH}-repodata" ]; then
+			_pre_index_list=$(mktemp)
+			python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null \
+				| sort -u > "$_pre_index_list" || true
+		fi
+		_pruned_present=0
+		if [ -s "${PWD}/orphans.txt" ] && [ -f "$_pre_index_list" ]; then
+			while IFS= read -r _orph; do
+				[ -n "$_orph" ] || continue
+				grep -qx "$_orph" "$_pre_index_list" && _pruned_present=$((_pruned_present + 1)) || true
+			done < "${PWD}/orphans.txt"
+			echo "  ${_pruned_present} removed package(s) were present in the remote index"
+		fi
+		_new_names=""
+		if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+			for _new_pkg in ./*."${ARCH}".xbps; do
+				[ -f "$_new_pkg" ] || continue
+				_name=$(pkg_name "${_new_pkg##*/}")
+				# dedup: the same source package may produce multiple subpackages
+				case " $_new_names " in *" $_name "*) continue ;; esac
+				_new_names="$_new_names $_name"
+			done
+		fi
+		_added_new=0
+		if [ -n "$_new_names" ] && [ -f "$_pre_index_list" ]; then
+			for _name in $_new_names; do
+				grep -qx "$_name" "$_pre_index_list" || _added_new=$((_added_new + 1))
+			done
+			echo "  ${_added_new} new package(s) not previously in the remote index"
+		fi
+
+		if [ -f "${ARCH}-repodata" ]; then
+			# xbps-rindex -a reads stage.plist from the downloaded repodata. A stale
+			# stage left behind by an aborted previous transaction can make xbps-rindex
+			# refuse to commit new packages (the "Inconsistent shlibs" path leaves the
+			# stage unmerged and index.plist unchanged). Start from a clean stage so only
+			# the packages we are publishing get staged.
+			echo '==> Clearing stale stage from local repodata'
+			python3 "${REPODATA_CLEAN_STAGE_PY}" "${ARCH}-repodata" || true
+		fi
+
 		if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
 			echo '==> Updating repository index'
-			xbps-rindex -a ./*."${ARCH}".xbps 2>/dev/null \
+			_index_add_log=$(mktemp)
+			xbps-rindex -a ./*."${ARCH}".xbps >"$_index_add_log" 2>&1 \
 				|| fatal '==> Error: xbps-rindex failed to add packages to repodata'
+			# xbps-rindex exits 0 even when the shlib-consistency check aborts the commit
+			# (it prints "stage: added" and leaves index.plist untouched). Fail loudly
+			# rather than publishing an index that does not contain the new packages.
+			_count_after_add=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+			echo "  index: ${_count_after_add} packages registered."
+			_missing_new=0
+			for _name in $_new_names; do
+				if python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | grep -qx "$_name"; then
+					:
+				else
+					echo "  ERROR: new package ${_name} not present in index after xbps-rindex -a" >&2
+					_missing_new=1
+				fi
+			done
+			if [ "$_missing_new" -ne 0 ]; then
+				cat "$_index_add_log" >&2 || true
+				rm -f "$_index_add_log"
+				fatal "==> xbps-rindex did not register the new package(s) in ${ARCH}-repodata; refusing to publish"
+			fi
+			rm -f "$_index_add_log"
 		fi
 
 		echo '==> Signing repository'
@@ -1333,14 +1399,17 @@ do_upload() {
 				|| fatal "==> Error: failed to upload ${_fname}"
 		done
 
-		# Verify the published index actually landed and did not shrink the repo.
+		# Verify the published index actually landed. A deliberate rename/removal
+		# legitimately shrinks the index (orphans pruned) while new packages grow it
+		# back; only a shrink beyond that budget signals a stale or truncated index.
 		_verify_tmp=$(mktemp)
 		if fetch_repodata "${_arch_dir}/${ARCH}-repodata" "$_verify_tmp" >/dev/null 2>&1; then
 			_new_rd_count=$(python3 "${REPODATA_LIST_PY}" "$_verify_tmp" 2>/dev/null | wc -l)
 			echo "  published repodata advertises ${_new_rd_count} packages"
-			if [ "${_rd_count:-0}" -gt 0 ] && [ "$_new_rd_count" -lt "${_rd_count}" ]; then
+			_expected=$(( ${_rd_count:-0} - _pruned_present + _added_new ))
+			if [ "${_rd_count:-0}" -gt 0 ] && [ "$_new_rd_count" -lt "$_expected" ]; then
 				rm -f "$_verify_tmp"
-				fatal "==> published index shrank (${_rd_count} -> ${_new_rd_count}); refusing to continue"
+				fatal "==> published index below expected (${_expected} expected, got ${_new_rd_count}); refusing to continue"
 			fi
 		else
 			rm -f "$_verify_tmp"

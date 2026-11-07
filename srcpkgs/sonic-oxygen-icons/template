@@ -1,9 +1,9 @@
 # Template file for 'sonic-oxygen-icons'
 pkgname=sonic-oxygen-icons
 version=6.31.0
-revision=2
+revision=3
 build_style=cmake
-hostmakedepends="sonic-frameworks-cmake-modules qt6-tools qt6-base"
+hostmakedepends="sonic-namespace sf-cmake-modules qt6-tools qt6-base"
 makedepends="qt6-base-devel"
 checkdepends="fdupes"
 short_desc="Oxygen icon theme"

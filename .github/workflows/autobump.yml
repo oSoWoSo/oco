@@ -191,10 +191,29 @@ on:
         - rustdesk
         - sdkmanager
         - seamonkey-bin
+        - sf-archive
+        - sf-auth
+        - sf-autocomplete
+        - sf-bookmarks
+        - sf-cmake-modules
+        - sf-color-scheme
+        - sf-core-addons
+        - sf-crash-handler
+        - sf-dbus
+        - sf-doctools
+        - sf-gui-addons
+        - sf-internationalization
+        - sf-settings
+        - sf-settings-ui
+        - sf-text-codec
+        - sf-widgets-addons
+        - sf-windowsystem
         - sfizz-git
         - shaderc
         - shattered-pixel-dungeon
         - simplex-chat
+        - sonic-namespace
+        - sonic-polkit
         - surfer-cli
         - surfer-server
         - surge-xt

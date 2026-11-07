@@ -652,6 +652,54 @@ else
 	echo '  (skipped: python3 not on PATH)'
 fi
 
+echo '== repodata-clean-stage.py =='
+
+if command -v python3 >/dev/null 2>&1 && command -v zstd >/dev/null 2>&1; then
+        _wd=$(mktemp -d)
+        (
+                cd "$_wd" || exit 1
+                python3 -c '
+import plistlib
+with open("index.plist", "wb") as f:
+    f.write(plistlib.dumps({"alpha": {"pkgver": "alpha-1_1"}}, fmt=plistlib.FMT_XML))
+with open("index-meta.plist", "wb") as f:
+    f.write(plistlib.dumps({"signature-type": "rsa"}, fmt=plistlib.FMT_XML))
+with open("stage.plist", "wb") as f:
+    f.write(plistlib.dumps({"stale": {"pkgver": "stale-9_1"}}, fmt=plistlib.FMT_XML))
+'
+                tar -cf staging-repodata index.plist index-meta.plist stage.plist
+                zstd -q -o x86_64-repodata staging-repodata
+                python3 "$SCRIPT_DIR/src/repodata-clean-stage.py" x86_64-repodata >/dev/null
+                python3 -c '
+import plistlib, subprocess, zstandard, tarfile, io
+p = subprocess.run(["zstd", "-dc", "--", "x86_64-repodata"], capture_output=True, check=True)
+tf = tarfile.open(fileobj=io.BytesIO(p.stdout))
+members = tf.getnames()
+print("members=" + ",".join(sorted(members)) + "; index=" + ",".join(sorted(plistlib.loads(tf.extractfile("index.plist").read()).keys())) + "; stage=" + str("stage.plist" in members))
+'
+        ) >"$_wd/out"
+        it 'drops stage.plist; keeps index + meta'
+        assert_eq "$(cat "$_wd/out")" 'members=index-meta.plist,index.plist; index=alpha; stage=False'
+
+        (
+                cd "$_wd" || exit 1
+                tar -cf nometa index.plist
+                zstd -q -o plain-repodata nometa
+                python3 "$SCRIPT_DIR/src/repodata-clean-stage.py" plain-repodata
+        ) >"$_wd/out"
+        it 'no stage member is a no-op'
+        assert_eq "$(cat "$_wd/out")" '  no stage.plist present; nothing to do'
+
+        python3 "$SCRIPT_DIR/src/repodata-clean-stage.py" >/dev/null 2>&1
+        _rc=$?
+        it 'missing arg: rc 2'
+        assert_rc "$_rc" 2
+
+        rm -rf "$_wd"
+else
+        echo '  (skipped: python3 or zstd not on PATH)'
+fi
+
 echo '== repo key plists =='
 
 if command -v python3 >/dev/null 2>&1; then

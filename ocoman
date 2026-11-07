@@ -1239,6 +1239,10 @@ do_upload() {
 		for _file in ./*-repodata; do
 			[ -f "$_file" ] || continue
 			_fname=$(basename "$_file")
+			# Surfer's `put` skips a fixed-name file when the remote copy looks
+			# newer/equal (mtime/size), which leaves stale repodata advertised. Remove
+			# the remote index first so the upload always creates a fresh file.
+			delete_remote "${_arch_dir}/${_fname}"
 			upload_file "$_file" "${_arch_dir}" \
 				|| fatal "==> Error: failed to upload ${_fname}"
 		done

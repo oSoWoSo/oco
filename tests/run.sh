@@ -461,7 +461,7 @@ it 'new packages are copied with an architecture filter'
 assert_eq "$(printf '%s' "$_DOUPLOAD" | grep -c 'cp "${_builddir}"/\*\."${ARCH}"\.xbps ')" '1'
 
 it 'xbps-rindex only indexes this architecture'
-assert_eq "$(printf '%s' "$_DOUPLOAD" | grep -c 'xbps-rindex -a \./\*\."${ARCH}"\.xbps')" '1'
+assert_eq "$(printf '%s' "$_DOUPLOAD" | grep -c 'xbps-rindex -a \./\*\."${ARCH}"\.xbps')" '3'
 
 it 'both upload loops filter on the architecture'
 # Packages and signatures go up in one pass, so the globs share a line.

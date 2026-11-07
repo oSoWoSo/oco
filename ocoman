@@ -1219,8 +1219,8 @@ do_upload_surfer() {
 				done
 				# Rebuild repodata from scratch using downloaded files
 				rm -f "${ARCH}-repodata"
-				if ls ./*.xbps >/dev/null 2>&1; then
-					xbps-rindex -a ./*.xbps 2>/dev/null || _repair_failed=1
+				if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+					xbps-rindex -a ./*."${ARCH}".xbps 2>/dev/null || _repair_failed=1
 				fi
 				if [ "$_repair_failed" -ne 0 ]; then
 					fatal "==> index repair failed"
@@ -1377,51 +1377,6 @@ do_upload_surfer() {
 	rm -rf "$_work_dir"
 	[ "$_upload_status" -eq 0 ] || return "$_upload_status"
 	echo "==> Done: ${SURFER_URL}/${ARCH}/"
-}
-
-
-do_upload_webdav() {
-	_wdw_mount="$1"
-	[ -n "$ARCH" ] || fatal 'ARCH is required'
-	export XBPS_ARCH="$ARCH" XBPS_TARGET_ARCH="$ARCH"
-	surf_auth_check
-	[ -n "$PRIV_KEY" ] || fatal 'PRIV_KEY is required'
-
-	_builddir="${BUILDDIR:-$(pwd)}"
-	_repo_dir="$_wdw_mount/${ARCH}"
-	# Ensure remote dir exists
-	mkdir -p "$_repo_dir" 2>/dev/null || true
-
-	echo "==> WebDAV mode: rebuilding index from all files on server"
-
-	# Copy new packages to mount
-	if ls "${_builddir}"/*."${ARCH}".xbps >/dev/null 2>&1; then
-		cp "${_builddir}"/*."${ARCH}".xbps "$_repo_dir/" 2>/dev/null || true
-		cp "${_builddir}"/*."${ARCH}".xbps.sig2 "$_repo_dir/" 2>/dev/null || true
-	fi
-
-	# Rebuild index from ALL files on server (upstream style)
-	echo "==> Rebuilding repository index from all packages"
-	xbps-rindex -a "$_repo_dir"/*."${ARCH}".xbps 2>/dev/null \
-		|| fatal "==> Error: xbps-rindex failed to add packages"
-
-	# Sign
-	echo "==> Signing repository"
-	. "${SCRIPT_DIR}/src/oco-key.sh"
-	oco_key_write private.pem || fatal '==> Error: failed to write signing key'
-	xbps-rindex -s --signedby "$SIGNED_BY" --privkey private.pem "$_repo_dir" \
-		|| fatal "==> Error: xbps-rindex failed to sign repository"
-
-	# Delete orphans via Surfer API (WebDAV delete is buggy)
-	echo "==> Cleaning orphans via Surfer API"
-	_remote_list=$( (cd / && surf_cli get "$(surf_api_path "/${ARCH}")" 2>/dev/null | grep '\.xbps$' | sed 's|.*/||') )
-	# Use existing prune/delete logic but via Surfer API
-	_wdw_work=$(mktemp -d)
-	prune_orphans "$_remote_list" "${_wdw_work}/orphans.txt"
-	delete_orphan_files "${_wdw_work}/orphans.txt" "$_remote_list"
-	rm -rf "$_wdw_work"
-
-	echo "==> Done (WebDAV): https://repo.osowoso.org/${ARCH}/"
 }
 
 # --- Check upstream ---

@@ -1240,9 +1240,8 @@ do_upload() {
 			[ -f "$_file" ] || continue
 			_fname=$(basename "$_file")
 			# Surfer's `put` skips a fixed-name file when the remote copy looks
-			# newer/equal (mtime/size). Delete first (best effort) and force a
-			# fresh mtime so the client always uploads.
-			delete_remote "${_arch_dir}/${_fname}"
+			# newer/equal (mtime/size). Force a fresh mtime so the client always
+			# uploads and overwrites the remote index (rewrite, not delete).
 			touch -- "$_file"
 			upload_file "$_file" "${_arch_dir}" \
 				|| fatal "==> Error: failed to upload ${_fname}"

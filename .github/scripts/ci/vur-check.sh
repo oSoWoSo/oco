@@ -136,6 +136,33 @@ push_template() {
         rm -rf "srcpkgs/${template}"
         cp -a "$src" "srcpkgs/${template}"
 
+        # When ${template} is itself a symlink into a differently named package
+        # directory (e.g. CRC-* -> Community-Repositories-Collection), the
+        # copied directory normally only exists under `template`'s name, so
+        # aliases resolving to that real name would dangle. Carry it under
+        # its real name too -- but never clobber an upstream template that
+        # already provides that directory (e.g. libbtrfsutil ->
+        # btrfs-progs, which void-packages ships itself).
+        if [ "${src##*/}" != "$template" ] && [ ! -e "srcpkgs/${src##*/}" ]; then
+                cp -a "$src" "srcpkgs/${src##*/}"
+                git add "srcpkgs/${src##*/}"
+        fi
+
+        # xbps-src looks up srcpkgs/<subpkg>/template when it builds every
+        # function-defined subpackage listed in ${subpackages}, so any OCO
+        # srcpkgs symlink that aliases this template's directory (e.g.
+        # fcitx5-lotus-settings -> fcitx5-lotus) must land on the test branch
+        # too, or the VUR build aborts with "xbps-src: nonexistent file:
+        # srcpkgs/<subpkg>/template".
+        for _link in "${GITHUB_WORKSPACE}"/srcpkgs/*; do
+                [ -L "$_link" ] || continue
+                [ "${_link##*/}" != "$template" ] || continue
+                [ "$(readlink -f "$_link")" = "$(readlink -f "$src")" ] || continue
+                rm -rf "srcpkgs/${_link##*/}"
+                ln -s "$(readlink "$_link")" "srcpkgs/${_link##*/}"
+                git add "srcpkgs/${_link##*/}"
+        done
+
         # Apply the OCO shlibs changes that concern this package.
         append_shlibs() {
                 local line pkgver

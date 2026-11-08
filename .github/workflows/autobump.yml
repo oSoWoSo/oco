@@ -203,6 +203,7 @@ on:
         - sf-settings-ui
         - sf-text-codec
         - sf-widgets-addons
+        - sf-windowsystem
         - sfizz-git
         - shaderc
         - shattered-pixel-dungeon

@@ -18,6 +18,10 @@ homepage="https://github.com/Sonic-DE/sonic-frameworks-doctools"
 distfiles="https://github.com/Sonic-DE/sonic-frameworks-doctools/archive/refs/tags/${version}.tar.gz"
 checksum=5aa6352150a4ca25729512d4038df19b8dbd0de1c4b9d32d0efb5e678fcfcde8
 
+if [ "$XBPS_TARGET_LIBC" = "musl" ]; then
+	makedepends+=" eudev-libudev-devel"
+fi
+
 post_patch() {
 	. /usr/libexec/sonic-namespace/sonic-namespace.sh
 	sonic_namespace_patch

@@ -1,6 +1,6 @@
 # Template file for 'dux-shell'
 pkgname=dux-shell
-version=2.1.1
+version=2.1.2
 revision=1
 build_style=go
 build_helper=qemu
@@ -17,7 +17,7 @@ license="MIT"
 homepage="https://github.com/duxlabs-dev/dux-shell"
 changelog="https://github.com/duxlabs-dev/dux-shell/releases"
 distfiles="https://github.com/duxlabs-dev/dux-shell/archive/refs/tags/v${version}.tar.gz"
-checksum=3ea414921aa2dc1b10aa53f9653c8101a69e9b393cd34882805080c8cb97a765
+checksum=4990fcd6c359b63b8ce32d97c8b09e3dddb0f71096abec6f1a535445b0039a7f
 replaces="DankMaterialShell>=0"
 
 post_install() {

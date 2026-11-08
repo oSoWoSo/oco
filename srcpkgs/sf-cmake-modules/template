@@ -19,11 +19,12 @@ provides="extra-cmake-modules-${version}_${revision}"
 conflicts="extra-cmake-modules"
 replaces="extra-cmake-modules>=0"
 
-do_check() {
-	cd build
-	ctest -E "KDEFetchTranslations"
-}
 post_patch() {
 	. /usr/libexec/sonic-namespace/sonic-namespace.sh
 	sonic_namespace_patch
+}
+
+do_check() {
+	cd build
+	ctest -E "KDEFetchTranslations"
 }

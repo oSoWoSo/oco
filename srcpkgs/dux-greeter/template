@@ -1,6 +1,6 @@
 # Template file for 'dux-greeter'
 pkgname=dux-greeter
-version=2.1.1
+version=2.1.2
 revision=1
 build_wrksrc="core"
 build_style=go
@@ -16,7 +16,7 @@ license="MIT"
 homepage="https://github.com/duxlabs-dev/dux-greeter"
 changelog="https://github.com/duxlabs-dev/dux-greeter/releases"
 distfiles="https://github.com/duxlabs-dev/dux-greeter/archive/refs/tags/v${version}.tar.gz"
-checksum=d7ffd8b88101b55f66431471b0fc61549ec005a37dc92ac53d3866cd1246b9d9
+checksum=29bf015285a63d41df32995d5e4661c3fbb46796a3954dd8427bcf1e1675d5f4
 
 conflicts="dux-greeter-git"
 replaces="dms-greeter>=0"

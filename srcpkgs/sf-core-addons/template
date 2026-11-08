@@ -11,7 +11,8 @@ configure_args="-DBUILD_TESTING=ON -DKDE_INSTALL_QMLDIR=lib/qt6/qml
 	$(vopt_bool python BUILD_PYTHON_BINDINGS)
 	$(vopt_if python "-DECM_SHIBOKEN_ARCH=$XBPS_CROSS_RUST_TARGET")"
 hostmakedepends="doxygen qt6-base qt6-tools sf-cmake-modules sonic-namespace
-	$(vopt_if python "python3-build python3-pyside6 python3-setuptools shiboken6 llvm${_llvmver}")"
+	$(vopt_if python "python3-build python3-pyside6 python3-setuptools shiboken6 llvm${_llvmver}")
+	qt6-declarative-host-tools"
 makedepends="qt6-base-devel qt6-base-private-devel qt6-declarative-devel qt6-tools-devel
 	$(vopt_if python 'libshiboken6-devel libpyside6-devel python3-devel')"
 depends="libgcc libstdc++"

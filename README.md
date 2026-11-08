@@ -1,5 +1,3 @@
-# PRs welcomed 🤗 anywhere
-
 ## This is:
 vOid Community repOsitory (oco)  
 aka
@@ -25,7 +23,7 @@ If you dont wish to build the packages locally,
 https://repo.osowoso.org repository provides prebuilt binaries.  
 Pick your architecture there and you will see
 
-## Structure
+## Structure (PRs accepted anywhere 🤗)
 - Codeberg repository with templates  
 https://codeberg.org/oSoWoSo/oco
 - Github repository (CI - Here we build binary packages)  

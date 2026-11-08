@@ -137,6 +137,7 @@ on:
         - menu-themes
         - mesa-amber
         - morgenwm
+        - msedit
         - nano-syntax-highlighting
         - nebula-gtk
         - noctalia

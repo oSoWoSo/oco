@@ -346,6 +346,7 @@ Create PR to Codeberg or GitHub
 | mesa-amber | 26.1.2 | [home](https://www.mesa3d.org/) | Bella109 |  | Mesa for older hardware (legacy driver build) |
 | morewaita-icon-theme | 50.1 | [home](https://github.com/somepaulo/MoreWaita) | Coolllyn |  | Expanded Adwaita-styled companion icon theme for GNOME Shell |
 | morgenwm | 0.4.0 | [home](https://codeberg.org/LinuxNation/MorgenWM) | LinuxNation |  | Scrolling window manager with subframes for the River compositor |
+| msedit | 2.0.0 | [home](https://github.com/microsoft/edit) | Coolllyn |  | Simple editor for simple needs |
 | nano-syntax-highlighting | 2026.11.01 | [home](https://github.com/galenguyer/nano-syntax-highlighting) | Coolllyn |  | Improved nano syntax highlighting files |
 | nebula-gtk | 1.3.7 | [home](https://github.com/Letdown2491/nebula-gtk) | zenobit |  | GTK frontend for Void Linux's XBPS tooling |
 | noctalia | 5.4.1 | [home](https://noctalia.dev) | Coolllyn |  | Sleek, customizable desktop shell crafted for Wayland |

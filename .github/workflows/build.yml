@@ -189,6 +189,7 @@ on:
         - mesa-amber
         - morewaita-icon-theme
         - morgenwm
+        - msedit
         - nano-syntax-highlighting
         - nebula-gtk
         - noctalia

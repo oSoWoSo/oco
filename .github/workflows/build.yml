@@ -261,6 +261,7 @@ on:
         - sf-dbus
         - sf-doctools
         - sf-gui-addons
+        - sf-icon-themes
         - sf-internationalization
         - sf-settings
         - sf-settings-ui

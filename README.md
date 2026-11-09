@@ -358,7 +358,7 @@ Create PR to Codeberg or GitHub
 | nwg-displays | 0.5.0 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-displays) | zenobit |  | Intuitive GUI to manage multiple displays for wayland |
 | nwg-dock | 0.4.3 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-dock) | zenobit |  | GTK based dock for sway |
 | nwg-dock-hyprland | 0.4.11 | [home](https://github.com/nwg-piotr/nwg-dock-hyprland) | zenobit |  | GTK3-based dock for Hyprland |
-| nwg-drawer | 0.7.5 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-drawer) | zenobit |  | Application drawer for wlroots-based Wayland compositors |
+| nwg-drawer | 0.7.6 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-drawer) | zenobit |  | Application drawer for wlroots-based Wayland compositors |
 | nwg-hello | 0.5.1 | [home](https://github.com/nwg-piotr/nwg-hello) | zenobit |  | GTK based greeter for greetd written in python |
 | nwg-icon-picker | 0.1.1 | [home](https://github.com/nwg-piotr/nwg-icon-picker) | zenobit |  | GTK icon chooser with a text search option |
 | nwg-menu | 0.1.9 | [home](https://nwg-piotr.github.io/nwg-shell/nwg-menu) | zenobit |  | MenuStart plugin to nwg-panel, also capable of working standalone |

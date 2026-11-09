@@ -264,6 +264,7 @@ on:
         - sf-internationalization
         - sf-settings
         - sf-settings-ui
+        - sf-silver-icons
         - sf-text-codec
         - sf-widgets-addons
         - sf-windowsystem

@@ -330,6 +330,9 @@
 !/srcpkgs/sf-settings-devel
 !/srcpkgs/sf-settings-ui
 !/srcpkgs/sf-settings-ui-devel
+!/srcpkgs/sf-silver-icons
+!/srcpkgs/sf-silver-icons-library
+!/srcpkgs/sf-silver-icons-library-devel
 !/srcpkgs/sf-text-codec
 !/srcpkgs/sf-text-codec-devel
 !/srcpkgs/sf-widgets-addons

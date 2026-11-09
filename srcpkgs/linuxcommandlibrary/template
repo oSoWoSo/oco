@@ -1,7 +1,7 @@
 # Template file for 'linuxcommandlibrary'
 pkgname=linuxcommandlibrary
-version=4.9.1
-revision=2
+version=4.9.2
+revision=1
 archs="x86_64 aarch64"
 hostmakedepends="openjdk21 gradle9 android-sdk gnupg python3-charset-normalizer llvm21 tar"
 depends="virtual?java-runtime"
@@ -10,7 +10,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="Apache-2.0"
 homepage="http://linuxcommandlibrary.com/"
 distfiles="https://github.com/SimonSchubert/LinuxCommandLibrary/archive/refs/tags/v${version}.tar.gz"
-checksum=50ea9ff5806e7caae345be3333aabedc78b7bcf83bb94f125079683e62053ba1
+checksum=222ab306b179d863baa7033665936dc29b25b0d89694a4ec2315aded2baec92e
 nopie=yes
 
 export JAVA_HOME=/usr/lib/jvm/openjdk21

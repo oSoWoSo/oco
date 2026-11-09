@@ -313,7 +313,6 @@ on:
         - xlibre-apps
         - xlibre-input-drivers
         - xlibre-minimal
-        - xlibre-repo
         - xlibre-util-macros
         - xlibre-video-drivers
         - xlibre-xf86-input-elographics

@@ -1,7 +1,7 @@
 # Template file for 'hyprdynamicmonitors'
 pkgname=hyprdynamicmonitors
 version=1.4.0
-revision=3
+revision=4
 build_style=go
 go_import_path="github.com/fiffeek/hyprdynamicmonitors"
 hostmakedepends="pkg-config dbus-x11 hyprland upower python3-cfgv python3-distlib python3-filelock python3-identify"

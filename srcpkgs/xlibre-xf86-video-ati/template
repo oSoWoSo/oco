@@ -6,7 +6,7 @@ revision=2
 build_style=gnu-configure
 configure_args="--prefix=/usr --enable-glamor --disable-debug"
 hostmakedepends="pkg-config xorg-util-macros autoconf automake libtool git"
-makedepends="xlibre-xserver-devel eudev-libudev-devel libpciaccess-devel libdrm-devel pixman-devel MesaLib-devel xorgproto fakeroot gettext pkgconf mesa"
+makedepends="xlibre-xserver-devel xorg-util-macros eudev-libudev-devel libpciaccess-devel libdrm-devel pixman-devel MesaLib-devel xorgproto fakeroot gettext pkgconf mesa"
 depends="virtual?xserver-abi-video-25_1 mesa-dri"
 short_desc="XLibre ATI Radeon video driver"
 maintainer="zenobit <zen@osowoso.org>"
@@ -25,7 +25,8 @@ case "$XBPS_TARGET_MACHINE" in
 esac
 
 pre_configure() {
-	./autogen.sh
+	export ACLOCAL_PATH="${XBPS_CROSS_BASE:+${XBPS_CROSS_BASE}/usr/share/aclocal}${ACLOCAL_PATH:+:${ACLOCAL_PATH}}"
+	NOCONFIGURE=1 ./autogen.sh
 }
 
 post_install() {

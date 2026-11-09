@@ -6,7 +6,7 @@ revision=2
 build_style=gnu-configure
 configure_args="--prefix=/usr"
 hostmakedepends="pkg-config xorg-util-macros autoconf automake libtool git"
-makedepends="xlibre-xserver-devel xorgproto pkgconf"
+makedepends="xlibre-xserver-devel xorg-util-macros xorgproto pkgconf"
 depends="virtual?xserver-abi-video-25_1"
 short_desc="XLibre fork of s3virge video driver"
 maintainer="zenobit <zen@osowoso.org>"
@@ -20,7 +20,8 @@ replaces="xf86-video-s3virge>=0"
 LDFLAGS="-Wl,-z,lazy"
 
 pre_configure() {
-	./autogen.sh
+	export ACLOCAL_PATH="${XBPS_CROSS_BASE:+${XBPS_CROSS_BASE}/usr/share/aclocal}${ACLOCAL_PATH:+:${ACLOCAL_PATH}}"
+	NOCONFIGURE=1 ./autogen.sh
 }
 
 post_install() {

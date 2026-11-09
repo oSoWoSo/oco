@@ -18,7 +18,8 @@ provides="xf86-input-synaptics-${version}_${revision}"
 replaces="xf86-input-synaptics>=0"
 
 pre_configure() {
-	./autogen.sh
+	export ACLOCAL_PATH="${XBPS_CROSS_BASE:+${XBPS_CROSS_BASE}/usr/share/aclocal}${ACLOCAL_PATH:+:${ACLOCAL_PATH}}"
+	NOCONFIGURE=1 ./autogen.sh
 }
 
 post_install() {

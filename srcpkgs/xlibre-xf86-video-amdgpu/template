@@ -21,7 +21,8 @@ replaces="xf86-video-amdgpu>=0"
 LDFLAGS="-Wl,-z,lazy"
 
 pre_configure() {
-	./autogen.sh
+	export ACLOCAL_PATH="${XBPS_CROSS_BASE:+${XBPS_CROSS_BASE}/usr/share/aclocal}${ACLOCAL_PATH:+:${ACLOCAL_PATH}}"
+	NOCONFIGURE=1 ./autogen.sh
 }
 
 post_install() {

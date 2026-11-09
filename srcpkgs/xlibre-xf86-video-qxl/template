@@ -6,7 +6,7 @@ revision=2
 build_style=gnu-configure
 configure_args="--prefix=/usr"
 hostmakedepends="pkg-config xorg-util-macros automake autoconf libtool git"
-makedepends="xlibre-xserver-devel spice-protocol libpciaccess-devel xorgproto"
+makedepends="xlibre-xserver-devel xorg-util-macros spice-protocol libpciaccess-devel xorgproto"
 depends="virtual?xserver-abi-video-25_1"
 short_desc="XLibre fork of X.Org X11 qxl video driver"
 maintainer="zenobit <zen@osowoso.org>"
@@ -20,6 +20,7 @@ replaces="xf86-video-qxl>=0"
 LDFLAGS="-Wl,-z,lazy"
 
 pre_configure() {
+	export ACLOCAL_PATH="${XBPS_CROSS_BASE:+${XBPS_CROSS_BASE}/usr/share/aclocal}${ACLOCAL_PATH:+:${ACLOCAL_PATH}}"
 	autoreconf -fi
 	# ./autogen.sh
 }

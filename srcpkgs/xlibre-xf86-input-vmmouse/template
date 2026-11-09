@@ -6,7 +6,7 @@ revision=2
 build_style=gnu-configure
 configure_args="--prefix=/usr --with-udev-rules-dir=/usr/lib/udev/rules.d"
 hostmakedepends="pkg-config xorg-util-macros autoconf automake libtool git"
-makedepends="xlibre-xserver-devel fakeroot gettext pkgconf"
+makedepends="xlibre-xserver-devel xorg-util-macros fakeroot gettext pkgconf"
 depends="virtual?xserver-abi-input-24_1"
 short_desc="XLibre fork of X.Org VMWare Mouse input driver"
 maintainer="zenobit <zen@osowoso.org>"
@@ -18,7 +18,8 @@ provides="xf86-input-vmmouse-${version}_${revision}"
 replaces="xf86-input-vmmouse>=0"
 
 pre_configure() {
-	./autogen.sh
+	export ACLOCAL_PATH="${XBPS_CROSS_BASE:+${XBPS_CROSS_BASE}/usr/share/aclocal}${ACLOCAL_PATH:+:${ACLOCAL_PATH}}"
+	NOCONFIGURE=1 ./autogen.sh
 }
 
 post_install() {

@@ -3,6 +3,7 @@ pkgname=xlibre-xf86-video-openchrome
 _pkgname=xf86-video-openchrome
 version=25.0.0
 revision=2
+archs="i686* x86_64*"
 build_style=gnu-configure
 configure_args="--prefix=/usr"
 hostmakedepends="pkg-config xorg-util-macros autoconf automake libtool git"
@@ -19,10 +20,6 @@ replaces="xf86-video-openchrome>=0"
 
 CFLAGS="-I$XBPS_CROSS_BASE/usr/include/xorg -fcommon"
 LDFLAGS="-Wl,-z,lazy"
-
-case "$XBPS_TARGET_MACHINE" in
-	arm*|aarch*) broken="requires sarea.h which isn't present in cross-compiled arm" ;;
-esac
 
 pre_configure() {
 	NOCONFIGURE=1 ./autogen.sh

@@ -21,7 +21,7 @@ LDFLAGS="-Wl,-z,lazy"
 
 pre_configure() {
 	export ACLOCAL_PATH="${XBPS_CROSS_BASE:+${XBPS_CROSS_BASE}/usr/share/aclocal}${ACLOCAL_PATH:+:${ACLOCAL_PATH}}"
-	NOCONFIGURE=1 ./autogen.sh
+	autoreconf -fi
 }
 
 post_install() {

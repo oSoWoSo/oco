@@ -16,6 +16,8 @@
 !/shlibs_remove
 
 !/tests
+!/.agents
+!/.agents/**
 **/__pycache__/
 !/src
 !/requirements.txt

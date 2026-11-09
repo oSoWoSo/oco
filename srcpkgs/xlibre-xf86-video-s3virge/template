@@ -1,0 +1,28 @@
+# Template file for 'xlibre-xf86-video-s3virge'
+pkgname=xlibre-xf86-video-s3virge
+_pkgname=xf86-video-s3virge
+version=25.0.0
+revision=2
+build_style=gnu-configure
+configure_args="--prefix=/usr"
+hostmakedepends="pkg-config xorg-util-macros autoconf automake libtool git"
+makedepends="xlibre-xserver-devel xorgproto pkgconf"
+depends="virtual?xserver-abi-video-25_1"
+short_desc="XLibre fork of s3virge video driver"
+maintainer="zenobit <zen@osowoso.org>"
+license="X11"
+homepage="https://github.com/X11Libre/xf86-video-s3virge"
+distfiles="https://github.com/X11Libre/xf86-video-s3virge/archive/refs/tags/${pkgname}-${version}.tar.gz"
+checksum=eee7cf3dc9859e037dfa3bf82cc14cdbea4ccdf7813bd0f59a8a837886d68943
+provides="xf86-video-s3virge-${version}_${revision}"
+replaces="xf86-video-s3virge>=0"
+
+LDFLAGS="-Wl,-z,lazy"
+
+pre_configure() {
+	./autogen.sh
+}
+
+post_install() {
+	vlicense COPYING
+}

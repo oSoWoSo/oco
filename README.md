@@ -499,6 +499,53 @@ Create PR to Codeberg or GitHub
 | xdg-desktop-portal-cosmic | 1.11.0 | [home](https://github.com/pop-os/xdg-desktop-portal-cosmic) | zenobit |  | Backend implementation for xdg-desktop-portal for COSMIC |
 | xdg-desktop-portal-hyprland | 1.5.0 | [home](https://github.com/hyprwm/xdg-desktop-portal-hyprland) | zenobit |  | Backend of xdg-desktop-portal for Hyprland |
 | xdg-desktop-portal-umbriel-git | 0.1.0.2026116 | [home](https://github.com/noctalia-dev/xdg-desktop-portal-umbriel) | Coolllyn |  | XDG Desktop Portal backend for the Umbriel compositor |
+| xlibre | 25.1.0 | [home](https://github.com/X11Libre/xserver/wiki) | zenobit |  | XLibre meta-package with essential packages |
+| xlibre-apps | 25.1.0 | [home](https://github.com/X11Libre/xserver/wiki) | zenobit |  | Xlibre applications |
+| xlibre-input-drivers | 25.0.0 | [home](https://github.com/X11Libre/xserver/wiki) | zenobit |  | XLibre input drivers meta-package |
+| xlibre-minimal | 25.1.0 | [home](https://github.com/X11Libre/xserver/wiki) | zenobit |  | Xlibre meta-package including xlibre-xserver and needed tools |
+| xlibre-repo | 25.1.11 | [home](https://github.com/xlibre-void/xlibre/) | zenobit |  | XLibre for VOID linux |
+| xlibre-util-macros | 1.20.2 | [home](https://github.com/X11Libre/mirror.fdo.xorg-macros) | zenobit |  | Xlibre autotool macros |
+| xlibre-video-drivers | 25.0.0 | [home](https://github.com/X11Libre/xserver/wiki) | zenobit |  | XLibre video drivers meta-package |
+| xlibre-xf86-input-elographics | 25.0.1 | [home](https://github.com/X11Libre/xf86-input-elographics) | zenobit |  | XLibre fork of X.Org Elographics TouchScreen input driver |
+| xlibre-xf86-input-evdev | 25.0.0 | [home](https://github.com/X11Libre/xf86-input-evdev) | zenobit |  | Xorg event device input driver |
+| xlibre-xf86-input-evdev-devel | 25.0.0 | [home](https://github.com/X11Libre/xf86-input-evdev) | zenobit |  | Xorg event device input driver |
+| xlibre-xf86-input-joystick | 25.0.0 | [home](https://github.com/X11Libre/xf86-input-joystick) | zenobit |  | XLibre fork of Joystick input driver |
+| xlibre-xf86-input-joystick-devel | 25.0.0 | [home](https://github.com/X11Libre/xf86-input-joystick) | zenobit |  | XLibre fork of Joystick input driver |
+| xlibre-xf86-input-libinput | 25.0.1 | [home](https://github.com/X11Libre/xf86-input-libinput) | zenobit |  | XLibre generic input driver for X.Org based on libinput |
+| xlibre-xf86-input-libinput-devel | 25.0.1 | [home](https://github.com/X11Libre/xf86-input-libinput) | zenobit |  | XLibre generic input driver for X.Org based on libinput |
+| xlibre-xf86-input-synaptics | 25.0.0 | [home](https://github.com/X11Libre/xf86-input-synaptics) | zenobit |  | XLibre fork of X.Org Synaptics driver for notebook touchpads |
+| xlibre-xf86-input-synaptics-devel | 25.0.0 | [home](https://github.com/X11Libre/xf86-input-synaptics) | zenobit |  | XLibre fork of X.Org Synaptics driver for notebook touchpads |
+| xlibre-xf86-input-vmmouse | 25.0.0 | [home](https://github.com/X11Libre/xf86-input-vmmouse) | zenobit |  | XLibre fork of X.Org VMWare Mouse input driver |
+| xlibre-xf86-input-void | 25.0.0 | [home](https://github.com/X11Libre/xf86-input-void) | zenobit |  | XLibre fork of X.Org void input driver |
+| xlibre-xf86-input-wacom | 25.0.0 | [home](https://github.com/X11Libre/xf86-input-wacom) | zenobit |  | XLibre fork of X.Org Wacom tablet driver |
+| xlibre-xf86-input-wacom-devel | 25.0.0 | [home](https://github.com/X11Libre/xf86-input-wacom) | zenobit |  | XLibre fork of X.Org Wacom tablet driver |
+| xlibre-xf86-video-amdgpu | 25.1.2 | [home](https://github.com/X11Libre/xf86-video-amdgpu) | zenobit |  | XLibre fork of X.Org amdgpu video driver |
+| xlibre-xf86-video-ati | 25.0.1 | [home](https://github.com/X11Libre/xf86-video-ati) | zenobit |  | XLibre ATI Radeon video driver |
+| xlibre-xf86-video-cirrus | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-cirrus) | zenobit |  | XLibre fork of X.Org Cirrus Logic video driver |
+| xlibre-xf86-video-dummy | 25.0.0 | [home](https://lists.freedesktop.org/mailman/listinfo/amd-gfx) | zenobit |  | XLibre dummy video driver |
+| xlibre-xf86-video-fbdev | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-fbdev) | zenobit |  | XLibre fork of framebuffer video driver |
+| xlibre-xf86-video-i128 | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-i128) | zenobit |  | Xlibre ATI Rage128 video driver |
+| xlibre-xf86-video-i740 | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-i740) | zenobit |  | Xlibre Intel i740 video driver |
+| xlibre-xf86-video-intel | 25.0.2 | [home](https://github.com/X11Libre/xf86-video-intel) | zenobit |  | XLibre Intel video driver |
+| xlibre-xf86-video-mach64 | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-mach64) | zenobit |  | XLibre fork of X.Org ATI Rage Pro video driver |
+| xlibre-xf86-video-mga | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-mga) | zenobit |  | XLibre fork of X.Org Matrox Graphics Adapter video driver |
+| xlibre-xf86-video-nouveau | 25.0.1 | [home](https://github.com/X11Libre/xf86-video-nouveau) | zenobit |  | XLibre fork NVIDIA video driver |
+| xlibre-xf86-video-nv | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-nv) | zenobit |  | NVIDIA video driver for the XLibre X server |
+| xlibre-xf86-video-openchrome | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-openchrome) | zenobit |  | XLibre fork of X.Org driver for VIA IGPs |
+| xlibre-xf86-video-qxl | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-qxl) | zenobit |  | XLibre fork of X.Org X11 qxl video driver |
+| xlibre-xf86-video-r128 | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-r128) | zenobit |  | XLibre fork of X.Org ATI Rage 128 video driver |
+| xlibre-xf86-video-s3virge | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-s3virge) | zenobit |  | XLibre fork of s3virge video driver |
+| xlibre-xf86-video-sisusb | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-vmware) | zenobit |  | XLibre fork of X.org SiS USB video driver |
+| xlibre-xf86-video-vesa | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-vesa) | zenobit |  | XLibre fork of X.Org vesa video driver |
+| xlibre-xf86-video-vmware | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-vmware) | zenobit |  | XLibre fork of X.org vmware video driver |
+| xlibre-xf86-video-voodoo | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-voodoo) | zenobit |  | XLibre fork of X.Org 3dfx Voodoo1/Voodoo2 2D video driver |
+| xlibre-xorgproto | 2026.1 | [home](https://github.com/X11Libre/mirror.fdo.xorgproto) | zenobit |  | X Window System Unified Protocol |
+| xlibre-xserver | 25.2.3 | [home](https://x11libre.net/) | zenobit |  | Fork of Xorg with lots of code cleanups and enhanced functionality |
+| xlibre-xserver-common | 25.2.3 | [home](https://x11libre.net/) | zenobit |  | Fork of Xorg with lots of code cleanups and enhanced functionality |
+| xlibre-xserver-devel | 25.2.3 | [home](https://x11libre.net/) | zenobit |  | Fork of Xorg with lots of code cleanups and enhanced functionality |
+| xlibre-xserver-xephyr | 25.2.3 | [home](https://x11libre.net/) | zenobit |  | Fork of Xorg with lots of code cleanups and enhanced functionality |
+| xlibre-xserver-xnest | 25.2.3 | [home](https://x11libre.net/) | zenobit |  | Fork of Xorg with lots of code cleanups and enhanced functionality |
+| xlibre-xserver-xvfb | 25.2.3 | [home](https://x11libre.net/) | zenobit |  | Fork of Xorg with lots of code cleanups and enhanced functionality |
 | xut | 0.4.2 | [home](https://codeberg.org/mobinmob/xut) | mobinmob |  | Work with templates from unofficial repositories |
 | xxtools-git | 0.0.0 | [home](https://github.com/Piraty/xxtools) | zenobit |  | Tools to ease packaging tasks for Void Linux |
 | zen-browser-bin | 1.24.1 | [home](https://github.com/zen-browser/desktop) | Bella109 | x86_64 aarch64 | New Browser based on Firefox |

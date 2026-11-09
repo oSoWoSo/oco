@@ -1,0 +1,31 @@
+--- a/hw/kdrive/ephyr/hostx.c
++++ b/hw/kdrive/ephyr/hostx.c
+@@ -1601,11 +1601,18 @@
+ 
+     cookie = xcb_glx_query_server_string(HostX.conn, HostX.screen, name);
+     reply = xcb_glx_query_server_string_reply(HostX.conn, cookie, NULL);
++    if (reply == NULL)
++        return NULL;
++
+     str = xcb_glx_query_server_string_string(reply);
+ 
+     /* The spec doesn't mention this, but the Xorg server replies with
+      * a string already terminated with '\0'. */
+     len = xcb_glx_query_server_string_string_length(reply);
++    if (len == 0 || str == NULL) {
++        free(reply);
++        return NULL;
++    }
+     buf = XNFalloc(len);
+     memcpy(buf, str, len);
+     free(reply);
+@@ -1632,7 +1639,8 @@
+         return FALSE;
+     }
+     hostx_glx_exts = __glXQueryServerString(GLX_EXTENSIONS);
+-    if (epoxy_extension_in_string(hostx_glx_exts,"GLX_EXT_libglvnd"))
++    if (hostx_glx_exts != NULL &&
++        epoxy_extension_in_string(hostx_glx_exts,"GLX_EXT_libglvnd"))
+         glvnd_vendors = __glXQueryServerString(GLX_VENDOR_NAMES_EXT);
+ 
+     if (glvnd_vendors) {

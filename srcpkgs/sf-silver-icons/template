@@ -15,17 +15,17 @@ distfiles="https://github.com/Sonic-DE/sonic-frameworks-silver-icons/archive/ref
 checksum=58a61e6c1c2508848a8c3a8703c46a1024d7b087d5bd30ca6c15eebdd8f6c59a
 nostrip=yes
 
-post_patch() {
-	. /usr/libexec/sonic-namespace/sonic-namespace.sh
-	sonic_namespace_patch
-}
-
 if [ -z "$CROSS_BUILD" ]; then
 	configure_args+=" -DBINARY_ICONS_RESOURCE=ON"
 else
 	hostmakedepends+=" libbreeze-icons-devel"
 	configure_args+=" -DBINARY_ICONS_RESOURCE=OFF -DSF6_HOST_TOOLING=/usr/lib/cmake"
 fi
+
+post_patch() {
+	. /usr/libexec/sonic-namespace/sonic-namespace.sh
+	sonic_namespace_patch
+}
 
 sf-silver-icons-library_package() {
 	pkg_install() {

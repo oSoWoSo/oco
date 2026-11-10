@@ -35,8 +35,7 @@ sf-auth-tools_package() {
 }
 
 sf-auth-devel_package() {
-	depends="$makedepends sf-auth-tools>=${version}_${revision}
-	 ${sourcepkg}>=${version}_${revision}"
+	depends="$makedepends ${sourcepkg}>=${version}_${revision} sf-auth-tools>=${version}_${revision}"
 	short_desc+=" - development files"
 	pkg_install() {
 		vmove usr/include

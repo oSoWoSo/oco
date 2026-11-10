@@ -207,6 +207,7 @@ on:
         - sf-icon-themes
         - sf-internationalization
         - sf-logging
+        - sf-notifications
         - sf-settings
         - sf-settings-ui
         - sf-silver-icons

@@ -446,9 +446,9 @@ Create PR to Codeberg or GitHub
 | sf-settings-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
 | sf-settings-ui | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
 | sf-settings-ui-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
-| sf-silver-icons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
-| sf-silver-icons-library | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
-| sf-silver-icons-library-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
+| sf-silver-icons | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
+| sf-silver-icons-library | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
+| sf-silver-icons-library-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
 | sf-text-codec | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-codec) | zenobit |  | Collection of methods to manipulate strings using various encodings |
 | sf-text-codec-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-text-codec) | zenobit |  | Collection of methods to manipulate strings using various encodings |
 | sf-widgets-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-widgets-addons) | zenobit |  | Large set of desktop widgets |

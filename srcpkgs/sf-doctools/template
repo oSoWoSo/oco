@@ -6,10 +6,8 @@ build_style=cmake
 build_helper=qemu
 configure_args="-DCMAKE_INSTALL_LIBDIR=lib -DKDE_INSTALL_LIBDIR=lib
  -DDocBookXML4_DTD_DIR=/usr/share/xml/docbook/4.5 -DDocBookXSL_DIR=/usr/share/xsl/docbook"
-hostmakedepends="doxygen docbook-xml docbook-xsl gettext perl perl-URI qt6-base qt6-tools
- sf-cmake-modules sonic-namespace"
-makedepends="libxml2-devel libxslt-devel qt6-base-devel sf-archive-devel
- sf-internationalization-devel"
+hostmakedepends="docbook-xml docbook-xsl doxygen gettext perl perl-URI qt6-base qt6-tools sf-cmake-modules sonic-namespace"
+makedepends="libxml2-devel libxslt-devel qt6-base-devel sf-archive-devel sf-internationalization-devel"
 depends="docbook-xml docbook-xsl"
 short_desc="DocBook-based documentation generation tools for SonicDE frameworks"
 maintainer="zenobit <zen@osowoso.org>"

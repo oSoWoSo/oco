@@ -5,9 +5,8 @@ revision=1
 build_style=cmake
 configure_args="-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_MAN_DOCS=ON
  -DBUILD_HTML_DOCS=OFF -DBUILD_QTHELP_DOCS=OFF -DBUILD_TESTING=ON"
-hostmakedepends="cmake sonic-namespace extra-cmake-modules python3-requests qt5
- python3-Sphinx qt6-base qt6-tools qt5-qmake reuse qt5-host-tools"
-makedepends="qt5-devel qt5-tools-devel qt5-declarative-devel"
+hostmakedepends="cmake extra-cmake-modules python3-requests python3-Sphinx qt5 qt5-host-tools qt5-qmake qt6-base qt6-tools reuse sonic-namespace"
+makedepends="qt5-declarative-devel qt5-devel qt5-tools-devel"
 depends="cmake"
 short_desc="Extended CMake modules and build utilities for SonicDE frameworks"
 maintainer="zenobit <zen@osowoso.org>"

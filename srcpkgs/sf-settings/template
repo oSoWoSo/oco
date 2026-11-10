@@ -6,15 +6,19 @@ build_style=cmake
 configure_args="-DKDE_INSTALL_QMLDIR=lib/qt6/qml
  -DKDE_INSTALL_QTPLUGINDIR=lib/qt6/plugins
  -DKDE_INSTALL_LIBEXECDIR=libexec"
-hostmakedepends="sonic-namespace sf-cmake-modules qt6-base qt6-tools
- qt6-declarative-host-tools"
-makedepends="qt6-declarative-devel qt6-base-private-devel"
+hostmakedepends="qt6-base qt6-declarative-host-tools qt6-tools sf-cmake-modules sonic-namespace"
+makedepends="qt6-base-private-devel qt6-declarative-devel"
 short_desc="Persistent platform-independent application settings"
 maintainer="zenobit <zen@osowoso.org>"
 license="LGPL-2.1-or-later"
 homepage="https://github.com/Sonic-DE/sonic-frameworks-settings"
 distfiles="https://github.com/Sonic-DE/sonic-frameworks-settings/archive/refs/tags/${version}.tar.gz"
 checksum=845977f05939d8a22ccec2cec65feb295cdfd9dbea1eb97c3d54e839376a7a09
+
+post_patch() {
+	. /usr/libexec/sonic-namespace/sonic-namespace.sh
+	sonic_namespace_patch
+}
 
 do_check() {
 	cd build
@@ -23,8 +27,7 @@ do_check() {
 }
 
 sf-settings-devel_package() {
-	depends="${sourcepkg}>=${version}_${revision} qt6-base-devel
-	 qt6-declarative-devel"
+	depends="${sourcepkg}>=${version}_${revision} qt6-base-devel qt6-declarative-devel"
 	short_desc+=" - development files"
 	pkg_install() {
 		vmove usr/include
@@ -34,9 +37,4 @@ sf-settings-devel_package() {
 			"${DESTDIR}/usr/lib/cmake/SF6Config"
 		vmove "usr/lib/*.so"
 	}
-}
-
-post_patch() {
-	. /usr/libexec/sonic-namespace/sonic-namespace.sh
-	sonic_namespace_patch
 }

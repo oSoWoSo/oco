@@ -1,6 +1,6 @@
 # Template file for 'quickbox-qt'
 pkgname=quickbox-qt
-version=1.4.0
+version=1.4.1
 revision=1
 #archs="i686 x86_64"
 depends="python3-gobject python3-pyside6 rsync quickemu xdg-utils"
@@ -9,7 +9,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://github.com/musqz/quickbox-qt"
 distfiles="https://github.com/musqz/quickbox-qt/archive/refs/tags/v${version}.tar.gz"
-checksum=250cff086f7310caa3cd02dd8a0bceaea52a750ba072ed682ee5aa71f63c8963
+checksum=339689ad8ef9d24bda72e93168b306d189bd0ecc207eda378ddf445da137a9b0
 conflicts=quickbox-gtk4
 
 do_install() {

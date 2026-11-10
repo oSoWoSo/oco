@@ -264,6 +264,7 @@ on:
         - sf-gui-addons
         - sf-icon-themes
         - sf-internationalization
+        - sf-logging
         - sf-settings
         - sf-settings-ui
         - sf-silver-icons

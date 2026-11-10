@@ -330,6 +330,8 @@
 !/srcpkgs/sf-icon-themes-devel
 !/srcpkgs/sf-internationalization
 !/srcpkgs/sf-internationalization-devel
+!/srcpkgs/sf-logging
+!/srcpkgs/sf-logging-devel
 !/srcpkgs/sf-settings
 !/srcpkgs/sf-settings-devel
 !/srcpkgs/sf-settings-ui

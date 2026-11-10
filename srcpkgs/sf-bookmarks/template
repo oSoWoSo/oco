@@ -18,8 +18,7 @@ post_patch() {
 }
 
 sf-bookmarks-devel_package() {
-	depends="${sourcepkg}>=${version}_${revision}
-	 sf-widgets-addons-devel qt6-base-devel"
+	depends="${sourcepkg}>=${version}_${revision} qt6-base-devel sf-widgets-addons-devel"
 	short_desc+=" - development files"
 	pkg_install() {
 		vmove usr/include

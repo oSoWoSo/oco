@@ -94,7 +94,7 @@ def check_pr(pr: dict, files: list, *, repo: str, plan: dict, allow_merged: bool
     require(any(head_ref.startswith(f"autobump/{package}-") for package in packages),
             "Autobump branch target is not among the changed packages")
     def allowed_change(path: str) -> bool:
-        return path == "README.md" or any(
+        return path == "README.md" or path == ".github/autobump-dependencies.tsv" or any(
             path.startswith(f"srcpkgs/{package}/") for package in packages)
 
     require(all(allowed_change(path) for path in paths),

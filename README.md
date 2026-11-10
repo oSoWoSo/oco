@@ -425,8 +425,8 @@ Create PR to Codeberg or GitHub
 | sf-color-scheme-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
 | sf-core-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |
 | sf-core-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |
-| sf-crash-handler | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-crash-handler) | zenobit |  | Graceful handling of application crashes |
-| sf-crash-handler-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-crash-handler) | zenobit |  | Graceful handling of application crashes |
+| sf-crash-handler | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-crash-handler) | zenobit |  | Graceful handling of application crashes |
+| sf-crash-handler-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-crash-handler) | zenobit |  | Graceful handling of application crashes |
 | sf-data-views | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-data-views) | zenobit |  | Item views extending the Qt model-view framework |
 | sf-data-views-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-data-views) | zenobit |  | Item views extending the Qt model-view framework |
 | sf-dbus | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-dbus) | zenobit |  | KDE Convenience classes for DBus |

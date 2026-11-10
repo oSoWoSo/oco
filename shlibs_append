@@ -50,6 +50,7 @@ libSF6I18n.so.6 sf-internationalization-6.31.0_1
 libSF6I18nQml.so.6 sf-internationalization-6.31.0_1
 libSF6ColorScheme.so.6 sf-color-scheme-6.31.0_1
 libSF6CoreAddons.so.6 sf-core-addons-6.31.0_1
+libSF6Crash.so.6 sf-crash-handler-6.31.0.1_1
 libSF6WidgetsAddons.so.6 sf-widgets-addons-6.31.0_1
 libSF6ConfigWidgets.so.6 sf-settings-ui-6.31.0_1
 libSF6Archive.so.6 sf-archive-6.31.0_1

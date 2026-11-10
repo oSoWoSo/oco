@@ -527,17 +527,17 @@ Create PR to Codeberg or GitHub
 | xlibre-xf86-input-wacom-devel | 25.0.0 | [home](https://github.com/X11Libre/xf86-input-wacom) | zenobit |  | XLibre fork of X.Org Wacom tablet driver |
 | xlibre-xf86-video-amdgpu | 25.1.2 | [home](https://github.com/X11Libre/xf86-video-amdgpu) | zenobit |  | XLibre fork of X.Org amdgpu video driver |
 | xlibre-xf86-video-ati | 25.0.1 | [home](https://github.com/X11Libre/xf86-video-ati) | zenobit |  | XLibre ATI Radeon video driver |
-| xlibre-xf86-video-cirrus | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-cirrus) | zenobit | i686* x86_64* | XLibre fork of X.Org Cirrus Logic video driver |
+| xlibre-xf86-video-cirrus | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-cirrus) | zenobit |  | XLibre fork of X.Org Cirrus Logic video driver |
 | xlibre-xf86-video-dummy | 25.0.0 | [home](https://lists.freedesktop.org/mailman/listinfo/amd-gfx) | zenobit |  | XLibre dummy video driver |
 | xlibre-xf86-video-fbdev | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-fbdev) | zenobit |  | XLibre fork of framebuffer video driver |
 | xlibre-xf86-video-i128 | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-i128) | zenobit | i686* x86_64* | Xlibre ATI Rage128 video driver |
 | xlibre-xf86-video-i740 | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-i740) | zenobit | i686* x86_64* | Xlibre Intel i740 video driver |
 | xlibre-xf86-video-intel | 25.0.2 | [home](https://github.com/X11Libre/xf86-video-intel) | zenobit | i686* x86_64* | XLibre Intel video driver |
 | xlibre-xf86-video-mach64 | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-mach64) | zenobit | i686* x86_64* | XLibre fork of X.Org ATI Rage Pro video driver |
-| xlibre-xf86-video-mga | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-mga) | zenobit | i686* x86_64* | XLibre fork of X.Org Matrox Graphics Adapter video driver |
+| xlibre-xf86-video-mga | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-mga) | zenobit |  | XLibre fork of X.Org Matrox Graphics Adapter video driver |
 | xlibre-xf86-video-nouveau | 25.0.1 | [home](https://github.com/X11Libre/xf86-video-nouveau) | zenobit |  | XLibre fork NVIDIA video driver |
-| xlibre-xf86-video-nv | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-nv) | zenobit | i686* x86_64* | NVIDIA video driver for the XLibre X server |
-| xlibre-xf86-video-openchrome | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-openchrome) | zenobit | i686* x86_64* | XLibre fork of X.Org driver for VIA IGPs |
+| xlibre-xf86-video-nv | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-nv) | zenobit |  | NVIDIA video driver for the XLibre X server |
+| xlibre-xf86-video-openchrome | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-openchrome) | zenobit |  | XLibre fork of X.Org driver for VIA IGPs |
 | xlibre-xf86-video-qxl | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-qxl) | zenobit |  | XLibre fork of X.Org X11 qxl video driver |
 | xlibre-xf86-video-r128 | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-r128) | zenobit |  | XLibre fork of X.Org ATI Rage 128 video driver |
 | xlibre-xf86-video-s3virge | 25.0.0 | [home](https://github.com/X11Libre/xf86-video-s3virge) | zenobit | i686* x86_64* | XLibre fork of s3virge video driver |

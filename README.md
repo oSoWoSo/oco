@@ -440,8 +440,8 @@ Create PR to Codeberg or GitHub
 | sf-icon-themes-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-icon-themes) | zenobit |  | Icon GUI utilities |
 | sf-internationalization | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-internationalization) | zenobit |  | Gettext-based UI text internationalization |
 | sf-internationalization-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-internationalization) | zenobit |  | Gettext-based UI text internationalization |
-| sf-settings | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
-| sf-settings-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
+| sf-settings | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
+| sf-settings-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
 | sf-settings-ui | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
 | sf-settings-ui-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
 | sf-silver-icons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |

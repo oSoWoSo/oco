@@ -4,10 +4,8 @@ version=6.31.0.1
 revision=1
 build_style=cmake
 configure_args="-DKDE_INSTALL_QMLDIR=lib/qt6/qml -DKDE_INSTALL_QTPLUGINDIR=lib/qt6/plugins"
-hostmakedepends="doxygen pkg-config qt6-base qt6-declarative-host-tools
- qt6-tools sf-cmake-modules sonic-namespace"
-makedepends="libX11-devel libxcb-devel libXfixes-devel xcb-util-keysyms-devel
- qt6-base-private-devel qt6-declarative-devel"
+hostmakedepends="doxygen pkg-config qt6-base qt6-declarative-host-tools qt6-tools sf-cmake-modules sonic-namespace"
+makedepends="libX11-devel libxcb-devel libXfixes-devel qt6-base-private-devel qt6-declarative-devel xcb-util-keysyms-devel"
 short_desc="Access to the windowing system (SonicDE framework fork)"
 maintainer="zenobit <zen@osowoso.org>"
 license="LGPL-2.0-only OR LGPL-3.0-only"

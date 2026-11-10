@@ -1,36 +1,21 @@
 # Template file for 'cosmic-viewer'
 pkgname=cosmic-viewer
-version=1.10.0
-revision=2
+version=1.11.0
+revision=1
 build_style=cargo
-# --frozen is --locked --offline, so the build never reaches the network
-make_build_args="--frozen"
-hostmakedepends="pkg-config just"
-makedepends="libxkbcommon-devel libheif-devel libjpeg-turbo-devel
- libstdc++-devel"
-depends="hicolor-icon-theme"
+hostmakedepends="pkg-config just cmake nasm"
+makedepends="libxkbcommon-devel libheif-devel libjpeg-turbo-devel"
 short_desc="COSMIC Image Viewer"
 maintainer="zenobit <zen@osowoso.org>"
 license="GPL-3.0-only"
 homepage="https://github.com/pop-os/cosmic-viewer"
 distfiles="https://github.com/pop-os/cosmic-viewer/archive/refs/tags/epoch-${version}.tar.gz"
-checksum=ac0cee420c954b85188d1fbfffee32a49d11dacced881c68b068c56e83efcdad
+checksum=9143d8fa1f5e88144b9ab44ebb2f9fee73498fece4a68dda7492866a2cecd691
 
-pre_build() {
-	# Fetch dependencies for the target we are building for. Under cross
-	# builds rustc is the host compiler, so --print host-tuple is wrong.
-	cargo fetch --locked --target "${RUST_TARGET}"
+do_build() {
+	just build-release --target "${RUST_TARGET}"
 }
 
 do_install() {
-	# Upstream's install recipe is the canonical install path: it covers the
-	# binary, the desktop entry, the metainfo and every icon size, so there
-	# is no need to duplicate that in post_install(). rootdir has to be
-	# pointed at the package destdir, otherwise the recipe installs into
-	# the masterdir and the package ends up empty.
-	#
-	# cargo-target-dir is the target root, not the profile dir: the justfile
-	# appends /release to it itself. cargo.sh always passes --target, so the
-	# binary always lands in target/${RUST_TARGET}/release.
 	just cargo-target-dir="target/${RUST_TARGET}" rootdir="${DESTDIR}" prefix=/usr install
 }

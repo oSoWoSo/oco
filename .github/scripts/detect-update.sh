@@ -58,7 +58,6 @@ fi
 tpl="srcpkgs/$pkg/template"
 [ -f "$tpl" ] || fail "template not found: $tpl"
 
-
 export XBPS_USE_BUILD_MTIME=1
 
 old=$(sed -n 's/^version=//p' "$tpl" | head -1 | tr -d '"')
@@ -80,8 +79,17 @@ if [ -n "${GH_TOKEN:-}" ]; then
 	export CURL_HOME="$_curlhome"
 fi
 
+update_check=("$engine" update-check "$pkg")
+if [ "$(id -u)" -eq 0 ]; then
+	update_check=(sudo -Eu builder "${update_check[@]}")
+	if [ -n "${_curlhome:-}" ]; then
+		chown -R builder:builder "$_curlhome" ||
+			fail "could not make update-check credentials readable by builder"
+	fi
+fi
+
 set +e
-out=$("$engine" update-check "$pkg")
+out=$("${update_check[@]}")
 rc=$?
 set -e
 
@@ -97,6 +105,9 @@ new=$(printf '%s\n' "$out" |
 	sort -V |
 	tail -n1 |
 	sed "s/${pkg}-//")
+# Upstream build numbers such as librewolf's "158.0.1-1" are stored with a
+# dot ("158.0.1.1") so the template's version-derived distver keeps working.
+new=$(printf '%s' "$new" | sed -E 's/-([0-9]+)$/.\1/')
 : "${new:="$old"}"
 
 if [ "$new" = "$old" ]; then

@@ -1,0 +1,34 @@
+diff --git a/llmfit-tui/src/mcp_server.rs b/llmfit-tui/src/mcp_server.rs
+index bb308ea..4c055c0 100644
+--- a/llmfit-tui/src/mcp_server.rs
++++ b/llmfit-tui/src/mcp_server.rs
+@@ -500,7 +500,11 @@ mod tests {
+         })));
+         let json: Value = serde_json::from_str(&output.expect("plan")).expect("plan JSON");
+         assert_eq!(json["quantization"], "Q8_0");
+-        assert_eq!(json["disk_size_gb"].as_f64(), Some(expected));
++        let reported = json["disk_size_gb"].as_f64().expect("numeric disk_size_gb");
++        assert!(
++            (reported - expected).abs() < 1e-6,
++            "disk_size_gb {reported} differs from estimate {expected}"
++        );
+     }
+ 
+     #[test]
+diff --git a/llmfit-tui/src/serve_api.rs b/llmfit-tui/src/serve_api.rs
+index 9d66e62..0f6e8ae 100644
+--- a/llmfit-tui/src/serve_api.rs
++++ b/llmfit-tui/src/serve_api.rs
+@@ -1584,7 +1584,11 @@ mod tests {
+                 .to_bytes();
+             let json: serde_json::Value = serde_json::from_slice(&bytes).expect("plan JSON");
+             assert_eq!(json["quantization"], "Q8_0");
+-            assert_eq!(json["disk_size_gb"].as_f64(), Some(expected));
++            let reported = json["disk_size_gb"].as_f64().expect("numeric disk_size_gb");
++            assert!(
++                (reported - expected).abs() < 1e-6,
++                "disk_size_gb {reported} differs from estimate {expected}"
++            );
+         });
+     }
+ 

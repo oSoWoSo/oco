@@ -1,15 +1,15 @@
 # Template file for 'noctalia-greeter'
 pkgname=noctalia-greeter
 version=1.7.0
-revision=1
+revision=2
 build_style=meson
-make_check_args="--exclude greeter-frame-loop"
 hostmakedepends="pkgconf wayland-devel"
 makedepends="wlroots0.20-devel libinput-devel MesaLib-devel libglvnd-devel
  cairo-devel fontconfig-devel freetype-devel harfbuzz-devel pango-devel
  glib-devel libxkbcommon-devel libxml2-devel libjxl-devel librsvg-devel json-c++
  tomlplusplus-devel libwebp-devel stb wayland-devel wayland-protocols"
 depends="greetd"
+checkdepends="mesa-dri dejavu-fonts-ttf"
 short_desc="Minimal login greeter for greetd matching the Noctalia Shell look"
 maintainer="Coolllyn <leanhduc673@gmail.com>"
 license="MIT"

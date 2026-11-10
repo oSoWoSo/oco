@@ -1,20 +1,20 @@
 # Template file for 'xdg-desktop-portal-umbriel-git'
 pkgname=xdg-desktop-portal-umbriel-git
-version=0.1.0.20261019
+version=0.1.0.2026116
 revision=1
-_commit=1cc6eb18ba0d6c82dd66999646d7e554f76a85b6
+_commit=56951426eb9931db3f1c57348f226c2427fba4f3
 build_style=meson
-hostmakedepends="pkgconf wayland-devel glib-devel"
+hostmakedepends="pkgconf wayland-devel glib-devel cmake"
 makedepends="sdbus-c++-devel pipewire-devel wayland-devel wayland-protocols
  libdrm-devel libgbm-devel cairo-devel tomlplusplus-devel json-c++
- gtk4-devel"
+ gtk4-devel libei-devel"
 depends="xdg-desktop-portal"
 short_desc="XDG Desktop Portal backend for the Umbriel compositor"
 maintainer="Coolllyn <leanhduc673@gmail.com>"
 license="MIT"
 homepage="https://github.com/noctalia-dev/xdg-desktop-portal-umbriel"
 distfiles="https://github.com/noctalia-dev/xdg-desktop-portal-umbriel/archive/${_commit}.tar.gz"
-checksum=862e2ae91bbd5408ac67d60803f5445776c77e4c44de2dc435197b895482b141
+checksum=9b06e0b352499dce6a6ed3147998645a0d9959f959c7480da5b6bc0fc41256a8
 # Upstream defines no test targets.
 make_check=no
 

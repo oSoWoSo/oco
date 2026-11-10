@@ -1,0 +1,17 @@
+# Template file for 'adw-gtk3'
+pkgname=adw-gtk3
+version=6.5
+revision=1
+short_desc="Libadwaita-styled theme ported to GTK 3"
+maintainer="Coolllyn <leanhduc673@gmail.com>"
+license="LGPL-2.1-only"
+homepage="https://github.com/lassekongo83/adw-gtk3"
+changelog="https://github.com/lassekongo83/adw-gtk3/releases"
+distfiles="https://github.com/lassekongo83/adw-gtk3/releases/download/v${version}/adw-gtk3v${version}.tar.xz"
+checksum=a81780fadfc432be0fc3d89c4ebb41aa28e4f032d42c36f9789c57dd10cfa41c
+
+do_install() {
+	vmkdir usr/share/themes
+	vcopy adw-gtk3 usr/share/themes
+	vcopy adw-gtk3-dark usr/share/themes
+}

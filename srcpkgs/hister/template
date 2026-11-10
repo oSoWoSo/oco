@@ -1,7 +1,7 @@
 # Template file for 'hister'
 pkgname=hister
-version=0.20.0
-revision=2
+version=0.21.0
+revision=1
 build_style=go
 go_import_path="github.com/asciimoo/hister"
 hostmakedepends="nodejs"
@@ -11,7 +11,7 @@ license="AGPL-3.0-only"
 homepage="https://github.com/asciimoo/hister"
 changelog="https://raw.githubusercontent.com/asciimoo/hister/refs/heads/master/CHANGELOG.md"
 distfiles="https://github.com/asciimoo/hister/archive/refs/tags/v${version}.tar.gz"
-checksum=211743f169766ce9a8d7b8a4ebd69a9e5d3bd656150e76c7a0e2fe4e1321a623
+checksum=b47d349d5c14b4b0c142ed7dd9583d276c20658677a483fcf7331beb9735bf0a
 
 do_build() {
 	./manage.sh build

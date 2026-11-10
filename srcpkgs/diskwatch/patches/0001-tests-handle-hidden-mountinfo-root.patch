@@ -1,0 +1,108 @@
+--- a/src/collect/hot_files.rs
++++ b/src/collect/hot_files.rs
+@@ -1182,9 +1182,10 @@
+     /// and on btrfs (one per subvolume)
+     /// and overlayfs `stat` reports a different one, so a live watch would
+     /// never match. `/proc/self/mountinfo` prints the superblock's device,
+-    /// and the open file's fdinfo names its mount.
++    /// and the open file's fdinfo names its mount. Some chroots hide the
++    /// mount containing their root from mountinfo; in that case no key is available.
+     #[cfg(target_os = "linux")]
+-    fn file_key(path: &Path) -> (u64, u64) {
++    fn file_key(path: &Path) -> Option<(u64, u64)> {
+         use std::os::fd::AsRawFd;
+         use std::os::unix::fs::MetadataExt;
+         let file = std::fs::File::open(path).expect("open");
+@@ -1196,8 +1197,8 @@
+             .expect("mnt_id")
+             .trim();
+         let mountinfo = std::fs::read_to_string("/proc/self/mountinfo").expect("mountinfo");
+-        // `36 35 0:35 /home /home rw ...`: mount id, parent id, major:minor.
+-        let (major, minor) = mountinfo
++        // `36 35 0:35 /home /home rw ...`: mount id, parent id, major:minor.
++        let Some((major, minor)) = mountinfo
+             .lines()
+             .find_map(|line| {
+                 let mut fields = line.split_whitespace();
+@@ -1207,6 +1208,8 @@
+                 let (major, minor) = fields.nth(1)?.split_once(':')?;
+                 Some((major.parse::<u64>().ok()?, minor.parse::<u64>().ok()?))
+             })
+-            .expect("mount of the path");
+-        (new_encode_dev((major << 20) | minor), ino)
++        else {
++            return None;
++        };
++        Some((new_encode_dev((major << 20) | minor), ino))
+     }
+@@ -1289,5 +1292,6 @@
+     #[cfg(target_os = "linux")]
+-    fn wait_for_watch_release(key: (u64, u64)) -> Option<bool> {
++    fn wait_for_watch_release(key: Option<(u64, u64)>) -> Option<bool> {
++        let key = key?;
+         let deadline = Instant::now() + Duration::from_secs(5);
+         loop {
+             // An empty set is a real observation, so only `None` — `/proc`
+@@ -1320,13 +1324,11 @@
+         let _guard = TempDirGuard(dir.clone());
+ 
+         let first_key = file_key(&first);
+-        // Precondition only: when the initial observation works, a watch
+-        // already on the test directory would make the release check below
+-        // meaningless. An unreadable `/proc/self/fdinfo` skips this one
+-        // check and nothing else.
++        // Precondition only: when both observations work, a watch already on
++        // the test directory would make the release check below meaningless.
+         let observed = inotify_watched_files();
+-        if let Some(before) = &observed {
++        if let (Some(before), Some(first_key)) = (&observed, first_key) {
+             assert!(
+                 !before.contains(&first_key),
+                 "the test directory is already watched"
+             );
+@@ -1344,4 +1346,6 @@
+             // genuinely mid-install, not before it started.
+-            watched_at_cancel = inotify_watched_files().map(|w| w.contains(&file_key(root)));
++            watched_at_cancel = file_key(root).and_then(|key| {
++                inotify_watched_files().map(|w| w.contains(&key))
++            });
+             stop.store(true, Ordering::Relaxed);
+         };
+@@ -1625,16 +1627,21 @@
+             // contract above; the other half is the `stop` assertion.
+             #[cfg(target_os = "linux")]
+-            if let Some(live) = inotify_watched_files() {
++            if let (Some(live), Some(dir_key), Some(deep_key), Some(other_key)) = (
++                inotify_watched_files(),
++                file_key(&dir),
++                file_key(&deep),
++                file_key(&other),
++            ) {
+                 assert!(
+-                    live.contains(&file_key(&dir)),
++                    live.contains(&dir_key),
+                     "the root should be watched by the time the walk stops"
+                 );
+                 assert!(
+-                    !live.contains(&file_key(&deep)),
++                    !live.contains(&deep_key),
+                     "an abandoned walk must not watch a queued child"
+                 );
+                 assert!(
+-                    !live.contains(&file_key(&other)),
++                    !live.contains(&other_key),
+                     "an abandoned walk must not watch a queued child"
+                 );
+             }
+@@ -1869,9 +1875,9 @@
+                 .expect("the worker must reach the last root");
+             if round == 0 {
+                 #[cfg(target_os = "linux")]
+-                if let Some(seen) = inotify_watched_files() {
++                if let (Some(seen), Some(dir_key)) = (inotify_watched_files(), file_key(&dir)) {
+                     assert!(
+-                        seen.contains(&file_key(&dir)),
++                        seen.contains(&dir_key),
+                         "the root must be watched before the race starts"
+                     );
+                 }

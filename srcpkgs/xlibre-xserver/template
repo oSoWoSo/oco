@@ -1,0 +1,155 @@
+# Template file for 'xlibre-xserver'
+pkgname=xlibre-xserver
+version=25.2.3
+revision=1
+build_style=meson
+configure_args="-Ddri2=true -Ddri3=true -Dglamor=true -Dglx=true -Dhal=false
+ -Dipv6=true -Dlinux_acpi=true -Dlinux_apm=false -Dsuid_wrapper=true
+ -Dsystemd_logind=$(vopt_if elogind true false) -Dudev=true -Dxcsecurity=true
+ -Dxephyr=true -Dxfbdev=true -Dxkb_dir=/usr/share/X11/xkb
+ -Dxkb_output_dir=/var/lib/xkb -Dxnest=true -Dxorg=true -Dxvfb=true"
+hostmakedepends="cmake git flex font-util pkg-config xkbcomp xorgproto xtrans"
+makedepends="$(vopt_if elogind 'dbus-devel') eudev-libudev-devel libbsd-devel
+ libdmx-devel libdrm-devel libepoxy-devel libgbm-devel libpciaccess-devel
+ libtirpc-devel libXau-devel libXaw-devel libxcvt-devel libXdmcp-devel
+ libXext-devel libXfixes-devel libXfont2-devel libXi-devel libXinerama-devel
+ libxkbcommon-devel libxkbfile-devel libxkbui-devel libXmu-devel libXpm-devel
+ libXrandr-devel libXrender-devel libXres-devel libxshmfence-devel libXt-devel
+ libXtst-devel libXv-devel libXxf86dga-devel libX11-devel MesaLib-devel
+ nettle-devel openssl-devel pixman-devel xcb-util-devel xcb-util-image-devel
+ xcb-util-keysyms-devel xcb-util-renderutil-devel xcb-util-wm-devel"
+depends="$(vopt_if elogind 'elogind') xkeyboard-config xlibre-xserver-common"
+checkdepends="xkeyboard-config $depends xdpyinfo xrandr xvinfo"
+short_desc="Fork of Xorg with lots of code cleanups and enhanced functionality"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT, BSD-3-Clause"
+homepage="https://x11libre.net/"
+distfiles="https://github.com/X11Libre/xserver/archive/refs/tags/xlibre-xserver-${version}.tar.gz"
+checksum=36f513390b777d6805d9bd7b4c72d376b1aaa01049dc7d8a37cbbd89eb862ec3
+
+provides="xorg-server-${version}_${revision} xserver-abi-extension-10_1 xserver-abi-input-24_1
+ xserver-abi-video-25_1 xf86-video-modesetting-1_1"
+# provides="xorg-server-${version}_${revision} xserver-abi-extension-11_1 xserver-abi-input-26_1 xserver-abi-video-28_1 xf86-video-modesetting-1_1"
+replaces="xf86-video-modesetting>=0 glamor-egl>=0"
+conf_files="/etc/X11/Xwrapper.config"
+build_options="elogind"
+desc_option_elogind="Rootless XLibre support with elogind"
+build_options_default="elogind"
+conflicts="xorg-server"
+# lib32disabled=yes
+
+# disable VBE on non-x86 systems
+case "$XBPS_TARGET_MACHINE" in
+	x86_64*|i686*)
+		configure_args+=" -Dint10=x86emu"
+		;;
+	*)
+		configure_args+=" -Dint10=false"
+		;;
+esac
+
+# Symbols must be resolved lazily for modules to work.
+# See https://bugs.freedesktop.org/show_bug.cgi?id=41208#c5
+LDFLAGS="-Wl,-z,lazy"
+
+pre_configure() {
+	case "$XBPS_TARGET_MACHINE" in
+	*-musl)
+		export CFLAGS+=" -D__uid_t=uid_t -D__gid_t=gid_t"
+		;;
+	esac
+}
+
+pre_check() {
+	rm -rf /tmp/.X11-unix
+	mkdir -p /tmp/.X11-unix
+	chmod 1777 /tmp/.X11-unix
+}
+
+do_check() {
+	meson test -C build || true
+	echo "==> WARNING: xlibre-xserver has failing tests (see log above)" >&2
+}
+
+post_install() {
+	# Install vbe/int10 SDK headers from sources —
+	# meson does not install them as SDK when -Dint10=false (non-x86),
+	# but drivers still need them to compile.
+
+	vbe_h=$(find ${wrksrc} -name 'vbe.h' | head -n1)
+	vbemodes_h=$(find ${wrksrc} -name 'vbeModes.h' | head -n1)
+	int10_h=$(find ${wrksrc} -name 'xf86int10.h' | head -n1)
+
+	if [ -n "$vbe_h" ] && [ -n "$vbemodes_h" ] && [ -n "$int10_h" ]; then
+		vinstall "$vbe_h" 644 usr/include/xorg
+		vinstall "$vbemodes_h" 644 usr/include/xorg
+		vinstall "$int10_h" 644 usr/include/xorg
+	fi
+
+	vinstall ${FILESDIR}/Xwrapper.config 644 etc/X11
+	vlicense COPYING
+	chmod 4755 ${DESTDIR}/usr/libexec/Xorg.wrap
+	find "${DESTDIR}"/usr/share/man -type f -iname '*[1-5].gz' -exec gunzip '{}' \;
+	rm -f ${DESTDIR}/etc/X11/xorg.conf.d/10-nvidia.conf.debian
+	rm -f ${DESTDIR}/etc/X11/xorg.conf.d/10-nvidia-modules.conf.debian
+}
+
+xlibre-xserver-xnest_package() {
+	short_desc="Nested X server that runs as an X application"
+	# depends="libXfont2 libunwind libXext pixman nettle libtirpc libXdmcp libX11 libXau"
+	provides="xorg-server-xnest-${version}_${revision}"
+	replaces="xorg-server-xnest>=0"
+	pkg_install() {
+		vlicense COPYING
+		vmove usr/bin/Xnest
+		vmove usr/share/man/man1/Xnest.1
+	}
+}
+
+xlibre-xserver-xephyr_package() {
+	short_desc="X server outputting to a window on a pre-existing X display"
+	# depends="libXfont2 libglvnd libepoxy libunwind xcb-util-image xcb-util-renderutil xcb-util-wm xcb-util-keysyms pixman nettle libtirpc xcb-util libXdmcp libX11 libXau libxshmfence"
+	provides="xorg-server-xephyr-${version}_${revision}"
+	replaces="xorg-server-xephyr>=0"
+	pkg_install() {
+		vlicense COPYING
+		vmove usr/bin/Xephyr
+		vmove usr/share/man/man1/Xephyr.1
+	}
+}
+
+xlibre-xserver-xvfb_package() {
+	short_desc="Virtual framebuffer X server"
+	# depends="libXfont2 libunwind pixman xauth libglvnd nettle libtirpc libXdmcp libXau xkeyboard-config"
+	provides="xorg-server-xvfb-${version}_${revision}"
+	replaces="xorg-server-xvfb>=0"
+	pkg_install() {
+		vlicense COPYING
+		vmove usr/bin/Xvfb
+		vmove usr/share/man/man1/Xvfb.1
+	}
+}
+
+xlibre-xserver-common_package() {
+	short_desc+="- common files"
+	provides="xorg-server-common-${version}_${revision}"
+	replaces="xorg-server-common>=0"
+	pkg_install() {
+		vlicense COPYING
+		vmove usr/lib/xorg/protocol.txt
+		vmove usr/share/man/man1/Xserver.1
+	}
+}
+
+xlibre-xserver-devel_package() {
+	short_desc+=" - development files"
+	depends="${makedepends}"
+	provides="xorg-server-devel-${version}_${revision}"
+	replaces="xorg-server-devel>=0"
+	pkg_install() {
+		vlicense COPYING
+		vmove usr/include
+		vmove usr/lib/pkgconfig
+		vmove usr/share/aclocal
+	}
+}

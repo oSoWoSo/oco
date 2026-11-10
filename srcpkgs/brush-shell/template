@@ -1,0 +1,28 @@
+# Template file for 'brush-shell'
+pkgname=brush-shell
+version=0.4.0
+revision=2
+build_style=cargo
+build_helper="qemu"
+make_install_args="--path brush-shell"
+make_check_args="--lib --test brush-compat-tests --test brush-integration-tests
+ --test brush-version-tests --test brush-completion-tests"
+checkdepends="bash-completion"
+short_desc="Bash/POSIX-compatible shell written in Rust"
+maintainer="Coolllyn <leanhduc673@gmail.com>"
+license="MIT"
+homepage="https://github.com/reubeno/brush"
+changelog="https://raw.githubusercontent.com/reubeno/brush/main/CHANGELOG.md"
+distfiles="https://github.com/reubeno/brush/archive/refs/tags/brush-shell-v${version}.tar.gz"
+checksum=0cce607454972c18bc4a30d2f44a2c91fccf02c458475fda7720370a3dc8a4f0
+register_shell="/usr/bin/brush"
+
+post_build() {
+	cargo build --release --locked --package xtask --target ${RUST_TARGET}
+	vtargetrun target/${RUST_TARGET}/release/xtask gen docs man --output-dir man
+}
+
+post_install() {
+	vlicense LICENSE
+	vman man/brush.1
+}

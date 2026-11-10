@@ -8,12 +8,12 @@
       "source_template": "srcpkgs/BoxBuddy/template",
       "source_url": "https://github.com/Dvlv/BoxBuddyRS/archive/refs/tags/${version}.tar.gz"
     },
-    "DankMaterialShell": {
+    "dux-shell": {
       "type": "git",
-      "repo": "https://github.com/AvengeMedia/DankMaterialShell.git",
+      "repo": "https://github.com/duxlabs-dev/dux-shell.git",
       "version_tag": "v{version}",
-      "source_template": "srcpkgs/DankMaterialShell/template",
-      "source_url": "https://github.com/AvengeMedia/DankMaterialShell/archive/refs/tags/v${version}.tar.gz"
+      "source_template": "srcpkgs/dux-shell/template",
+      "source_url": "https://github.com/duxlabs-dev/dux-shell/archive/refs/tags/v${version}.tar.gz"
     },
     "FreeTube": {
       "type": "git",
@@ -337,12 +337,12 @@
       "source_template": "srcpkgs/cwal/template",
       "source_url": "https://github.com/nitinbhat972/cwal/archive/refs/tags/v${version}.tar.gz"
     },
-    "dankcalendar": {
+    "dux-calendar": {
       "type": "git",
-      "repo": "https://github.com/AvengeMedia/dankcalendar.git",
+      "repo": "https://github.com/duxlabs-dev/dux-calendar.git",
       "version_tag": "v{version}",
-      "source_template": "srcpkgs/dankcalendar/template",
-      "source_url": "https://github.com/AvengeMedia/dankcalendar/archive/refs/tags/v${version}.tar.gz"
+      "source_template": "srcpkgs/dux-calendar/template",
+      "source_url": "https://github.com/duxlabs-dev/dux-calendar/archive/refs/tags/v${version}.tar.gz"
     },
     "dashy": {
       "type": "git",

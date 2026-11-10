@@ -18,6 +18,7 @@ provides="xf86-input-evdev-${version}_${revision}"
 replaces="xf86-input-evdev>=0"
 
 pre_configure() {
+	export ACLOCAL_PATH="${XBPS_CROSS_BASE:+${XBPS_CROSS_BASE}/usr/share/aclocal}${ACLOCAL_PATH:+:${ACLOCAL_PATH}}"
 	NOCONFIGURE=1 ./autogen.sh
 }
 

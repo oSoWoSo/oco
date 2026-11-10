@@ -433,9 +433,9 @@ Create PR to Codeberg or GitHub
 | sf-dbus-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-dbus) | zenobit |  | KDE Convenience classes for DBus |
 | sf-doctools | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-doctools) | zenobit |  | DocBook-based documentation generation tools for SonicDE frameworks |
 | sf-doctools-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-doctools) | zenobit |  | DocBook-based documentation generation tools for SonicDE frameworks |
-| sf-gui-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
-| sf-gui-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
-| sf-gui-addons-geo-uri-handler | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
+| sf-gui-addons | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
+| sf-gui-addons-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
+| sf-gui-addons-geo-uri-handler | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
 | sf-icon-themes | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-icon-themes) | zenobit |  | Icon GUI utilities |
 | sf-icon-themes-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-icon-themes) | zenobit |  | Icon GUI utilities |
 | sf-internationalization | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-internationalization) | zenobit |  | Gettext-based UI text internationalization |

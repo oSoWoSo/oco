@@ -5,10 +5,10 @@ revision=1
 build_style=cmake
 _llvmver=21
 configure_args="-DKDE_INSTALL_QMLDIR=lib/qt6/qml $(vopt_bool python BUILD_PYTHON_BINDINGS)"
-hostmakedepends="pkg-config sonic-namespace doxygen qt6-tools qt6-base sf-cmake-modules
- $(vopt_if python "shiboken6 python3-build python3-setuptools llvm${_llvmver}")
- qt6-declarative-host-tools"
-makedepends="libX11-devel qt6-declarative-devel qt6-base-private-devel
+hostmakedepends="doxygen pkg-config qt6-base qt6-declarative-host-tools qt6-tools
+ sf-cmake-modules sonic-namespace
+ $(vopt_if python "shiboken6 python3-build python3-setuptools llvm${_llvmver}")"
+makedepends="libX11-devel qt6-declarative-devel qt6-base-private-devel qt6-base
  $(vopt_if python 'libshiboken6-devel libpyside6-devel python3-devel')"
 depends="sf-gui-addons-geo-uri-handler"
 short_desc="GUI helper components and utilities for SonicDE frameworks"

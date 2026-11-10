@@ -3,9 +3,8 @@ pkgname=sf-color-scheme
 version=6.31.0
 revision=1
 build_style=cmake
-hostmakedepends="sonic-namespace sf-cmake-modules qt6-tools qt6-base sf-settings gettext"
-makedepends="sf-settings-devel sf-gui-addons-devel sf-internationalization-devel
- qt6-base-devel qt6-base-private-devel qt6-tools-devel kconfig-devel"
+hostmakedepends="gettext qt6-base qt6-tools sf-cmake-modules sf-settings sonic-namespace"
+makedepends="kconfig-devel qt6-base-devel qt6-base-private-devel qt6-tools-devel sf-gui-addons-devel sf-internationalization-devel sf-settings-devel"
 short_desc="Classes to read and interact with KColorScheme"
 maintainer="zenobit <zen@osowoso.org>"
 license="LGPL-2.1-or-later"
@@ -21,8 +20,7 @@ post_patch() {
 }
 
 sf-color-scheme-devel_package() {
-	depends="${sourcepkg}>=${version}_${revision}
-	 sf-gui-addons-devel qt6-base-devel sf-internationalization-devel"
+	depends="${sourcepkg}>=${version}_${revision} qt6-base-devel sf-gui-addons-devel sf-internationalization-devel"
 	short_desc+=" - development files"
 	pkg_install() {
 		vmove usr/include

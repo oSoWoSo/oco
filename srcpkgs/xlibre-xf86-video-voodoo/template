@@ -18,13 +18,11 @@ provides="xf86-video-voodoo-${version}_${revision}"
 replaces="xf86-video-voodoo>=0"
 
 post_extract() {
-	if [ -z "$XBPS_CROSS_BASE" ]; then
-		case "$XBPS_TARGET_MACHINE" in
-			i686*)
-				vsed -i 's/CARD32 x;/uint32_t x;/' "${wrksrc}/src/voodoo_hardware.c"
-				;;
-		esac
-	fi
+	case "$XBPS_TARGET_MACHINE" in
+		i686*|armv6l-musl|armv7l)
+			vsed -i 's/CARD32 x;/uint32_t x;/' "${wrksrc}/src/voodoo_hardware.c"
+			;;
+	esac
 }
 
 pre_configure() {

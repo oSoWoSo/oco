@@ -72,6 +72,20 @@ do_check() {
 }
 
 post_install() {
+	# Install vbe/int10 SDK headers from sources —
+	# meson does not install them as SDK when -Dint10=false (non-x86),
+	# but drivers still need them to compile.
+
+	vbe_h=$(find ${wrksrc} -name 'vbe.h' | head -n1)
+	vbemodes_h=$(find ${wrksrc} -name 'vbeModes.h' | head -n1)
+	int10_h=$(find ${wrksrc} -name 'xf86int10.h' | head -n1)
+
+	if [ -n "$vbe_h" ] && [ -n "$vbemodes_h" ] && [ -n "$int10_h" ]; then
+		vinstall "$vbe_h" 644 usr/include/xorg
+		vinstall "$vbemodes_h" 644 usr/include/xorg
+		vinstall "$int10_h" 644 usr/include/xorg
+	fi
+
 	vinstall ${FILESDIR}/Xwrapper.config 644 etc/X11
 	vlicense COPYING
 	chmod 4755 ${DESTDIR}/usr/libexec/Xorg.wrap

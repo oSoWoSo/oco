@@ -1,7 +1,8 @@
 # Template file for 'sonic-namespace'
 pkgname=sonic-namespace
 version=1
-revision=1
+revision=2
+depends="python3"
 short_desc="SonicDE namespace transformation helper for package builds"
 maintainer="zenobit <zen@osowoso.org>"
 license="LGPL-2.0-or-later"

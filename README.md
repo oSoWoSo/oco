@@ -431,8 +431,8 @@ Create PR to Codeberg or GitHub
 | sf-data-views-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-data-views) | zenobit |  | Item views extending the Qt model-view framework |
 | sf-dbus | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-dbus) | zenobit |  | KDE Convenience classes for DBus |
 | sf-dbus-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-dbus) | zenobit |  | KDE Convenience classes for DBus |
-| sf-doctools | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-doctools) | zenobit |  | DocBook-based documentation generation tools for SonicDE frameworks |
-| sf-doctools-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-doctools) | zenobit |  | DocBook-based documentation generation tools for SonicDE frameworks |
+| sf-doctools | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-doctools) | zenobit |  | DocBook-based documentation generation tools for SonicDE frameworks |
+| sf-doctools-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-doctools) | zenobit |  | DocBook-based documentation generation tools for SonicDE frameworks |
 | sf-gui-addons | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
 | sf-gui-addons-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |
 | sf-gui-addons-geo-uri-handler | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-gui-addons) | zenobit |  | GUI helper components and utilities for SonicDE frameworks |

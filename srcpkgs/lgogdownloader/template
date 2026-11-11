@@ -1,6 +1,6 @@
 # Template file for 'lgogdownloader'
 pkgname=lgogdownloader
-version=3.19
+version=3.20
 revision=1
 build_style=cmake
 hostmakedepends="pkg-config"
@@ -10,4 +10,4 @@ maintainer="zenobit <zen@osowoso.org>"
 license="WTFPL"
 homepage="https://github.com/Sude-/lgogdownloader"
 distfiles="https://github.com/Sude-/lgogdownloader/archive/refs/tags/v${version}.tar.gz"
-checksum=96a9ecce87caa5495e3d5c37f2d4ce6bf993ca7de7281a57383be085456eca0f
+checksum=56c746488ff4117ef011270acf678205f15e16216cc0be19f631abdef557d063

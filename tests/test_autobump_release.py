@@ -194,6 +194,8 @@ class CheckPrTests(unittest.TestCase):
     """A batch pull request carries every changed template."""
 
     def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp, True)
         self.plan = {
             "pr_number": 7,
             "head_ref": "autobump/alpha-1.1",
@@ -222,6 +224,63 @@ class CheckPrTests(unittest.TestCase):
             self.files(["README.md", "srcpkgs/alpha/template", "srcpkgs/beta/template"]),
             repo="oSoWoSo/oco", plan=self.plan, allow_merged=True)
         self.assertEqual(packages, ["alpha", "beta"])
+
+    def make_repo_root(self, pack: str, *members: str) -> Path:
+        root = self.tmp / "repo"
+        (root / "srcpkgs").mkdir(parents=True)
+        for member in members:
+            (root / "srcpkgs" / member).mkdir()
+            (root / "srcpkgs" / member / "template").write_text(
+                f"pkgname={member}\nversion=1.0\nrevision=1\n", encoding="utf-8")
+        (root / ".github").mkdir(parents=True)
+        (root / ".github" / "autobump-packs.tsv").write_text(
+            "\n".join(f"{pack}\t{member}" for member in members) + "\n",
+            encoding="utf-8")
+        return root
+
+    def test_a_pack_batch_named_after_the_unmodified_requested_package_is_accepted(self):
+        # Issue #1053 asked to bump sonic-namespace, but only its pack
+        # members had an upstream update. The branch is named after the
+        # requested package while the changed packages are the pack members.
+        root = self.make_repo_root("sonic", "sonic-namespace", "sf-io",
+                                   "sf-keyring", "sf-settings-ui")
+        plan = dict(self.plan, head_ref="autobump/sonic-namespace-6.31.0.1",
+                    packages="sf-io sf-keyring sf-settings-ui")
+        packages = ["sf-io", "sf-keyring", "sf-settings-ui"]
+        pr = dict(self.pr, head_ref="autobump/sonic-namespace-6.31.0.1")
+        pr["head"] = {"repo": {"full_name": "oSoWoSo/oco"}, "sha": "a" * 40,
+                      "ref": "autobump/sonic-namespace-6.31.0.1"}
+        self.assertEqual(
+            release.check_pr(pr, self.files([f"srcpkgs/{p}/template" for p in packages]),
+                             repo="oSoWoSo/oco", plan=plan,
+                             allow_merged=True, repo_root=root),
+            packages)
+
+    def test_a_pack_batch_without_the_packs_file_is_still_rejected(self):
+        # Without a packs file (no trusted repo root) the branch target
+        # must literally be among the changed packages.
+        plan = dict(self.plan, head_ref="autobump/sonic-namespace-6.31.0.1",
+                    packages="sf-io")
+        with self.assertRaises(ValueError):
+            release.check_pr(
+                self.pr,
+                self.files(["srcpkgs/sf-io/template"]),
+                repo="oSoWoSo/oco", plan=plan, allow_merged=True)
+
+    def test_a_batch_target_unrelated_to_any_changed_pack_is_rejected(self):
+        # The changed package sf-io is not a member of the sonic pack that
+        # claims the branch target, so the branch name is not explained.
+        root = self.make_repo_root("sonic", "sonic-namespace")
+        (root / "srcpkgs" / "sf-io").mkdir()
+        (root / "srcpkgs" / "sf-io" / "template").write_text(
+            "pkgname=sf-io\nversion=1.0\nrevision=1\n", encoding="utf-8")
+        plan = dict(self.plan, head_ref="autobump/sonic-namespace-6.31.0.1",
+                    packages="sf-io")
+        with self.assertRaises(ValueError):
+            release.check_pr(
+                self.pr,
+                self.files(["srcpkgs/sf-io/template"]),
+                repo="oSoWoSo/oco", plan=plan, allow_merged=True, repo_root=root)
 
     def test_a_patch_file_under_a_changed_package_is_accepted(self):
         plan = dict(self.plan, packages="alpha", head_ref="autobump/alpha-1.1")

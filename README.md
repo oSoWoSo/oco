@@ -343,7 +343,7 @@ Create PR to Codeberg or GitHub
 | lycan | 0.1.2 | [home](https://github.com/tutkuofnight/lycan) | Bella109 | x86_64* | Lightweight PWA manager for Linux |
 | menu-themes | 0.9.0 | [home](https://github.com/kando-menu/menu-themes) | zenobit | x86_64 aarch64 | Collection of menu themes for Kando |
 | mesa-amber | 26.1.2 | [home](https://www.mesa3d.org/) | Bella109 |  | Mesa for older hardware (legacy driver build) |
-| morewaita-icon-theme | 50.1 | [home](https://github.com/somepaulo/MoreWaita) | Coolllyn |  | Expanded Adwaita-styled companion icon theme for GNOME Shell |
+| MoreWaita | 50.1 | [home](https://github.com/somepaulo/MoreWaita) | Coolllyn |  | Expanded Adwaita-styled companion icon theme for GNOME Shell |
 | morgenwm | 0.4.0 | [home](https://codeberg.org/LinuxNation/MorgenWM) | LinuxNation |  | Scrolling window manager with subframes for the River compositor |
 | msedit | 2.0.0 | [home](https://github.com/microsoft/edit) | Coolllyn |  | Simple editor for simple needs |
 | nano-syntax-highlighting | 2026.11.01 | [home](https://github.com/galenguyer/nano-syntax-highlighting) | Coolllyn |  | Improved nano syntax highlighting files |

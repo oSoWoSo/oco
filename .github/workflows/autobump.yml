@@ -136,6 +136,7 @@ on:
         - lycan
         - menu-themes
         - mesa-amber
+        - MoreWaita
         - morgenwm
         - msedit
         - nano-syntax-highlighting

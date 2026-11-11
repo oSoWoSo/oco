@@ -1,5 +1,5 @@
 ## This is:
-vOid Community repOsitory (oco)  
+vOid Community repOsitory (oco)
 aka
 - Void User Repository
 - testing repository (CI candidate packages)
@@ -13,41 +13,41 @@ Providing:
 by community for community
 
 ## DISCLAIMER
-This project is **not affiliated with or endorsed by the Void Linux project** or its maintainers.  
-It is an **unofficial community repository** designed to simplify managing and building user-contributed packages using the void-packages build system.  
+This project is **not affiliated with or endorsed by the Void Linux project** or its maintainers.
+It is an **unofficial community repository** designed to simplify managing and building user-contributed packages using the void-packages build system.
 Use at your own discretion.
 
 ## Overview
-A collection of template files for building packages on Void Linux.  
-If you dont wish to build the packages locally,  
-https://repo.osowoso.org repository provides prebuilt binaries.  
+A collection of template files for building packages on Void Linux.
+If you dont wish to build the packages locally,
+https://repo.osowoso.org repository provides prebuilt binaries.
 Pick your architecture there and you will see
 
 ## Structure (PRs accepted anywhere 🤗)
-- Codeberg repository with templates  
+- Codeberg repository with templates
 https://codeberg.org/oSoWoSo/oco
-- Github repository (CI - Here we build binary packages)  
+- Github repository (CI - Here we build binary packages)
 https://github.com/oSoWoSo/oco
-- To make CI quicker we use daily updated Bootstrap Docker images from  
+- To make CI quicker we use daily updated Bootstrap Docker images from
 https://github.com/oSoWoSo/oco-builder
-- Binary repositories  
+- Binary repositories
 https://repo.osowoso.org
 - Just built (RSS feed)
 https://repo.osowoso.org/feed.xml
 
 ## What we don't build? (From source)
-Browsers: It's waste of energy and when you finish building is maybe already new version out  
-We provide repackaged binaries, they all have `-bin` after <pkgname>  
+Browsers: It's waste of energy and when you finish building is maybe already new version out
+We provide repackaged binaries, they all have `-bin` after <pkgname>
 (You can use AppImages and manage them with [AM](https://github.com/ivan-hc/AM), or flatpaks. They are usualy always latest)
 
 ## How to use
-in https://repo.osowoso.org/`(architecture)`  
-are easy to understand READMEs  
+in https://repo.osowoso.org/`(architecture)`
+are easy to understand READMEs
 Just pick your architecture
 
 ### Testing repository
-CI candidate packages are kept separate from production at  `https://repo.osowoso.org/testing/<architecture>/`  
-Browse the [testing repository guide](https://repo.osowoso.org/testing.html) for target architectures,  
+CI candidate packages are kept separate from production at  `https://repo.osowoso.org/testing/<architecture>/`
+Browse the [testing repository guide](https://repo.osowoso.org/testing.html) for target architectures,
 publication rules, and install instructions.
 
 For a one-off install without changing permanent configuration:
@@ -80,58 +80,58 @@ sudo cp /tmp/oco-repo-key.plist /var/db/xbps/keys/df:ec:10:ef:5c:03:e9:e0:9e:86:
 ## How to contribute
 
 ### Clone using ocoman script
-Running `./ocoman -i` will clone void-packages and oco into ~/void  
+Running `./ocoman -i` will clone void-packages and oco into ~/void
 PS: Destination could be changed look at `./ocoman -h`
 
 ### Clone manualy A or B
-A) Clone Codeberg repo  
-`git clone https://codeberg.org/oSoWoSo/oco`  
-B) Clone GitHub repo  
-`git clone https://codeberg.org/oSoWoSo/oco`  
+A) Clone Codeberg repo
+`git clone https://codeberg.org/oSoWoSo/oco`
+B) Clone GitHub repo
+`git clone https://codeberg.org/oSoWoSo/oco`
 Copy srcpkgs directory to cloned [void-packages](https://github.com/void-linux/void-packages)
 
 Then:
 
-Use `xnew <pkgname>` to create new template  
-Fill everyhing as needed and remove rest  
-Use `xlint <pkgname>` to lint templates  
-Build templates with tests `./xbps-src -Q pkg <pkgname>`  
-(Tests must be allowed in $XBPS_DISTDIR/etc/conf)  
-We build for x86_64 and aarch64 + musl variants  
-(I am usualy trying x86_64 and aarch64-musl crossbuild)  
-Add your changes  
-When you change any shlib from upstream void-packages,  
-changes must be reflected in `shlibs_remove` and `shlibe_append`  
+Use `xnew <pkgname>` to create new template
+Fill everyhing as needed and remove rest
+Use `xlint <pkgname>` to lint templates
+Build templates with tests `./xbps-src -Q pkg <pkgname>`
+(Tests must be allowed in $XBPS_DISTDIR/etc/conf)
+We build for x86_64 and aarch64 + musl variants
+(I am usualy trying x86_64 and aarch64-musl crossbuild)
+Add your changes
+When you change any shlib from upstream void-packages,
+changes must be reflected in `shlibs_remove` and `shlibe_append`
 When you add new shlib add it only to `shlibe_append`
 
 ### Updating package groups
-`./bump.sh <group> <operation>` manages the package groups defined in  
-`.github/autobump-packs.tsv` against the void-packages checkout at `~/void` by  
-default. Add a group and its package-name glob patterns to that file to make  
-the group available to both the helper and CI autobumping. Set `XBPS_DISTDIR`  
-(or `CLONE_DEST`) to use another checkout; `sourceDir` and `destinationDir`  
-can override the source and OCO template directories. Operations include  
-`--lint`, `--build`, `--bump`, `--copy`, `--install`, `--order`, and `--all`.  
+`./bump.sh <group> <operation>` manages the package groups defined in
+`.github/autobump-packs.tsv` against the void-packages checkout at `~/void` by
+default. Add a group and its package-name glob patterns to that file to make
+the group available to both the helper and CI autobumping. Set `XBPS_DISTDIR`
+(or `CLONE_DEST`) to use another checkout; `sourceDir` and `destinationDir`
+can override the source and OCO template directories. Operations include
+`--lint`, `--build`, `--bump`, `--copy`, `--install`, `--order`, and `--all`.
 Review template and shlibs changes before committing them.
 
-The helper's `--order` and `--build` use `xbps-src sort-dependencies` to sort  
-the XBPS-known dependency graph without compiling packages. XBPS evaluates  
-template-declared dependencies and subpackages; runtime dependencies that are  
-only discoverable from built binaries cannot be guaranteed before a build.  
+The helper's `--order` and `--build` use `xbps-src sort-dependencies` to sort
+the XBPS-known dependency graph without compiling packages. XBPS evaluates
+template-declared dependencies and subpackages; runtime dependencies that are
+only discoverable from built binaries cannot be guaranteed before a build.
 Sonic's `sonic-*` pattern automatically includes new Sonic templates.
 
-The autobump workflow runs in the `oco-builder` image and resolves the current  
-graph with `xbps-src show-build-deps`, without compiling packages. When a  
-package in a configured pack has an upstream update, CI checks the whole pack  
-for newer versions and revision-bumps only known direct consumers of changed  
-packages. The resulting PR uses the ordinary template-change build workflow;  
-XBPS can discover any remaining build-time dependencies there. Add a pattern  
+The autobump workflow runs in the `oco-builder` image and resolves the current
+graph with `xbps-src show-build-deps`, without compiling packages. When a
+package in a configured pack has an upstream update, CI checks the whole pack
+for newer versions and revision-bumps only known direct consumers of changed
+packages. The resulting PR uses the ordinary template-change build workflow;
+XBPS can discover any remaining build-time dependencies there. Add a pattern
 row to `.github/autobump-packs.tsv` when introducing another pack.
 
-The GitHub build workflow detects changed templates under `srcpkgs/` and builds  
-the affected packages with their required build dependencies in `oco-builder`  
-images. The local `bump.sh` helper is not run directly by CI.  
-After adding template, run `./ocoman -u` to regenerate templates list and table  
+The GitHub build workflow detects changed templates under `srcpkgs/` and builds
+the affected packages with their required build dependencies in `oco-builder`
+images. The local `bump.sh` helper is not run directly by CI.
+After adding template, run `./ocoman -u` to regenerate templates list and table
 One commit per template, mesage: `<pkgname> <version>`
 
 Create PR to Codeberg or GitHub
@@ -250,8 +250,9 @@ Create PR to Codeberg or GitHub
 | dux-search | 2.1.1 | [home](https://duxlabs.dev/docs/dsearch/) | AvengeMedia |  | Blazingly fast filesystem search tool (Dux Shell) |
 | dux-shell | 2.1.2 | [home](https://github.com/duxlabs-dev/dux-shell) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
 | easybashgui | 15.0.2 | [home](https://github.com/BashGui/easybashgui) | zenobit |  | Bash functions library that aims to give simple GUI functions |
+| edit | 2.0.0 | [home](https://github.com/microsoft/edit) | Coolllyn |  | Simple editor for simple needs |
 | faugus-launcher | 2.5.7 | [home](https://github.com/Faugus/faugus-launcher) | zenobit |  | Simple and lightweight app for running Windows games using UMU-Launcher |
-| Favnyr | 0.3.7 | [home](https://github.com/GlitchAwakened/Favnyr) | zenobit |  | Modern and lightweight file manager for Windows and Linux |
+| Favnyr | 0.3.8 | [home](https://github.com/GlitchAwakened/Favnyr) | zenobit |  | Modern and lightweight file manager for Windows and Linux |
 | fcitx5-lotus | 6.1.0 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
 | fcitx5-lotus-settings | 6.1.0 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
 | floorp-bin | 12.21.1 | [home](https://github.com/Floorp-Projects/Floorp) | zenobit | x86_64 aarch64 | Browser built for keeping the Open, Private and Sustainable Web alive |
@@ -418,13 +419,13 @@ Create PR to Codeberg or GitHub
 | sf-auth | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
 | sf-auth-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
 | sf-auth-tools | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
-| sf-autocomplete | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
-| sf-autocomplete-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
-| sf-bookmarks | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
-| sf-bookmarks-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
+| sf-autocomplete | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
+| sf-autocomplete-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
+| sf-bookmarks | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
+| sf-bookmarks-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
 | sf-cmake-modules | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-cmake-modules) | zenobit |  | Extended CMake modules and build utilities for SonicDE frameworks |
-| sf-color-scheme | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
-| sf-color-scheme-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
+| sf-color-scheme | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
+| sf-color-scheme-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
 | sf-core-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |
 | sf-core-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |
 | sf-crash-handler | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-crash-handler) | zenobit |  | Graceful handling of application crashes |
@@ -446,10 +447,10 @@ Create PR to Codeberg or GitHub
 | sf-internationalization-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-internationalization) | zenobit |  | Gettext-based UI text internationalization |
 | sf-io | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-io) | zenobit |  | Resource and network access abstraction layer for SonicDE |
 | sf-io-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-io) | zenobit |  | Resource and network access abstraction layer for SonicDE |
-| sf-keyring | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keyring) | zenobit |  | Safe desktop-wide storage for passwords |
-| sf-keyring-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keyring) | zenobit |  | Safe desktop-wide storage for passwords |
 | sf-keybind | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keybind) | zenobit |  | Global workspace shortcut system for SonicDE |
 | sf-keybind-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keybind) | zenobit |  | Global workspace shortcut system for SonicDE |
+| sf-keyring | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keyring) | zenobit |  | Safe desktop-wide storage for passwords |
+| sf-keyring-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keyring) | zenobit |  | Safe desktop-wide storage for passwords |
 | sf-logging | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-logging) | zenobit |  | System logging library for SonicDE |
 | sf-logging-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-logging) | zenobit |  | System logging library for SonicDE |
 | sf-notifications | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-notifications) | zenobit |  | Sonic Desktop notifications |
@@ -458,8 +459,8 @@ Create PR to Codeberg or GitHub
 | sf-progress-ui-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-progress-ui) | zenobit |  | Widgets for showing progress of asynchronous jobs |
 | sf-settings | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
 | sf-settings-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
-| sf-settings-ui | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
-| sf-settings-ui-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
+| sf-settings-ui | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
+| sf-settings-ui-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
 | sf-silver-icons | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
 | sf-silver-icons-library | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
 | sf-silver-icons-library-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
@@ -469,6 +470,8 @@ Create PR to Codeberg or GitHub
 | sf-widgets-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-widgets-addons) | zenobit |  | Large set of desktop widgets |
 | sf-windowsystem | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-windowsystem) | zenobit |  | Access to the windowing system (SonicDE framework fork) |
 | sf-windowsystem-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-windowsystem) | zenobit |  | Access to the windowing system (SonicDE framework fork) |
+| sf-xml-gui | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-xml-gui) | zenobit |  | Framework for managing menu and toolbar actions |
+| sf-xml-gui-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-xml-gui) | zenobit |  | Framework for managing menu and toolbar actions |
 | sfizz-cli | 1.2.3 | [home](https://sfztools.github.io/sfizz/) | Trve_AY |  | SFZ sampler |
 | sfizz-git | 1.2.3 | [home](https://sfztools.github.io/sfizz/) | Trve_AY |  | SFZ sampler |
 | sfizz-lib | 1.2.3 | [home](https://sfztools.github.io/sfizz/) | Trve_AY |  | SFZ sampler |
@@ -483,7 +486,7 @@ Create PR to Codeberg or GitHub
 | sonic-daemon | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-daemon) | zenobit |  | Central daemon of Sonic work spaces |
 | sonic-daemon-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-daemon) | zenobit |  | Central daemon of Sonic work spaces |
 | sonic-namespace | 1 | [home](https://github.com/Sonic-DE) | zenobit |  | SonicDE namespace transformation helper for package builds |
-| sonic-oxygen-icons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-oxygen-icons) | zenobit |  | Oxygen icon theme |
+| sonic-oxygen-icons | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-oxygen-icons) | zenobit |  | Oxygen icon theme |
 | sonic-polkit | 0.201.2 | [home](https://github.com/Sonic-DE/sonic-polkit) | zenobit |  | Qt wrapper around Polkit-1 client libraries |
 | sonic-polkit-devel | 0.201.2 | [home](https://github.com/Sonic-DE/sonic-polkit) | zenobit |  | Qt wrapper around Polkit-1 client libraries |
 | surfer-cli | 7.4.1 | [home](https://github.com/cloudron-io/surfer) | zenobit |  | Command line interface for surfer |

@@ -1,7 +1,7 @@
 # Template file for 'MoreWaita'
 pkgname=MoreWaita
 version=50.1
-revision=1
+revision=2
 build_style=meson
 depends="adwaita-icon-theme hicolor-icon-theme"
 short_desc="Expanded Adwaita-styled companion icon theme for GNOME Shell"

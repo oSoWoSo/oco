@@ -360,6 +360,8 @@
 !/srcpkgs/shattered-pixel-dungeon
 !/srcpkgs/simplex-chat
 !/srcpkgs/simplex-chat-desktop
+!/srcpkgs/sonic-crypto-library
+!/srcpkgs/sonic-crypto-library-devel
 !/srcpkgs/sonic-namespace
 !/srcpkgs/sonic-oxygen-icons
 !/srcpkgs/sonic-polkit

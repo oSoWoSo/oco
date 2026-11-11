@@ -225,6 +225,7 @@ on:
         - shaderc
         - shattered-pixel-dungeon
         - simplex-chat
+        - sonic-crypto-library
         - sonic-namespace
         - sonic-oxygen-icons
         - sonic-polkit

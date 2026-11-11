@@ -216,6 +216,7 @@ on:
         - sf-internationalization
         - sf-io
         - sf-keyring
+        - sf-keybind
         - sf-logging
         - sf-notifications
         - sf-progress-ui

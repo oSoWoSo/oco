@@ -448,6 +448,8 @@ Create PR to Codeberg or GitHub
 | sf-io-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-io) | zenobit |  | Resource and network access abstraction layer for SonicDE |
 | sf-keyring | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keyring) | zenobit |  | Safe desktop-wide storage for passwords |
 | sf-keyring-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keyring) | zenobit |  | Safe desktop-wide storage for passwords |
+| sf-keybind | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keybind) | zenobit |  | Global workspace shortcut system for SonicDE |
+| sf-keybind-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keybind) | zenobit |  | Global workspace shortcut system for SonicDE |
 | sf-logging | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-logging) | zenobit |  | System logging library for SonicDE |
 | sf-logging-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-logging) | zenobit |  | System logging library for SonicDE |
 | sf-notifications | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-notifications) | zenobit |  | Sonic Desktop notifications |

@@ -213,6 +213,7 @@ on:
         - sf-gui-addons
         - sf-icon-themes
         - sf-internationalization
+        - sf-keyring
         - sf-logging
         - sf-notifications
         - sf-progress-ui

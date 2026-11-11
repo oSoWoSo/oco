@@ -67,7 +67,49 @@ def hash_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def check_pr(pr: dict, files: list, *, repo: str, plan: dict, allow_merged: bool):
+def pack_association(repo_root: Path) -> dict[str, str]:
+    """Map each real package to the pack that claims it, first match wins.
+
+    Packs are configured in .github/autobump-packs.tsv as `<pack>\t<glob>`.
+    The association is read from the trusted checkout, not from the PR.
+    """
+    listing = repo_root / ".github" / "autobump-packs.tsv"
+    if not listing.is_file():
+        return {}
+    rules = []
+    for line in listing.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        fields = line.split()
+        if len(fields) == 2:
+            rules.append((fields[0], fields[1]))
+    association: dict[str, str] = {}
+    srcpkgs = repo_root / "srcpkgs"
+    if srcpkgs.is_dir():
+        for entry in sorted(srcpkgs.iterdir()):
+            if not entry.is_dir():
+                continue
+            for pack, pattern in rules:
+                if entry.name not in association and fnmatch.fnmatchcase(entry.name, pattern):
+                    association[entry.name] = pack
+    return association
+
+
+def branch_target_package(head_ref: str, known_packages: set[str]) -> str | None:
+    """Return the package an autobump branch is named after, if any."""
+    prefix = "autobump/"
+    if not head_ref.startswith(prefix):
+        return None
+    rest = head_ref[len(prefix):]
+    for package in sorted(known_packages, key=len, reverse=True):
+        if rest.startswith(package + "-"):
+            return package
+    return None
+
+
+def check_pr(pr: dict, files: list, *, repo: str, plan: dict, allow_merged: bool,
+             repo_root: Path | None = None):
     number = int(plan["pr_number"])
     require(pr["number"] == number, "PR number mismatch")
     require(pr["base"]["ref"] == "OCO", "PR must target OCO")
@@ -91,8 +133,22 @@ def check_pr(pr: dict, files: list, *, repo: str, plan: dict, allow_merged: bool
     require(bool(template_paths), "Autobump PR must modify at least one package template")
     packages = [path.split("/")[1] for path in template_paths]
     require(len(set(packages)) == len(packages), "Duplicate package template in PR file list")
-    require(any(head_ref.startswith(f"autobump/{package}-") for package in packages),
-            "Autobump branch target is not among the changed packages")
+    target = branch_target_package(head_ref, set(packages))
+    if target is None and repo_root is not None:
+        # A pack batch is named after the requested package (the issue
+        # target), which may not itself be modified when only its pack
+        # members have an upstream update. Accept the branch when the
+        # target and the changed set belong to the same configured pack.
+        known = set(packages) | set(pack_association(repo_root))
+        target = branch_target_package(head_ref, known)
+        if target not in packages:
+            packs = pack_association(repo_root)
+            target_pack = packs.get(target)
+            require(target_pack is not None and
+                    any(packs.get(package) == target_pack for package in packages),
+                    "Autobump branch target is not among the changed packages")
+    else:
+        require(target in packages, "Autobump branch target is not among the changed packages")
     def allowed_change(path: str) -> bool:
         return path == "README.md" or path == ".github/autobump-dependencies.tsv" or any(
             path.startswith(f"srcpkgs/{package}/") for package in packages)
@@ -340,7 +396,8 @@ def prepare(args):
     token = api_token()
     pr = github_api(repo, f"pulls/{pr_number}", token)
     files = github_api(repo, f"pulls/{pr_number}/files?per_page=100", token)
-    packages = check_pr(pr, files, repo=repo, plan=plan, allow_merged=True)
+    packages = check_pr(pr, files, repo=repo, plan=plan, allow_merged=True,
+                        repo_root=args.templates.parent)
     expected_versions = {
         package: template_version(repo, package, plan["head_sha"], token)
         for package in packages
@@ -376,7 +433,8 @@ def merge(args):
     number = int(info["pr_number"])
     pr = github_api(repo, f"pulls/{number}", token)
     files = github_api(repo, f"pulls/{number}/files?per_page=100", token)
-    check_pr(pr, files, repo=repo, plan=info, allow_merged=True)
+    check_pr(pr, files, repo=repo, plan=info, allow_merged=True,
+             repo_root=args.templates.parent)
 
     if pr["merged"]:
         sha = pr["merge_commit_sha"]

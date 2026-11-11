@@ -334,6 +334,8 @@
 !/srcpkgs/sf-icon-themes-devel
 !/srcpkgs/sf-internationalization
 !/srcpkgs/sf-internationalization-devel
+!/srcpkgs/sf-io
+!/srcpkgs/sf-io-devel
 !/srcpkgs/sf-keyring
 !/srcpkgs/sf-keyring-devel
 !/srcpkgs/sf-logging

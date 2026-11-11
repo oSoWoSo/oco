@@ -214,6 +214,7 @@ on:
         - sf-gui-addons
         - sf-icon-themes
         - sf-internationalization
+        - sf-io
         - sf-keyring
         - sf-logging
         - sf-notifications

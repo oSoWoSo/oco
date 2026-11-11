@@ -140,6 +140,7 @@
 !/srcpkgs/dux-search
 !/srcpkgs/dux-shell
 !/srcpkgs/easybashgui
+!/srcpkgs/edit
 !/srcpkgs/faugus-launcher
 !/srcpkgs/Favnyr
 !/srcpkgs/fcitx5-lotus
@@ -336,10 +337,10 @@
 !/srcpkgs/sf-internationalization-devel
 !/srcpkgs/sf-io
 !/srcpkgs/sf-io-devel
-!/srcpkgs/sf-keyring
-!/srcpkgs/sf-keyring-devel
 !/srcpkgs/sf-keybind
 !/srcpkgs/sf-keybind-devel
+!/srcpkgs/sf-keyring
+!/srcpkgs/sf-keyring-devel
 !/srcpkgs/sf-logging
 !/srcpkgs/sf-logging-devel
 !/srcpkgs/sf-notifications
@@ -359,6 +360,8 @@
 !/srcpkgs/sf-widgets-addons-devel
 !/srcpkgs/sf-windowsystem
 !/srcpkgs/sf-windowsystem-devel
+!/srcpkgs/sf-xml-gui
+!/srcpkgs/sf-xml-gui-devel
 !/srcpkgs/sfizz-cli
 !/srcpkgs/sfizz-git
 !/srcpkgs/sfizz-lib

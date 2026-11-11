@@ -148,7 +148,7 @@ Create PR to Codeberg or GitHub
 | android-sdk | 36 | [home](https://developer.android.com/studio) | zenobit | x86_64 | Android SDK platform 36 and build-tools 29.0.3 |
 | aquamarine | 0.16.0 | [home](https://github.com/hyprwm/aquamarine) | zenobit |  | Aquamarine is a very light linux rendering backend library |
 | aquamarine-devel | 0.16.0 | [home](https://github.com/hyprwm/aquamarine) | zenobit |  | Aquamarine is a very light linux rendering backend library |
-| better-sqlite3 | 13.1.0 | [home](https://github.com/WiseLibs/better-sqlite3) | zenobit |  | Fastest and simplest SQLite library for Node.js |
+| better-sqlite3 | 13.1.1 | [home](https://github.com/WiseLibs/better-sqlite3) | zenobit |  | Fastest and simplest SQLite library for Node.js |
 | blocaled | 0.7 | [home](https://github.com/lfs-book/blocaled) | zenobit |  | Standalone implementation of the localed D-Bus service |
 | BoxBuddy | 2.6.2 | [home](https://github.com/Dvlv/BoxBuddyRS) | zenobit | x86_64 | Graphical Interface for Distrobox |
 | brave-browser-bin | 1.99.55 | [home](https://www.brave.com/) | zenobit | x86_64 aarch64 | One of the most private browsers built on top off Chromium project |

@@ -1,6 +1,6 @@
 # Template file for 'ly'
 pkgname=ly
-version=1.4.0
+version=1.5.0
 revision=1
 archs="i686 x86_64"
 build_style=zig-build
@@ -9,12 +9,58 @@ makedepends="pam-devel libxcb-devel"
 depends="pam util-linux"
 short_desc="Lightweight TUI (ncurses-like) display manager for Linux and BSD"
 maintainer="zenobit <zen@osowoso.org>"
-license="WTFPL-2.0"
+license="WTFPL"
 homepage="https://codeberg.org/fairyglade/ly"
 changelog="https://codeberg.org/fairyglade/ly/releases/"
 distfiles="https://codeberg.org/fairyglade/ly/archive/v${version}.tar.gz"
-checksum=3ee8f2f8c14a00437f7c3ec044bf5c95a6be45036c7ed5aa43c6f9eb91bf925a
+checksum=115a7f7fb281803ca7f9e0ddbdf76834a53f7fa6bc702d766d03772ce1976dc3
 nopie_files="/usr/bin/ly"
+
+# zig 0.17 removed --global-cache-dir and hardened libc file parsing (all
+# fields required, cc_dir non-empty on Linux), so the shared zig-build style
+# no longer works unmodified.
+do_build() {
+	# xlint rejects bare empty assignments, so "_zig_libc_empty" carries
+	# the empty value for the MSVC-only libc fields.
+	# Passing -Dtarget for native builds makes the bundled translate_c see a
+	# foreign target query (e.g. x86_64-linux-gnu from the Void build profile),
+	# which disables native path detection and breaks system header lookup
+	# (<security/pam_appl.h>). Omit it for native builds so translate_c runs
+	# as --target=native-native; keep it (and a cpu) for cross builds.
+	local zig_cpu _search_prefix _target_arg _zig_libc_empty=$(true)
+
+	if [ "$CROSS_BUILD" ]; then
+		zig_cpu="${XBPS_CROSS_ZIG_CPU}"
+		_search_prefix="/"
+		_target_arg="-Dtarget=${XBPS_CROSS_ZIG_TARGET}"
+	else
+		zig_cpu="${XBPS_ZIG_CPU}"
+		_search_prefix="/usr"
+		_target_arg=$(true)
+	fi
+
+	cat > xbps_zig_libc.txt <<-EOF
+		include_dir=${XBPS_CROSS_BASE}/usr/include
+		sys_include_dir=${XBPS_CROSS_BASE}/usr/include
+		crt_dir=${XBPS_CROSS_BASE}/usr/lib
+		msvc_lib_dir=${_zig_libc_empty}
+		kernel32_lib_dir=${_zig_libc_empty}
+		gcc_dir=${XBPS_CROSS_BASE}/usr/lib
+		darwin_sdk_dir=${_zig_libc_empty}
+	EOF
+
+	DESTDIR="zig-out" ZIG_GLOBAL_CACHE_DIR=/host/zig zig build \
+		-j"${XBPS_MAKEJOBS}" \
+		--sysroot "${XBPS_CROSS_BASE:-/}" \
+		--search-prefix "${_search_prefix}" \
+		--prefix /usr \
+		--libc xbps_zig_libc.txt \
+		--release=safe \
+		--verbose \
+		-Dcpu="${zig_cpu}" ${_target_arg} \
+		install \
+		${configure_args}
+}
 
 do_install() {
 	vbin zig-out/usr/bin/ly

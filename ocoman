@@ -673,30 +673,6 @@ generate_list() {
 	echo 'Templates list synchronized from .gitignore'
 }
 
-generate_readme() {
-	_tmp=$(mktemp)
-
-	awk '/^## Available/{exit} {print}' "$README" > "$_tmp"
-
-	{
-		echo '## Available templates (packages when built successfully)'
-		echo '| package | version | home | maintainer | notes | description |'
-		echo '|:--------|:--------|:-----|:-----------|:------|:------|'
-		while IFS= read -r _pkg; do
-			_tpl="$SRCPKGS/$_pkg/template"
-			[ -f "$_tpl" ] || continue
-			read_template_fields "$_tpl"
-
-			_home=''
-			[ -n "$_tpl_homepage" ] && _home="[home](${_tpl_homepage})"
-
-			echo "| $_pkg | $_tpl_version | $_home | $_tpl_maintainer | $_tpl_archs | $_tpl_short_desc |"
-		done < "$TEMPLATES_LIST"
-	} >> "$_tmp"
-
-	mv "$_tmp" "$README"
-	echo 'README: updated'
-}
 
 
 detect_changes() {
@@ -1923,7 +1899,6 @@ main() {
 	if [ "$_do_update" = 1 ]; then
 		[ -f "$README" ] || fatal "README not found: ${README}"
 		generate_list
-		generate_readme
 		detect_changes
 		suggest_feeds
 	fi

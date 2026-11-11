@@ -3,7 +3,7 @@ set -euo pipefail
 
 git config user.name "oSoWoSo-bot"
 git config user.email "mail@osowoso.org"
-git add .gitignore README.md
+git add .gitignore
 if ! git diff --cached --quiet; then
   # Amend generated metadata into the current HEAD
   git commit --amend --no-edit

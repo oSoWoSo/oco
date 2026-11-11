@@ -79,7 +79,6 @@ EOF
   actual_hash="${actual_hash%% *}"
   [ "$committed_hash" = "$actual_hash" ]
   [ "$(git show HEAD:.github/autobump-dependencies.tsv | awk -F '\t' '$1 == "alpha" { print $3 }')" = "" ]
-  [ "$(git show HEAD:README.md)" = "regenerated README" ]
   [ -s "$PUSH_LOG" ]
 }
 

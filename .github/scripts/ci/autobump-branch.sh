@@ -92,12 +92,7 @@ PY
 	git commit --amend --no-edit
 fi
 
-./ocoman -u
-git add README.md
-if ! git diff --cached --quiet; then
-	# The README and dependency cache are amended into the last package commit.
-	git commit --amend --no-edit
-fi
+# README is no longer generated here; package list lives on the website.
 
 git push --force "https://x-access-token:${OCO_TOKEN}@github.com/${GH_REPO}.git" "HEAD:${BRANCH}"
 

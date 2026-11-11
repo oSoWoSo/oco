@@ -411,6 +411,8 @@ Create PR to Codeberg or GitHub
 | rustdesk | 1.4.9 | [home](https://github.com/rustdesk/rustdesk) | Bella109 | x86_64* | Alternative to AnyDesk |
 | sdkmanager | 0.7.1 | [home](https://gitlab.com/fdroid/sdkmanager) | zenobit |  | Drop-in replacement for Android sdkmanager written in Python |
 | seamonkey-bin | 2.53.24 | [home](https://www.seamonkey-project.org/) | zenobit | x86_64 | All-in-one internet application suite |
+| sf-app-info | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-app-info) | zenobit |  | Query info about installed applications and their associated file types |
+| sf-app-info-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-app-info) | zenobit |  | Query info about installed applications and their associated file types |
 | sf-archive | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-archive) | zenobit |  | Qt addon providing access to numerous types of archives |
 | sf-archive-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-archive) | zenobit |  | Qt addon providing access to numerous types of archives |
 | sf-auth | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |

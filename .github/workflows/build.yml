@@ -250,6 +250,7 @@ on:
         - rustdesk
         - sdkmanager
         - seamonkey-bin
+        - sf-app-info
         - sf-archive
         - sf-auth
         - sf-autocomplete

@@ -72,3 +72,4 @@ libSF6IconWidgets.so.6 sf-icon-themes-6.31.0_1
 libSF6ItemViews.so.6 sf-data-views-6.31.0_1
 libSF6Notifications.so.6 sf-notifications-6.31.0_1
 libSF6JobWidgets.so.6 sf-progress-ui-6.31.0.1_1
+libSF6Service.so.6 sf-app-info-6.31.0.1_1

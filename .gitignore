@@ -301,6 +301,8 @@
 !/srcpkgs/rustdesk
 !/srcpkgs/sdkmanager
 !/srcpkgs/seamonkey-bin
+!/srcpkgs/sf-app-info
+!/srcpkgs/sf-app-info-devel
 !/srcpkgs/sf-archive
 !/srcpkgs/sf-archive-devel
 !/srcpkgs/sf-auth

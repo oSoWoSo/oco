@@ -334,6 +334,8 @@
 !/srcpkgs/sf-logging-devel
 !/srcpkgs/sf-notifications
 !/srcpkgs/sf-notifications-devel
+!/srcpkgs/sf-progress-ui
+!/srcpkgs/sf-progress-ui-devel
 !/srcpkgs/sf-settings
 !/srcpkgs/sf-settings-devel
 !/srcpkgs/sf-settings-ui

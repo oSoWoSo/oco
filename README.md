@@ -444,6 +444,8 @@ Create PR to Codeberg or GitHub
 | sf-logging-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-logging) | zenobit |  | System logging library for SonicDE |
 | sf-notifications | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-notifications) | zenobit |  | Sonic Desktop notifications |
 | sf-notifications-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-notifications) | zenobit |  | Sonic Desktop notifications |
+| sf-progress-ui | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-progress-ui) | zenobit |  | Widgets for showing progress of asynchronous jobs |
+| sf-progress-ui-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-progress-ui) | zenobit |  | Widgets for showing progress of asynchronous jobs |
 | sf-settings | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
 | sf-settings-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
 | sf-settings-ui | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |

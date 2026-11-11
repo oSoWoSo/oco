@@ -3,10 +3,11 @@ Subject: add Zig libc configuration for native builds
 
 --- /dev/null
 +++ b/xbps_zig_libc.txt
-@@ -0,0 +1,6 @@
+@@ -0,0 +1,7 @@
 +include_dir=/usr/include
 +sys_include_dir=/usr/include
 +crt_dir=/usr/lib
 +msvc_lib_dir=
 +kernel32_lib_dir=
-+gcc_dir=
++gcc_dir=/usr/lib
++darwin_sdk_dir=

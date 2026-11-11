@@ -43,12 +43,13 @@ do_build() {
 		_search_prefix="/usr"
 	fi
 
-	DESTDIR="zig-out" zig build \
+	# zig 0.17 removed the --global-cache-dir build flag; the global cache
+	# directory is now set via the ZIG_GLOBAL_CACHE_DIR environment variable.
+	DESTDIR="zig-out" ZIG_GLOBAL_CACHE_DIR=/host/zig zig build \
 		-j"${XBPS_MAKEJOBS}" \
 		--sysroot "${_sysroot}" \
 		--search-prefix "${_search_prefix}" \
 		--prefix /usr \
-		--global-cache-dir /host/zig \
 		--libc xbps_zig_libc.txt \
 		--release=safe \
 		--verbose \

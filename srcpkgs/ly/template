@@ -22,16 +22,21 @@ nopie_files="/usr/bin/ly"
 do_build() {
 	# xlint rejects bare empty assignments, so "_zig_libc_empty" carries
 	# the empty value for the MSVC-only libc fields.
-	local zig_target zig_cpu _search_prefix _zig_libc_empty=$(true)
+	# Passing -Dtarget for native builds makes the bundled translate_c see a
+	# foreign target query (e.g. x86_64-linux-gnu from the Void build profile),
+	# which disables native path detection and breaks system header lookup
+	# (<security/pam_appl.h>). Omit it for native builds so translate_c runs
+	# as --target=native-native; keep it (and a cpu) for cross builds.
+	local zig_cpu _search_prefix _target_arg _zig_libc_empty=$(true)
 
 	if [ "$CROSS_BUILD" ]; then
-		zig_target="${XBPS_CROSS_ZIG_TARGET}"
 		zig_cpu="${XBPS_CROSS_ZIG_CPU}"
 		_search_prefix="/"
+		_target_arg="-Dtarget=${XBPS_CROSS_ZIG_TARGET}"
 	else
-		zig_target="${XBPS_ZIG_TARGET}"
 		zig_cpu="${XBPS_ZIG_CPU}"
 		_search_prefix="/usr"
+		_target_arg=$(true)
 	fi
 
 	cat > xbps_zig_libc.txt <<-EOF
@@ -52,7 +57,7 @@ do_build() {
 		--libc xbps_zig_libc.txt \
 		--release=safe \
 		--verbose \
-		-Dtarget="${zig_target}" -Dcpu="${zig_cpu}" \
+		-Dcpu="${zig_cpu}" ${_target_arg} \
 		install \
 		${configure_args}
 }

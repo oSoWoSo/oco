@@ -89,10 +89,16 @@ manifest.write_text(
 )
 PY
 	git add "$manifest"
+	git commit --amend --no-edit
 fi
 
-# Do not regenerate/rewrite README.md here; generated metadata is maintained
-# manually. Only the dependency manifest (already staged above) is amended.
+./ocoman -u
+git add README.md
+if ! git diff --cached --quiet; then
+	# The README and dependency cache are amended into the last package commit.
+	git commit --amend --no-edit
+fi
+
 git push --force "https://x-access-token:${OCO_TOKEN}@github.com/${GH_REPO}.git" "HEAD:${BRANCH}"
 
 echo "VERSION=$VERSION" >>"$GITHUB_ENV"

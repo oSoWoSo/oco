@@ -11,4 +11,4 @@ homepage="https://github.com/somepaulo/MoreWaita"
 changelog="https://github.com/somepaulo/MoreWaita/releases"
 distfiles="https://github.com/somepaulo/MoreWaita/archive/v${version}.tar.gz"
 checksum=000e858d346e64bfdb87fb305e8046e09f5554385cf9c213fe648887fe218940
-replaces=morewaita-icon-themes>=0
+replaces=morewaita-icon-theme>=0

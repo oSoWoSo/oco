@@ -209,6 +209,7 @@ on:
         - sf-crash-handler
         - sf-data-views
         - sf-dbus
+        - sf-device-integration
         - sf-doctools
         - sf-gui-addons
         - sf-icon-themes

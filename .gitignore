@@ -323,6 +323,8 @@
 !/srcpkgs/sf-data-views-devel
 !/srcpkgs/sf-dbus
 !/srcpkgs/sf-dbus-devel
+!/srcpkgs/sf-device-integration
+!/srcpkgs/sf-device-integration-devel
 !/srcpkgs/sf-doctools
 !/srcpkgs/sf-doctools-devel
 !/srcpkgs/sf-gui-addons

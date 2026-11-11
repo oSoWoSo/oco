@@ -364,6 +364,8 @@
 !/srcpkgs/simplex-chat-desktop
 !/srcpkgs/sonic-crypto-library
 !/srcpkgs/sonic-crypto-library-devel
+!/srcpkgs/sonic-daemon
+!/srcpkgs/sonic-daemon-devel
 !/srcpkgs/sonic-namespace
 !/srcpkgs/sonic-oxygen-icons
 !/srcpkgs/sonic-polkit

@@ -1,0 +1,7 @@
+--- a/build.zig
++++ b/build.zig
+@@ -48,3 +48,3 @@
+     if (!skip_install_langref) {
+-        b.getInstallStep().dependOn(&install_langref.step);
++        // b.getInstallStep().dependOn(&install_langref.step);
+     }

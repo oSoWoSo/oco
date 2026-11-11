@@ -1,21 +1,22 @@
 # Template file for 'zig'
 pkgname=zig
-version=0.16.0
+version=0.17.1
 revision=1
+_ver=22 # llvm and clang version
 archs="x86_64* aarch64*"
 build_style=cmake
-configure_args="-DZIG_TARGET_MCPU=baseline -DZIG_PIE=ON"
 # we add xml2, zstd, zlib and ncurses
 # because our lld is static-only and requires those to work
-makedepends="clang21-devel llvm21-devel lld21-devel libxml2-devel
+makedepends="clang${_ver}-devel llvm${_ver}-devel lld${_ver}-devel libxml2-devel
  libzstd-devel ncurses-devel zlib-devel"
 short_desc="Programming language designed for robustness, optimality, and clarity"
 maintainer="Bella109 <belladev109@proton.me>"
 license="MIT"
 homepage="https://ziglang.org"
 distfiles="https://ziglang.org/download/${version}/zig-${version}.tar.xz"
-checksum=43186959edc87d5c7a1be7b7d2a25efffd22ce5807c7af99067f86f99641bfdf
+checksum=1e89bf06610b769a8c77676c6c8d54b093a0db60f4891f2f91014829012f0e24
 nocross=yes
+nopie_files="/usr/bin/zig"
 
 post_install() {
 	vlicense LICENSE

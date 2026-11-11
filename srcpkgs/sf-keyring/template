@@ -1,7 +1,7 @@
 # Template file for 'sf-keyring'
 pkgname=sf-keyring
 version=6.31.0
-revision=1
+revision=2
 build_style=cmake
 configure_args="-DSF6_HOST_TOOLING=/usr/lib/cmake"
 hostmakedepends="gettext pkg-config qt6-base qt6-tools sf-cmake-modules

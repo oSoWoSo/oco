@@ -77,3 +77,8 @@ libqca-qt6.so.2 sonic-crypto-library-2.3.12_1
 libSF6Wallet.so.6 sf-keyring-6.31.0_1
 libSF6WalletBackend.so.6 sf-keyring-6.31.0_1
 libSF6Solid.so.6 sf-device-integration-6.31.0_1
+libSF6KIOCore.so.6 sf-io-6.31.0.1_1
+libSF6KIOFileWidgets.so.6 sf-io-6.31.0.1_1
+libSF6KIOGui.so.6 sf-io-6.31.0.1_1
+libSF6KIOWidgets.so.6 sf-io-6.31.0.1_1
+libkuriikwsfiltereng_private.so sf-io-6.31.0.1_1

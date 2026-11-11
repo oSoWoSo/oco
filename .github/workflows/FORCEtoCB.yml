@@ -1,0 +1,25 @@
+name: ✂️Codeberg
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  push-to-codeberg:
+    name: ✂️Codeberg
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Push branch to Codeberg
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.CODEBERG_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.CODEBERG_KNOWN_HOSTS }}
+          CODEBERG_REPO: ${{ vars.CODEBERG_REPO }}
+          BRANCH: ${{ github.ref_name }}
+          FORCE: "1"
+        run: bash .github/scripts/ci/push-codeberg.sh

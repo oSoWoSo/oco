@@ -1,6 +1,6 @@
 # Template file for 'cosmic-desktop-full'
 pkgname=cosmic-desktop-full
-version=1.10.0
+version=1.11.0
 revision=1
 metapackage="yes"
 depends="bluez cosmic-applets cosmic-applibrary cosmic-bg cosmic-comp cosmic-edit

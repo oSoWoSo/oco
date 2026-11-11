@@ -1,0 +1,20 @@
+# Template file for 'xlibre-minimal'
+pkgname=xlibre-minimal
+_pkgname=xorg-minimal
+version=25.1.0
+revision=1
+metapackage=yes
+depends="
+ xlibre-xserver
+ xlibre-xf86-input-libinput
+ xlibre-xf86-input-evdev
+ xorg-fonts
+ xauth
+ xinit
+"
+short_desc="Xlibre meta-package including xlibre-xserver and needed tools"
+maintainer="zenobit <zen@osowoso.org>"
+license="Public Domain"
+homepage="https://github.com/X11Libre/xserver/wiki"
+provides="xorg-minimal-${version}_${revision}"
+replaces="xorg-minimal>=0"

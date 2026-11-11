@@ -12,8 +12,16 @@ on:
       - 'ocoman'
       - '.gitignore'
       - 'src/build.yml.in'
+      - 'src/autobump.yml.in'
+      - 'src/autobump-blacklist'
       - 'src/*.sh'
       - 'src/*.py'
+      - 'src/*.js'
+      - 'src/*.css'
+      - 'src/*.html'
+      - 'srcpkgs/**'
+      - '.github/osv-identities.json'
+      - '.github/scripts/**'
       - 'tests/**'
       - '.github/workflows/**'
   pull_request:
@@ -21,8 +29,16 @@ on:
       - 'ocoman'
       - '.gitignore'
       - 'src/build.yml.in'
+      - 'src/autobump.yml.in'
+      - 'src/autobump-blacklist'
       - 'src/*.sh'
       - 'src/*.py'
+      - 'src/*.js'
+      - 'src/*.css'
+      - 'src/*.html'
+      - 'srcpkgs/**'
+      - '.github/osv-identities.json'
+      - '.github/scripts/**'
       - 'tests/**'
       - '.github/workflows/**'
 permissions:
@@ -30,12 +46,16 @@ permissions:
 
 jobs:
   helper-tests:
-    name: 🧰
+    name: Run tooling tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
         with:
           token: ${{ secrets.BOT }}
+      - name: Check website JavaScript syntax
+        run: node --check src/main.js
+      - name: Install feed update runtime deps
+        run: python3 -m pip install -r requirements.txt
       - name: Run helper tests
         run: sh tests/run.sh

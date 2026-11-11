@@ -38,7 +38,7 @@ from xml.etree import ElementTree
 MAX_ITEMS = 1000
 PACKAGE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9+._-]*$")
 
-GH_REPO = "https://github.com/oSoWoSo/Void_Community_Repository"
+GH_REPO = "https://github.com/oSoWoSo/oco"
 CB_REPO = "https://codeberg.org/oSoWoSo/oco"
 BRANCH = "OCO"
 

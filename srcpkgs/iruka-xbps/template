@@ -1,6 +1,6 @@
 # Template file for 'iruka-xbps'
 pkgname=iruka-xbps
-version=0.1.0
+version=0.2.0
 revision=1
 build_style=meson
 hostmakedepends="pkg-config gettext"
@@ -11,7 +11,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="WTFPL, BSD-3-Clause"
 homepage="https://github.com/javiercplus/iruka-xbps"
 distfiles="https://github.com/javiercplus/iruka-xbps/archive/refs/tags/${version}.tar.gz"
-checksum=44c1d70be02cf2fbca9adf7106042fe3163adaa93b86d42cb2792c7e861343d4
+checksum=5f1a69202f9e2b5dda461d1c2ace521857f08988bd015f184bb41c03f0127a1b
 
 post_install() {
 	vlicense LICENSE

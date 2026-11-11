@@ -1,6 +1,6 @@
 # Template file for 'nwg-hello'
 pkgname=nwg-hello
-version=0.4.5
+version=0.5.1
 revision=1
 build_style=python3-pep517
 hostmakedepends="python3-setuptools"
@@ -11,7 +11,7 @@ license="MIT"
 homepage="https://github.com/nwg-piotr/nwg-hello"
 changelog="https://github.com/nwg-piotr/nwg-hello/releases"
 distfiles="https://github.com/nwg-piotr/nwg-hello/archive/refs/tags/v${version}.tar.gz"
-checksum=9bdebcc58b9536e1238af14a7bc98de635baa811ba1494c98a7dcfa2239e02b5
+checksum=929a6ff88e714af8b755f803a6014746d36a30e0709de02d7d0d8f62064d3056
 make_check=no # No test provided
 
 post_install() {

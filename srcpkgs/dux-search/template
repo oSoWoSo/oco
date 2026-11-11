@@ -1,0 +1,18 @@
+# Template file for 'dux-search'
+pkgname=dux-search
+version=2.1.1
+revision=1
+build_style=go
+go_import_path="github.com/duxlabs-dev/dux-search"
+go_package="${go_import_path}/cmd/dsearch"
+go_ldflags="-X main.Version=${version}"
+short_desc="Blazingly fast filesystem search tool (Dux Shell)"
+maintainer="AvengeMedia <AvengeMedia.US@gmail.com>"
+license="MIT"
+homepage="https://duxlabs.dev/docs/dsearch/"
+distfiles="https://github.com/duxlabs-dev/dux-search/archive/refs/tags/v${version}.tar.gz"
+checksum=dc325cec0303a87bee0f611308f71840ae9507e7db87cb7cec8b46ae4f0e5cda
+
+post_install() {
+	vlicense LICENSE
+}

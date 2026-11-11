@@ -1,6 +1,6 @@
 # Template file for 'cosmic-settings-daemon'
 pkgname=cosmic-settings-daemon
-version=1.10.0
+version=1.11.0
 revision=1
 build_style=cargo
 hostmakedepends="pkg-config clang"
@@ -11,7 +11,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="GPL-3.0-or-later"
 homepage="https://github.com/pop-os/cosmic-settings-daemon"
 distfiles="https://github.com/pop-os/cosmic-settings-daemon/archive/refs/tags/epoch-${version}.tar.gz"
-checksum=e9a193e32857139fa00fcccf8c0ee42d3480b456e4ab8ade1a4cbfed93c70e28
+checksum=1cc494c028a59a0356547c834421495da326622f837221726c15fceb14f3f9f0
 
 post_install() {
 	vinstall data/system_actions.ron 644 \

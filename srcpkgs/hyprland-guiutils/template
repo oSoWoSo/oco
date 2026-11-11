@@ -1,7 +1,7 @@
 # Template file for 'hyprland-guiutils'
 pkgname=hyprland-guiutils
 version=0.2.2
-revision=1
+revision=4
 build_style=cmake
 configure_args="--no-warn-unused-cli -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=/usr"
 hostmakedepends="pkg-config"
@@ -9,6 +9,7 @@ makedepends="
  abseil-cpp-devel
  aquamarine-devel
  cairo-devel
+ file-devel
  hyprgraphics
  hyprlang
  hyprtoolkit-devel
@@ -16,9 +17,17 @@ makedepends="
  iniparser-devel
  libdrm-devel
  libgbm-devel
+ libglvnd-devel
+ libheif-devel
+ libjpeg-turbo-devel
+ libjxl-devel
+ libpng-devel
+ librsvg-devel
+ libwebp-devel
  libxkbcommon-devel
  pango-devel
- pixman-devel"
+ pixman-devel
+ wayland-devel"
 depends="hyprland-qt-support"
 short_desc="Qt/QML utility apps for Hyprland"
 maintainer="zenobit <zen@osowoso.org>"

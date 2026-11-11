@@ -136,7 +136,8 @@ def test_consumers_and_release_validation() -> None:
         assert "Source description" in xml
 
         artifacts, plan = make_release_artifacts(root, rows)
-        release.stage(artifacts, root / "staging", plan, "target", "1.2.3")
+        release.stage(artifacts, root / "staging", plan, {"target": "1.2.3"},
+                      root / "srcpkgs")
         staged = (root / "staging/results/build-results-x86_64/results.tsv").read_text().splitlines()
         assert sorted(staged) == sorted(rows)
 
@@ -146,7 +147,7 @@ def test_consumers_and_release_validation() -> None:
                 bad_artifacts, bad_plan = make_release_artifacts(invalid_root, invalid_rows)
                 try:
                     release.stage(bad_artifacts, invalid_root / "staging", bad_plan,
-                                  "target", "1.2.3")
+                                  {"target": "1.2.3"}, invalid_root / "srcpkgs")
                 except ValueError:
                     return
             raise AssertionError(f"invalid release rows accepted: {invalid_rows!r}")
@@ -157,7 +158,73 @@ def test_consumers_and_release_validation() -> None:
         rejects(["target\t1.2.3\tok", "orphan\t1.2.3\tok\tmissing-source"])
 
 
+def test_autobump_merge_commit_message() -> None:
+    title, body = release.merge_commit_message({
+        "changed_packages": ["opencode2"],
+        "versions": {"opencode2": "2.0.32"},
+        "run_id": 38993480199,
+        "head_sha": "a" * 40,
+    })
+    assert title == "opencode2 2.0.32"
+    assert body == (
+        "Packages: opencode2\n"
+        "OCO-Autobump-Run: 38993480199\n"
+        f"OCO-Autobump-Head: {'a' * 40}"
+    )
+
+
+def test_autobump_merge_commit_message_for_a_batch() -> None:
+    title, body = release.merge_commit_message({
+        "changed_packages": ["cosmic-comp", "cosmic-session"],
+        "versions": {"cosmic-comp": "1.11.0", "cosmic-session": "1.11.0"},
+        "run_id": 38993480199,
+        "head_sha": "a" * 40,
+    })
+    assert title == "cosmic-comp 1.11.0 + 1 more"
+    assert "Packages: cosmic-comp, cosmic-session" in body
+
+
+def test_release_pr_author_validation() -> None:
+    plan = {
+        "pr_number": 42,
+        "head_ref": "autobump/target-1.2.3",
+        "head_sha": "a" * 40,
+        "base_sha": "b" * 40,
+        "packages": "target",
+    }
+    files = [{"filename": "srcpkgs/target/template", "status": "modified"}]
+
+    def pr_for(author):
+        return {
+            "number": 42,
+            "base": {"ref": "OCO", "sha": "b" * 40},
+            "head": {
+                "repo": {"full_name": "owner/repo"},
+                "ref": "autobump/target-1.2.3",
+                "sha": "a" * 40,
+            },
+            "user": {"login": author},
+            "merged": False,
+            "state": "open",
+            "changed_files": 1,
+        }
+
+    for author in ("oSoWoSo-bot", "zen0bit", "zenobit"):
+        assert release.check_pr(pr_for(author), files, repo="owner/repo",
+                                plan=plan, allow_merged=False) == ["target"]
+
+    try:
+        release.check_pr(pr_for("untrusted-user"), files, repo="owner/repo",
+                         plan=plan, allow_merged=False)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("PR from an untrusted author was accepted")
+
+
 if __name__ == "__main__":
     test_binary_collection()
     test_consumers_and_release_validation()
+    test_autobump_merge_commit_message()
+    test_release_pr_author_validation()
     print("XBPS result tests passed")

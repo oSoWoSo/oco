@@ -1,7 +1,7 @@
 # Template file for 'kmscon'
 pkgname=kmscon
 version=10.0.4
-revision=1
+revision=3
 build_style=meson
 configure_args="-Dwerror=false -Ddocs=enabled"
 hostmakedepends="pkg-config docbook-xsl xkeyboard-config libxslt zlib-devel ncurses cmake"

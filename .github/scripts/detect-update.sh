@@ -16,7 +16,7 @@ RC_ERROR=2
 
 pkg=${1:?usage: detect-update.sh <pkgname> [repo-root]}
 root=${2:-$(git rev-parse --show-toplevel)}
-image=${VOID_IMAGE:-ghcr.io/osowoso/oco-builder-x86_64@sha256:6aa90d348e60e53879b61c13298af7590329fd4c40f41c8a39a4bcbf1fa03ac1}
+image=${VOID_IMAGE:-ghcr.io/osowoso/oco-builder-x86_64:latest}
 
 cd "$root"
 
@@ -24,23 +24,20 @@ msg() {
 	printf '%s\n' "$*" >&2
 }
 
-# xbps versions carry neither dashes nor underscores while several upstreams do
-# (librewolf tags 157.0.1-1, some releases use 1.2.3_rc1). Normalizing before
-# the comparison keeps xbps-uhelper cmpver -- which orders those three spellings
-# of the same release inconsistently -- from picking the wrong winner.
-normalize() {
-	local ver=${1//-/_}
-	printf '%s' "${ver//_/.}"
-}
-
 fail() {
 	printf '::error::%s\n' "$*" >&2
 	exit "$RC_ERROR"
 }
 
-if ! command -v xbps-uhelper >/dev/null 2>&1; then
+if [ -n "${XBPS_SRC:-}" ]; then
+	engine=$XBPS_SRC
+elif [ -x ./xbps-src ]; then
+	engine=./xbps-src
+elif [ -x /void-packages/xbps-src ]; then
+	engine=/void-packages/xbps-src
+else
 	command -v docker >/dev/null 2>&1 ||
-		fail "neither xbps-uhelper nor docker is available; install xbps or run this on a Void host"
+		fail "xbps-src and docker are unavailable; install xbps-src or run this on a Void host"
 	exec docker run --rm -i \
 		--user 1000:1000 \
 		--volume "$root:/repo" \
@@ -61,19 +58,7 @@ fi
 tpl="srcpkgs/$pkg/template"
 [ -f "$tpl" ] || fail "template not found: $tpl"
 
-if [ -n "${XBPS_SRC:-}" ]; then
-	engine=$XBPS_SRC
-elif [ -x ./xbps-src ]; then
-	engine=./xbps-src
-elif [ -x /void-packages/xbps-src ]; then
-	engine=/void-packages/xbps-src
-else
-	fail "xbps-src not found; expected ./xbps-src or /void-packages/xbps-src"
-fi
-
 export XBPS_USE_BUILD_MTIME=1
-
-export XBPS_VERBOSE=1
 
 old=$(sed -n 's/^version=//p' "$tpl" | head -1 | tr -d '"')
 [ -n "$old" ] || fail "could not read version from $tpl"
@@ -94,8 +79,17 @@ if [ -n "${GH_TOKEN:-}" ]; then
 	export CURL_HOME="$_curlhome"
 fi
 
+update_check=("$engine" update-check "$pkg")
+if [ "$(id -u)" -eq 0 ]; then
+	update_check=(sudo -Eu builder "${update_check[@]}")
+	if [ -n "${_curlhome:-}" ]; then
+		chown -R builder:builder "$_curlhome" ||
+			fail "could not make update-check credentials readable by builder"
+	fi
+fi
+
 set +e
-out=$("$engine" update-check "$pkg" 2>&1)
+out=$("${update_check[@]}")
 rc=$?
 set -e
 
@@ -104,28 +98,17 @@ if [ "$rc" -ne 0 ]; then
 	fail "$pkg: update-check exited $rc"
 fi
 
-if ! printf '%s\n' "$out" | grep -q "^found version "; then
-	msg "$out"
-	printf '::warning::%s: no version candidates found\n' "$pkg" >&2
-	exit "$RC_FIND_NEW"
-fi
-
-candidates=$(printf '%s\n' "$out" |
-	sed -n "s|^${pkg}-[^ ]* -> ${pkg}-\(.*\)\$|\1|p")
-new=
-while IFS= read -r candidate; do
-	[ -n "$candidate" ] || continue
-	candidate=$(normalize "$candidate")
-	if [ -z "$new" ]; then
-		new=$candidate
-		continue
-	fi
-	rc=0
-	xbps-uhelper cmpver "${pkg}-${new}_1" "${pkg}-${candidate}_1" || rc=$?
-	[ "$rc" = 255 ] && new=$candidate
-done <<<"$candidates"
-
-[ -n "$new" ] || exit "$RC_FIND_NEW"
+# Match xxautobump: take field 3 from update-check output and select the
+# version-sort maximum.
+new=$(printf '%s\n' "$out" |
+	cut -d' ' -f3 |
+	sort -V |
+	tail -n1 |
+	sed "s/${pkg}-//")
+# Upstream build numbers such as librewolf's "158.0.1-1" are stored with a
+# dot ("158.0.1.1") so the template's version-derived distver keeps working.
+new=$(printf '%s' "$new" | sed -E 's/-([0-9]+)$/.\1/')
+: "${new:="$old"}"
 
 if [ "$new" = "$old" ]; then
 	msg "$pkg is already at $old"

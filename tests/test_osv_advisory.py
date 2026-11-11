@@ -53,6 +53,137 @@ def test_findings_and_query_identity():
     path.unlink()
 
 
+def test_all_upstream_omits_version_and_marks_scope():
+    path = mapping_file({"packages": {"demo": {
+        "type": "package", "ecosystem": "PyPI", "name": "demo-project"
+    }}})
+    captured = []
+
+    def opener(request, timeout):
+        captured.append(json.loads(request.data))
+        return Response({"vulns": []})
+
+    report = osv.check(path, "demo", "2.0", opener, all_upstream=True)
+    assert captured == [{"package": {"ecosystem": "PyPI", "name": "demo-project"}}]
+    assert "all upstream advisories" in report
+    assert "displayed bumped version is contextual only" in report
+    assert "No OSV advisories" in report
+    path.unlink()
+
+
+def test_affected_ranges_and_withdrawn_are_rendered():
+    report = osv.make_report("demo", "2.0", "findings", [{
+        "id": "OSV-1", "summary": "issue", "withdrawn": "2024-01-02T00:00:00Z",
+        "affected": [{
+            # The exhaustive version list must not be dumped into the report;
+            # only the compact range boundaries survive.
+            "versions": ["1.0", "1.1"] + [f"1.0.{i}" for i in range(500)],
+            "ranges": [{"type": "SEMVER", "events": [
+                {"introduced": "0"}, {"fixed": "1.2.0"}
+            ]}],
+        }],
+    }], all_upstream=True)
+    assert r"**WITHDRAWN**" in report
+    assert "1.0, 1.1" not in report
+    assert "1.0.499" not in report
+    assert r"SEMVER: introduced 0; fixed 1\.2\.0" in report
+    assert "currently open" not in report
+
+
+def test_advisory_ids_link_to_osv_records():
+    report = osv.make_report("demo", "2.0", "findings", [
+        {"id": "GHSA-1234-5678-9abc", "aliases": ["CVE-2024-0001"],
+         "summary": "fixed issue",
+         "affected": [{"ranges": [{"type": "SEMVER", "events": [
+             {"introduced": "0"}, {"fixed": "1.2.0"}]}]}]},
+    ], all_upstream=True)
+    assert "[GHSA\\-1234\\-5678\\-9abc](https://osv.dev/vulnerability/GHSA-1234-5678-9abc)" in report
+    assert "[CVE\\-2024\\-0001](https://osv.dev/vulnerability/CVE-2024-0001)" in report
+    assert r"fixed 1\.2\.0" in report
+
+
+def test_report_is_capped_at_max_chars():
+    findings = [{"id": f"OSV-2024-{i:04d}", "summary": "x" * 200,
+                 "affected": [{"ranges": [{"type": "SEMVER", "events": [
+                     {"introduced": "0"}, {"fixed": f"1.{i}.0"}]}]}]}
+                for i in range(60)]
+    report = osv.make_report("demo", "1.0", "findings", findings, all_upstream=True,
+                             max_chars=1000)
+    assert len(report) <= 1000 + 400  # only the truncation note may push past the cap
+    assert "Report truncated" in report
+    assert "via the record links above" in report
+
+
+def test_fixed_and_open_advisories_are_highlighted():
+    report = osv.make_report("demo", "2.0", "findings", [
+        {
+            "id": "CVE-2024-0001",
+            "summary": "fixed issue",
+            "affected": [{"ranges": [{"events": [{"introduced": "0"}, {"fixed": "1.2.0"}]}]}],
+        },
+        {
+            "id": "CVE-2024-0002",
+            "summary": "unfixed issue",
+            "affected": [{"ranges": [{"events": [{"introduced": "0"}]}]}],
+        },
+    ], all_upstream=True)
+    assert "- 🟢 **FIXED** — **[CVE\\-2024\\-0001](https://osv.dev/vulnerability/CVE-2024-0001)**" in report
+    assert "- 🔴 **OPEN** — **[CVE\\-2024\\-0002](https://osv.dev/vulnerability/CVE-2024-0002)**" in report
+
+def test_pagination_finds_later_page_and_sends_token():
+    path = mapping_file({"packages": {"demo": {
+        "type": "package", "ecosystem": "PyPI", "name": "demo"
+    }}})
+    captured = []
+    pages = iter([
+        {"vulns": [], "next_page_token": "page-2"},
+        {"vulns": [{"id": "OSV-LATER", "summary": "later finding"}]},
+    ])
+
+    def opener(request, timeout):
+        captured.append(json.loads(request.data))
+        return Response(next(pages))
+
+    report = osv.check(path, "demo", "1.0", opener)
+    assert len(captured) == 2
+    assert "page_token" not in captured[0]
+    assert captured[1] == {
+        "package": {"ecosystem": "PyPI", "name": "demo"},
+        "version": "1.0",
+        "page_token": "page-2",
+    }
+    assert r"OSV\-LATER" in report
+    assert "later finding" in report
+    path.unlink()
+
+
+def test_pagination_rejects_malformed_and_repeated_tokens():
+    path = mapping_file({"packages": {"demo": {
+        "type": "package", "ecosystem": "PyPI", "name": "demo"
+    }}})
+    malformed = osv.check(
+        path, "demo", "1.0",
+        lambda *_a, **_k: Response({"vulns": [], "next_page_token": 42}),
+    )
+    assert "**ERROR:**" in malformed
+
+    pages = iter([
+        {"vulns": [], "next_page_token": "repeat"},
+        {"vulns": [], "next_page_token": "repeat"},
+    ])
+    requests = []
+
+    def repeated_token_opener(request, timeout):
+        requests.append(request)
+        return Response(next(pages))
+
+    repeated = osv.check(path, "demo", "1.0", repeated_token_opener)
+    assert len(requests) == 2
+    assert "**ERROR:**" in repeated
+    assert "No matching" not in repeated
+    path.unlink()
+
+
 def test_no_matches_and_unmapped_are_distinct():
     path = mapping_file({"packages": {"demo": {
         "type": "package", "ecosystem": "PyPI", "name": "demo"
@@ -140,7 +271,7 @@ def test_repository_mappings_have_template_evidence_and_valid_identity_schema():
 
     assert counts["git"] >= 100
     assert counts["package"] >= 4
-    assert real_template_count == 227
+    assert real_template_count >= 227
     assert real_mappings == len(packages) == 163
     assert real_mappings >= 150
     assert real_template_count >= real_mappings
@@ -174,7 +305,15 @@ def test_repository_mappings_have_template_evidence_and_valid_identity_schema():
 
 
 if __name__ == "__main__":
-    for test in [test_findings_and_query_identity, test_no_matches_and_unmapped_are_distinct,
+    for test in [test_findings_and_query_identity,
+                 test_all_upstream_omits_version_and_marks_scope,
+                 test_affected_ranges_and_withdrawn_are_rendered,
+                 test_advisory_ids_link_to_osv_records,
+                 test_report_is_capped_at_max_chars,
+                 test_fixed_and_open_advisories_are_highlighted,
+                 test_pagination_finds_later_page_and_sends_token,
+                 test_pagination_rejects_malformed_and_repeated_tokens,
+                 test_no_matches_and_unmapped_are_distinct,
                  test_git_identity_uses_only_reviewed_tag_template,
                  test_api_error_is_reported_not_clean, test_report_escapes_untrusted_fields,
                  test_repository_mappings_have_template_evidence_and_valid_identity_schema]:

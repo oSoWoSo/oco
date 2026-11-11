@@ -1,6 +1,6 @@
 # Template file for 'librewolf-bin'
 pkgname=librewolf-bin
-version=158.0.1
+version=160.0.1
 revision=1
 _distver="${version%.*}-${version##*.}"
 archs="x86_64 aarch64"
@@ -10,8 +10,8 @@ license="MPL-2.0"
 homepage="https://librewolf.net"
 distfiles="https://dl.librewolf.net/librewolf/${_distver}/librewolf-${_distver}-linux-x86_64-package.tar.xz
  https://dl.librewolf.net/librewolf/${_distver}/librewolf-${_distver}-linux-arm64-package.tar.xz"
-checksum="34bb7296feec0c6823abdfaf4fd50e47e9eada9cb4a5ed16e111a951dc9eb16c
- eca78479d6382b5cadc1337d7cc4ecbf7c75921c53e6acc08f213f5b9316bfa8"
+checksum="7c751d4d279f05a2514298599ad3c43d4e85dd011ad2ecc07319c5a8c34a72e5
+ c39d851d930a5b2039ec39e9ebbbd36450261f6456867d50eff0bce1bb4a3a08"
 conflicts="librewolf"
 #shlib_provides="libonnxruntime.so.1"
 nostrip=yes
@@ -26,10 +26,10 @@ do_extract() {
 }
 
 do_install() {
-vmkdir usr/lib/librewolf
-vcopy "*" usr/lib/librewolf
-vmkdir usr/share/applications
-vcopy "${FILESDIR}/librewolf.desktop" usr/share/applications
-vinstall browser/chrome/icons/default/default128.png 644 usr/share/pixmaps librewolf.png
-vbin "${FILESDIR}/librewolf"
+	vmkdir usr/lib/librewolf
+	vcopy "*" usr/lib/librewolf
+	vmkdir usr/share/applications
+	vcopy "${FILESDIR}/librewolf.desktop" usr/share/applications
+	vinstall browser/chrome/icons/default/default128.png 644 usr/share/pixmaps librewolf.png
+	vbin "${FILESDIR}/librewolf"
 }

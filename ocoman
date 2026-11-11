@@ -18,9 +18,13 @@ SRCPKGS='srcpkgs'
 TEMPLATES_LIST='/tmp/oco-templates-list'
 REPODATA_LIST_PY="${SCRIPT_DIR}/src/repodata-list.py"
 REPODATA_STRIP_PY="${SCRIPT_DIR}/src/repodata-strip.py"
+REPODATA_CLEAN_STAGE_PY="${SCRIPT_DIR}/src/repodata-clean-stage.py"
 BUILD_TEMPLATE="${SCRIPT_DIR}/src/build.yml.in"
+AUTOBUMP_TEMPLATE="${SCRIPT_DIR}/src/autobump.yml.in"
+AUTOBUMP_BLACKLIST="${SCRIPT_DIR}/src/autobump-blacklist"
 README="${SCRIPT_DIR}/README.md"
 WORKFLOW="${SCRIPT_DIR}/.github/workflows/build.yml"
+AUTOBUMP_WORKFLOW="${SCRIPT_DIR}/.github/workflows/autobump.yml"
 FEED_OPML="${SCRIPT_DIR}/src/feed.opml"
 NVCONF="${SCRIPT_DIR}/.nvchecker/nvchecker.toml"
 
@@ -42,7 +46,7 @@ SURF_MAX_TIME="${SURF_MAX_TIME:-300}"
 SURF_BACKOFF_MAX="${SURF_BACKOFF_MAX:-30}"
 # Space-separated package names to strip from the repodata
 SURF_PURGE_PACKAGES="${SURF_PURGE_PACKAGES:-}"
-CI_URL="${CI_URL:-https://github.com/oSoWoSo/Void_Community_Repository}"
+CI_URL="${CI_URL:-https://github.com/oSoWoSo/oco}"
 SIGNED_BY='oSoWoSo <mail@osowoso.org>'
 ARCHES='x86_64 x86_64-musl aarch64 aarch64-musl'
 
@@ -52,7 +56,7 @@ ARCHES='x86_64 x86_64-musl aarch64 aarch64-musl'
 # --- Init / clone (env-overridable) ---
 VOID_URL='https://github.com/void-linux/void-packages'
 OCO_URL='https://codeberg.org/oSoWoSo/oco'
-CLONE_DEST="${CLONE_DEST:-$HOME/void}"
+CLONE_DEST="${CLONE_DEST:-${XBPS_DISTDIR:-$HOME/void}}"
 CLONE_TEMP="${CLONE_TEMP:-/tmp}"
 CLONE_DEPTH="${CLONE_DEPTH:-}"
 OCO_BRANCH="${OCO_BRANCH:-OCO}"
@@ -370,12 +374,12 @@ usage() {
 	  -t, --test <pkg...>  Without <pkg> gum menu to choose, then trigger GitHub CI build
 	  autobump <pkg> [--force]
 	                      Autobump a package via GitHub workflow_dispatch
-	                      (--force ignores src/autobump-pkgs whitelist)
+	                      (--force ignores src/autobump-blacklist)
 
 	Compound: $prog -uw   (update + build)
 
 	Environment variables for -i and -l:
-	  CLONE_DEST    destination directory  (default: ~/void)
+	  CLONE_DEST    destination directory  (default: $XBPS_DISTDIR or ~/void)
 	  CLONE_TEMP    temp directory         (default: /tmp)
 	  CLONE_DEPTH   git clone depth        (default: full)
 	  OCO_BRANCH    local and remote branch name for OCO  (default: OCO)
@@ -597,6 +601,16 @@ delete_orphan_files() {
 
 # --- Website helpers (from create-web) ---
 
+_build_manual() {
+	command -v python3 >/dev/null 2>&1 || fatal 'python3 not installed!'
+	# The generator synchronizes root Manual.md before rendering; errors abort
+	# before the publishing phase rather than silently publishing a stale manual.
+	python3 "${SCRIPT_DIR}/src/gen-manual.py" "${SCRIPT_DIR}" "${SCRIPT_DIR}/docs/manual.html" $ARCHES \
+		|| fatal 'Failed to synchronize/generate the XBPS manual!'
+	rm -f "${SCRIPT_DIR}/docs/manual-index-template.html"
+	_g 'Generated: docs/manual.html'
+}
+
 _build_main_index() {
 	_title="${1:-Void Community Repository}"
 
@@ -605,7 +619,7 @@ _build_main_index() {
 	_svg_tmp=$(mktemp)
 
 	for _arch in $ARCHES; do
-		printf '  <li><a href="%s/">%s</a></li>\n' "$_arch" "$_arch" >> "$_nav_arch_tmp"
+		printf '  <li><a data-package-arch="%s" href="%s/">%s</a></li>\n' "$_arch" "$_arch" "$_arch" >> "$_nav_arch_tmp"
 	done
 	printf '  <li><a href="https://codeberg.org/osowoso/oco">&#x2934; source</a></li>\n' >> "$_nav_arch_tmp"
 	if [ -n "${CI_URL:-}" ]; then
@@ -713,6 +727,35 @@ generate_build_yml() {
 
 	rm -f "$_opts"
 	echo 'build.yml: updated'
+}
+generate_autobump_yml() {
+	[ -f "$AUTOBUMP_TEMPLATE" ] || fatal "not found: ${AUTOBUMP_TEMPLATE}"
+	[ -f "$TEMPLATES_LIST" ] || fatal "not found: ${TEMPLATES_LIST}"
+
+	mkdir -p "$(dirname "$AUTOBUMP_WORKFLOW")"
+
+	_blck=$(mktemp)
+	grep -vE '^\s*(#|$)' "$AUTOBUMP_BLACKLIST" > "$_blck" || true
+	_opts=$(mktemp)
+	while IFS= read -r _pkg; do
+	        [ -z "$_pkg" ] && continue
+	        [ -L "${SCRIPT_DIR}/${SRCPKGS}/${_pkg}" ] && continue
+	        grep -qxF "$_pkg" "$_blck" && continue
+	        printf '        - %s\n' "$_pkg"
+	done < "$TEMPLATES_LIST" > "$_opts"
+	rm -f "$_blck"
+
+	awk -v opts="$_opts" '
+	        /^[[:space:]]*__TEMPLATE_OPTIONS__[[:space:]]*$/ {
+	                while ((getline ln < opts) > 0) print ln
+	                close(opts)
+	                next
+	        }
+	        { print }
+	' "$AUTOBUMP_TEMPLATE" > "$AUTOBUMP_WORKFLOW"
+
+	rm -f "$_opts"
+	echo 'autobump.yml: updated'
 }
 
 detect_changes() {
@@ -921,9 +964,9 @@ generate_arch_pages() {
 
 		for _a in $ARCHES; do
 			if [ "$_a" = "$_arch" ]; then
-				printf '  <li><a href="." class="active">%s</a></li>\n' "$_arch" >> "$_nav_tmp"
+				printf '  <li><a data-package-arch="%s" href="./" class="active">%s</a></li>\n' "$_arch" "$_arch" >> "$_nav_tmp"
 			else
-				printf '  <li><a href="../%s/">%s</a></li>\n' "$_a" "$_a" >> "$_nav_tmp"
+				printf '  <li><a data-package-arch="%s" href="../%s/">%s</a></li>\n' "$_a" "$_a" "$_a" >> "$_nav_tmp"
 			fi
 		done
 
@@ -1011,6 +1054,7 @@ build_site() {
 	cp -r src/* docs/
 	rm -f docs/toggle.html docs/toc.html docs/svg-color.html docs/footer.html
 
+	_build_manual
 	_build_main_index "$_title"
 	generate_arch_pages
 	_g "Finished"
@@ -1040,6 +1084,7 @@ build_main() {
 	cp -r src/* docs/
 	rm -f docs/toggle.html docs/toc.html docs/svg-color.html docs/footer.html
 
+	_build_manual
 	_build_main_index "$_title"
 	_g "Finished"
 
@@ -1107,6 +1152,88 @@ do_upload() {
 				;;
 		esac
 
+		# Sanity check + auto-repair
+		if [ -f "${ARCH}-repodata" ]; then
+			_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+			_remote_count=$(printf '%s\n' "$_remote_list" | grep -c '\.xbps$' || true)
+			echo "  remote repodata advertises ${_rd_count} packages; remote dir lists ${_remote_count} files"
+			_depleted=0
+			if [ "${_remote_count}" -gt 0 ] && [ "$_rd_count" -lt $(( _remote_count / 2 )) ]; then
+				_depleted=1
+			fi
+			if [ "${_remote_count}" -gt 0 ] && [ ! -s "${ARCH}-repodata" ]; then
+				_depleted=1
+			fi
+			if [ "$_depleted" -eq 1 ]; then
+				echo "  ==> Index appears depleted; repairing by re-downloading all ${_remote_count} remote packages"
+				_repair_failed=0
+				printf '%s\n' "$_remote_list" | while IFS= read -r _rp; do
+					[ -n "$_rp" ] || continue
+					_rp_path=$(surf_api_path "${_arch_dir}/${_rp}") || continue
+					surf_cli get "$_rp_path" > "${_rp}" 2>/dev/null || true
+					surf_cli get "${_rp_path}.sig2" > "${_rp}.sig2" 2>/dev/null || true
+				done
+				rm -f "${ARCH}-repodata"
+				if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+					xbps-rindex -a ./*."${ARCH}".xbps 2>/dev/null || _repair_failed=1
+				fi
+				if [ "$_repair_failed" -ne 0 ]; then
+					fatal "==> index repair failed"
+				fi
+				_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+				echo "  repaired repodata advertises ${_rd_count} packages"
+			fi
+		fi
+
+		# Guard: srcpkgs must not be empty
+		_srcpkgs_count=$(find "${SCRIPT_DIR}/${SRCPKGS}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+		if [ "${_srcpkgs_count}" -eq 0 ]; then
+			fatal "==> refusing to publish: srcpkgs directory is empty or missing"
+		fi
+
+		# Sanity check: the downloaded index should advertise roughly as many
+		# packages as the remote directory lists. A large gap means the index
+		# is stale or truncated and publishing now would shrink the repo.
+		if [ -f "${ARCH}-repodata" ]; then
+			_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+			_remote_count=$(printf '%s\n' "$_remote_list" | grep -c '\.xbps$' || true)
+			echo "  remote repodata advertises ${_rd_count} packages; remote dir lists ${_remote_count} files"
+			_depleted=0
+			if [ "${_remote_count}" -gt 0 ] && [ "$_rd_count" -lt $(( _remote_count / 2 )) ]; then
+				_depleted=1
+			fi
+			if [ "${_remote_count}" -gt 0 ] && [ ! -s "${ARCH}-repodata" ]; then
+				_depleted=1
+			fi
+			if [ "$_depleted" -eq 1 ]; then
+				echo "  ==> Index appears depleted; repairing by re-downloading all ${_remote_count} remote packages"
+				_repair_failed=0
+				printf '%s\n' "$_remote_list" | while IFS= read -r _rp; do
+					[ -n "$_rp" ] || continue
+					_rp_path=$(surf_api_path "${_arch_dir}/${_rp}") || continue
+					if ! surf_cli get "$_rp_path" > "${_rp}" 2>/dev/null; then
+						echo "  failed to download ${_rp}" >&2
+					fi
+					if [ ! -s "${_rp}" ]; then
+						echo "  empty download for ${_rp}" >&2
+					fi
+					# signature
+					surf_cli get "${_rp_path}.sig2" > "${_rp}.sig2" 2>/dev/null || true
+				done
+				# Rebuild repodata from scratch using downloaded files
+				rm -f "${ARCH}-repodata"
+				if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+					xbps-rindex -a ./*."${ARCH}".xbps 2>/dev/null || _repair_failed=1
+				fi
+				if [ "$_repair_failed" -ne 0 ]; then
+					fatal "==> index repair failed"
+				fi
+				echo "  ==> repair complete"
+				_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+				echo "  repaired repodata advertises ${_rd_count} packages"
+			fi
+		fi
+
 		# xbps-src drops every architecture into one binpkgs/, so an
 		# unqualified glob would republish other arches' .xbps into our
 		# ${ARCH} directory. Filter on the filename's architecture suffix.
@@ -1117,6 +1244,10 @@ do_upload() {
 			echo '==> No new packages to upload'
 		fi
 
+		_srcpkgs_count=$(find "${SCRIPT_DIR}/${SRCPKGS}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+		if [ "${_srcpkgs_count}" -eq 0 ]; then
+			fatal "==> refusing to publish: srcpkgs directory is empty or missing; cannot safely prune orphans"
+		fi
 		prune_orphans "$_remote_list" "${PWD}/orphans.txt"
 		if [ -n "$SURF_PURGE_PACKAGES" ]; then
 			# Caller (cleanup workflow) explicitly named packages to strip,
@@ -1126,6 +1257,17 @@ do_upload() {
 				grep -qx "$_p" "${PWD}/orphans.txt" 2>/dev/null || printf '%s\n' "$_p" >> "${PWD}/orphans.txt"
 			done
 			sort -u -o "${PWD}/orphans.txt" "${PWD}/orphans.txt" 2>/dev/null || true
+		fi
+
+		# Snapshot the remote index BEFORE stripping orphans. The strip block below
+		# deletes the orphan entries from the local repodata, so a snapshot taken
+		# after it would no longer contain them: the guard's "deliberately removed"
+		# budget would undercount (pruned_present = 0 for a real removal) and every
+		# rename/removal would trip a false shrink error after a successful publish.
+		if [ -f "${ARCH}-repodata" ]; then
+			_pre_index_list=$(mktemp)
+			python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null \
+				| sort -u > "$_pre_index_list" || true
 		fi
 		# NOTE: the orphan .xbps files are deleted only AFTER the new index
 		# is live (see "Deleting purged package files" below). Deleting first
@@ -1160,11 +1302,67 @@ do_upload() {
 				fatal "==> orphan entries still present after strip; refusing to upload ${ARCH}-repodata"
 			fi
 		fi
+		_pruned_present=0
+		if [ -s "${PWD}/orphans.txt" ] && [ -f "$_pre_index_list" ]; then
+			while IFS= read -r _orph; do
+				[ -n "$_orph" ] || continue
+				grep -qx "$_orph" "$_pre_index_list" && _pruned_present=$((_pruned_present + 1)) || true
+			done < "${PWD}/orphans.txt"
+			echo "  ${_pruned_present} removed package(s) were present in the remote index"
+		fi
+		_new_names=""
+		if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+			for _new_pkg in ./*."${ARCH}".xbps; do
+				[ -f "$_new_pkg" ] || continue
+				_name=$(pkg_name "${_new_pkg##*/}")
+				# dedup: the same source package may produce multiple subpackages
+				case " $_new_names " in *" $_name "*) continue ;; esac
+				_new_names="$_new_names $_name"
+			done
+		fi
+		_added_new=0
+		if [ -n "$_new_names" ] && [ -f "$_pre_index_list" ]; then
+			for _name in $_new_names; do
+				grep -qx "$_name" "$_pre_index_list" || _added_new=$((_added_new + 1))
+			done
+			echo "  ${_added_new} new package(s) not previously in the remote index"
+		fi
+
+		if [ -f "${ARCH}-repodata" ]; then
+			# xbps-rindex -a reads stage.plist from the downloaded repodata. A stale
+			# stage left behind by an aborted previous transaction can make xbps-rindex
+			# refuse to commit new packages (the "Inconsistent shlibs" path leaves the
+			# stage unmerged and index.plist unchanged). Start from a clean stage so only
+			# the packages we are publishing get staged.
+			echo '==> Clearing stale stage from local repodata'
+			python3 "${REPODATA_CLEAN_STAGE_PY}" "${ARCH}-repodata" || true
+		fi
 
 		if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
 			echo '==> Updating repository index'
-			xbps-rindex -a ./*."${ARCH}".xbps 2>/dev/null \
+			_index_add_log=$(mktemp)
+			xbps-rindex -a ./*."${ARCH}".xbps >"$_index_add_log" 2>&1 \
 				|| fatal '==> Error: xbps-rindex failed to add packages to repodata'
+			# xbps-rindex exits 0 even when the shlib-consistency check aborts the commit
+			# (it prints "stage: added" and leaves index.plist untouched). Fail loudly
+			# rather than publishing an index that does not contain the new packages.
+			_count_after_add=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+			echo "  index: ${_count_after_add} packages registered."
+			_missing_new=0
+			for _name in $_new_names; do
+				if python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | grep -qx "$_name"; then
+					:
+				else
+					echo "  ERROR: new package ${_name} not present in index after xbps-rindex -a" >&2
+					_missing_new=1
+				fi
+			done
+			if [ "$_missing_new" -ne 0 ]; then
+				cat "$_index_add_log" >&2 || true
+				rm -f "$_index_add_log"
+				fatal "==> xbps-rindex did not register the new package(s) in ${ARCH}-repodata; refusing to publish"
+			fi
+			rm -f "$_index_add_log"
 		fi
 
 		echo '==> Signing repository'
@@ -1195,9 +1393,31 @@ do_upload() {
 		for _file in ./*-repodata; do
 			[ -f "$_file" ] || continue
 			_fname=$(basename "$_file")
+			# Surfer's `put` skips a fixed-name file when the remote copy looks
+			# newer/equal (mtime/size). Force a fresh mtime so the client always
+			# uploads and overwrites the remote index (rewrite, not delete).
+			touch -- "$_file"
 			upload_file "$_file" "${_arch_dir}" \
 				|| fatal "==> Error: failed to upload ${_fname}"
 		done
+
+		# Verify the published index actually landed. A deliberate rename/removal
+		# legitimately shrinks the index (orphans pruned) while new packages grow it
+		# back; only a shrink beyond that budget signals a stale or truncated index.
+		_verify_tmp=$(mktemp)
+		if fetch_repodata "${_arch_dir}/${ARCH}-repodata" "$_verify_tmp" >/dev/null 2>&1; then
+			_new_rd_count=$(python3 "${REPODATA_LIST_PY}" "$_verify_tmp" 2>/dev/null | wc -l)
+			echo "  published repodata advertises ${_new_rd_count} packages"
+			_expected=$(( ${_rd_count:-0} - _pruned_present + _added_new ))
+			if [ "${_rd_count:-0}" -gt 0 ] && [ "$_new_rd_count" -lt "$_expected" ]; then
+				rm -f "$_verify_tmp"
+				fatal "==> published index below expected (${_expected} expected, got ${_new_rd_count}); refusing to continue"
+			fi
+		else
+			rm -f "$_verify_tmp"
+			fatal "==> could not re-fetch published repodata for verification"
+		fi
+		rm -f "$_verify_tmp"
 
 		# Garbage-collect old versions only after every replacement package and
 		# the updated index have been successfully published.
@@ -1231,6 +1451,8 @@ do_upload() {
 	[ "$_upload_status" -eq 0 ] || return "$_upload_status"
 	echo "==> Done: ${SURFER_URL}/${ARCH}/"
 }
+
+
 
 # --- Check upstream ---
 
@@ -1518,10 +1740,20 @@ _pkg_version() {
 do_to_void() {
 	[ $# -gt 0 ] || fatal 'Usage: ocoman to-void <package...>'
 	for _pkg in "$@"; do
-		git -C "$CLONE_DEST" checkout "$OCO_BRANCH" -- "srcpkgs/${_pkg}/" \
-			|| { _g "  skipping ${_pkg} (not found in ${OCO_BRANCH})"; continue; }
-		_ver=$(_pkg_version "$_pkg")
-		git -C "$CLONE_DEST" commit -m "New package: ${_pkg}-${_ver}"
+		_src="${SCRIPT_DIR}/${SRCPKGS}/${_pkg}"
+		_dst="${CLONE_DEST}/${SRCPKGS}/${_pkg}"
+		if [ ! -d "$_src" ]; then
+			_g "  skipping ${_pkg} (not found in ${_src})"
+			continue
+		fi
+		# Sync the package directory verbatim (including symlinks) into the
+		# target void tree, regardless of git state.
+		rm -rf "$_dst"
+		mkdir -p "$(dirname "$_dst")"
+		cp -a "$_src" "$_dst" \
+			|| { _g "  skipping ${_pkg} (copy failed)"; continue; }
+		_g "  synced ${_pkg} -> ${_dst}"
+		# Do not create commits; only sync files.
 	done
 }
 
@@ -1659,7 +1891,7 @@ do_autobump() {
 	echo "  Repository: $_repo"
 	echo "  Branch:     $_ref"
 	echo "  Package:    $_pkg"
-	[ "$_force" = 1 ] && echo '  Force:      yes (ignore src/autobump-pkgs whitelist)'
+	[ "$_force" = 1 ] && echo '  Force:      yes (ignore src/autobump-blacklist)'
 	echo ''
 
 	if [ "$_force" = 1 ]; then
@@ -1752,6 +1984,7 @@ main() {
 		generate_list
 		generate_readme
 		generate_build_yml
+		generate_autobump_yml
 		detect_changes
 		suggest_feeds
 	fi

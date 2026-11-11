@@ -1,6 +1,6 @@
 # Template file for 'river-compositor'
 pkgname=river-compositor
-version=0.4.8
+version=0.5.0
 revision=1
 archs="~i686* ~armv6l* ~armv7l*"
 build_style=zig-build
@@ -15,7 +15,7 @@ license="GPL-3.0-only"
 homepage="https://codeberg.org/river/river"
 changelog="https://codeberg.org/river/river/releases"
 distfiles="https://codeberg.org/river/river/releases/download/v${version}/river-${version}.tar.gz"
-checksum=6d4030526e307e40de357167b4d6daacb583aed353dd93e32e1314c2d34400fa
+checksum=3700370da2af1885962b8321d99ecee1150005e0b62f84527d2f394dd240007b
 replaces="river>=0"
 nocross=yes
 build_options="xwayland"
@@ -34,16 +34,6 @@ do_build() {
 		zig_target="${XBPS_ZIG_TARGET}"
 		zig_cpu="${XBPS_ZIG_CPU}"
 	fi
-
-	cat > xbps_zig_libc.txt <<-EOF
-		include_dir=${XBPS_CROSS_BASE}/usr/include
-		sys_include_dir=${XBPS_CROSS_BASE}/usr/include
-		crt_dir=${XBPS_CROSS_BASE}/usr/lib
-		msvc_lib_dir=
-		kernel32_lib_dir=
-		gcc_dir=
-	EOF
-
 	local _sysroot _search_prefix
 	if [ "$CROSS_BUILD" ]; then
 		_sysroot="${XBPS_CROSS_BASE}"

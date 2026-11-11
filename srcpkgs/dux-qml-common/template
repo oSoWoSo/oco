@@ -1,0 +1,16 @@
+# Template file for 'dux-qml-common'
+pkgname=dux-qml-common
+version=2.1.1
+revision=1
+short_desc="Common QML assets for Dux Shell and Dux Labs apps"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/duxlabs-dev/dux-qml-common"
+distfiles="https://github.com/duxlabs-dev/dux-qml-common/archive/refs/tags/v${version}.tar.gz"
+checksum=14e90697d0ee731e7893ec3acffa6f8094e47fa7f8b061e6782fffa082c299f0
+
+do_install() {
+	vmkdir usr/share/dux-qml-common
+	vcopy DCommon usr/share/dux-qml-common
+	vlicense LICENSE
+}

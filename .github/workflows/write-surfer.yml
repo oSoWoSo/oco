@@ -1,0 +1,117 @@
+name: 📝 write Surfer
+
+on:
+  workflow_call:
+    inputs:
+      destination:
+        description: Repository destination
+        required: true
+        type: string
+      artifact_name:
+        description: Publication request artifact
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  packages: read
+
+jobs:
+  publish:
+    name: Publish ${{ inputs.destination }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    concurrency:
+      group: surfer-write-${{ inputs.destination }}
+      cancel-in-progress: false
+      queue: max
+    container:
+      image: ghcr.io/osowoso/oco-builder-x86_64:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.BOT }}
+    steps:
+      - name: Checkout CI scripts
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Reject unsupported destination
+        env:
+          DESTINATION: ${{ inputs.destination }}
+        run: bash .github/scripts/ci/write-surfer-destination-guard.sh
+
+      - name: Restrict production writes to trusted OCO runs
+        if: inputs.destination == 'production'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+        run: bash .github/scripts/ci/write-surfer-production-guard.sh
+
+      - name: Download publication request
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: publication
+
+      - name: Checkout validator
+        uses: actions/checkout@v7
+        with:
+          path: validator
+          persist-credentials: false
+
+      - name: Validate request
+        id: request
+        env:
+          DESTINATION: ${{ inputs.destination }}
+        run: bash .github/scripts/ci/write-surfer-validate.sh
+
+      - name: Checkout publication source
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ steps.request.outputs.source_sha }}
+          path: extra
+          persist-credentials: false
+
+      - name: Validate request against checked-out source
+        env:
+          DESTINATION: ${{ inputs.destination }}
+        run: bash .github/scripts/ci/write-surfer-validate.sh source
+
+      - name: Publish package and purge operations
+        if: steps.request.outputs.package_arches != '' || steps.request.outputs.purge_packages != '' || steps.request.outputs.auto_detect_purge == 'true'
+        env:
+          ARCHES: ${{ steps.request.outputs.package_arches }}
+          PURGES: ${{ steps.request.outputs.purge_packages }}
+          AUTO_DETECT_PURGE: ${{ steps.request.outputs.auto_detect_purge }}
+          DESTINATION: ${{ inputs.destination }}
+          PRIV_KEY: ${{ secrets.PRIV_KEY }}
+          SURFER_USER: ${{ secrets.SURFER_USER }}
+          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
+        run: bash .github/scripts/ci/write-surfer-publish.sh
+
+      - name: Regenerate architecture pages
+        if: steps.request.outputs.update_arch_pages == 'true'
+        env:
+          DESTINATION: ${{ inputs.destination }}
+          SURFER_USER: ${{ secrets.SURFER_USER }}
+          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
+        run: bash .github/scripts/ci/write-surfer-arch-pages.sh
+
+      - name: Update RSS feed
+        if: steps.request.outputs.update_feed == 'true'
+        env:
+          DESTINATION: ${{ inputs.destination }}
+          RUN_ID: ${{ fromJSON(steps.request.outputs.source_run_id || '0') }}
+          SURFER_USER: ${{ secrets.SURFER_USER }}
+          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
+        run: bash .github/scripts/ci/write-surfer-feed.sh
+
+      - name: Regenerate main index
+        if: steps.request.outputs.update_main_index == 'true'
+        env:
+          DESTINATION: ${{ inputs.destination }}
+          SURFER_USER: ${{ secrets.SURFER_USER }}
+          SURFER_TOKEN: ${{ secrets.SURFER_TOKEN }}
+        run: bash .github/scripts/ci/write-surfer-main-index.sh

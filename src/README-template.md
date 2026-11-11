@@ -23,5 +23,5 @@ sudo xbps-install <package-name>
 ## Note
 
 - Old package versions are automatically replaced with newer ones
-- Binary repository is automatically built and updated by GitHub Actions in https://github.com/oSoWoSo/Void_Community_Repository
+- Binary repository is automatically built and updated by GitHub Actions in https://github.com/oSoWoSo/oco
 - Templates are in https://codeberg.org/osowoso/oco

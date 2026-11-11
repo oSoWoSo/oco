@@ -338,6 +338,8 @@
 !/srcpkgs/sf-io-devel
 !/srcpkgs/sf-keyring
 !/srcpkgs/sf-keyring-devel
+!/srcpkgs/sf-keybind
+!/srcpkgs/sf-keybind-devel
 !/srcpkgs/sf-logging
 !/srcpkgs/sf-logging-devel
 !/srcpkgs/sf-notifications

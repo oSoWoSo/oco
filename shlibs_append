@@ -82,3 +82,4 @@ libSF6KIOFileWidgets.so.6 sf-io-6.31.0.1_1
 libSF6KIOGui.so.6 sf-io-6.31.0.1_1
 libSF6KIOWidgets.so.6 sf-io-6.31.0.1_1
 libkuriikwsfiltereng_private.so sf-io-6.31.0.1_1
+libSF6GlobalAccel.so.6 sf-keybind-6.31.0_1

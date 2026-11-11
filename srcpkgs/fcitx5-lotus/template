@@ -3,9 +3,11 @@ pkgname=fcitx5-lotus
 version=6.1.0
 revision=1
 build_style=cmake
-configure_args="-DLOTUS_UINPUT_PROXY_USER=_uinput_proxy -DINSTALL_RUNIT=ON -DRUNIT_SV_DIR=/usr/share/examples/sv -DLOTUS_BYTECOMPILE_PYTHON=OFF"
+configure_args="-DLOTUS_UINPUT_PROXY_USER=_uinput_proxy -DINSTALL_RUNIT=ON
+ -DRUNIT_SV_DIR=/usr/share/examples/sv -DLOTUS_BYTECOMPILE_PYTHON=OFF"
 hostmakedepends="extra-cmake-modules pkgconf gettext"
-makedepends="libfcitx5-devel libinput-devel eudev-libudev-devel libevdev-devel libnotify-devel libxcb-devel dbus-devel"
+makedepends="libfcitx5-devel libinput-devel eudev-libudev-devel
+libevdev-devel libnotify-devel libxcb-devel dbus-devel wayland-devel"
 depends="fcitx5 acl-progs"
 checkdepends="dbus"
 short_desc="Fcitx5 - Vietnamese IME"
@@ -30,7 +32,7 @@ post_install() {
 fcitx5-lotus-settings_package() {
 	short_desc+=" - Settings"
 	depends="${sourcepkg}>=${version}_${revision} python3 python3-QtPy
- python3-pyqt6 python3-dbus python3-pyqt6-widgets python3-pyqt6-gui"
+	 python3-pyqt6 python3-dbus python3-pyqt6-widgets python3-pyqt6-gui"
 	pycompile_dirs="usr/share/${sourcepkg}/settings-gui"
 	python_version=3
 	pkg_install() {

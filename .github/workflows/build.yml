@@ -266,6 +266,7 @@ on:
         - sf-internationalization
         - sf-logging
         - sf-notifications
+        - sf-progress-ui
         - sf-settings
         - sf-settings-ui
         - sf-silver-icons

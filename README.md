@@ -571,4 +571,4 @@ Create PR to Codeberg or GitHub
 | xut | 0.4.2 | [home](https://codeberg.org/mobinmob/xut) | mobinmob |  | Work with templates from unofficial repositories |
 | xxtools-git | 0.0.0 | [home](https://github.com/Piraty/xxtools) | zenobit |  | Tools to ease packaging tasks for Void Linux |
 | zen-browser-bin | 1.24.1 | [home](https://github.com/zen-browser/desktop) | Bella109 | x86_64 aarch64 | New Browser based on Firefox |
-| zig | 0.16.0 | [home](https://ziglang.org) | Bella109 | x86_64* aarch64* | Programming language designed for robustness, optimality, and clarity |
+| zig | 0.17.1 | [home](https://ziglang.org) | Bella109 | x86_64* aarch64* | Programming language designed for robustness, optimality, and clarity |

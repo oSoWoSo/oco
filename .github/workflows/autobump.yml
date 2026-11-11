@@ -227,6 +227,7 @@ on:
         - shattered-pixel-dungeon
         - simplex-chat
         - sonic-crypto-library
+        - sonic-daemon
         - sonic-namespace
         - sonic-oxygen-icons
         - sonic-polkit

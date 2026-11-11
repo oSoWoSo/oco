@@ -1,6 +1,6 @@
 # Template file for 'mesa-amber'
 pkgname=mesa-amber
-version=26.1.2
+version=26.2.5
 revision=1
 build_style=meson
 build_helper="qemu"
@@ -28,7 +28,7 @@ license="MIT, LGPL-2.1-or-later"
 homepage="https://www.mesa3d.org/"
 changelog="https://docs.mesa3d.org/relnotes.html"
 distfiles="https://mesa3d.org/archive/mesa-${version}.tar.xz"
-checksum=bac2bca9121897a2b8162e79636b50ac998fca799c8e6cf914edd85962babdf0
+checksum=794b3d1729075dae7ebd47c7283b7ca0cdb5dec668f7f11cc0a5d82f6138a0a5
 conflicts="mesa"
 
 # only use llvmpipe on targets where it's supported and reliable

@@ -351,6 +351,8 @@
 !/srcpkgs/sf-notifications-devel
 !/srcpkgs/sf-open-collab
 !/srcpkgs/sf-open-collab-devel
+!/srcpkgs/sf-package
+!/srcpkgs/sf-package-devel
 !/srcpkgs/sf-progress-ui
 !/srcpkgs/sf-progress-ui-devel
 !/srcpkgs/sf-qt-integration

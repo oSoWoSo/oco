@@ -77,6 +77,12 @@ PY
 	fi
 	sed -i 's/@@KDECONNECT@@/org::kde::kdeconnect/g; s/@@KDIRNOTIFY@@/org::kde::KDirNotify/g; s/@@KSSLD@@/org::kde::KSSLD/g' $(grep -rIl '@@KDECONNECT@@\|@@KDIRNOTIFY@@\|@@KSSLD@@' . 2>/dev/null) 2>/dev/null || true
 
+	if grep -rIl 'org_kde' . >/dev/null 2>&1; then
+		grep -rIl 'org_kde' . | while IFS= read -r f; do
+			sed -i 's/org_kde/org_sf/g' "$f"
+		done
+	fi
+
 	if grep -rIl 'org\.kde\.kdeconnect' . >/dev/null 2>&1; then
 		grep -rIl 'org\.kde\.kdeconnect' . | while IFS= read -r f; do
 			sed -i 's/org\.kde\.kdeconnect/@@KDECONNECT@@/g' "$f"

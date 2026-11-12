@@ -4,7 +4,7 @@ This Cloudflare Worker receives Codeberg/Forgejo webhooks and dispatches the rel
 
 | Codeberg event | Worker dispatch | GitHub workflow |
 |---|---|---|
-| `pull_request` on `OCO` | `codeberg_pr` | `mirror-codeberg-pr.yml` → creates/updates the mirrored GitHub PR |
+| `pull_request` on `OCO` | `codeberg_pr` | `mirror-codeberg-pr.yml` → creates/updates the mirrored GitHub PR, and reflects merges/closes on closed events |
 | `push` to `OCO` | `codeberg_push` | `sync-codeberg-to-github.yml` → fast-forwards GitHub `OCO` |
 
 The reverse directions (GitHub → Codeberg) run natively on GitHub (`mirror-pr-to-codeberg.yml`, `toCB.yml`) and need no webhook.
@@ -42,7 +42,7 @@ In the `oSoWoSo/oco` repository settings, add a Forgejo webhook:
 The Worker verifies `X-Forgejo-Signature` over the raw request body. It accepts:
 
 - **Push events** whose `ref` is `refs/heads/OCO`, dispatches `codeberg_push` with the new head SHA, and ignores branch creation/deletion and other refs.
-- **Pull request events** for the `OCO` base branch with actions `opened`, `reopened`, `synchronize`, `synchronized`, or `edited`, ignoring mirrored `mirror/*` heads, and dispatches `codeberg_pr` with only the action and PR number (mirror-pr normalizes Forgejo's `synchronized` to GitHub's `synchronize`).
+- **Pull request events** for the `OCO` base branch with actions `opened`, `reopened`, `synchronize`, `synchronized`, `edited`, or `closed`, ignoring mirrored `mirror/*` heads, and dispatches `codeberg_pr` with only the action and PR number (mirror-pr normalizes Forgejo's `synchronized` to GitHub's `synchronize`, and resolves the merged state from the Codeberg API).
 
 Unsupported events are acknowledged without dispatching.
 

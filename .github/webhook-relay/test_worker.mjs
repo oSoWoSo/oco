@@ -84,11 +84,33 @@ test("invalid signatures never dispatch to GitHub", async () => {
   }
 });
 
+test("closed pull request events dispatch so merge/close state mirrors", async () => {
+  const originalFetch = globalThis.fetch;
+  let captured;
+  globalThis.fetch = async (url, options) => {
+    captured = { url, options };
+    return new Response(null, { status: 204 });
+  };
+  try {
+    const response = await worker.fetch(
+      signedRequest(pullRequestPayload({ action: "closed" })),
+      ENV,
+    );
+    assert.equal(response.status, 202);
+    assert.deepEqual(JSON.parse(captured.options.body), {
+      event_type: "codeberg_pr",
+      client_payload: { action: "closed", number: 12 },
+    });
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("unsupported actions, non-OCO bases, and mirror heads are ignored", async (t) => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async () => assert.fail("ignored webhook must not call GitHub");
   const cases = [
-    ["closed action", pullRequestPayload({ action: "closed" })],
+    ["assigned action", pullRequestPayload({ action: "assigned" })],
     ["other base", pullRequestPayload({ pull_request: {
       number: 12, base: { ref: "other" }, head: { ref: "fix-package" },
     } })],

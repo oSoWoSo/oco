@@ -347,6 +347,8 @@
 !/srcpkgs/sf-notifications-devel
 !/srcpkgs/sf-progress-ui
 !/srcpkgs/sf-progress-ui-devel
+!/srcpkgs/sf-qt-integration
+!/srcpkgs/sf-qt-integration-devel
 !/srcpkgs/sf-quick-ui
 !/srcpkgs/sf-quick-ui-devel
 !/srcpkgs/sf-settings

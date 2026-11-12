@@ -1,8 +1,8 @@
 # Template file for 'umbriel-git'
 pkgname=umbriel-git
 version=0.1.0.20261111
-revision=1
-_commit=d3c85928dc05d7913a5aaaa094dec9db30c2f6f4
+revision=2
+_commit=0c1f125536f19dc62bcf277840bc503a1c756abf
 build_style=meson
 configure_args="$(vopt_feature lcms2 lcms2)"
 hostmakedepends="pkgconf wayland-devel cmake"
@@ -17,7 +17,7 @@ maintainer="Coolllyn <leanhduc673@gmail.com>"
 license="MIT"
 homepage="https://github.com/noctalia-dev/umbriel"
 distfiles="https://github.com/noctalia-dev/umbriel/archive/${_commit}.tar.gz"
-checksum=2eba0b777a4db19bae234238b18da9a6424e242eaac373714bc3eb7c80149eb5
+checksum=7470aed3065d77215798fe3127f025994269aa413d5f9e647700653eba6eb6f3
 
 build_options="lcms2"
 build_options_default="lcms2"

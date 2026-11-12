@@ -101,4 +101,5 @@ libKirigamiTemplates.so.6 sf-quick-ui-6.31.0_1
 libSF6Attica.so.6 sf-open-collab-6.31.0.1_1
 libSF6NewStuffCore.so.6 sf-addons-downloader-6.31.0_1
 libSF6NewStuffWidgets.so.6 sf-addons-downloader-6.31.0_1
+libSF6Package.so.6 sf-package-6.31.0_1
 libSF6Syndication.so.6 sf-feeds-6.31.0_1

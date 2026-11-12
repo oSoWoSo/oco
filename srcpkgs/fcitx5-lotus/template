@@ -16,7 +16,7 @@ license="GPL-3.0-or-later AND MIT"
 homepage="https://github.com/LotusInputMethod/fcitx5-lotus"
 changelog="https://github.com/LotusInputMethod/fcitx5-lotus/releases"
 distfiles="https://github.com/LotusInputMethod/fcitx5-lotus/archive/refs/tags/v${version}.tar.gz>fcitx5-lotus-${version}.tar.gz"
-checksum="4b4617e1e5bb24a0f0d72f36d4c1c551bba295dc141a509b2a319718480446bb"
+checksum=4c9f13a70f575e6191ffc3f52e20d9e9f2b5b5a271c3c334ade3d04950fb4178
 system_accounts="_uinput_proxy"
 _uinput_proxy_groups="input"
 

@@ -205,6 +205,7 @@ jobs:
         env:
           PACKAGES: ${{ needs.detect.outputs.packages }}
           RESULT_FILE: ${{ runner.temp }}/results.tsv
+        shell: bash
         run: |
           set -o pipefail
           sh "${GITHUB_WORKSPACE}/extra/src/build-packages.sh" 2>&1 \
@@ -360,6 +361,7 @@ jobs:
         env:
           PACKAGES: ${{ needs.detect.outputs.packages }}
           RESULT_FILE: ${{ runner.temp }}/results.tsv
+        shell: bash
         run: |
           set -o pipefail
           sh "${GITHUB_WORKSPACE}/extra/src/build-packages.sh" 2>&1 \

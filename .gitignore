@@ -379,6 +379,8 @@
 !/srcpkgs/sonic-crypto-library-devel
 !/srcpkgs/sonic-daemon
 !/srcpkgs/sonic-daemon-devel
+!/srcpkgs/sonic-decoration
+!/srcpkgs/sonic-decoration-devel
 !/srcpkgs/sonic-namespace
 !/srcpkgs/sonic-oxygen-icons
 !/srcpkgs/sonic-polkit

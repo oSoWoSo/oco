@@ -502,6 +502,40 @@ class HelperTests(unittest.TestCase):
             self.assertTrue(result.stdout.strip().endswith("desktop 1.1"))
             self.assertIn("version=1.1", template.read_text(encoding="utf-8"))
 
+    def test_bump_template_expands_distfiles_with_vopt_if(self):
+        # Regression: bump-template.sh sources the template to expand
+        # $distfiles. build-option helpers like vopt_if only exist inside
+        # xbps-src, so an undefined vopt_if made the process-substitution
+        # subshell exit under the inherited set -e before printing the
+        # distfiles; the template was then treated as a source-less
+        # metapackage and the bump failed with "checksum but no distfiles"
+        # (cliamp 2.4.1 autobump, run 43312173893).
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            template = write_template(root, "demo", (
+                "pkgname=demo\n"
+                "version=1.0\n"
+                "revision=1\n"
+                'depends="$(vopt_if yt yt-dlp) $(vopt_if ff ffmpeg6)"\n'
+                "build_options=\"yt ff\"\n"
+                'distfiles="https://example.com/demo-${version}.tar.gz"\n'
+                "checksum=0000\n"
+            ))
+            # The download cannot happen offline, but the distfile expansion
+            # must reach the fetch stage (then fail with rc 2), not die on
+            # the stale vopt_if before parsing $distfiles.
+            result = subprocess.run(
+                ["bash", str(ROOT / ".github/scripts/bump-template.sh"),
+                 "demo", "1.1", str(root)],
+                check=False, capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 2, result.stderr)
+            self.assertIn("fetching https://example.com/demo-1.1.tar.gz",
+                          result.stderr)
+            self.assertNotIn("checksum but no distfiles", result.stderr)
+            # A failed download must leave the template untouched.
+            self.assertIn("version=1.0", template.read_text(encoding="utf-8"))
+
     def test_build_order_matches_xbps_bulk_sortdeps(self):
         """The planner's order must equal xbps-src's sort-dependencies.
 

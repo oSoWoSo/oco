@@ -44,15 +44,46 @@ run_summary
 grep -q '^## Build summary$' "$summary" || { echo "FAIL: header missing on clean log"; exit 1; }
 [ "$(grep -c '^###' "$summary")" -eq 0 ] || { echo "FAIL: sections present for clean log"; exit 1; }
 
-# Keep the script silent on success but surface a warning when a required
-# input is missing.
+# Missing inputs don't fail the job. The summary file is optional (the PR
+# comment may still be posted), so only an absent/unreadable BUILD_LOG warns.
 rm -f "$summary"
 unset GITHUB_STEP_SUMMARY
 out=$(BUILD_LOG="$log" bash "$SUMMARY_SH" 2>&1)
-echo "$out" | grep -q 'GITHUB_STEP_SUMMARY' || { echo "FAIL: no warning on missing summary file"; exit 1; }
+echo "$out" | grep -q 'GITHUB_STEP_SUMMARY' && { echo "FAIL: unexpected summary warning"; exit 1; }
+[ ! -f "$summary" ] || { echo "FAIL: summary written without GITHUB_STEP_SUMMARY"; exit 1; }
 
 rm -f "$summary"
 out=$(GITHUB_STEP_SUMMARY="$summary" bash "$SUMMARY_SH" 2>&1)
 echo "$out" | grep -q 'BUILD_LOG is not set' || { echo "FAIL: no warning on missing BUILD_LOG"; exit 1; }
+
+# When the run was triggered by a PR, the markers are posted as a comment via
+# `gh` (best effort). Re-seed the log with markers first.
+cat >"$log" <<'EOF'
+=> ERROR: bar-1.0_1: do_check: '...' exited with 8
+=> WARNING: usr/lib/cmake should be in -devel package
+EOF
+fake_gh="$TMP_DIR/gh"
+cat >"$fake_gh" <<'EOF'
+#!/bin/sh
+printf '%s\n' "$@" >>"$GH_FAKE_LOG"
+if [ "$1" = "api" ] && [ "$3" = "comments" ]; then
+        cat "$5"
+fi
+exit 0
+EOF
+chmod +x "$fake_gh"
+
+GH_FAKE_LOG="$TMP_DIR/gh-args"
+export GH_FAKE_LOG
+rm -f "$GH_FAKE_LOG" "$summary"
+PATH="$TMP_DIR:$PATH" PR_NUMBER=42 GH_REPO=oSoWoSo/oco GH_TOKEN=t \
+        BUILD_LOG="$log" GITHUB_STEP_SUMMARY="$summary" bash "$SUMMARY_SH"
+grep -q 'repos/oSoWoSo/oco/issues/42/comments' "$GH_FAKE_LOG" || { echo "FAIL: no PR comment posted"; exit 1; }
+
+# Without PR_NUMBER no `gh` call is made even when the token is present.
+rm -f "$GH_FAKE_LOG" "$summary"
+PATH="$TMP_DIR:$PATH" GH_REPO=oSoWoSo/oco GH_TOKEN=t \
+        BUILD_LOG="$log" GITHUB_STEP_SUMMARY="$summary" bash "$SUMMARY_SH"
+[ ! -f "$GH_FAKE_LOG" ] || { echo "FAIL: gh called without PR_NUMBER"; exit 1; }
 
 echo "build-summary.sh: ok"

@@ -214,6 +214,9 @@ jobs:
         if: failure() && matrix.config.arch == 'x86_64'
         env:
           BUILD_LOG: ${{ runner.temp }}/build-log.txt
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.BOT }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-summary.sh"
 
       - name: Collect new autobump binaries

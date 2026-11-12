@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
-# Paste the lines that explain a failed build into the job summary.
-#
-# Intended for the x86_64 matrix job of the build workflow: the log of the
-# failed "Build packages" step is saved to $BUILD_LOG (via tee) and the
-# relevant markers are extracted here. Runs only on failure; never fails the
-# job on its own.
+# Paste the lines that explain a failed build into the job summary, and when
+# the run was triggered by a pull request, paste them into the PR as a
+# comment. Runs only on failure; never fails the job on its own.
 #
 # Markers:
 #   => ERROR:                   fatal xbps-src / build-loop error (grep -F
@@ -14,18 +11,8 @@
 set -euo pipefail
 
 BUILD_LOG="${BUILD_LOG:-}"
-if [ -z "$BUILD_LOG" ]; then
-        echo "::warning::BUILD_LOG is not set; skipping build summary"
-        exit 0
-fi
-if [ ! -f "$BUILD_LOG" ]; then
-        echo "::warning::build log not found: $BUILD_LOG; skipping build summary"
-        exit 0
-fi
-
-SUMMARY="${GITHUB_STEP_SUMMARY:-}"
-if [ -z "$SUMMARY" ]; then
-        echo "::warning::GITHUB_STEP_SUMMARY is not set; skipping build summary"
+if [ -z "$BUILD_LOG" ] || [ ! -f "$BUILD_LOG" ]; then
+        echo "::warning::BUILD_LOG is not set or unreadable; skipping build summary"
         exit 0
 fi
 
@@ -42,12 +29,35 @@ dedup() {
         awk '!seen[$0]++'
 }
 
-{
-        echo "## Build summary"
-        echo
+# Emit the marker lines, first-seen order, duplicates collapsed.
+marker_lines() {
         for marker in '=> ERROR:' '=> WARNING:' 'UNKNOWN PKG PLEASE FIX!'; do
                 lines="$(grep -F -- "$marker" "$BUILD_LOG" | strip_ts | dedup || true)"
                 [ -n "$lines" ] || continue
                 printf '%s\n' "$lines"
         done
-} >>"$SUMMARY"
+}
+
+if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+        {
+                echo "## Build summary"
+                echo
+                marker_lines
+        } >>"$GITHUB_STEP_SUMMARY"
+fi
+
+# Mirror the markers onto the PR that triggered the run, if any. Internally
+# used by the autobump scripts to comment, so `gh` is available in the
+# container. Best effort only.
+if [ -n "${PR_NUMBER:-}" ]; then
+        comment_file="$(mktemp)"
+        marker_lines >"$comment_file"
+        if [ -s "$comment_file" ] && command -v gh >/dev/null 2>&1 &&
+                [ -n "${GH_REPO:-}" ] && [ -n "${GH_TOKEN:-}" ]; then
+                gh api "repos/$GH_REPO/issues/$PR_NUMBER/comments" \
+                        --method POST -F body=@"$comment_file" \
+                        >/dev/null 2>&1 ||
+                        echo "::warning::could not post build summary to PR #$PR_NUMBER"
+        fi
+        rm -f "$comment_file"
+fi

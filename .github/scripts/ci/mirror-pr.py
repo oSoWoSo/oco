@@ -16,6 +16,24 @@ REPOSITORY = "oSoWoSo/oco"
 BASE_BRANCH = "OCO"
 SUPPORTED_ACTIONS = {"opened", "reopened", "synchronize", "edited"}
 FORGE_HOSTS = {"github": "github.com", "codeberg": "codeberg.org"}
+# Generous read timeout: forge APIs can exceed 30s on slow but successful
+# writes, and a false timeout turns a completed mirror into a red check.
+REQUEST_TIMEOUT = 60
+
+
+class ApiRequestTimeoutError(RuntimeError):
+    """A request received no response in time; it may still have applied."""
+
+
+def _is_timeout(error: Exception) -> bool:
+    cause: Exception | None = error
+    while cause is not None:
+        if isinstance(cause, TimeoutError):
+            return True
+        if isinstance(getattr(cause, "reason", None), TimeoutError):
+            return True
+        cause = cause.__cause__
+    return False
 
 
 def api_request(method: str, path: str, token: str, payload: dict | None = None):
@@ -33,9 +51,11 @@ def api_request(method: str, path: str, token: str, payload: dict | None = None)
         },
     )
     try:
-        with urlopen(request, timeout=30) as response:
+        with urlopen(request, timeout=REQUEST_TIMEOUT) as response:
             body = response.read()
     except Exception as error:
+        if _is_timeout(error):
+            raise ApiRequestTimeoutError(f"{method} {path} timed out: {error}") from error
         raise RuntimeError(f"{method} {path} failed: {error}") from error
     return json.loads(body) if body else None
 
@@ -124,6 +144,32 @@ def rewrite_template_links(body: str, target_forge: str, target_branch: str) -> 
     return TEMPLATE_LINK_RE.sub(replacement, body)
 
 
+def _find_mirror(api, target_branch: str, target_forge: str) -> dict | None:
+    """Return the existing mirror PR for ``target_branch`` against OCO, if any."""
+    owner, _name = REPOSITORY.split("/", 1)
+    if target_forge == "codeberg":
+        # Forgejo filters PRs by bare branch name; "owner:branch" is
+        # GitHub-only syntax and silently matches nothing, which would make
+        # every update attempt re-create a PR and hit HTTP 409.
+        head_filter = target_branch
+    else:
+        head_filter = f"{owner}:{target_branch}"
+    query = urlencode({
+        "state": "all",
+        "head": head_filter,
+        "base": BASE_BRANCH,
+        "limit": 50,
+        "per_page": 50,
+    })
+    pulls = api("GET", f"/pulls?{query}")
+    return next(
+        (item for item in pulls
+         if item.get("head", {}).get("ref") == target_branch
+         and item.get("base", {}).get("ref") == BASE_BRANCH),
+        None,
+    )
+
+
 def mirror_pr(event: dict, source_forge: str, api, push_branch):
     """Create or update the matching PR; API and git effects are injected for tests."""
     action = event["action"]
@@ -148,31 +194,11 @@ def mirror_pr(event: dict, source_forge: str, api, push_branch):
     push_branch(head["repo"]["clone_url"], head["sha"], target_branch)
 
     owner, _name = REPOSITORY.split("/", 1)
-    if target_forge == "codeberg":
-        # Forgejo filters PRs by bare branch name; "owner:branch" is
-        # GitHub-only syntax and silently matches nothing, which would make
-        # every update attempt re-create a PR and hit HTTP 409.
-        head_filter = target_branch
-    else:
-        head_filter = f"{owner}:{target_branch}"
-    query = urlencode({
-        "state": "all",
-        "head": head_filter,
-        "base": BASE_BRANCH,
-        "limit": 50,
-        "per_page": 50,
-    })
-    pulls = api("GET", f"/pulls?{query}")
-    existing = next(
-        (item for item in pulls
-         if item.get("head", {}).get("ref") == target_branch
-         and item.get("base", {}).get("ref") == BASE_BRANCH),
-        None,
-    )
     payload = {"title": title, "body": target_body}
     if action == "reopened":
         payload["state"] = "open"
 
+    existing = _find_mirror(api, target_branch, target_forge)
     if existing:
         target_number = existing.get("number") or existing.get("index")
         return api("PATCH", f"/pulls/{target_number}", payload)
@@ -181,7 +207,17 @@ def mirror_pr(event: dict, source_forge: str, api, push_branch):
         "head": f"{owner}:{target_branch}" if target_forge == "github" else target_branch,
         "base": BASE_BRANCH,
     })
-    return api("POST", "/pulls", payload)
+    try:
+        return api("POST", "/pulls", payload)
+    except ApiRequestTimeoutError as error:
+        # The create may have applied before the response timed out. If the
+        # mirror PR now exists, treat the mirror as complete; only fail when
+        # nothing actually landed.
+        created = _find_mirror(api, target_branch, target_forge)
+        if created is None:
+            raise
+        print(f"{error}; confirmed mirror PR already created")
+        return created
 
 
 def codeberg_pull_request(number: str) -> dict:
@@ -193,7 +229,7 @@ def codeberg_pull_request(number: str) -> dict:
         },
     )
     try:
-        with urlopen(request, timeout=30) as response:
+        with urlopen(request, timeout=REQUEST_TIMEOUT) as response:
             return json.loads(response.read())
     except Exception as error:
         raise RuntimeError(f"Could not read Codeberg PR #{number}: {error}") from error

@@ -205,7 +205,16 @@ jobs:
         env:
           PACKAGES: ${{ needs.detect.outputs.packages }}
           RESULT_FILE: ${{ runner.temp }}/results.tsv
-        run: sh "${GITHUB_WORKSPACE}/extra/src/build-packages.sh"
+        run: |
+          set -o pipefail
+          sh "${GITHUB_WORKSPACE}/extra/src/build-packages.sh" 2>&1 \
+            | tee "$RUNNER_TEMP/build-log.txt"
+
+      - name: Summarize failed build
+        if: failure() && matrix.config.arch == 'x86_64'
+        env:
+          BUILD_LOG: ${{ runner.temp }}/build-log.txt
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-summary.sh"
 
       - name: Collect new autobump binaries
         if: success() && startsWith(github.head_ref, 'autobump/') && github.event.pull_request.head.repo.full_name == github.repository
@@ -348,7 +357,16 @@ jobs:
         env:
           PACKAGES: ${{ needs.detect.outputs.packages }}
           RESULT_FILE: ${{ runner.temp }}/results.tsv
-        run: sh "${GITHUB_WORKSPACE}/extra/src/build-packages.sh"
+        run: |
+          set -o pipefail
+          sh "${GITHUB_WORKSPACE}/extra/src/build-packages.sh" 2>&1 \
+            | tee "$RUNNER_TEMP/build-log.txt"
+
+      - name: Summarize failed build
+        if: failure() && matrix.config.arch == 'x86_64'
+        env:
+          BUILD_LOG: ${{ runner.temp }}/build-log.txt
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-summary.sh"
 
       - name: Upload per-arch build results
         if: always() && needs.detect.outputs.packages != ''

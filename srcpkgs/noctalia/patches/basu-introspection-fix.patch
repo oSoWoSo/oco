@@ -1,9 +1,7 @@
-diff --git a/tests/notification_reply_integration_test.cpp b/tests/notification_reply_integration_test.cpp
-index eea6b2025..2ee6215a2 100644
 --- a/tests/notification_reply_integration_test.cpp
 +++ b/tests/notification_reply_integration_test.cpp
-@@ -64,8 +64,17 @@ int main() {
- 
+@@ -65,8 +65,17 @@
+
    TEST_CHECK(drainUntil(bus, [&] { return introDone.load(); }));
    TEST_CHECK(introXml.contains(R"(<signal name="NotificationReplied">)"));
 -  TEST_CHECK(introXml.contains(R"(<arg type="u" name="id"/>)"));
@@ -19,6 +17,6 @@ index eea6b2025..2ee6215a2 100644
 +  const std::string signalBody = introXml.substr(sigStart, sigEnd - sigStart);
 +  TEST_CHECK(signalBody.contains(R"(<arg type="u" name="id"/>)") || signalBody.contains(R"(<arg type="u"/>)"));
 +  TEST_CHECK(signalBody.contains(R"(<arg type="s" name="text"/>)") || signalBody.contains(R"(<arg type="s"/>)"));
- 
+
    // Register signal listeners on both clients
    std::atomic<bool> client1Replied{false};

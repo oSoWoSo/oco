@@ -1,5 +1,5 @@
 const GITHUB_DISPATCH_URL = "https://api.github.com/repos/oSoWoSo/oco/dispatches";
-const SUPPORTED_ACTIONS = new Set(["opened", "reopened", "synchronize", "edited"]);
+const SUPPORTED_ACTIONS = new Set(["opened", "reopened", "synchronize", "edited", "closed"]);
 const SUPPORTED_EVENTS = new Set(["push", "pull_request"]);
 const MAX_PAYLOAD_BYTES = 1_048_576;
 

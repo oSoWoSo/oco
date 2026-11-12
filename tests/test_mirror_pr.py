@@ -89,7 +89,7 @@ class MirrorPullRequestTests(unittest.TestCase):
 
     def test_non_oco_and_unsupported_events_have_no_effects(self):
         for change in (
-            {"action": "closed"},
+            {"action": "assigned"},
             {"pull_request": {"base": {"ref": "other"}}},
             {"pull_request": {"head": {"ref": "mirror/codeberg/pr-3"}}},
         ):
@@ -123,6 +123,125 @@ class MirrorPullRequestTests(unittest.TestCase):
         self.assertEqual((method, path), ("PATCH", "/pulls/77"))
         self.assertEqual(payload["state"], "open")
         self.assertEqual(self.pushed[0][2], "mirror/codeberg/pr-12")
+
+    def test_closed_merged_github_source_marks_codeberg_mirror_manually_merged(self):
+        self.api_responses = [{
+            "number": 77,
+            "head": {"ref": "mirror/github/pr-12"},
+            "base": {"ref": "OCO"},
+        }]
+        self.event["action"] = "closed"
+        self.event["pull_request"]["merged"] = True
+        self.event["pull_request"]["merge_commit_sha"] = "b" * 40
+
+        mirror.mirror_pr(self.event, "github", self.api, self.push)
+
+        method, path, payload = self.calls[-1]
+        self.assertEqual((method, path), ("POST", "/pulls/77/merge"))
+        self.assertEqual(payload["do"], "manually-merged")
+        self.assertEqual(payload["merge_commit_id"], "b" * 40)
+        self.assertEqual(self.pushed, [])  # no branch push on close
+
+    def test_closed_merged_codeberg_source_closes_github_mirror_with_comment(self):
+        self.api_responses = [{
+            "number": 77,
+            "head": {"ref": "mirror/codeberg/pr-12"},
+            "base": {"ref": "OCO"},
+        }]
+        self.event["pull_request"]["head"]["repo"]["clone_url"] = (
+            "https://codeberg.org/contributor/oco.git"
+        )
+        self.event["pull_request"]["html_url"] = (
+            "https://codeberg.org/oSoWoSo/oco/pulls/12"
+        )
+        self.event["action"] = "closed"
+        self.event["pull_request"]["merged"] = True
+        self.event["pull_request"]["merge_commit_sha"] = "c" * 40
+
+        mirror.mirror_pr(self.event, "codeberg", self.api, self.push)
+
+        close_calls = [c for c in self.calls if c[0] == "PATCH" and c[1] == "/pulls/77"]
+        self.assertEqual(len(close_calls), 1)
+        self.assertEqual(close_calls[0][2], {"state": "closed"})
+        comment_calls = [c for c in self.calls if c[0] == "POST" and c[1] == "/issues/77/comments"]
+        self.assertEqual(len(comment_calls), 1)
+        self.assertIn("merged", comment_calls[0][2]["body"])
+
+    def test_closed_merged_github_source_falls_back_to_close_when_manual_merge_fails(self):
+        self.event["action"] = "closed"
+        self.event["pull_request"]["merged"] = True
+        self.event["pull_request"]["merge_commit_sha"] = "d" * 40
+
+        def _api(method, path, payload=None):
+            self.calls.append((method, path, payload))
+            if method == "GET" and path.startswith("/pulls?"):
+                return [{
+                    "number": 77,
+                    "head": {"ref": "mirror/github/pr-12"},
+                    "base": {"ref": "OCO"},
+                }]
+            if method == "POST" and path == "/pulls/77/merge":
+                raise RuntimeError("commit not yet in base branch")
+            if method == "GET" and path == "/pulls/77":
+                return {"number": 77, "merged": False, "state": "open"}
+            return {"number": 77}
+
+        with patch.object(mirror.time, "sleep"):
+            mirror.mirror_pr(self.event, "github", _api, self.push)
+        # After 3 failed merge attempts, fall back to PATCH close.
+        closes = [c for c in self.calls if c[0] == "PATCH" and c[1] == "/pulls/77"]
+        self.assertEqual(len(closes), 1)
+        comments = [c for c in self.calls if c[0] == "POST" and c[1].endswith("/comments")]
+        self.assertEqual(len(comments), 1)
+
+    def test_closed_unmerged_source_closes_counterpart_on_both_forges(self):
+        for source_forge, target_forge, head_prefix, clone_url, html_url in (
+            ("github", "codeberg", "mirror/github/pr-12",
+             "https://github.com/contributor/oco.git", "https://github.com/oSoWoSo/oco/pull/12"),
+            ("codeberg", "github", "mirror/codeberg/pr-12",
+             "https://codeberg.org/contributor/oco.git", "https://codeberg.org/oSoWoSo/oco/pulls/12"),
+        ):
+            with self.subTest(source=source_forge):
+                calls = []
+                responses = [{
+                    "number": 77,
+                    "head": {"ref": head_prefix},
+                    "base": {"ref": "OCO"},
+                }]
+
+                def api(method, path, payload=None):
+                    calls.append((method, path, payload))
+                    if method == "GET":
+                        return responses
+                    return {"number": 77, "html_url": "https://target.example/pr/77"}
+
+                event = {
+                    "action": "closed",
+                    "pull_request": {
+                        "number": 12,
+                        "html_url": html_url,
+                        "head": {
+                            "ref": "fix-package",
+                            "sha": "a" * 40,
+                            "repo": {"clone_url": clone_url},
+                        },
+                        "base": {"ref": "OCO"},
+                        "merged": False,
+                    },
+                }
+                mirror.mirror_pr(event, source_forge, api, self.push)
+                self.assertEqual(calls[-1], ("PATCH", "/pulls/77", {"state": "closed"}))
+
+    def test_closed_without_existing_mirror_is_noop(self):
+        self.api_responses = []
+        self.event["action"] = "closed"
+        self.event["pull_request"]["merged"] = True
+
+        result = mirror.mirror_pr(self.event, "github", self.api, self.push)
+
+        self.assertIsNone(result)
+        self.assertEqual(self.pushed, [])
+        self.assertTrue(all(c[0] == "GET" for c in self.calls))
 
     def test_lookup_for_codeberg_target_is_scoped_to_mirror_branch_and_base(self):
         # Forgejo ignores the owner-prefixed head filter, so lookups against

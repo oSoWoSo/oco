@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Mirror an open pull request to the other OCO forge."""
+"""Mirror pull requests and their merge/close state between the two OCO forges."""
 
 from __future__ import annotations
 
@@ -9,12 +9,14 @@ from pathlib import Path
 import re
 import subprocess
 import tempfile
+import time
 from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
 
 REPOSITORY = "oSoWoSo/oco"
 BASE_BRANCH = "OCO"
-SUPPORTED_ACTIONS = {"opened", "reopened", "synchronize", "edited"}
+OPEN_ACTIONS = {"opened", "reopened", "synchronize", "edited"}
+CLOSED_ACTIONS = {"closed"}
 FORGE_HOSTS = {"github": "github.com", "codeberg": "codeberg.org"}
 # Generous read timeout: forge APIs can exceed 30s on slow but successful
 # writes, and a false timeout turns a completed mirror into a red check.
@@ -170,6 +172,81 @@ def _find_mirror(api, target_branch: str, target_forge: str) -> dict | None:
     )
 
 
+def _target_forge(source_forge: str) -> str:
+    return "codeberg" if source_forge == "github" else "github"
+
+
+def _close_mirror(api, target_forge: str, target_number, *, merged: bool, merge_sha: str | None):
+    """Reflect a merged/closed source PR on the target forge.
+
+    A merged source records a ``manually-merged`` PR on Forgejo (Codeberg) so
+    it shows the merged state without creating a divergent commit. GitHub has
+    no manually-merged concept, so the mirror PR is closed with a comment.
+    An unmerged close simply closes the mirror PR on either forge.
+    """
+    if merged is not True:
+        return api("PATCH", f"/pulls/{target_number}", {"state": "closed"})
+
+    if target_forge != "codeberg":
+        api("PATCH", f"/pulls/{target_number}", {"state": "closed"})
+        return api("POST", f"/issues/{target_number}/comments", {
+            "body": "This mirrored PR was merged on the source forge; closing it here.",
+        })
+
+    # Forgejo only records a manually-merged PR when ``merge_commit_id`` is
+    # already reachable in the base branch. The GitHub merge reaches Codeberg
+    # OCO through toCB.yml, which races this workflow, so retry briefly and
+    # fall back to closing the mirror PR with a comment if the commit has not
+    # propagated yet.
+    payload = {"do": "manually-merged"}
+    if merge_sha:
+        payload["merge_commit_id"] = merge_sha
+    for attempt in range(3):
+        try:
+            return api("POST", f"/pulls/{target_number}/merge", payload)
+        except (ApiRequestTimeoutError, RuntimeError):
+            current = api("GET", f"/pulls/{target_number}")
+            if current and (current.get("merged") or current.get("state") == "merged"):
+                return current
+            if attempt < 2:
+                time.sleep(15)
+    api("PATCH", f"/pulls/{target_number}", {"state": "closed"})
+    return api("POST", f"/issues/{target_number}/comments", {
+        "body": "This mirrored PR was merged on the source forge; the commit has "
+                "not reached Codeberg OCO yet, so it was closed instead.",
+    })
+
+
+def _apply_closed_state(event, api):
+    """Reflect a merged/closed source PR on the mirrored forge.
+
+    Returns the target API response, or None when there is no mirror PR to
+    touch.
+    """
+    pr = event["pull_request"]
+    head = pr["head"]
+    base = pr["base"]
+    if head["ref"].startswith("mirror/"):
+        return None
+    source_number = int(pr["number"])
+    source_forge = event["source_forge"]
+    target_forge = _target_forge(source_forge)
+    target_branch = f"mirror/{source_forge}/pr-{source_number}"
+
+    existing = _find_mirror(api, target_branch, target_forge)
+    if existing is None:
+        return None
+    target_number = existing.get("number") or existing.get("index")
+
+    merged = bool(pr.get("merged"))
+    merge_sha = pr.get("merge_commit_sha") or pr.get("head", {}).get("sha")
+    merge_sha = merge_sha if isinstance(merge_sha, str) and merge_sha else None
+
+    return _close_mirror(
+        api, target_forge, target_number, merged=merged, merge_sha=merge_sha,
+    )
+
+
 def mirror_pr(event: dict, source_forge: str, api, push_branch):
     """Create or update the matching PR; API and git effects are injected for tests."""
     action = event["action"]
@@ -178,12 +255,17 @@ def mirror_pr(event: dict, source_forge: str, api, push_branch):
     base = pr["base"]
     source_number = int(pr["number"])
 
-    if action not in SUPPORTED_ACTIONS or base["ref"] != BASE_BRANCH:
+    if base["ref"] != BASE_BRANCH:
         return None
     if head["ref"].startswith("mirror/"):
         return None
+    if action in CLOSED_ACTIONS:
+        return _apply_closed_state({**event, "source_forge": source_forge}, api)
 
-    target_forge = "codeberg" if source_forge == "github" else "github"
+    if action not in OPEN_ACTIONS:
+        return None
+
+    target_forge = _target_forge(source_forge)
     target_branch = f"mirror/{source_forge}/pr-{source_number}"
     source_url = pr["html_url"]
     body = (pr.get("body") or "").rstrip()
@@ -260,6 +342,8 @@ def main() -> int:
                     "repo": {"clone_url": os.environ["PR_HEAD_REPO_URL"]},
                 },
                 "base": {"ref": os.environ["PR_BASE_REF"]},
+                "merged": os.environ.get("PR_MERGED", "").lower() == "true",
+                "merge_commit_sha": os.environ.get("PR_MERGE_COMMIT_SHA", "") or None,
             },
         }
 

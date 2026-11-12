@@ -122,7 +122,10 @@ open(path, 'w').write(src)
 PY
 
 mapfile -t distfiles < <(
-	set +u
+	# vopt_if and friends exist only inside xbps-src; under the
+	# inherited set -e a failed $(vopt_if ...) abort this subshell
+	# before $distfiles is printed, so errexit is off here.
+	set +u +e
 	# shellcheck source=/dev/null
 	. "$tmp/template.new"
 	# shellcheck disable=SC2086

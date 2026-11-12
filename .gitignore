@@ -328,6 +328,8 @@
 !/srcpkgs/sf-device-integration-devel
 !/srcpkgs/sf-doctools
 !/srcpkgs/sf-doctools-devel
+!/srcpkgs/sf-feeds
+!/srcpkgs/sf-feeds-devel
 !/srcpkgs/sf-gui-addons
 !/srcpkgs/sf-gui-addons-devel
 !/srcpkgs/sf-gui-addons-geo-uri-handler

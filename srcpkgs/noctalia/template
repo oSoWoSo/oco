@@ -1,6 +1,6 @@
 # Template file for 'noctalia'
 pkgname=noctalia
-version=5.4.1
+version=5.5.0
 revision=1
 build_style=meson
 build_helper=qemu
@@ -20,7 +20,7 @@ license="MIT AND Apache-2.0"
 homepage="https://noctalia.dev"
 changelog="https://noctalia.dev/changelogs/v${version}"
 distfiles="https://github.com/noctalia-dev/noctalia/archive/refs/tags/v${version}.tar.gz"
-checksum="6069d922e9d72488c74e4ce335314ce2203f08bd4641380bfe1bd137004597fa"
+checksum="f3fe8a1f1d4306280413e04f934400b787dba212d296d97dfd638bcb55c78262"
 
 if [ "$XBPS_TARGET_LIBC" = glibc ]; then
 	makedepends+=" jemalloc-devel"
@@ -36,16 +36,16 @@ else
 fi
 
 pre_configure() {
-	vsed -i src/core/git_revision.h.in -e "s/@VCS_TAG@/${version}_${revision}/g"
+	vsed -i src/app/git_revision.h.in -e "s/@VCS_TAG@/${version}_${revision}/g"
 }
 
 post_install() {
 	vlicense LICENSE
 	vlicense third_party/fzy/LICENSE fzy.LICENSE
-	vlicense third_party/wuffs/LICENSE-MIT wuffs.LICENSE
+	vlicense lib/third_party/wuffs/LICENSE-MIT wuffs.LICENSE
 	vlicense third_party/luau/LICENSE.txt luau.LICENSE
 	vlicense third_party/luau/lua_LICENSE.txt luau.lua.LICENSE
-	vlicense assets/fonts/tabler-icons-license.txt tabler-icons.LICENSE
+	vlicense lib/assets/fonts/tabler-icons-license.txt tabler-icons.LICENSE
 	vsconf example.toml
 
 	for shell in bash fish zsh; do

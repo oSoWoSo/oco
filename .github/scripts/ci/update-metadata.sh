@@ -1,14 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-git config user.name "oSoWoSo-bot"
-git config user.email "mail@osowoso.org"
-git add .gitignore README.md
-if ! git diff --cached --quiet; then
-  # Amend generated metadata into the current HEAD
-  git commit --amend --no-edit
-fi
-
+# Do not let CI rewrite generated metadata: these files are maintained
+# manually (via `./ocoman -u` run locally) and committed by their author.
+# source_sha reflects the current (pushed) HEAD without an auto-generated commit:
+# a local amend would point publication at a SHA that is not on the remote and
+# "Checkout publication source" in write-surfer.yml would fail.
 source_sha=$(git rev-parse HEAD)
 if [[ -n ${GITHUB_OUTPUT:-} ]]; then
   echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"

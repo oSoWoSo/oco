@@ -24,6 +24,14 @@ strip_ts() {
         sed -E 's/^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+Z //'
 }
 
+# xbps-src colors its output with ANSI SGR sequences (e.g. bold red for
+# errors). Job summaries and PR comments are Markdown, so the escape codes
+# render as garbage; drop them and keep only the text. Use a literal ESC byte
+# so the expression works in both GNU and busybox sed.
+strip_ansi() {
+        sed -E "s/$(printf '\033')\\[[0-9;]*[a-zA-Z]//g"
+}
+
 # Keep first-seen order while dropping exact duplicates.
 dedup() {
         awk '!seen[$0]++'
@@ -32,7 +40,7 @@ dedup() {
 # Emit the marker lines, first-seen order, duplicates collapsed.
 marker_lines() {
         for marker in '=> ERROR:' '=> WARNING:' 'UNKNOWN PKG PLEASE FIX!'; do
-                lines="$(grep -F -- "$marker" "$BUILD_LOG" | strip_ts | dedup || true)"
+                lines="$(grep -F -- "$marker" "$BUILD_LOG" | strip_ts | strip_ansi | dedup || true)"
                 [ -n "$lines" ] || continue
                 printf '%s\n' "$lines"
         done

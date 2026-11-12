@@ -395,6 +395,7 @@
 !/srcpkgs/sonic-oxygen-icons
 !/srcpkgs/sonic-polkit
 !/srcpkgs/sonic-polkit-devel
+!/srcpkgs/sonic-silver
 !/srcpkgs/surfer-cli
 !/srcpkgs/surfer-server
 !/srcpkgs/surge-xt

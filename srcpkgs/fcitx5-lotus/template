@@ -1,7 +1,7 @@
 # Template file for 'fcitx5-lotus'
 pkgname=fcitx5-lotus
 version=6.1.0
-revision=1
+revision=2
 build_style=cmake
 configure_args="-DLOTUS_UINPUT_PROXY_USER=_uinput_proxy -DINSTALL_RUNIT=ON
  -DRUNIT_SV_DIR=/usr/share/examples/sv -DLOTUS_BYTECOMPILE_PYTHON=OFF"

@@ -18,12 +18,14 @@ run_summary() {
 }
 
 # --- sample log ----------------------------------------------------------
-
-cat >"$log" <<'EOF'
-=> foo-1.0_1: running do_check ...
-=> ERROR: foo-1.0_1: do_check: '...' exited with 8
+# Include ANSI SGR codes like the ones xbps-src emits; they must be stripped
+# because Markdown summaries/comments cannot render them. Build ESC
+# portably: dash (the /bin/sh on CI) has no ANSI-C quoting ($'...').
+ESC=$(printf '\033')
+cat >"$log" <<EOF
+${ESC}[1m${ESC}[31m=> ERROR: foo-1.0_1: do_check: '...' exited with 8${ESC}[m
 => ERROR:   in do_check() at common/build-style/cmake.sh:141
-=> WARNING: usr/lib/cmake should be in -devel package
+${ESC}[1m${ESC}[33m=> WARNING: usr/lib/cmake should be in -devel package${ESC}[m
    SONAME: libonig.so.5 <-> UNKNOWN PKG PLEASE FIX!
 => ERROR: foo-1.0_1: do_check: '...' exited with 8
 EOF
@@ -36,6 +38,7 @@ grep -q '^## Build summary$' "$summary" || { echo "FAIL: missing header"; exit 1
 [ "$(grep -c '^###' "$summary")" -eq 0 ] || { echo "FAIL: section headers present"; exit 1; }
 grep -q '^=> WARNING: usr/lib/cmake should be in -devel package$' "$summary" || { echo "FAIL: WARNING line missing"; exit 1; }
 grep -q 'SONAME: libonig.so.5 <-> UNKNOWN PKG PLEASE FIX!' "$summary" || { echo "FAIL: UNKNOWN PKG line missing"; exit 1; }
+grep -q "$ESC" "$summary" && { echo "FAIL: ANSI escape codes not stripped"; exit 1; }
 
 # A log with no marker produces a header but no sections.
 printf '==> Building bar\nno marks here\n' >"$log"
@@ -57,28 +60,35 @@ out=$(GITHUB_STEP_SUMMARY="$summary" bash "$SUMMARY_SH" 2>&1)
 echo "$out" | grep -q 'BUILD_LOG is not set' || { echo "FAIL: no warning on missing BUILD_LOG"; exit 1; }
 
 # When the run was triggered by a PR, the markers are posted as a comment via
-# `gh` (best effort). Re-seed the log with markers first.
-cat >"$log" <<'EOF'
-=> ERROR: bar-1.0_1: do_check: '...' exited with 8
+# `gh` (best effort). Re-seed the log with markers (with ANSI decorations).
+cat >"$log" <<EOF
+${ESC}[1m${ESC}[31m=> ERROR: bar-1.0_1: do_check: '...' exited with 8${ESC}[m
 => WARNING: usr/lib/cmake should be in -devel package
 EOF
 fake_gh="$TMP_DIR/gh"
 cat >"$fake_gh" <<'EOF'
 #!/bin/sh
 printf '%s\n' "$@" >>"$GH_FAKE_LOG"
-if [ "$1" = "api" ] && [ "$3" = "comments" ]; then
-        cat "$5"
-fi
+for arg in "$@"; do
+        case "$arg" in
+        body=@*)
+                cat "${arg#body=@}" >>"$GH_FAKE_BODY"
+                ;;
+        esac
+done
 exit 0
 EOF
 chmod +x "$fake_gh"
 
 GH_FAKE_LOG="$TMP_DIR/gh-args"
-export GH_FAKE_LOG
-rm -f "$GH_FAKE_LOG" "$summary"
+GH_FAKE_BODY="$TMP_DIR/gh-body"
+export GH_FAKE_LOG GH_FAKE_BODY
+rm -f "$GH_FAKE_LOG" "$GH_FAKE_BODY" "$summary"
 PATH="$TMP_DIR:$PATH" PR_NUMBER=42 GH_REPO=oSoWoSo/oco GH_TOKEN=t \
         BUILD_LOG="$log" GITHUB_STEP_SUMMARY="$summary" bash "$SUMMARY_SH"
 grep -q 'repos/oSoWoSo/oco/issues/42/comments' "$GH_FAKE_LOG" || { echo "FAIL: no PR comment posted"; exit 1; }
+grep -q "$ESC" "$GH_FAKE_BODY" && { echo "FAIL: ANSI codes in PR comment body"; exit 1; }
+grep -q '^=> ERROR: bar-1.0_1: do_check:' "$GH_FAKE_BODY" || { echo "FAIL: ERROR marker missing from PR comment"; exit 1; }
 
 # Without PR_NUMBER no `gh` call is made even when the token is present.
 rm -f "$GH_FAKE_LOG" "$summary"

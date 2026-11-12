@@ -165,7 +165,7 @@ Create PR to Codeberg or GitHub
 | bun-bootstrap | 1.4.4 | [home](https://bun.sh) | zenobit | x86_64* aarch64* | Bootstrap package for bun (prebuilt binary) |
 | caerus | 0.8.2 | [home](https://github.com/mendescotta/Caerus) | zenobit |  | Package manager for Void Linux, inspired by Synaptic |
 | candy-icons-git | 0.11.1 | [home](https://www.opendesktop.org/p/1305251/) | Trve_AY |  | Sweet gradient icons, sweet rainbow folders included |
-| cc-switch | 4.0.29 | [home](https://github.com/farion1231/cc-switch) | zenobit | x86_64* aarch64* | Assistant for Claude Code, Codex, OpenCode, OpenClaw & Gemini CLI |
+| cc-switch | 4.0.30 | [home](https://github.com/farion1231/cc-switch) | zenobit | x86_64* aarch64* | Assistant for Claude Code, Codex, OpenCode, OpenClaw & Gemini CLI |
 | cliamp | 2.4.0 | [home](https://github.com/bjarneo/cliamp) | zenobit |  | Terminal music player inspired by winamp |
 | clitest | 0.5.0 | [home](https://github.com/aureliojargas/clitest) | zenobit |  | Command Line Tester |
 | Community-Repositories-Collection | 1 | [home](https://repo.osowoso.org) | zenobit |  | CRC: Collection of community repositories |
@@ -250,8 +250,9 @@ Create PR to Codeberg or GitHub
 | dux-search | 2.1.1 | [home](https://duxlabs.dev/docs/dsearch/) | AvengeMedia |  | Blazingly fast filesystem search tool (Dux Shell) |
 | dux-shell | 2.1.2 | [home](https://github.com/duxlabs-dev/dux-shell) | zenobit |  | Dux Shell — Material 3 desktop shell for Wayland |
 | easybashgui | 15.0.2 | [home](https://github.com/BashGui/easybashgui) | zenobit |  | Bash functions library that aims to give simple GUI functions |
+| edit | 2.0.0 | [home](https://github.com/microsoft/edit) | Coolllyn |  | Simple editor for simple needs |
 | faugus-launcher | 2.5.7 | [home](https://github.com/Faugus/faugus-launcher) | zenobit |  | Simple and lightweight app for running Windows games using UMU-Launcher |
-| Favnyr | 0.3.7 | [home](https://github.com/GlitchAwakened/Favnyr) | zenobit |  | Modern and lightweight file manager for Windows and Linux |
+| Favnyr | 0.3.8 | [home](https://github.com/GlitchAwakened/Favnyr) | zenobit |  | Modern and lightweight file manager for Windows and Linux |
 | fcitx5-lotus | 6.1.0 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
 | fcitx5-lotus-settings | 6.1.0 | [home](https://github.com/LotusInputMethod/fcitx5-lotus) | Coolllyn |  | Fcitx5 - Vietnamese IME |
 | floorp-bin | 12.21.1 | [home](https://github.com/Floorp-Projects/Floorp) | zenobit | x86_64 aarch64 | Browser built for keeping the Open, Private and Sustainable Web alive |
@@ -418,13 +419,13 @@ Create PR to Codeberg or GitHub
 | sf-auth | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
 | sf-auth-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
 | sf-auth-tools | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-auth) | zenobit |  | Authentication and policy abstraction layer for SonicDE frameworks |
-| sf-autocomplete | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
-| sf-autocomplete-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
-| sf-bookmarks | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
-| sf-bookmarks-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
+| sf-autocomplete | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
+| sf-autocomplete-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-autocomplete) | zenobit |  | Sonic completion framework |
+| sf-bookmarks | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
+| sf-bookmarks-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-bookmarks) | zenobit |  | Bookmarks management library |
 | sf-cmake-modules | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-cmake-modules) | zenobit |  | Extended CMake modules and build utilities for SonicDE frameworks |
-| sf-color-scheme | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
-| sf-color-scheme-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
+| sf-color-scheme | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
+| sf-color-scheme-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-color-scheme) | zenobit |  | Classes to read and interact with KColorScheme |
 | sf-core-addons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |
 | sf-core-addons-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-core-addons) | zenobit |  | Core Qt functionality extensions for SonicDE frameworks |
 | sf-crash-handler | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-crash-handler) | zenobit |  | Graceful handling of application crashes |
@@ -446,10 +447,10 @@ Create PR to Codeberg or GitHub
 | sf-internationalization-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-internationalization) | zenobit |  | Gettext-based UI text internationalization |
 | sf-io | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-io) | zenobit |  | Resource and network access abstraction layer for SonicDE |
 | sf-io-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-io) | zenobit |  | Resource and network access abstraction layer for SonicDE |
-| sf-keyring | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keyring) | zenobit |  | Safe desktop-wide storage for passwords |
-| sf-keyring-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keyring) | zenobit |  | Safe desktop-wide storage for passwords |
 | sf-keybind | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keybind) | zenobit |  | Global workspace shortcut system for SonicDE |
 | sf-keybind-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keybind) | zenobit |  | Global workspace shortcut system for SonicDE |
+| sf-keyring | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keyring) | zenobit |  | Safe desktop-wide storage for passwords |
+| sf-keyring-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-keyring) | zenobit |  | Safe desktop-wide storage for passwords |
 | sf-logging | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-logging) | zenobit |  | System logging library for SonicDE |
 | sf-logging-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-logging) | zenobit |  | System logging library for SonicDE |
 | sf-notifications | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-notifications) | zenobit |  | Sonic Desktop notifications |
@@ -458,8 +459,8 @@ Create PR to Codeberg or GitHub
 | sf-progress-ui-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-progress-ui) | zenobit |  | Widgets for showing progress of asynchronous jobs |
 | sf-settings | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
 | sf-settings-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings) | zenobit |  | Persistent platform-independent application settings |
-| sf-settings-ui | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
-| sf-settings-ui-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
+| sf-settings-ui | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
+| sf-settings-ui-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-settings-ui) | zenobit |  | Widgets for configuration dialogs |
 | sf-silver-icons | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
 | sf-silver-icons-library | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
 | sf-silver-icons-library-devel | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-frameworks-silver-icons) | zenobit |  | Silver icon theme |
@@ -483,7 +484,7 @@ Create PR to Codeberg or GitHub
 | sonic-daemon | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-daemon) | zenobit |  | Central daemon of Sonic work spaces |
 | sonic-daemon-devel | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-daemon) | zenobit |  | Central daemon of Sonic work spaces |
 | sonic-namespace | 1 | [home](https://github.com/Sonic-DE) | zenobit |  | SonicDE namespace transformation helper for package builds |
-| sonic-oxygen-icons | 6.31.0 | [home](https://github.com/Sonic-DE/sonic-oxygen-icons) | zenobit |  | Oxygen icon theme |
+| sonic-oxygen-icons | 6.31.0.1 | [home](https://github.com/Sonic-DE/sonic-oxygen-icons) | zenobit |  | Oxygen icon theme |
 | sonic-polkit | 0.201.2 | [home](https://github.com/Sonic-DE/sonic-polkit) | zenobit |  | Qt wrapper around Polkit-1 client libraries |
 | sonic-polkit-devel | 0.201.2 | [home](https://github.com/Sonic-DE/sonic-polkit) | zenobit |  | Qt wrapper around Polkit-1 client libraries |
 | surfer-cli | 7.4.1 | [home](https://github.com/cloudron-io/surfer) | zenobit |  | Command line interface for surfer |

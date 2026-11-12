@@ -1,11 +1,13 @@
-fcitx5-lotus - Service Management
+The uinput backend requires a per-user runit service.
+The service definition is installed to /usr/share/examples/sv/fcitx5-lotus
+but is not enabled automatically.
 
-This package does not automatically install the runit service into /etc/sv.
+To enable for the current user:
 
-To enable the service for your current user:
-   cp -r /usr/share/examples/sv/fcitx5-lotus /etc/sv/fcitx5-lotus.$(whoami)
-   ln -s /etc/sv/fcitx5-lotus.$(whoami) /var/service/fcitx5-lotus.$(whoami)
+cp -r /usr/share/examples/sv/fcitx5-lotus /etc/sv/fcitx5-lotus.$(whoami)
+ln -s /etc/sv/fcitx5-lotus.$(whoami) /var/service/fcitx5-lotus.$(whoami)
 
-To remove the service:
-   rm -f /var/service/fcitx5-lotus.*
-   rm -rf /etc/sv/fcitx5-lotus.*
+To remove:
+
+rm -f /var/service/fcitx5-lotus.*
+rm -rf /etc/sv/fcitx5-lotus.*

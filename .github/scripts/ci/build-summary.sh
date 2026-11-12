@@ -48,9 +48,6 @@ dedup() {
         for marker in '=> ERROR:' '=> WARNING:' 'UNKNOWN PKG PLEASE FIX!'; do
                 lines="$(grep -F -- "$marker" "$BUILD_LOG" | strip_ts | dedup || true)"
                 [ -n "$lines" ] || continue
-                echo "### \`$marker\`"
-                echo
-                printf '%s\n' "$lines" | sed 's/^/    /'
-                echo
+                printf '%s\n' "$lines"
         done
 } >>"$SUMMARY"

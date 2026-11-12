@@ -31,11 +31,11 @@ EOF
 run_summary
 
 # The summary keeps first-seen order and drops duplicate marks.
-grep -q '^### `=> ERROR:`$' "$summary" || { echo "FAIL: missing ERROR section"; exit 1; }
+grep -q '^## Build summary$' "$summary" || { echo "FAIL: missing header"; exit 1; }
 [ "$(grep -Fc '=> ERROR: foo-1.0_1: do_check:' "$summary")" -eq 1 ] || { echo "FAIL: duplicate ERROR line not deduped"; exit 1; }
-grep -q '^### `=> WARNING:`$' "$summary" || { echo "FAIL: missing WARNING section"; exit 1; }
-grep -q '^### `UNKNOWN PKG PLEASE FIX!`$' "$summary" || { echo "FAIL: missing UNKNOWN PKG section"; exit 1; }
-grep -q '^    => ERROR: foo-1.0_1: do_check' "$summary" || { echo "FAIL: ERROR line not indented"; exit 1; }
+[ "$(grep -c '^###' "$summary")" -eq 0 ] || { echo "FAIL: section headers present"; exit 1; }
+grep -q '^=> WARNING: usr/lib/cmake should be in -devel package$' "$summary" || { echo "FAIL: WARNING line missing"; exit 1; }
+grep -q 'SONAME: libonig.so.5 <-> UNKNOWN PKG PLEASE FIX!' "$summary" || { echo "FAIL: UNKNOWN PKG line missing"; exit 1; }
 
 # A log with no marker produces a header but no sections.
 printf '==> Building bar\nno marks here\n' >"$log"

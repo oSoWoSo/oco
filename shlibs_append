@@ -84,3 +84,14 @@ libSF6KIOWidgets.so.6 sf-io-6.31.0.1_1
 libkuriikwsfiltereng_private.so sf-io-6.31.0.1_1
 libSF6GlobalAccel.so.6 sf-keybind-6.31.0_1
 libSF6XmlGui.so.6 sf-xml-gui-6.31.0.1_1
+libKirigami.so.6 sf-quick-ui-6.31.0_1
+libKirigamiControls.so.6 sf-quick-ui-6.31.0_1
+libKirigamiDelegates.so.6 sf-quick-ui-6.31.0_1
+libKirigamiDialogs.so.6 sf-quick-ui-6.31.0_1
+libKirigamiLayouts.so.6 sf-quick-ui-6.31.0_1
+libKirigamiLayoutsPrivate.so.6 sf-quick-ui-6.31.0_1
+libKirigamiPlatform.so.6 sf-quick-ui-6.31.0_1
+libKirigamiPolyfill.so.6 sf-quick-ui-6.31.0_1
+libKirigamiPrimitives.so.6 sf-quick-ui-6.31.0_1
+libKirigamiPrivate.so.6 sf-quick-ui-6.31.0_1
+libKirigamiTemplates.so.6 sf-quick-ui-6.31.0_1

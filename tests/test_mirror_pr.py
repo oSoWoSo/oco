@@ -4,10 +4,12 @@
 import importlib.util
 import os
 from pathlib import Path
+import socket
 import subprocess
 import tempfile
 import unittest
 from unittest.mock import patch
+from urllib.error import URLError
 from urllib.parse import parse_qs, urlparse
 
 
@@ -164,6 +166,41 @@ class MirrorPullRequestTests(unittest.TestCase):
         self.assertEqual((method, path), ("POST", "/pulls"))
         self.assertEqual(payload["head"], "oSoWoSo:mirror/codeberg/pr-12")
 
+    def test_post_timeout_is_recoverable_when_mirror_was_actually_created(self):
+        # A create request can time out after the server has already applied
+        # it. The script must re-check instead of reporting a failure.
+        mirror_state = {"exists": False}
+        calls = []
+
+        def api(method, path, payload=None):
+            calls.append((method, path))
+            if method == "GET":
+                if mirror_state["exists"]:
+                    return [{
+                        "number": 77,
+                        "head": {"ref": "mirror/github/pr-12"},
+                        "base": {"ref": "OCO"},
+                    }]
+                return []
+            mirror_state["exists"] = True
+            raise mirror.ApiRequestTimeoutError(f"{method} {path} timed out")
+
+        result = mirror.mirror_pr(self.event, "github", api, self.push)
+
+        self.assertEqual(result["number"], 77)
+        self.assertEqual(self.pushed[0][2], "mirror/github/pr-12")
+        self.assertIn(("POST", "/pulls"), calls)
+        self.assertGreaterEqual(len(calls), 3)  # GET lookup, POST, GET re-check
+
+    def test_post_timeout_fails_through_when_mirror_is_really_missing(self):
+        def api(method, path, payload=None):
+            if method == "GET":
+                return []
+            raise mirror.ApiRequestTimeoutError(f"{method} {path} timed out")
+
+        with self.assertRaises(mirror.ApiRequestTimeoutError):
+            mirror.mirror_pr(self.event, "github", api, self.push)
+
 
 
 class SourceValidationTests(unittest.TestCase):
@@ -252,6 +289,25 @@ class PushBranchTests(unittest.TestCase):
                 "2",
             )
 
+
+
+class TimeoutDetectionTests(unittest.TestCase):
+    def test_recognizes_urlerror_wrapping_socket_timeout(self):
+        error = URLError(socket.timeout())
+        self.assertTrue(mirror._is_timeout(error))
+
+    def test_recognizes_plain_timeout_error(self):
+        self.assertTrue(mirror._is_timeout(TimeoutError("read timed out")))
+
+    def test_rejects_non_timeout_errors(self):
+        for error in (
+            ValueError("bad request"),
+            OSError("connection reset by peer"),
+            URLError("no host given"),
+            URLError(OSError("name resolution failed")),
+        ):
+            with self.subTest(error=error):
+                self.assertFalse(mirror._is_timeout(error))
 
 
 if __name__ == "__main__":

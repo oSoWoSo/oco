@@ -1,6 +1,6 @@
 # Template file for 'river-compositor'
 pkgname=river-compositor
-version=0.5.0
+version=0.5.2
 revision=1
 archs="~i686* ~armv6l* ~armv7l*"
 build_style=zig-build
@@ -15,7 +15,7 @@ license="GPL-3.0-only"
 homepage="https://codeberg.org/river/river"
 changelog="https://codeberg.org/river/river/releases"
 distfiles="https://codeberg.org/river/river/releases/download/v${version}/river-${version}.tar.gz"
-checksum=3700370da2af1885962b8321d99ecee1150005e0b62f84527d2f394dd240007b
+checksum=b9361943a8ed9c0ed98163ce705e5ef8bdcf087383c04eea210dce5ec094fa13
 replaces="river>=0"
 nocross=yes
 build_options="xwayland"
@@ -43,12 +43,13 @@ do_build() {
 		_search_prefix="/usr"
 	fi
 
-	DESTDIR="zig-out" zig build \
+	# zig 0.17 removed the --global-cache-dir build flag; the global cache
+	# directory is now set via the ZIG_GLOBAL_CACHE_DIR environment variable.
+	DESTDIR="zig-out" ZIG_GLOBAL_CACHE_DIR=/host/zig zig build \
 		-j"${XBPS_MAKEJOBS}" \
 		--sysroot "${_sysroot}" \
 		--search-prefix "${_search_prefix}" \
 		--prefix /usr \
-		--global-cache-dir /host/zig \
 		--libc xbps_zig_libc.txt \
 		--release=safe \
 		--verbose \

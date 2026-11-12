@@ -340,7 +340,7 @@ Create PR to Codeberg or GitHub
 | logseq | 2.0.2 | [home](https://logseq.com) | zenobit |  | Privacy-first, open-source knowledge management platform |
 | lunasvg | 3.5.0 | [home](https://github.com/sammycage/lunasvg) | zenobit |  | SVG rendering and manipulation library in C++ |
 | lunasvg-devel | 3.5.0 | [home](https://github.com/sammycage/lunasvg) | zenobit |  | SVG rendering and manipulation library in C++ |
-| ly | 1.4.0 | [home](https://codeberg.org/fairyglade/ly) | zenobit | i686 x86_64 | Lightweight TUI (ncurses-like) display manager for Linux and BSD |
+| ly | 1.5.0 | [home](https://codeberg.org/fairyglade/ly) | zenobit | i686 x86_64 | Lightweight TUI (ncurses-like) display manager for Linux and BSD |
 | lycan | 0.1.2 | [home](https://github.com/tutkuofnight/lycan) | Bella109 | x86_64* | Lightweight PWA manager for Linux |
 | menu-themes | 0.9.0 | [home](https://github.com/kando-menu/menu-themes) | zenobit | x86_64 aarch64 | Collection of menu themes for Kando |
 | mesa-amber | 26.1.2 | [home](https://www.mesa3d.org/) | Bella109 |  | Mesa for older hardware (legacy driver build) |
@@ -407,7 +407,7 @@ Create PR to Codeberg or GitHub
 | raysession | 0.18.0 | [home](https://raysession.tuxfamily.org/) | Trve_AY |  | Session manager for audio programs using the NSM API |
 | rebos | 3.5.2 | [home](https://gitlab.com/Oglo12/rebos) | zenobit |  | NixOS like repeatability for any Linux distribution |
 | rgc | 1.2.0 | [home](https://github.com/flameshikari/rgc) | zenobit |  | Rust alternative of grc |
-| river-compositor | 0.5.0 | [home](https://codeberg.org/river/river) | LinuxNation | ~i686* ~armv6l* ~armv7l* | Non-monolithic tiling Wayland compositor |
+| river-compositor | 0.5.2 | [home](https://codeberg.org/river/river) | LinuxNation | ~i686* ~armv6l* ~armv7l* | Non-monolithic tiling Wayland compositor |
 | runkit | 1.4.0 | [home](https://github.com/Letdown2491/runkit) | zenobit |  | Graphical manager for runit services |
 | rustdesk | 1.4.9 | [home](https://github.com/rustdesk/rustdesk) | Bella109 | x86_64* | Alternative to AnyDesk |
 | sdkmanager | 0.7.1 | [home](https://gitlab.com/fdroid/sdkmanager) | zenobit |  | Drop-in replacement for Android sdkmanager written in Python |
@@ -578,4 +578,4 @@ Create PR to Codeberg or GitHub
 | xut | 0.4.2 | [home](https://codeberg.org/mobinmob/xut) | mobinmob |  | Work with templates from unofficial repositories |
 | xxtools-git | 0.0.0 | [home](https://github.com/Piraty/xxtools) | zenobit |  | Tools to ease packaging tasks for Void Linux |
 | zen-browser-bin | 1.24.1 | [home](https://github.com/zen-browser/desktop) | Bella109 | x86_64 aarch64 | New Browser based on Firefox |
-| zig | 0.16.0 | [home](https://ziglang.org) | Bella109 | x86_64* aarch64* | Programming language designed for robustness, optimality, and clarity |
+| zig | 0.17.1 | [home](https://ziglang.org) | Bella109 | x86_64* aarch64* | Programming language designed for robustness, optimality, and clarity |

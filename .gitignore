@@ -353,6 +353,8 @@
 !/srcpkgs/sf-settings-devel
 !/srcpkgs/sf-settings-ui
 !/srcpkgs/sf-settings-ui-devel
+!/srcpkgs/sf-settings-utils
+!/srcpkgs/sf-settings-utils-devel
 !/srcpkgs/sf-silver-icons
 !/srcpkgs/sf-silver-icons-library
 !/srcpkgs/sf-silver-icons-library-devel

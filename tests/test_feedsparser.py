@@ -179,5 +179,129 @@ class MarkersTests(unittest.TestCase):
         )
 
 
+def make_pkg_issue(number, version, state="OPEN"):
+    """Issue for the `llama.cpp` template carrying the standard markers."""
+    return {
+        "state": state,
+        "number": number,
+        "body": (
+            "**Package:** `llama.cpp`\n"
+            f"**Upstream version:** `{version}`\n"
+            f"<!-- package-update:llama.cpp -->\n"
+            f"<!-- upstream-version:{version} -->"
+        ),
+        "url": f"https://x/{number}",
+    }
+
+
+class SupersedeIssuesTests(unittest.TestCase):
+    def setUp(self):
+        _skip_if_missing()
+        self._tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(_rmtree, self._tmp)
+        self.top = make_tree(self._tmp)
+        fs.SRC_PKGS = self.top / "srcpkgs"
+        fs.AUTOBUMP_BLACKLIST = self.top / "src" / "autobump-blacklist"
+        fs.DRY_RUN = False
+
+    def test_keeps_one_and_closes_older_as_not_planned(self):
+        """Only the newest open issue survives; older ones are obsolete."""
+        keep = make_pkg_issue(2, "0.9.0")
+        older = make_pkg_issue(1, "0.8.0")
+        calls = []
+
+        def fake_gh(args):
+            calls.append(args)
+            return ""
+
+        fs.run_gh = fake_gh
+        obsolete = fs.supersede_issues(
+            [keep, older],
+            "llama.cpp",
+            keep,
+        )
+
+        self.assertEqual([issue["number"] for issue in obsolete], [1])
+        self.assertEqual(len(calls), 1)
+        close_args = calls[0]
+        self.assertEqual(close_args[0], "issue")
+        self.assertEqual(close_args[1], "close")
+        self.assertIn("1", close_args)
+        self.assertIn("--reason", close_args)
+        self.assertEqual(
+            close_args[close_args.index("--reason") + 1],
+            "not planned",
+        )
+
+    def test_newest_issue_for_template_is_kept_even_when_not_newest_among_open(self):
+        """The caller's keep_issue is preserved regardless of version."""
+        keep = make_pkg_issue(1, "0.8.0")
+        newer = make_pkg_issue(2, "0.9.0")
+        calls = []
+
+        def fake_gh(args):
+            calls.append(args)
+            return ""
+
+        fs.run_gh = fake_gh
+        obsolete = fs.supersede_issues(
+            [keep, newer],
+            "llama.cpp",
+            keep,
+        )
+
+        self.assertEqual([issue["number"] for issue in obsolete], [2])
+        self.assertEqual(len(calls), 1)
+
+    def test_other_templates_and_closed_issues_are_left_alone(self):
+        keep = make_pkg_issue(3, "0.9.0")
+        older = make_pkg_issue(2, "0.8.0")
+        closed = make_pkg_issue(1, "0.7.0", state="CLOSED")
+        other_pkg = {
+            "state": "OPEN",
+            "number": 4,
+            "body": (
+                "**Package:** `glaze`\n"
+                "**Upstream version:** `0.4.0`\n"
+                "<!-- package-update:glaze -->\n"
+                "<!-- upstream-version:0.4.0 -->"
+            ),
+            "url": "https://x/4",
+        }
+        calls = []
+
+        def fake_gh(args):
+            calls.append(args)
+            return ""
+
+        fs.run_gh = fake_gh
+        obsolete = fs.supersede_issues(
+            [keep, older, closed, other_pkg],
+            "llama.cpp",
+            keep,
+        )
+
+        self.assertEqual([issue["number"] for issue in obsolete], [2])
+        self.assertEqual(len(calls), 1)
+        self.assertIn("2", calls[0])
+
+    def test_dry_run_closes_nothing(self):
+        keep = make_pkg_issue(2, "0.9.0")
+        older = make_pkg_issue(1, "0.8.0")
+        fs.DRY_RUN = True
+
+        def fail_gh(_args):
+            raise AssertionError("must not touch GitHub")
+
+        fs.run_gh = fail_gh
+        obsolete = fs.supersede_issues(
+            [keep, older],
+            "llama.cpp",
+            keep,
+        )
+
+        self.assertEqual([issue["number"] for issue in obsolete], [1])
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

@@ -17,6 +17,11 @@ Issues carry version markers that the autobump workflow keys off:
 Open issues are repaired in place: when a stale `autobump:no` marker no
 longer matches the template's current eligibility the body is rewritten,
 which re-triggers autobump.yml on its `edited` event.
+
+There is at most one open `package-update` issue per template. When a
+second open issue exists for the same template, only the one tracking
+the newest upstream version is kept; the older ones are closed as
+obsolete (`not planned`) so they do not look like their update shipped.
 """
 
 import argparse
@@ -1246,6 +1251,101 @@ def close_issue(
     )
 
 
+def close_obsolete_issue(
+    issue,
+    package,
+    newest_issue,
+):
+    """Close a stale open issue for the same template.
+
+    There is at most one open `package-update` issue per template;
+    when a newer one exists, the older one is obsolete and can never
+    be satisfied on its own. It is closed as *not planned* so it does
+    not look like the update it tracked was shipped.
+    """
+    if DRY_RUN:
+        log(
+            "OBSOLETE",
+            package,
+            f"#{issue['number']} "
+            f"superseded by #{newest_issue['number']}"
+            "  [dry-run]",
+        )
+        return
+
+    run_gh(
+        [
+            "issue",
+            "close",
+            str(issue["number"]),
+            "--repo",
+            TARGET_REPO,
+            "--reason",
+            "not planned",
+            "--comment",
+            (
+                f"Obsolete: superseded by "
+                f"#{newest_issue['number']} "
+                f"for the same template."
+            ),
+        ]
+    )
+
+    log(
+        "OBSOLETE",
+        package,
+        f"#{issue['number']} "
+        f"superseded by #{newest_issue['number']}",
+    )
+
+
+def supersede_issues(
+    issues,
+    package,
+    keep_issue,
+):
+    """Keep the newest open issue for a template, close the rest.
+
+    Returns the list of obsolete issues that were (or, in dry-run,
+    would be) closed.
+    """
+    package_marker = marker(package)
+
+    obsolete = []
+
+    for issue in issues:
+        if issue is keep_issue:
+            continue
+
+        if issue["state"] != "OPEN":
+            continue
+
+        body = issue.get("body") or ""
+
+        if package_marker not in body:
+            continue
+
+        obsolete.append(issue)
+
+    def _issue_key(item):
+        version = issue_version(item)
+        if version is None:
+            return (1, "")
+        return (0, str(version))
+
+    for issue in sorted(
+        obsolete,
+        key=_issue_key,
+    ):
+        close_obsolete_issue(
+            issue,
+            package,
+            keep_issue,
+        )
+
+    return obsolete
+
+
 def process_feed(
     result,
     repository_versions,
@@ -1352,6 +1452,18 @@ def process_feed(
 
 
         if open_issue:
+            # At most one open issue per template: keep only the one
+            # tracking the newest upstream version for this template.
+            obsolete = supersede_issues(
+                issues,
+                package,
+                open_issue,
+            )
+
+            if obsolete:
+                stats["obsolete"] += len(obsolete)
+                issues = load_issues()
+
             tracked_version = (
                 issue_version(open_issue)
             )
@@ -1460,6 +1572,7 @@ def main():
         "update": 0,
         "create": 0,
         "sync": 0,
+        "obsolete": 0,
         "skip": 0,
         "miss": 0,
         "error": 0,
@@ -1474,6 +1587,7 @@ def main():
             stats["create"],
             stats["update"],
             stats["sync"],
+            stats["obsolete"],
         )
 
         process_feed(
@@ -1490,6 +1604,7 @@ def main():
             stats["create"],
             stats["update"],
             stats["sync"],
+            stats["obsolete"],
         )
 
         if after != before:
@@ -1506,6 +1621,7 @@ def main():
         f"| create {stats['create']}  "
         f"| skip {stats['skip']}  "
         f"| sync {stats['sync']}  "
+        f"| obsolete {stats['obsolete']}  "
         f"| miss {stats['miss']}  "
         f"| error {stats['error']}",
     )

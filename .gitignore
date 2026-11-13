@@ -228,6 +228,7 @@
 !/srcpkgs/llama.cpp
 !/srcpkgs/llmfit
 !/srcpkgs/logseq
+!/srcpkgs/lshwtui
 !/srcpkgs/lunasvg
 !/srcpkgs/lunasvg-devel
 !/srcpkgs/ly

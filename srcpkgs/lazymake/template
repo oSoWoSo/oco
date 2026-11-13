@@ -1,0 +1,35 @@
+# Template file for 'lazymake'
+pkgname=lazymake
+version=0.5.0
+revision=1
+build_style=go
+go_import_path=github.com/rshelekhov/lazymake
+short_desc="Interactive TUI for Makefiles"
+maintainer="zenobit <zenobit@disroot.org>"
+license="MIT"
+homepage="https://github.com/rshelekhov/lazymake"
+#changelog=""
+distfiles="https://github.com/rshelekhov/lazymake/archive/refs/tags/v${version}.tar.gz"
+checksum=b141ede0499a7ec41c21782d41ebc08a87a95074e9c8c8efc7007d2ebf5e8f9e
+
+do_build() {
+	go build -o lazymake cmd/lazymake/main.go
+}
+
+post_install() {
+	vdoc docs/README.md
+
+	vmkdir usr/share/doc/lazymake/features
+	for f in docs/features/*; do
+		vcopy "$f" usr/share/doc/lazymake/features
+	done
+
+	vmkdir usr/share/doc/lazymake/guides
+	for f in docs/guides/*; do
+		vcopy "$f" usr/share/doc/lazymake/guides
+	done
+
+	vinstall assets/lazymake-logo.svg 644 usr/share/icons
+	vbin lazymake
+	vlicense LICENSE
+}

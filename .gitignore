@@ -208,6 +208,7 @@
 !/srcpkgs/kando
 !/srcpkgs/kernwatch
 !/srcpkgs/kmscon
+!/srcpkgs/lazymake
 !/srcpkgs/lazyrsync
 !/srcpkgs/lemonade-server
 !/srcpkgs/lgogdownloader

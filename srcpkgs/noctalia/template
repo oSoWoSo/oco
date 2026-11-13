@@ -13,7 +13,7 @@ makedepends="cairo-devel fontconfig-devel freetype-devel harfbuzz-devel json-c++
  pam-devel pango-devel pipewire-devel polkit-devel sdbus-c++-devel stb
  tomlplusplus-devel wayland-devel wayland-protocols wireplumber-devel"
 depends="git sound-theme-freedesktop libheif"
-checkdepends="git dejavu-fonts-ttf dbus openssl python3"
+checkdepends="git dejavu-fonts-ttf dbus openssl python3 pipewire"
 short_desc="Sleek, customizable desktop shell crafted for Wayland"
 maintainer="Coolllyn <leanhduc673@gmail.com>"
 license="MIT AND Apache-2.0"

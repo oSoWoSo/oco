@@ -1,0 +1,28 @@
+--- a/src/system/system_monitor_service.cpp
++++ b/src/system/system_monitor_service.cpp
+@@ -1574,9 +1574,23 @@
+     considerWake(historyEnabled, nextHistory);
+ 
+     std::unique_lock wakeLock{m_wakeMutex};
+-    m_wakeCv.wait_until(wakeLock, nextWake, [this, wakeGeneration] {
++    // When every metric is disabled nextWake stays at steady_clock::time_point::max(),
++    // i.e. "sleep until stopped or a config/ref change wakes us". On musl, libstdc++ has
++    // no pthread_cond_clockwait and converts the deadline to system_clock:
++    // steady_time_point::max() - now overflows the 64-bit nanosecond arithmetic and the
++    // resulting (negative) wall-clock deadline makes pthread_cond_timedwait return
++    // ETIMEDOUT instantly, so this call busy-spins while holding the wake mutex and
++    // starves stop()/releaseGpuRef() (observed as a hang in OCO's musl test builds).
++    // cv.wait(lock, pred) blocks indefinitely without any clock arithmetic and is woken
++    // by the same generation/stop notify, so keep the behaviour equal everywhere else.
++    const auto wakePred = [this, wakeGeneration] {
+       return !m_running.load() || m_wakeGeneration.load() != wakeGeneration;
+-    });
++    };
++    if (nextWake == Clock::time_point::max()) {
++      m_wakeCv.wait(wakeLock, wakePred);
++    } else {
++      m_wakeCv.wait_until(wakeLock, nextWake, wakePred);
++    }
+   }
+ }
+ 

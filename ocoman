@@ -346,8 +346,8 @@ strip_orphans() {
 usage() {
 	prog=${0##*/}
 	cat <<-EOF
-	Usage: $prog -h | -u | -w | -m | -p | -s | -a | -c | -i | -o | -l | -t
-	       $prog {update|build|main|upload|serve|archs|check-upstream|init|add-oco|shlibs|test|autobump|help}
+	Usage: $prog -h | -u | -w | -m | -p | -s | -a | -c | -i | -o | -l | -t | -F
+	       $prog {update|build|main|upload|serve|archs|check-upstream|init|add-oco|shlibs|test|autobump|feeds|help}
 
 	Manage the OCO repository.
 
@@ -355,9 +355,10 @@ usage() {
 	  -h, --help           Print this message
 	  -i, --init           Clone void-packages + OCO to CLONE_DEST, apply shlibs
 	  -o, --add-oco        Add OCO remote + branch to an existing void-packages checkout
-	  to-void <pkg...>     Copy template(s) from OCO to master, commit "New package: name-ver"
-	  to-oco <pkg...>      Copy template(s) from master to OCO, commit "name ver"
+	  tv <pkg...>          Copy template(s) from OCO to master, commit "New package: name-ver"
+	  to <pkg...>          Copy template(s) from master to OCO, commit "name ver"
 	  -u, --update         Update list, README, and build.yml
+	  -F, --feeds          Check that every template has a feed.opml entry
 
 	  -l, --shlibs         Apply shlibs patches to an existing checkout
 	  -a, --archs          Regenerate architecture pages only (single arch if ARCH is set)
@@ -818,6 +819,42 @@ feed_opml_has() {
 	return $?
 }
 
+# Usage: check_feeds
+# Verify every (non-symlink) template has a feed.opml <outline>.
+# Templates listed in a feed blacklist file (src/feed-blacklist, or
+# src/feeds-blacklist / src/feed_blacklist) that lack a feed produce a
+# warning; any other template without a feed produces an error and a
+# non-zero exit status.
+check_feeds() {
+	_cf_failed=0
+	_cf_blacklist_files=''
+	for _f in "$SCRIPT_DIR/src/feed-blacklist" "$SCRIPT_DIR/src/feeds-blacklist" "$SCRIPT_DIR/src/feed_blacklist" "$SCRIPT_DIR/src/autobump-blacklist"; do
+		[ -f "$_f" ] && _cf_blacklist_files="$_cf_blacklist_files $_f"
+	done
+
+	[ -f "$FEED_OPML" ] || { echo 'Error: feed.opml not found' >&2; return 1; }
+
+	for _pkg in $(list_templates); do
+		[ -L "${SRCPKGS}/$_pkg" ] && continue
+		[ -f "${SRCPKGS}/$_pkg/template" ] || continue
+		feed_opml_has "$_pkg" && continue
+		if [ -n "$_cf_blacklist_files" ] && grep -qxF "$_pkg" $_cf_blacklist_files 2>/dev/null; then
+			echo "Warning: $_pkg has no feed (blacklisted)"
+		else
+			echo "Error: $_pkg has no feed"
+			_cf_failed=1
+		fi
+	done
+	return $_cf_failed
+}
+
+# aliases for compatibility
+check_feed() { check_feeds "$@"; }
+verify_feeds() { check_feeds "$@"; }
+verify_feed() { check_feeds "$@"; }
+feeds_check() { check_feeds "$@"; }
+feed_check() { check_feeds "$@"; }
+
 # Suggest missing feed.opml <outline> entries for templates that were
 # added or modified. Prints draft lines to stdout only when src/feed.opml
 # exists (i.e. local runs; CI checkout has no feed.opml -> silent skip).
@@ -844,7 +881,7 @@ suggest_feeds() {
 		_desc=$(feed_xml_escape "$_tpl_short_desc")
 
 		if [ -n "$_feed_xml_url" ]; then
-			_feed_line="    <outline title=\"${_title}\" text=\"${_title}\" xmlUrl=\"${_feed_xml_url}\" htmlUrl=\"${_feed_html_url}\" description=\"${_desc}\" type=\"rss\"></outline>"
+			_feed_line="            <outline title=\"${_title}\" text=\"${_title}\" xmlUrl=\"${_feed_xml_url}\" htmlUrl=\"${_feed_html_url}\" description=\"${_desc}\" type=\"rss\"></outline>"
 		else
 			_feed_line="    # ${_pkg}: upstream feed nelze odvodit (zadna nvchecker sekce / homepage neni hosting) -- pridej rucne"
 		fi
@@ -1655,7 +1692,7 @@ _pkg_version() {
 }
 
 do_to_void() {
-	[ $# -gt 0 ] || fatal 'Usage: ocoman to-void <package...>'
+	[ $# -gt 0 ] || fatal 'Usage: ocoman tv <package...>'
 	for _pkg in "$@"; do
 		_src="${SCRIPT_DIR}/${SRCPKGS}/${_pkg}"
 		_dst="${CLONE_DEST}/${SRCPKGS}/${_pkg}"
@@ -1675,7 +1712,7 @@ do_to_void() {
 }
 
 do_to_oco() {
-	[ $# -gt 0 ] || fatal 'usage: ocoman to-oco <package...>'
+	[ $# -gt 0 ] || fatal 'usage: ocoman to <package...>'
 	for _pkg in "$@"; do
 		git -C "$CLONE_DEST" checkout master -- "srcpkgs/${_pkg}/" \
 			|| { _g "  skipping ${_pkg} (not found in master)"; continue; }
@@ -1834,28 +1871,30 @@ do_autobump() {
 # --- Main ---
 
 main() {
+
 	case "${1:-}" in
-		help|--help)          set -- -h ;;
-		update)               set -- -u ;;
-		build|web)            set -- -w ;;
-		main)                 set -- -m ;;
-		upload|publish)       set -- -p ;;
-		serve)                set -- -s ;;
-		archs)                set -- -a ;;
-		check-upstream|check) set -- -c ;;
-		init|setup)           set -- -i ;;
-		add-oco)              set -- -o ;;
-		to-void)              shift; do_to_void "$@"; return 0 ;;
-		to-oco)               shift; do_to_oco "$@"; return 0 ;;
-		autobump)             shift; do_autobump "$@"; return 0 ;;
-		shlibs)               set -- -l ;;
-		test)                 shift; set -- -t "$@" ;;
+		help|--help|-h)                                   set -- -h ;;
+		update|--update|-u)                               set -- -u ;;
+		build|web|--build|--web|-w)                       set -- -w ;;
+		main|--main|-m)                                   set -- -m ;;
+		upload|publish|--upload|--publish|-p)             set -- -p ;;
+		serve|--serve|-s)                    target_serve; return 0 ;;
+		archs|--archs|-a)                                 set -- -a ;;
+		check-upstream|check|--check-upstream|--check|-c) set -- -c ;;
+		init|setup|--init|--setup|-i)                     set -- -i ;;
+		add-oco|--add-oco|-o)                             set -- -o ;;
+		to-void|--to-void|tv)      shift; do_to_void "$@"; return 0 ;;
+		to-oco|--to-oco|to)         shift; do_to_oco "$@"; return 0 ;;
+		autobump|--autobump)      shift; do_autobump "$@"; return 0 ;;
+		shlibs|--shlibs|-l)                               set -- -l ;;
+		test|--test|-t)                       shift; set -- -t "$@" ;;
+		feeds|--feeds|--check-feeds|-F)                   set -- -F ;;
+		*) ;;
 	esac
 
 	_opt='' OPTIND=1 OPTARG=''
-	_do_update='' _do_packages='' _do_web='' _do_main='' _do_archs='' _do_check=''
-	_do_init='' _do_add_oco='' _do_shlibs='' _do_test=''
-	while getopts 'huwmpsaciolt' _opt; do
+	_do_update='' _do_packages='' _do_web='' _do_main='' _do_archs='' _do_check='' _do_check_feeds='' _cf_rc=0
+	while getopts 'huwmpsacioltF' _opt; do
 		case "$_opt" in
 			h) usage; return 0 ;;
 			u) _do_update=1 ;;
@@ -1869,15 +1908,16 @@ main() {
 			o) _do_add_oco=1 ;;
 			l) _do_shlibs=1 ;;
 			t) _do_test=1 ;;
+			F) _do_check_feeds=1 ;;
 			*) usage >&2; return 1 ;;
 		esac
 	done
 
-	[ -n "$_do_update$_do_packages$_do_web$_do_main$_do_archs$_do_check$_do_init$_do_add_oco$_do_shlibs$_do_test" ] ||
+	[ -n "$_do_update$_do_packages$_do_web$_do_main$_do_archs$_do_check$_do_init$_do_add_oco$_do_shlibs$_do_test$_do_check_feeds" ] ||
 		{ usage >&2; return 1; }
 
 	if [ "$_do_update" = 1 ] || [ "$_do_web" = 1 ] || [ "$_do_main" = 1 ] || [ "$_do_check" = 1 ] \
-			|| [ "$_do_test" = 1 ]; then
+			|| [ "$_do_test" = 1 ] || [ "$_do_check_feeds" = 1 ]; then
 		[ -d "$SRCPKGS" ] || fatal "srcpkgs directory not found: ${SRCPKGS}"
 	fi
 
@@ -1895,6 +1935,9 @@ main() {
 	fi
 	if [ "$_do_shlibs" = 1 ]; then
 		do_shlibs
+	fi
+	if [ "$_do_check_feeds" = 1 ]; then
+		check_feeds || _cf_rc=1
 	fi
 	if [ "$_do_update" = 1 ]; then
 		[ -f "$README" ] || fatal "README not found: ${README}"
@@ -1918,6 +1961,7 @@ main() {
 	if [ "$_do_packages" = 1 ]; then
 		do_upload
 	fi
+	return ${_cf_rc:-0}
 }
 
 main "$@"

@@ -1,7 +1,7 @@
 # Template file for 'edit'
 pkgname=edit
 version=2.0.0
-revision=1
+revision=2
 build_style=cargo
 make_install_args="--path crates/edit"
 checkdepends="pkgconf libzstd-devel libicu78"
@@ -18,9 +18,13 @@ export EDIT_CFG_ICUUC_SONAME=libicuuc.so.78
 export EDIT_CFG_ICUI18N_SONAME=libicui18n.so.78
 export EDIT_CFG_ICU_RENAMING_VERSION=78
 
+post_patch() {
+	vsed -i 's|^Exec=edit %F$|Exec=msedit %F|' assets/com.microsoft.edit.desktop
+}
+
 post_install() {
 	mv ${DESTDIR}/usr/bin/edit ${DESTDIR}/usr/bin/msedit
-	vman assets/manpage/edit.1
+	vman assets/manpage/edit.1 msedit.1
 	vinstall assets/com.microsoft.edit.desktop 644 usr/share/applications
 	vinstall assets/edit.svg 644 usr/share/icons/hicolor/scalable/apps
 	vlicense LICENSE

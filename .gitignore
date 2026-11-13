@@ -392,6 +392,8 @@
 !/srcpkgs/sonic-daemon-devel
 !/srcpkgs/sonic-decoration
 !/srcpkgs/sonic-decoration-devel
+!/srcpkgs/sonic-interface-libraries
+!/srcpkgs/sonic-interface-libraries-devel
 !/srcpkgs/sonic-namespace
 !/srcpkgs/sonic-oxygen-icons
 !/srcpkgs/sonic-polkit

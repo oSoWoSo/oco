@@ -40,6 +40,7 @@
 !/srcpkgs/aquamarine-devel
 !/srcpkgs/better-sqlite3
 !/srcpkgs/blocaled
+!/srcpkgs/Bottles
 !/srcpkgs/BoxBuddy
 !/srcpkgs/brave-browser-bin
 !/srcpkgs/brave-browser-bin-qt5
@@ -152,6 +153,7 @@
 !/srcpkgs/fresh
 !/srcpkgs/ftxui
 !/srcpkgs/ftxui-devel
+!/srcpkgs/fvs2
 !/srcpkgs/gama
 !/srcpkgs/gh-dash
 !/srcpkgs/gh-lazy
@@ -283,6 +285,7 @@
 !/srcpkgs/python3-hishel
 !/srcpkgs/python3-inline-snapshot
 !/srcpkgs/python3-linkify-it-py
+!/srcpkgs/python3-patool
 !/srcpkgs/python3-PyGithub
 !/srcpkgs/python3-structlog
 !/srcpkgs/python3-textual
@@ -418,10 +421,12 @@
 !/srcpkgs/tuisic
 !/srcpkgs/typobuster
 !/srcpkgs/umbriel-git
+!/srcpkgs/umu-launcher
 !/srcpkgs/undelete-btrfs
 !/srcpkgs/vbm
 !/srcpkgs/vibepanel
 !/srcpkgs/Vish
+!/srcpkgs/vkbasalt-cli
 !/srcpkgs/vm-curator
 !/srcpkgs/void-hardwaremanager-git
 !/srcpkgs/void-live-creator-git

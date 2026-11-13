@@ -12,6 +12,9 @@ license="LGPL-2.0-or-later"
 homepage="https://github.com/Sonic-DE/sonic-decoration"
 distfiles="https://github.com/Sonic-DE/sonic-decoration/archive/refs/tags/${version}.tar.gz"
 checksum=12af0b1814eb2c392c7545dc3082a1b2f5244b02a531ab8f25f0bff548bab031
+provides="kf6-kdecoration-${version}_${revision}"
+conflicts="kf6-kdecoration"
+replaces="kf6-kdecoration>=0"
 
 post_patch() {
 	. /usr/libexec/sonic-namespace/sonic-namespace.sh

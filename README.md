@@ -23,7 +23,7 @@ If you dont wish to build the packages locally,
 https://repo.osowoso.org repository provides prebuilt binaries.  
 Pick your architecture there and you will see
 
-## Structure (PRs accepted anywhere 🤗)
+## Structure (PRs accepted on Codeberg and GitHub 🤗)
 - Codeberg repository with templates  
 https://codeberg.org/oSoWoSo/oco
 - Github repository (CI - Here we build binary packages)  
@@ -32,8 +32,10 @@ https://github.com/oSoWoSo/oco
 https://github.com/oSoWoSo/oco-builder
 - Binary repositories  
 https://repo.osowoso.org
-- Just built (RSS feed)
+- Just built (RSS feed)  
 https://repo.osowoso.org/feed.xml
+- GitLab mirror (only push, no PRs or issues accepted)  
+https://gitlab.com/osowoso/oco
 
 ## What we don't build? (From source)
 Browsers: It's waste of energy and when you finish building is maybe already new version out  

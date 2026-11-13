@@ -217,17 +217,56 @@ def _close_mirror(api, target_forge: str, target_number, *, merged: bool, merge_
     })
 
 
-def _apply_closed_state(event, api):
-    """Reflect a merged/closed source PR on the mirrored forge.
+def _close_native(api, native_number, *, merged, merge_sha):
+    """Reflect a closed/merged GitHub mirror PR onto its native Codeberg PR.
 
-    Returns the target API response, or None when there is no mirror PR to
+    Called when a PR whose head is ``mirror/codeberg/pr-<n>`` is closed or
+    merged on GitHub; the source actually lives on Codeberg as PR ``<n>``,
+    which this workflow's Codeberg API can update.
+    """
+    current = api("GET", f"/pulls/{native_number}")
+    if not current or current.get("merged") or current.get("state") == "closed":
+        return current
+    return _close_mirror(api, "codeberg", native_number, merged=merged, merge_sha=merge_sha)
+
+
+def _apply_closed_state(event, api):
+    """Reflect a merged/closed source PR on the counterpart forge.
+
+    Two shapes are handled:
+    * A native PR was closed/merged on its forge: close/mark the mirror PR on
+      the other forge (the existing behavior).
+    * A mirror PR (head ``mirror/<forge>/pr-<n>``) was closed/merged on the
+      forge hosting the mirror: reflect the state on the native PR ``<n>`` on
+      ``<forge>`` (the GitHub-mirror-of-Codeberg case), when that forge is the
+      one this workflow's API targets.
+
+    Returns the target API response, or None when there is no counterpart PR to
     touch.
     """
     pr = event["pull_request"]
     head = pr["head"]
     base = pr["base"]
-    if head["ref"].startswith("mirror/"):
+    if base["ref"] != BASE_BRANCH:
         return None
+
+    mirror_match = re.fullmatch(r"mirror/(\w+)/pr-(\d+)", head["ref"])
+    if mirror_match:
+        # The mirror PR lives on the forge running this workflow; the native
+        # PR is the one to update on the forge the API targets. Forgejo's
+        # manually-merged endpoint is Codeberg-specific, so only that target
+        # is handled here.
+        mirrored_forge, native_number = mirror_match.groups()
+        if (
+            event["source_forge"] != "github"
+            or mirrored_forge != "codeberg"
+        ):
+            return None
+        merged = bool(pr.get("merged"))
+        merge_sha = pr.get("merge_commit_sha") or head.get("sha")
+        merge_sha = merge_sha if isinstance(merge_sha, str) and merge_sha else None
+        return _close_native(api, int(native_number), merged=merged, merge_sha=merge_sha)
+
     source_number = int(pr["number"])
     source_forge = event["source_forge"]
     target_forge = _target_forge(source_forge)
@@ -257,10 +296,10 @@ def mirror_pr(event: dict, source_forge: str, api, push_branch):
 
     if base["ref"] != BASE_BRANCH:
         return None
-    if head["ref"].startswith("mirror/"):
-        return None
     if action in CLOSED_ACTIONS:
         return _apply_closed_state({**event, "source_forge": source_forge}, api)
+    if head["ref"].startswith("mirror/"):
+        return None
 
     if action not in OPEN_ACTIONS:
         return None

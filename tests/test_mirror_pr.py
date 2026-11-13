@@ -142,6 +142,91 @@ class MirrorPullRequestTests(unittest.TestCase):
         self.assertEqual(payload["merge_commit_id"], "b" * 40)
         self.assertEqual(self.pushed, [])  # no branch push on close
 
+    def test_closed_merged_github_mirror_of_codeberg_pr_marks_native_manually_merged(self):
+        # The GitHub mirror of a Codeberg-native PR is merged on GitHub; the
+        # native Codeberg PR must be marked merged too.
+        self.event["action"] = "closed"
+        self.event["pull_request"]["head"]["ref"] = "mirror/codeberg/pr-12"
+        self.event["pull_request"]["head"]["sha"] = "a" * 40
+        self.event["pull_request"]["merged"] = True
+        self.event["pull_request"]["merge_commit_sha"] = "e" * 40
+
+        responses = {"is_open": True, "merged": False}
+        calls = []
+
+        def api(method, path, payload=None):
+            calls.append((method, path, payload))
+            if method == "GET":
+                if responses["is_open"]:
+                    return {"number": 12, "state": "open", "merged": False}
+                return {"number": 12, "state": "open", "merged": True}
+            if method == "POST":
+                responses["merged"] = True
+                responses["is_open"] = False
+            return {"number": 12}
+
+        result = mirror.mirror_pr(self.event, "github", api, self.push)
+
+        self.assertEqual(result["number"], 12)
+        # GET the native PR, then POST manually-merged to the native PR.
+        get_calls = [c for c in calls if c[0] == "GET" and c[1] == "/pulls/12"]
+        self.assertEqual(len(get_calls), 1)
+        merge_calls = [c for c in calls if c[0] == "POST" and c[1] == "/pulls/12/merge"]
+        self.assertEqual(len(merge_calls), 1)
+        self.assertEqual(merge_calls[0][2], {
+            "do": "manually-merged",
+            "merge_commit_id": "e" * 40,
+        })
+        self.assertEqual(self.pushed, [])
+
+    def test_closed_unmerged_github_mirror_of_codeberg_pr_closes_native(self):
+        self.event["action"] = "closed"
+        self.event["pull_request"]["head"]["ref"] = "mirror/codeberg/pr-12"
+        self.event["pull_request"]["head"]["sha"] = "a" * 40
+        self.event["pull_request"]["merged"] = False
+
+        calls = []
+
+        def api(method, path, payload=None):
+            calls.append((method, path, payload))
+            if method == "GET":
+                return {"number": 12, "state": "open", "merged": False}
+            return {"number": 12}
+
+        result = mirror.mirror_pr(self.event, "github", api, self.push)
+
+        self.assertEqual(result["number"], 12)
+        self.assertIn(("PATCH", "/pulls/12", {"state": "closed"}), calls)
+        self.assertEqual(self.pushed, [])
+
+    def test_closed_github_mirror_of_codeberg_pr_skips_already_closed_native(self):
+        self.event["action"] = "closed"
+        self.event["pull_request"]["head"]["ref"] = "mirror/codeberg/pr-12"
+        self.event["pull_request"]["merged"] = True
+
+        calls = []
+
+        def api(method, path, payload=None):
+            calls.append((method, path, payload))
+            return {"number": 12, "state": "closed", "merged": True}
+
+        mirror.mirror_pr(self.event, "github", api, self.push)
+
+        # Only the GET probe; no write follows because the native PR is done.
+        self.assertEqual(calls, [("GET", "/pulls/12", None)])
+
+    def test_closed_github_mirror_of_codeberg_pr_ignores_non_codeberg_native(self):
+        # A GitHub mirror of a GitHub PR (head mirror/github/pr-12) closed on
+        # GitHub must not be treated as a native Codeberg close.
+        self.event["action"] = "closed"
+        self.event["pull_request"]["head"]["ref"] = "mirror/github/pr-12"
+        self.event["pull_request"]["merged"] = True
+
+        result = mirror.mirror_pr(self.event, "github", self.api, self.push)
+
+        self.assertIsNone(result)
+        self.assertEqual(self.calls, [])
+
     def test_closed_merged_codeberg_source_closes_github_mirror_with_comment(self):
         self.api_responses = [{
             "number": 77,

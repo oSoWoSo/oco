@@ -1,0 +1,13 @@
+# Template file for 'quickosdl'
+pkgname=quickosdl
+version=0.3.2
+revision=1
+build_style=cargo
+hostmakedepends="pkg-config"
+makedepends="libzstd-devel"
+short_desc="Tool to quickly find URLs to images and download them"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-3.0-only"
+homepage="https://github.com/lj3954/quickosdl"
+distfiles="https://github.com/lj3954/quickosdl/archive/refs/tags/v${version}.tar.gz"
+checksum=4c4c38ab6d49c28f30896c91cf4c7c38bedf18595e0f3023406d8dc1a4619aba

@@ -1,0 +1,15 @@
+# Template file for 'rgc'
+pkgname=rgc
+version=1.2.0
+revision=1
+build_style=cargo
+short_desc="Rust alternative of grc"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-2.0-only"
+homepage="https://github.com/flameshikari/rgc"
+distfiles="https://github.com/flameshikari/rgc/archive/refs/tags/v${version}.tar.gz"
+checksum=ad1c061b95d6a83de262d2b85135bb67644ba31de915014e7a7b83d6e0257a75
+
+pre_build() {
+	cargo generate-lockfile
+}

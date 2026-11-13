@@ -1,0 +1,26 @@
+# Template file for 'vtm'
+pkgname=vtm
+version=2026.10.12
+revision=1
+build_style=cmake
+configure_args="-DBUILD_TESTING=ON -DFORCE_VENDORED_DEPS=OFF"
+hostmakedepends="pkg-config lunasvg git lua54"
+makedepends="freetype-devel harfbuzz-devel lua54-devel lunasvg-devel stb"
+short_desc="Text-based desktop environment"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/directvt/vtm"
+distfiles="https://github.com/directvt/vtm/archive/refs/tags/v${version}.tar.gz"
+checksum=48ef3b8cbd5a9479049791378787bd31ab28621c842f8997391240109d40e72d
+
+pre_configure() {
+	if [ -n "$XBPS_CROSS_BUILD" ]; then
+		export STB_INCLUDE_DIR=/usr/${XBPS_CROSS_TRIPLET}/usr/include/stb
+	else
+		export STB_INCLUDE_DIR=/usr/include/stb
+	fi
+}
+
+post_install() {
+	vlicense LICENSE
+}

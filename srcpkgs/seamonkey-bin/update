@@ -1,0 +1,2 @@
+site="https://www.seamonkey-project.org/releases"
+pattern='seamonkey-\K[\d.]+(?=\.en-US\.linux-x86_64)'

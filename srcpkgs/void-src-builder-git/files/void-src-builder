@@ -1,0 +1,2 @@
+#!/bin/sh
+exec python3 /usr/lib/void-src-builder/void-src-builder.py "$@"

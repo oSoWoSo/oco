@@ -1,0 +1,40 @@
+# Template file for 'BoxBuddy'
+pkgname=BoxBuddy
+version=2.6.2
+revision=1
+archs="x86_64"
+build_style=cargo
+hostmakedepends="make pkg-config gettext-tiny"
+makedepends="gdk-pixbuf-devel glib-devel graphene-devel gtk4-devel libadwaita-devel pango-devel"
+depends="distrobox"
+short_desc="Graphical Interface for Distrobox"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/Dvlv/BoxBuddyRS"
+distfiles="https://github.com/Dvlv/BoxBuddyRS/archive/refs/tags/${version}.tar.gz"
+checksum=e70131d1690f0aa692aa6bb94b5d3f1de565ffa381e555577880f96bfd28147f
+
+do_build() {
+	GETTEXT_SYSTEM=true cargo build --release --all-features
+	make translate
+}
+
+do_install() {
+	vbin target/release/boxbuddy-rs boxbuddy
+}
+
+post_install() {
+	vinstall io.github.dvlv.boxbuddyrs.desktop 644 usr/share/applications
+	vinstall io.github.dvlv.boxbuddyrs.metainfo.xml 644 usr/share/metainfo
+	vinstall io.github.dvlv.boxbuddyrs.gschema.xml 644 usr/share/glib-2.0/schemas
+	vinstall icons/io.github.dvlv.boxbuddyrs.svg 644 usr/share/icons/hicolor/scalable/apps
+	vinstall icons/build-alt-symbolic.svg 644 usr/share/icons/hicolor/symbolic/actions
+	vinstall icons/build-alt-symbolic-light.svg 644 usr/share/icons/hicolor/symbolic/actions
+
+	vlicense LICENSE
+
+	cd po
+	for lang in $(ls -d */); do
+		vinstall ${lang%%/}/LC_MESSAGES/boxbuddyrs.mo 644 usr/share/locale/${lang%%/}/LC_MESSAGES
+	done
+}

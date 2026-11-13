@@ -1,0 +1,25 @@
+# Template file for 'patchance'
+pkgname=patchance
+version=1.4.0
+revision=2
+build_style=gnu-makefile
+makedepends="qtchooser python3-QtPy python3-pyqt6-devel-tools python3-pyqt6-devel qt5-devel which"
+depends="python3-pyliblo3 python3-pyqt6-svg python3-pyqt6-widgets python3-pyqt6-gui python3-pyqt6-xml python3-QtPy python3-tkinter"
+short_desc="Jack patchbay GUI"
+maintainer="Trve_AY <anthonyh@purplehaze.noho.st>"
+license="GPL-2.0-only"
+homepage="https://raysession.tuxfamily.org/"
+_hpbay="59506428aa245c89fdfc2c17428c638187a6b9fe"
+distfiles="https://github.com/Houston4444/Patchance/archive/refs/tags/v${version}.tar.gz
+ https://github.com/Houston4444/HoustonPatchbay/archive/${_hpbay}.tar.gz"
+checksum="ed1b66d785448ac8cb8b3b3fb42dc5c21335ae21fb0b0b356ac6c3e2e8305824
+ 8888dae4f111192ac64e58b21bc68c7c2e6a99a8071a54233c07e7037b20ceba"
+skip_extraction="${_hpbay}.tar.gz"
+
+post_extract() {
+	vsrcextract -C HoustonPatchbay "${_hpbay}.tar.gz"
+}
+
+do_build() {
+	LRELEASE=lrelease-qt5 make
+}

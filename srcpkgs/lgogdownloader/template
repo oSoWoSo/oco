@@ -1,0 +1,13 @@
+# Template file for 'lgogdownloader'
+pkgname=lgogdownloader
+version=3.20
+revision=1
+build_style=cmake
+hostmakedepends="pkg-config"
+makedepends="boost-devel libcurl-devel jsoncpp-devel tinyxml2-devel rhash-devel libtidy5-devel"
+short_desc="Unofficial downloader to GOG.com for Linux users"
+maintainer="zenobit <zen@osowoso.org>"
+license="WTFPL"
+homepage="https://github.com/Sude-/lgogdownloader"
+distfiles="https://github.com/Sude-/lgogdownloader/archive/refs/tags/v${version}.tar.gz"
+checksum=56c746488ff4117ef011270acf678205f15e16216cc0be19f631abdef557d063

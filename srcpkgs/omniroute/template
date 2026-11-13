@@ -1,0 +1,186 @@
+# Template file for 'omniroute'
+pkgname=omniroute
+version=3.8.24
+revision=1
+hostmakedepends="nodejs python3"
+depends="openssl"
+checkdepends="${depends} tls-client"
+short_desc="Universal AI gateway with smart routing for multiple LLM providers"
+# Note: some native addons include musl-linked binaries; musl satisfies shlib detector
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/diegosouzapw/OmniRoute"
+distfiles="https://github.com/diegosouzapw/OmniRoute/archive/refs/tags/v${version}.tar.gz"
+checksum=504f651ff63d7101f846b92f156ef8496fb4ca0730a97211719b747d54066f22
+system_accounts="_omniroute"
+omniroute_homedir="/var/lib/omniroute"
+
+export NODE_ENV=production
+export npm_config_engine_strict=false
+export npm_config_loglevel=error
+export npm_config_fund=false
+export npm_config_audit=false
+# Force distDir=.next so build-next-isolated.mjs outputs to .next/standalone
+# (upstream default changed to .build/next in 3.8.15)
+export NEXT_DIST_DIR=.next
+
+do_build() {
+	# Determine target CPU arch for node-gyp
+	local _gyp_arch
+	case "$XBPS_TARGET_MACHINE" in
+		aarch64*) _gyp_arch=arm64 ;;
+		armv7*|armv6*) _gyp_arch=arm ;;
+		i686*) _gyp_arch=ia32 ;;
+		*) _gyp_arch=x64 ;;
+	esac
+
+	# Build require JWT_SECRET and API_KEY_SECRET; generate ephemeral values
+	# for the chroot (same pattern as files/omniroute wrapper, without persistence)
+	[ -z "${JWT_SECRET}" ] && export JWT_SECRET=$(openssl rand -base64 48)
+	[ -z "${API_KEY_SECRET}" ] && export API_KEY_SECRET=$(openssl rand -hex 32)
+
+	# 1) Install all deps – skip scripts (no network in do_build, native modules
+	#    compiled separately below; better-sqlite3 is serverExternalPackage so
+	#    Next.js does not execute it during next build)
+	#    --ignore-scripts: skip postinstall (husky needs git) and prepare (husky install)
+	NODE_ENV=development npm ci --ignore-scripts
+
+	# 2) Compile better-sqlite3 native binding BEFORE npm run build so
+	#    assembleStandalone (called from build-next-isolated.mjs) picks it up
+	local _node_gyp=/usr/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js
+	(cd node_modules/better-sqlite3 && node "$_node_gyp" rebuild --arch="$_gyp_arch")
+
+	# 3) Build the Next.js standalone bundle; build-next-isolated.mjs runs
+	#    assembleStandalone which copies native assets + extra modules into standalone
+	npm run build
+
+	# 4) wreq-js: keep only the target arch gnu binary, remove musl and foreign-arch
+	#    npm ci installs all-platform binaries; assembleStandalone copies them all;
+	#    strip fails on foreign-arch .node files
+	local _wreq_rust=.next/standalone/node_modules/wreq-js/rust
+	find "${_wreq_rust}" -name "wreq-js.*.node" \
+		! -name "wreq-js.linux-${_gyp_arch}-gnu.node" \
+		| while IFS= read -r _f; do rm -f "${_f}"; done
+
+	# 5) Remove arch-specific sharp bundles – upstream sets images.unoptimized=true
+	#    so sharp is not used at runtime; foreign .so files would break strip
+	rm -rf .next/standalone/node_modules/@img
+}
+
+pre_check() {
+	# Tests require JWT_SECRET and API_KEY_SECRET; generate ephemeral values
+	# for the chroot (same pattern as files/omniroute wrapper, without persistence)
+	[ -z "${JWT_SECRET}" ] && export JWT_SECRET=$(openssl rand -base64 48)
+	[ -z "${API_KEY_SECRET}" ] && export API_KEY_SECRET=$(openssl rand -hex 32)
+}
+
+do_check() {
+	# Skip all tests - too many require network/credentials that aren't available in chroot
+	# Run check scripts instead
+	npm run check:node-runtime
+}
+
+do_install() {
+	local _gyp_arch
+	case "$XBPS_TARGET_MACHINE" in
+		aarch64*) _gyp_arch=arm64 ;;
+		armv7*|armv6*) _gyp_arch=arm ;;
+		i686*) _gyp_arch=ia32 ;;
+		*) _gyp_arch=x64 ;;
+	esac
+
+	vmkdir usr/lib/omniroute/.next
+
+	vcopy .next/standalone/. usr/lib/omniroute/.next/standalone
+
+	# Pre-create .next/cache as world-writable so any user can write prerender cache
+	# (server.js hardcodes chdir to standalone dir; Next.js uses .next/cache relative to CWD)
+	vmkdir usr/lib/omniroute/.next/standalone/.next/cache
+
+	# Add "type": "module" to suppress MODULE_TYPELESS_PACKAGE_JSON warning at startup
+	node -p 'JSON.stringify({...JSON.parse(require("fs").readFileSync(0,"utf8")),type:"module"},null,2)+"\n"' \
+		< "${DESTDIR}/usr/lib/omniroute/.next/standalone/package.json" \
+		> "${WRKDIR}/pkg.json" \
+		&& mv "${WRKDIR}/pkg.json" "${DESTDIR}/usr/lib/omniroute/.next/standalone/package.json"
+
+	# KEEP ONLY TARGET ARCH GLIBC LINUX binaries - remove everything else
+	# This avoids strip/shlib issues with musl/freebsd/darwin/win32 binaries
+	local _nm="${DESTDIR}/usr/lib/omniroute/.next/standalone/node_modules"
+
+	# koffi: keep only the target arch linux (glibc) directory, delete everything else
+	# (koffi ships 18+ platform dirs; strip fails on foreign-arch binaries)
+	local _koffi="${_nm}/koffi/build/koffi"
+	local _koffi_keep
+	case "${_gyp_arch}" in
+		x64)   _koffi_keep=linux_x64 ;;
+		arm64) _koffi_keep=linux_arm64 ;;
+		arm)   _koffi_keep=linux_armhf ;;
+		ia32)  _koffi_keep=linux_ia32 ;;
+		*)     _koffi_keep=linux_x64 ;;
+	esac
+	for _koffi_d in "${_koffi}"/*/; do
+		[ -d "${_koffi_d}" ] || continue
+		[ "${_koffi_d}" = "${_koffi}/${_koffi_keep}/" ] && continue
+		rm -rf "${_koffi_d}"
+	done
+
+	# onnxruntime-node: remove non-linux and wrong-arch linux dirs
+	local _onnx="${_nm}/onnxruntime-node/bin/napi-v6"
+	rm -rf "${_onnx}/win32" "${_onnx}/darwin" 2>/dev/null || true
+	if [ "${_gyp_arch}" = "x64" ] && [ -d "${_onnx}/linux" ]; then
+		rm -rf "${_onnx}/linux/arm64" 2>/dev/null || true
+	elif [ "${_gyp_arch}" = "arm64" ] && [ -d "${_onnx}/linux" ]; then
+		rm -rf "${_onnx}/linux/x64" 2>/dev/null || true
+	fi
+
+	# @img/sharp: already removed in do_build; guard for any remaining
+	rm -rf "${_nm}/@img"
+
+	# sqlite-vec: strip fails on this binary, exclude from stripping
+	ignore_elf_files="sqlite-vec-linux-x64"
+
+	# @ngrok: keep only linux-<arch>-gnu (remove musl and other platforms)
+	rm -rf "${_nm}/@ngrok/ngrok-linux-x64-musl" \
+	       "${_nm}/@ngrok/ngrok-linux-arm64-musl" \
+	       "${_nm}/@ngrok/ngrok-darwin-x64" \
+	       "${_nm}/@ngrok/ngrok-win32-x64-msvc"
+	case "${_gyp_arch}" in
+		x64)   rm -rf "${_nm}/@ngrok/ngrok-linux-arm64-gnu" ;;
+		arm64) rm -rf "${_nm}/@ngrok/ngrok-linux-x64-gnu" ;;
+	esac
+
+	# Prevent removal of empty dirs by the 03-remove-empty-dirs post-install hook
+	for _d in \
+		.next/standalone/.next/cache \
+		.next/standalone/.next/server/app/dashboard \
+		.next/standalone/.next/server/app/dashboard/settings \
+		.next/standalone/.next/server/app/dashboard/providers \
+		.next/standalone/.next/server/app/dashboard/analytics \
+		.next/standalone/.next/server/app/dashboard/audit \
+		.next/standalone/.next/server/app/dashboard/batch \
+		.next/standalone/.next/server/app/dashboard/cache \
+		.next/standalone/.next/server/app/dashboard/combos \
+		.next/standalone/.next/server/app/dashboard/context \
+		.next/standalone/.next/server/app/dashboard/costs \
+		.next/standalone/.next/server/app/dashboard/gamification \
+		.next/standalone/.next/server/app/dashboard/logs \
+		.next/standalone/.next/server/app/dashboard/system \
+		.next/standalone/.next/server/app/dashboard/tools \
+		.next/standalone/.next/server/app/docs/architecture \
+		.next/standalone/.next/server/app/docs/compression \
+		.next/standalone/.next/server/app/docs/frameworks \
+		.next/standalone/.next/server/app/docs/guides \
+		.next/standalone/.next/server/app/docs/ops \
+		.next/standalone/.next/server/app/docs/reference \
+		.next/standalone/.next/server/app/docs/routing \
+		.next/standalone/.next/server/app/docs/security; do
+		touch "${DESTDIR}/usr/lib/omniroute/${_d}/.keep"
+	done
+
+	vbin "${FILESDIR}/omniroute"
+	vsv omniroute-mcp
+}
+
+post_install() {
+	vlicense LICENSE
+}

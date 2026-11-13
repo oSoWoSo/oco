@@ -1,0 +1,21 @@
+# Template file for 'quickshell+'
+pkgname=quickshell+
+version=0.3.2
+revision=1
+build_style=cmake
+configure_args="-DDISTRIBUTOR=Void -DINSTALL_QML_PREFIX=lib/qt6/qml
+ -DCPPTRACE_SIGNAL_SAFE_UNWIND=0 -DHYPRLAND=ON"
+hostmakedepends="pkg-config wayland-devel qt6-base qt6-declarative-devel
+ qt6-shadertools"
+makedepends="cli11 qt6-base-private-devel qt6-declarative-private-devel
+ qt6-shadertools-devel pipewire-devel jemalloc-devel pam-devel
+ cpptrace-devel polkit-devel Vulkan-Headers libdrm-devel glib-devel"
+depends="qt6-svg"
+short_desc="Flexible QtQuick-based desktop shell toolkit. Hyprland-enabled"
+maintainer="zenobit <zen@osowoso.org>"
+license="LGPL-3.0-only"
+homepage="https://quickshell.org"
+changelog="https://quickshell.org/changelog/"
+distfiles="https://git.outfoxxed.me/quickshell/quickshell/archive/v${version}.tar.gz"
+checksum=f14115a73c9fff6aa6399f924b632e88c3ce2cead2657f814a7825341f35baad
+conflicts=quickshell

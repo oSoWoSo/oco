@@ -1,0 +1,24 @@
+# Template file for 'tls-client'
+pkgname=tls-client
+version=1.18.1
+revision=1
+build_style=go
+go_import_path="github.com/bogdanfinn/tls-client"
+short_desc="Net/http.Client like HTTP Client"
+maintainer="zenobit <zen@osowoso.org>"
+license="BSD-4-Clause"
+homepage="https://github.com/bogdanfinn/tls-client"
+distfiles="https://github.com/bogdanfinn/tls-client/archive/refs/tags/v${version}.tar.gz"
+checksum=c9fc188029b135057229fc0080d31eb63ef97e94635fdf1b5c7808c749230a0d
+
+# Run tests, skipping integration tests that depend on external servers
+do_check() {
+	# Skip tests that require external network (integration tests)
+	# TestHTTP3FingerprintWithDefaultValuesForChrome - requires quic.browserleaks.com
+	# TestClient_SkipExistingCookiesOnSetCookiesResponse - requires eu.kith.com
+	go test -v -skip 'TestHTTP3FingerprintWithDefaultValuesForChrome|TestClient_SkipExistingCookiesOnSetCookiesResponse' ./...
+}
+
+post_install() {
+	vlicense LICENSE
+}

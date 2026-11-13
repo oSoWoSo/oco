@@ -1,0 +1,21 @@
+# Template file for 'seamonkey-bin'
+pkgname=seamonkey-bin
+version=2.53.24
+revision=1
+archs="x86_64"
+create_wrksrc=yes
+short_desc="All-in-one internet application suite"
+maintainer="zenobit <zen@osowoso.org>"
+license="MPL-2.0, GPL-2.0-or-later, LGPL-2.1-or-later"
+homepage="https://www.seamonkey-project.org/"
+changelog="https://www.seamonkey-project.org/releases/seamonkey${version}/"
+distfiles="https://archive.seamonkey-project.org/releases/${version}/linux-x86_64/en-US/seamonkey-${version}.en-US.linux-x86_64.tar.bz2"
+checksum=63fbe1d0f5ca35bb228e47eb586a81c5787debfbc27a242129ea9e133429d82c
+nopie=yes
+
+do_install() {
+	vmkdir opt
+	vcopy * opt
+	vinstall "${FILESDIR}/seamonkey.desktop" 644 usr/share/applications
+	vbin "${FILESDIR}/seamonkey"
+}

@@ -1,0 +1,29 @@
+# Template file for 'hyprutils'
+pkgname=hyprutils
+version=0.14.3
+revision=2
+build_style=cmake
+configure_args=" --no-warn-unused-cli -DCMAKE_BUILD_TYPE=Release"
+hostmakedepends="pkg-config"
+makedepends="pixman-devel"
+short_desc="Hyprland utilities library used across the ecosystem"
+maintainer="zenobit <zen@osowoso.org>"
+license="BSD-3-Clause"
+homepage="https://github.com/hyprwm/hyprutils"
+distfiles="https://github.com/hyprwm/hyprutils/archive/refs/tags/v${version}.tar.gz"
+checksum=87bbfc9549ed96316b0d592c16d01f58729b23a2999a5293b73eec620b40c5f5
+
+post_install() {
+	vlicense LICENSE
+}
+
+hyprutils-devel_package() {
+	depends="hyprutils-${version}_${revision}"
+	short_desc+=" - development files"
+
+	pkg_install() {
+		vmove usr/include
+		vmove "usr/lib/*.so"
+		vmove usr/lib/pkgconfig
+	}
+}

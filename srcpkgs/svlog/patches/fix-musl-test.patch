@@ -1,0 +1,24 @@
+diff --git a/svlog/tests/cli.rs b/svlog/tests/cli.rs
+index 1c407a0..0761549 100644
+--- a/svlog/tests/cli.rs
++++ b/svlog/tests/cli.rs
+@@ -127,6 +127,10 @@ fn invalid_service() -> Result<(), Box<dyn std::error::Error>> {
+     Ok(())
+ }
+ 
++// NOTE: --boot-offset is conditionally compiled on gnu targets only
++// (#[cfg(target_env = "gnu")] on Args::boot_offset in svlog_cli),
++// so this test must not run on musl where the option does not exist.
++#[cfg(target_env = "gnu")]
+ #[test]
+ fn invalid_args_1() -> Result<(), Box<dyn std::error::Error>> {
+     let cmd = svlog!("--boot-offset", "1", "--follow");
+@@ -138,6 +142,8 @@ fn invalid_args_1() -> Result<(), Box<dyn std::error::Error>> {
+     Ok(())
+ }
+ 
++// NOTE: see invalid_args_1 (--boot-offset only exists on gnu targets).
++#[cfg(target_env = "gnu")]
+ #[test]
+ fn invalid_args_2() -> Result<(), Box<dyn std::error::Error>> {
+     let cmd = svlog!("--boot-offset", "1", "--boot");

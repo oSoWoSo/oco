@@ -1,0 +1,12 @@
+# Template file for 'pop-fonts'
+pkgname=pop-fonts
+version=0.0.0
+revision=1
+build_style=gnu-makefile
+hostmakedepends="git"
+short_desc="Pop Fonts"
+maintainer="Bella109 <belladev109@proton.me>"
+license="OFL-1.1"
+homepage="https://github.com/pop-os/fonts"
+distfiles="https://github.com/pop-os/fonts/archive/refs/heads/master.tar.gz"
+checksum=2932b8b09995f142f407368e0971a172ea82bb51bc305ceb0fd053dff81f99a3

@@ -1,0 +1,61 @@
+name: 🧰 tooling
+run-name: >-
+  ${{
+    github.event_name == 'push' && format('🧰 {0}', github.event.head_commit.message) ||
+    github.event_name == 'pull_request' && format('🧰 {0} (#{1})', github.event.pull_request.title, github.event.pull_request.number) ||
+    '🧰'
+  }}
+on:
+  push:
+    branches: [OCO]
+    paths:
+      - 'ocoman'
+      - '.gitignore'
+      - 'src/build.yml.in'
+      - 'src/autobump.yml.in'
+      - 'src/autobump-blacklist'
+      - 'src/*.sh'
+      - 'src/*.py'
+      - 'src/*.js'
+      - 'src/*.css'
+      - 'src/*.html'
+      - 'srcpkgs/**'
+      - '.github/osv-identities.json'
+      - '.github/scripts/**'
+      - 'tests/**'
+      - '.github/workflows/**'
+  pull_request:
+    paths:
+      - 'ocoman'
+      - '.gitignore'
+      - 'src/build.yml.in'
+      - 'src/autobump.yml.in'
+      - 'src/autobump-blacklist'
+      - 'src/*.sh'
+      - 'src/*.py'
+      - 'src/*.js'
+      - 'src/*.css'
+      - 'src/*.html'
+      - 'srcpkgs/**'
+      - '.github/osv-identities.json'
+      - '.github/scripts/**'
+      - 'tests/**'
+      - '.github/workflows/**'
+permissions:
+  contents: read
+
+jobs:
+  helper-tests:
+    name: Run tooling tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.BOT }}
+      - name: Check website JavaScript syntax
+        run: node --check src/main.js
+      - name: Install feed update runtime deps
+        run: python3 -m pip install -r requirements.txt
+      - name: Run helper tests
+        run: sh tests/run.sh

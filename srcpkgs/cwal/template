@@ -1,0 +1,33 @@
+# Template file for 'cwal'
+pkgname=cwal
+version=0.10.1
+revision=1
+hostmakedepends="pkgconf"
+makedepends="libmagick-devel libimagequant-devel LuaJIT-devel"
+short_desc="Blazing-fast pywal-like color palette generator written in C"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-3.0-only"
+homepage="https://github.com/nitinbhat972/cwal"
+distfiles="https://github.com/nitinbhat972/cwal/archive/refs/tags/v${version}.tar.gz"
+checksum=f69d64e99ef654677bf9175b2951fc5ee708f9e38d1c3917660ad512f5f52edb
+nocross="Require native libraries for build (MagickWand, imagequant, luajit)"
+
+do_build() {
+	cc -o nob nob.c
+	./nob
+}
+
+do_install() {
+	./nob install
+}
+
+post_install() {
+	vbin build/cwal
+	vmkdir usr/share/cwal
+	vcopy themes usr/share/cwal
+	vcopy templates usr/share/cwal
+
+	vcompletion shell/bash/cwal bash
+	vcompletion shell/fish/cwal.fish fish
+	vcompletion shell/zsh/_cwal zsh
+}

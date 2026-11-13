@@ -1,0 +1,22 @@
+# Template file for 'svlog'
+pkgname=svlog
+version=0.6.3
+revision=3
+build_style=cargo
+make_install_args="--path svlog"
+short_desc="Display, filter and follow socklog log files on Void Linux"
+maintainer="Coolllyn <leanhduc673@gmail.com>"
+license="MIT"
+homepage="https://github.com/pascal-huber/svlog"
+distfiles="https://github.com/pascal-huber/svlog/archive/v${version}.tar.gz"
+checksum=f7addb391047543d8cbe7553e817768979ea2ea0807baf58a574e42cd0f10bd4
+
+# Upstream hardcore linker = /usr/bin/clang on musl
+post_extract() {
+	rm -rf .cargo
+}
+
+post_install() {
+	vlicense LICENSE
+	vman target/${RUST_TARGET}/release/man/man1/svlog.1
+}

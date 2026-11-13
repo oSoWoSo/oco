@@ -1,0 +1,21 @@
+# Template file for 'xxtools-git'
+pkgname=xxtools-git
+version=0.0.0
+revision=1
+build_style=gnu-makefile
+short_desc="Tools to ease packaging tasks for Void Linux"
+maintainer="zenobit <zen@osowoso.org>"
+license="0BSD"
+homepage="https://github.com/Piraty/xxtools"
+distfiles="https://github.com/Piraty/xxtools/archive/refs/heads/master.tar.gz"
+checksum="144b5c3e08f393eba34ff0e702f2ed8967cd05a176de155c681b0e62242f4fee"
+
+do_install() {
+	for script in xxadopt xxautobump xxbuild xxcheckorphans; do
+		vbin ${wrksrc}/${script}
+	done
+}
+
+post_install() {
+	vlicense LICENSE
+}

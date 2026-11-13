@@ -1,0 +1,13 @@
+# Template file for 'xlibre'
+pkgname=xlibre
+_pkgname=xorg
+version=25.1.0
+revision=1
+metapackage=yes
+depends="xorg-fonts xlibre-xserver xlibre-apps xlibre-input-drivers xlibre-video-drivers"
+short_desc="XLibre meta-package with essential packages"
+maintainer="zenobit <zen@osowoso.org>"
+license="Public Domain"
+homepage="https://github.com/X11Libre/xserver/wiki"
+provides="xorg-${version}_${revision}"
+replaces="xorg>=0"

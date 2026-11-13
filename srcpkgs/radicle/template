@@ -1,0 +1,28 @@
+# Template file for 'radicle'
+pkgname=radicle
+version=1.8.0
+revision=1
+build_style=cargo
+make_build_args="-p radicle-cli -p radicle-node -p radicle-remote-helper --bins"
+hostmakedepends="pkg-config git"
+makedepends="libgit2-1.9-devel"
+short_desc="Peer-to-peer code collaboration stack built on Git"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT, Apache-2.0"
+homepage="https://radicle.dev/"
+distfiles="https://files.radicle.dev/releases/${version}/heartwood-${version}.tar.gz"
+checksum=c1de84fee59ae1c69fac5e42c932f4d2765a85630b27642f77792fc765948097
+
+# Tests need git, libgit2 runtime, and rad binaries in PATH
+make_check=no
+
+do_install() {
+	vbin target/${RUST_TARGET}/release/rad
+	vbin target/${RUST_TARGET}/release/git-remote-rad
+	vbin target/${RUST_TARGET}/release/radicle-node
+}
+
+post_install() {
+	vlicense LICENSE-APACHE
+	vlicense LICENSE-MIT
+}

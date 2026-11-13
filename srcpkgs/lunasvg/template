@@ -1,0 +1,32 @@
+# Template file for 'lunasvg'
+pkgname=lunasvg
+version=3.5.0
+revision=3
+build_style=cmake
+hostmakedepends="cmake pkg-config"
+makedepends="freetype-devel harfbuzz-devel libxml2-devel"
+short_desc="SVG rendering and manipulation library in C++"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/sammycage/lunasvg"
+distfiles="https://github.com/sammycage/lunasvg/archive/refs/tags/v${version}.tar.gz"
+checksum=1abf1472ee6c4d19797916e8cc3c2e4b628e0d81178ffac60bdb0d457e32c690
+
+# Build bundled plutovg to ensure plutovgTargets export Threads correctly,
+# or remove/adjust if you prefer system plutovg packaging.
+configure_args="-DBUILD_PLUTOVG=ON -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=ON -DCMAKE_POSITION_INDEPENDENT_CODE=ON"
+
+post_install() {
+	vlicense LICENSE
+}
+
+lunasvg-devel_package() {
+	depends="${sourcepkg}>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/lib/pkgconfig
+		vmove usr/lib/cmake
+		vmove "usr/lib/*.so"
+	}
+}

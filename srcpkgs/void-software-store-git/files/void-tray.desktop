@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Void Update Monitor
+Comment=Checks for XBPS and Flatpak updates
+Exec=void-tray
+Icon=void-software-store
+Terminal=false
+Categories=System;Utility;
+StartupNotify=false
+X-GNOME-Autostart-enabled=true

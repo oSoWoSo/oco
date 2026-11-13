@@ -1,0 +1,11 @@
+--- a/libs/JUCELV2/modules/juce_core/juce_core.cpp
++++ b/libs/JUCELV2/modules/juce_core/juce_core.cpp
+@@ -102,7 +102,7 @@
+  #include <net/if.h>
+  #include <sys/ioctl.h>
+ 
+- #if ! (JUCE_ANDROID || JUCE_WASM)
++ #if ! (JUCE_ANDROID || JUCE_WASM) && __has_include (<execinfo.h>)
+   #include <execinfo.h>
+  #endif
+ #endif

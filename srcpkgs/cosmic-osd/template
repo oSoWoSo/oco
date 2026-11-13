@@ -1,0 +1,13 @@
+# Template file for 'cosmic-osd'
+pkgname=cosmic-osd
+version=1.11.0
+revision=1
+build_style=cargo
+hostmakedepends="pkg-config"
+makedepends="libxkbcommon-devel pulseaudio-devel eudev-libudev-devel libinput-devel"
+short_desc="On-Screen Display daemon for the COSMIC desktop"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/pop-os/cosmic-osd"
+distfiles="https://github.com/pop-os/cosmic-osd/archive/refs/tags/epoch-${version}.tar.gz"
+checksum=98f049d10e9746ae9751d10d556eff73b7270d7d99861445ab9171bd140ba416

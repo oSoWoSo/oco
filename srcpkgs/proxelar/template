@@ -1,0 +1,18 @@
+# Template file for 'proxelar'
+pkgname=proxelar
+version=0.6.1
+revision=1
+build_style=cargo
+make_install_args="--path proxelar-cli"
+hostmakedepends="pkg-config cmake libclang18 git"
+makedepends="libzstd-devel openssl-devel clang18-devel"
+short_desc="Scriptable local traffic workbench"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/emanuele-em/proxelar"
+distfiles="https://github.com/emanuele-em/proxelar/archive/refs/tags/v${version}.tar.gz"
+checksum=09750029dca413b15cbdaf964dc2f888ac41d462c1ec25a90e6f58ea7d7cae72
+
+post_install() {
+	vlicense LICENSE-MIT
+}

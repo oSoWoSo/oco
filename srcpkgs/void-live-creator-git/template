@@ -1,0 +1,23 @@
+# Template file for 'void-live-creator-git'
+pkgname=void-live-creator-git
+version=0.0.0
+revision=2
+#archs="i686 x86_64"
+#depends="gtkmm4 libsigc++3 dracut grub squashfs-tools xorriso rsync"
+depends="python3 python3-gobject gtk4 rsync squashfs-tools grub grub-i386-efi
+ grub-x86_64-efi xorriso util-linux polkit binutils dracut mtools dosfstools"
+short_desc="Create a live ISO from a running system"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-2.0-only"
+homepage="https://codeberg.org/pinguin-void/void-live-creator"
+distfiles="https://codeberg.org/pinguin-void/void-live-creator/archive/a50106e1a5c2838f170c74f54ff5deb16b2d05d4.tar.gz"
+checksum=f159fd58b3c0782285ee18f096b115fb87f42c0a795f6083e29417906701be2d
+conflicts="void-live-creator"
+
+do_install() {
+	vbin "${FILESDIR}/void-live-creator"
+	vinstall "${FILESDIR}/void-live-creator.desktop" 644 usr/share/applications
+	vinstall main.py 755 usr/share/void-live-creator
+	vinstall iso_builder.py 755 usr/share/void-live-creator
+	vinstall i18n.py 755 usr/share/void-live-creator
+}

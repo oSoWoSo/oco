@@ -1,0 +1,45 @@
+--- a/crates/radicle-git-ref-format/src/lib.rs
++++ b/crates/radicle-git-ref-format/src/lib.rs
+@@ -51,6 +51,7 @@
+         {
+             extern crate alloc;
+ 
++            use alloc::borrow::ToOwned;
+             use alloc::string::String;
+ 
+             let s: String = $arg.to_owned();
+@@ -85,7 +86,7 @@
+ 
+             use core::mem::transmute;
+ 
+-            use alloc::borrow::Cow;
++            use alloc::borrow::{Cow, ToOwned};
+             use alloc::string::String;
+ 
+             use $crate::{RefStr, RefString};
+@@ -126,7 +127,7 @@
+ 
+             use core::mem::transmute;
+ 
+-            use alloc::borrow::Cow;
++            use alloc::borrow::{Cow, ToOwned};
+             use alloc::string::String;
+ 
+             use $crate::{RefStr, RefString};
+@@ -165,6 +166,7 @@
+         {
+             extern crate alloc;
+ 
++            use alloc::borrow::ToOwned;
+             use alloc::string::String;
+ 
+             let s: String = $arg.to_owned();
+@@ -209,7 +211,7 @@
+ 
+             use core::mem::transmute;
+ 
+-            use alloc::borrow::Cow;
++            use alloc::borrow::{Cow, ToOwned};
+             use alloc::string::String;
+ 
+             use $crate::refspec::{PatternStr, PatternString};

@@ -1,0 +1,18 @@
+# Template file for 'qrunsvmgr'
+pkgname=qrunsvmgr
+version=0.2.5
+revision=1
+build_style=cmake
+configure_args="-DBUILD_DINIT_HELPER=OFF"
+hostmakedepends="qt6-tools pkg-config qt6-base"
+makedepends="qt6-core qt6-base-devel"
+short_desc="Service manager GUI (Qt6), supporting Runit and Dinit"
+maintainer="zenobit <zen@osowoso.org>"
+license="AGPL-3.0-only"
+homepage="https://codeberg.org/ItsZariep/qrunsvmgr"
+distfiles="https://codeberg.org/ItsZariep/qrunsvmgr/archive/${version}.tar.gz"
+checksum=6dfcd4cf41bd961ab0304b9a5a5d6e144b195dfe87d85621b9a7aefa90a23c76
+
+post_install() {
+	vlicense LICENSE
+}

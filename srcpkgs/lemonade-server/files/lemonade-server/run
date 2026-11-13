@@ -1,0 +1,23 @@
+#!/bin/sh
+# Runit service for Lemonade in BRGV-OS
+
+# Redirect standard errors to the system log
+exec 2>&1
+
+# Ensure environment profiles are loaded if present
+[ -r ./conf ] && . ./conf
+
+# NATIVE BRGV-OS PERMISSION ASSURANCE (Runs as root before chpst)
+chown -R lemonade:lemonade /var/lib/lemonade /etc/lemonade
+chmod 750 /var/lib/lemonade /etc/lemonade
+
+# Verify the existence of the working directory before execution
+cd /var/lib/lemonade || exit 1
+
+export LEMONADE_CACHE_DIR="/var/lib/lemonade"
+export LEMONADE_DATA_DIR="/var/lib/lemonade"
+export LEMONADE_RESOURCES_DIR="/usr/share/lemonade-server/resources"
+export HOME="/var/lib/lemonade"
+
+# Launch the isolated server under the user and group designated for your data
+exec chpst -u lemonade:lemonade lemond 2>&1

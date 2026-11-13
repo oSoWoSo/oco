@@ -1,0 +1,27 @@
+# Template file for 'cosmic-edit'
+pkgname=cosmic-edit
+version=1.11.0
+revision=1
+build_style=cargo
+hostmakedepends="pkg-config just"
+makedepends="libxkbcommon-devel oniguruma-devel libzstd-devel glib-devel"
+short_desc="Text editor for the COSMIC desktop"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-3.0-only"
+homepage="https://github.com/pop-os/cosmic-edit"
+distfiles="https://github.com/pop-os/cosmic-edit/archive/refs/tags/epoch-${version}.tar.gz"
+checksum=aff1a305a4e7182ae1c360ceac43eff60ba32dc388f872f3ec04624677a6a290
+
+pre_build() {
+	case "$CFLAGS" in
+		*armv8-a*)
+			export CFLAGS_aarch64_unknown_linux_gnu="$CFLAGS"
+			export CFLAGS="-O2"
+			export CC_aarch64_unknown_linux_gnu="$CC"
+			;;
+	esac
+}
+
+do_install() {
+	just cargo-target-dir="target/${RUST_TARGET}" rootdir="${DESTDIR}" prefix=/usr install
+}

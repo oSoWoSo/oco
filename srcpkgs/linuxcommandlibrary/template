@@ -1,0 +1,74 @@
+# Template file for 'linuxcommandlibrary'
+pkgname=linuxcommandlibrary
+version=4.9.2
+revision=1
+archs="x86_64 aarch64"
+hostmakedepends="openjdk21 gradle9 android-sdk gnupg python3-charset-normalizer llvm21 tar"
+depends="virtual?java-runtime"
+short_desc="Linux reference app with basics, tips and formatted man pages"
+maintainer="zenobit <zen@osowoso.org>"
+license="Apache-2.0"
+homepage="http://linuxcommandlibrary.com/"
+distfiles="https://github.com/SimonSchubert/LinuxCommandLibrary/archive/refs/tags/v${version}.tar.gz"
+checksum=222ab306b179d863baa7033665936dc29b25b0d89694a4ec2315aded2baec92e
+nopie=yes
+
+export JAVA_HOME=/usr/lib/jvm/openjdk21
+export ANDROID_SDK_ROOT=/opt/android-sdk
+if [ "$XBPS_TARGET_MACHINE" = i686 ]; then
+	export JAVA_OPTS="-Xmx2048m"
+fi
+
+# Map Void machine to Kotlin/Native target for the CLI binary
+case "$XBPS_TARGET_MACHINE" in
+	x86_64)	_ktarget=linuxX64 ;;
+	aarch64)	_ktarget=linuxArm64 ;;
+	#*)	_ktarget= ; echo "${pkgname}: unsupported architecture ${XBPS_TARGET_MACHINE} for native CLI, skipping" ; exit 1 ;;
+esac
+
+do_build() {
+	export GRADLE_USER_HOME=/tmp/gradle
+	echo "" >> gradle.properties
+	echo "org.gradle.daemon=false" >> gradle.properties
+	# CLI (native binary per target architecture)
+	if [ -n "$_ktarget" ]; then
+		gradle --no-daemon --stacktrace :cli:linkReleaseExecutable${_ktarget}
+	fi
+	# Desktop
+	gradle --no-daemon --stacktrace :desktopApp:packageUberJarForCurrentOS
+}
+
+do_check() {
+	# desktopTest runs shared tests on JVM target (matches upstream CI)
+	gradle --no-daemon :common:desktopTest
+}
+
+do_install() {
+	# CLI (native binary per target architecture)
+	if [ -n "$_ktarget" ]; then
+		vbin cli/build/bin/${_ktarget}/releaseExecutable/lcl.kexe lcl
+	fi
+
+	# Desktop
+	vmkdir usr/share/${pkgname}
+	vinstall desktopApp/build/compose/jars/LinuxCommandLibrary-linux-x64-${version}.jar 644 usr/share/${pkgname} ${pkgname}.jar
+}
+
+post_install() {
+	vbin "${FILESDIR}/linuxcommandlibrary"
+	vmkdir usr/share/applications
+	vinstall "${FILESDIR}/lcl.desktop" 0644 usr/share/applications/
+	vinstall desktopApp/icon.png 644 usr/share/pixmaps linuxcommandlibrary.png
+	vinstall desktopApp/icon.png 644 usr/share/icons/hicolor/apps lcl.png
+}
+
+linuxcommandlibrary-desktop_package() {
+	short_desc+=" - desktop application"
+	depends="virtual?java-runtime"
+	pkg_install() {
+		vmove usr/bin/linuxcommandlibrary
+		vmove usr/share/applications/lcl.desktop
+		vmove usr/share/pixmaps/linuxcommandlibrary.png
+		vmove usr/share/icons/hicolor/apps/lcl.png
+	}
+}

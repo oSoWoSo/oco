@@ -1,0 +1,51 @@
+name: 🔬 update scan
+run-name: >-
+  ${{
+    github.event_name == 'workflow_dispatch' && (inputs.pkg != '' && format('🔬 {0}', inputs.pkg) ||
+     '🔬 whole') ||
+    github.event_name == 'schedule' && '🔬 scheduled' ||
+    '🔬'
+  }}
+on:
+  #schedule:
+    #- cron: '17 4 * * *'
+  workflow_dispatch:
+    inputs:
+      pkg:
+        description: 'Only scan this package (empty = all non-blacklisted)'
+        required: false
+        default: ''
+        type: string
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: scan-updates
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    name: Scan for updates
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.BOT }}
+
+      - name: Detect newer versions
+        id: scan
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
+          SCAN_PKG: ${{ inputs.pkg }}
+        run: bash .github/scripts/ci/scan-detect.sh
+      - name: Open issues
+        if: steps.scan.outputs.count != ''
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
+        run: bash .github/scripts/ci/scan-issues.sh
+
+      - name: Summary
+        run: bash .github/scripts/ci/scan-summary.sh

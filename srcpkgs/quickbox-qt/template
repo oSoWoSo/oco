@@ -1,0 +1,27 @@
+# Template file for 'quickbox-qt'
+pkgname=quickbox-qt
+version=1.4.1
+revision=1
+#archs="i686 x86_64"
+depends="python3-gobject python3-pyside6 rsync quickemu xdg-utils"
+short_desc="QT6 UI for managing Quickemu VMs"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/musqz/quickbox-qt"
+distfiles="https://github.com/musqz/quickbox-qt/archive/refs/tags/v${version}.tar.gz"
+checksum=339689ad8ef9d24bda72e93168b306d189bd0ecc207eda378ddf445da137a9b0
+conflicts=quickbox-gtk4
+
+do_install() {
+	vbin quickbox
+	vinstall packaging/quickbox.desktop 644 usr/share/applications
+	vinstall version.txt 644 usr/share/quickbox-qt
+	vinstall icons/hicolor/scalable/apps/quickbox.svg 644 usr/share/icons/hicolor/scalable/apps
+
+	vmkdir usr/share/quickbox-qt/translations
+	vcopy translations/*.json usr/share/quickbox-qt/translations
+}
+
+post_install() {
+	vlicense LICENSE
+}

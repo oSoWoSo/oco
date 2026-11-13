@@ -1,0 +1,692 @@
+/* ========================================
+   CSS Variables & Theme Configuration
+   ========================================
+   This section defines the CSS variables for color schemes used throughout the application.
+*/
+
+/* Theme colors */
+:root {
+  --green: #2d5a3d; /* Base green color */
+  --green-light: #478061;
+  --green-lighter: #87ff87;
+  --gren-dark: #295340;
+  --green-slate: #478061;
+  --green-tea: #62B086;
+  --yellowish: #C2FF00;
+  --lime: #AFFF00;  
+  --silver: #CCCCCC;
+  --white: #FFFFFF;
+  --black: #000000;
+  --gray: #282E3A;
+  --gray-light: #E4E2E2;
+  --gray2: #222222;
+  --gray-dark: #111111;
+  --gold: #FCC11A;
+  --test: #FF0000;
+
+/* Dark Theme (default) */
+  --link-color: var(--yellowish); /* Color for links in dark theme */
+  --accent-color: var(--green); /* Accent color for elements */
+  --secondary-color: var(--test); /* Currently unused secondary color */
+  --text-color: var(--silver); /* Main text color */
+  --text-light: var(--white); /* Light text color */
+  --bg-color: var(--black); /* Background color for dark theme */
+  --bg-light: var(--gray); /* Light background */
+  --border-color: var(--gray); /* Border color */
+  --switch-background: var(--white);
+  --shadow: 0 2px 8px rgba(135, 255, 135, 0.1); /* Shadow effect */
+  --shadow-lg: 0 4px 20px rgba(135, 255, 135, 0.2); /* Larger shadow effect */
+  --transition: all 0.3s ease; /* Transition effects */
+
+  --nav-height: 52px;
+  --color-icon: var(--white);
+}
+
+/* Light theme */
+[data-theme="light"] {
+  --link-color: var(--green); /* Color for links in light theme */
+  --accent-color: var(--yellowish); /* Accent color for light theme */
+  --secondary-color: var(--test); /* Currently unused secondary color */
+  --text-color: var(--black); /* Main text color in light theme */
+  --text-light: var(--gray2); /* Light text color in light theme */
+  --bg-color: var(--white); /* Background color for light theme */
+  --bg-light: var(--gray-light); /* Light background */
+  --border-color: var(--silver); /* Border color in light theme */
+  --switch-background: var(--black);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Light theme shadow */
+  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15); /* Larger shadow effect */
+
+  --color-icon: var(--black);
+}
+
+h1, h2, h3 { font-weight: bold; }
+
+h1 { font-size: 2.3rem; }
+h2 { font-size: 2.1rem; }
+h3 { font-size: 1.9rem; }
+h4 { font-size: 1.7rem; }
+h5 { font-size: 1.5rem; }
+h6 { font-size: 1.3rem; }
+
+h1 { color: var(--green); }
+h2 { color: #8bd5ca; }
+h3 { color: #91d7e3; }
+h4 { color: #7dc4e4; }
+h5 { color: #8aadf4; }
+h6 { color: #b7bdf8; }
+
+
+/* ========================================
+   Reset & Base Styles
+   ========================================
+   This section resets browser default styles and establishes base styles for typography and layout.
+*/
+* {
+  margin: 0; /* Remove default margin */
+  padding: 0; /* Remove default padding */
+  box-sizing: border-box; /* Adjust box sizing model */
+}
+
+body {
+  color: var(--text-color); /* Set text color */
+  background-color: var(--bg-color); /* Set background color */
+  line-height: 1.6; /* Set line height for better readability */
+  overflow-x: hidden; /* Prevent horizontal overflow */
+  font-size: 14px; /* Base font size */
+  font-weight: 500; /* FIX: slightly heavier than browser default (400) */
+  padding: 20px; /* Padding around the body */
+  max-width: 1200px; /* Maximum width for the content */
+  margin: 0 auto; /* Center the body */
+  font-family: "Courier New", monospace; /* Set font family */
+}
+
+b, strong, h1, h2, h3, h4, h5, h6 {
+  font-weight: 700; /* Bold font weight */
+  margin-top: 1.5em; /* Margin above headings */
+  margin-bottom: 0.5em; /* Margin below headings */
+}
+
+b, strong {
+  color: var(--text-light); /* Light color for bold text */
+}
+
+a, a:visited {
+  color: var(--link-color, var(--green)); /* Link color */
+  text-decoration: underline; /* Remove underline from links */
+  transition: var(--transition); /* Smooth color transition */
+}
+
+a:hover {
+  color: var(--accent-color, var(--green)); /* Color change on hover */
+  text-decoration: underline; /* Underline on hover */
+}
+
+blockquote {
+  border-left: 4px solid var(--green); /* Left border for blockquote */
+  padding-left: 20px; /* Padding inside blockquote */
+  margin: 1em 0; /* Vertical margins for blockquote */
+  color: var(--text-light); /* Text color for blockquote */
+  font-style: italic; /* Italicize blockquote text */
+}
+
+code {
+  background-color: var(--bg-light); /* Background for inline code */
+  padding: 2px 6px; /* Padding for inline code */
+  border-radius: 3px; /* Rounded corners for inline code */
+  font-family: "Courier New", monospace; /* Font for inline code */
+  font-size: 0.9em; /* Smaller font size for inline code */
+}
+
+hr {
+  border-top: 1px solid var(--border-color); /* Top border for horizontal rule */
+  border-top-color: var(--border-color); /* Border color */
+  border: none; /* Remove default border style */
+  margin: 2em 0; /* Vertical margins for horizontal rule */
+}
+
+img {
+  max-width: 100%; /* Ensure responsive images */
+  height: auto; /* Maintain aspect ratio */
+  border-radius: 5px; /* Rounded corners for images */
+  margin: 1em 0; /* Vertical margins for images */
+}
+
+/* SVG color filter — only applies to <img data-colorize> elements */
+img[data-colorize] {
+  filter: var(--filter-icon);
+}
+
+li {
+  margin-bottom: 0.5em; /* Margin below list items */
+}
+
+/* ========================================
+   Navigation
+   ======================================== */
+nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  min-height: var(--nav-height);
+  background-color: var(--bg-color);
+  padding: 0.8em 0;
+  margin-bottom: 1.5em;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Crossed release button - if no release exist */
+nav ul li a.no-release,
+nav ul li a.no-release:visited {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+nav ul li a.no-release:hover {
+    opacity: 1;
+}
+
+nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin-left: 0;
+  margin-bottom: 0;
+  list-style: none;
+  padding: 0;
+}
+
+nav ul li {
+  margin-bottom: 0;
+}
+
+nav ul li a,
+nav ul li a:visited {
+  display: inline-block;
+  padding: 4px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  color: var(--link-color);
+  text-decoration: none;
+  font-family: "Courier New", monospace;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+nav ul li a:hover {
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+  border-color: var(--accent-color);
+  text-decoration: none;
+}
+
+/* Active/current page link */
+nav ul li a.active {
+  background-color: var(--green);
+  color: var(--white);
+  border-color: var(--green);
+}
+
+@media (max-width: 768px) {
+  nav ul {
+    gap: 0.3em;
+  }
+
+  nav ul li a {
+    font-size: 0.8rem;
+    padding: 3px 8px;
+  }
+}
+
+p {
+  margin-bottom: 1em; /* Margin below paragraphs */
+  line-height: 1.8; /* Set line spacing for paragraphs */
+}
+
+pre {
+  background-color: var(--bg-light); /* Background for preformatted text */
+  padding: 15px; /* Padding for preformatted text */
+  border-radius: 5px; /* Rounded corners for preformatted text */
+  overflow-x: auto; /* Allow horizontal scrolling */
+  margin: 1em 0; /* Vertical margins for preformatted text */
+  border: 1px solid var(--border-color); /* Border for preformatted text */
+}
+
+pre code {
+  background-color: transparent; /* Transparent background for code blocks */
+  padding: 0; /* No padding for code blocks */
+}
+
+table {
+  width: 100%; /* Table width */
+  border-collapse: collapse; /* Collapse borders */
+  margin: 1em 0; /* Vertical margins for tables */
+}
+
+th {
+  background-color: var(--bg-light); /* Background for header cells */
+  font-weight: bold; /* Bold font for header cells */
+}
+
+th, td {
+  padding: 10px; /* Padding for table cells */
+  text-align: left; /* Align text to the left */
+  border-bottom: 1px solid var(--border-color); /* Bottom border for cells */
+}
+
+/* ========================================
+   Layout - Sidebar + Content
+   ======================================== */
+.page-wrapper {
+  display: flex;
+  gap: 2em;
+  align-items: flex-start;
+  margin-top: 0;
+}
+
+/* TOC Sidebar */
+#TOC {
+  position: sticky;
+  top: calc(var(--nav-height) + 10px);
+  max-height: calc(100vh - var(--nav-height) - 20px);
+  min-width: 220px;
+  max-width: 220px;
+  overflow-y: auto;
+  background-color: var(--bg-light);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 1em;
+  font-size: 0.85rem;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+#TOC.collapsed {
+  min-width: unset;
+  max-width: unset;
+  width: auto;
+  padding: 0.5em;
+  overflow: hidden;
+}
+
+#TOC.collapsed > ul {
+  display: none;
+}
+
+#TOC.collapsed > #toc-title {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  white-space: nowrap;
+}
+
+#toc-title {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: var(--green-tea);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.8em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+#toc-title:hover {
+  color: var(--yellowish);
+}
+
+#toc-toggle-icon {
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+/* FIX: override the global ul,ol margin-left that was pushing TOC lists
+   outside the border box */
+#TOC ul {
+  margin-left: 0.8em;
+  margin-bottom: 0;
+  list-style: none;
+  padding-left: 0; /* FIX: remove any inherited padding */
+}
+
+/* FIX: first-level ul sits directly inside #TOC padding — no extra indent */
+#TOC > ul {
+  margin-left: 0;
+}
+
+#TOC ul li {
+  margin-bottom: 0.3em;
+}
+
+#TOC a,
+#TOC a:visited {
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 0.82rem;
+  display: block;
+  padding: 2px 4px;
+  border-radius: 3px;
+  transition: var(--transition);
+}
+
+#TOC a:hover {
+  color: var(--yellowish);
+  background-color: var(--bg-color);
+  text-decoration: none;
+}
+
+/* Main content next to sidebar */
+body > *:not(#TOC):not(nav):not(.theme-toggle) {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Wrap everything after nav in flex container — done via JS */
+.page-wrapper > .main-content {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .page-wrapper {
+    flex-direction: column;
+  }
+
+  #TOC {
+    position: static;
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+ul {
+  list-style-type: none; /* Remove bullet points */
+}
+
+ul, ol {
+  margin-left: 2em; /* Indent lists */
+  margin-bottom: 1em; /* Vertical margins for lists */
+  list-style: inherit; /* Restore list style */
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  background: var(--switch-background);
+  color: var(--gold);
+  border: none;
+  padding: 4px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: var(--transition);
+}
+
+.theme-toggle:hover {
+  background: var(--green);
+}
+
+nav ul li.nav-toggle {
+  margin-left: auto;
+}
+
+footer {
+  margin-top: 3em;
+  padding: 1em 0;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+  color: var(--text-color);
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+footer a,
+footer a:visited {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+/* Architecture selection cards on main index page */
+/* Shared package finder: stays outside the sticky nav so results never cover content. */
+.package-search {
+  border: 1px solid var(--border-color);
+  border-top: 3px solid var(--green-tea);
+  border-radius: 3px;
+  padding: 1.1em 1.3em;
+  background: var(--bg-light);
+  margin-bottom: 2em;
+}
+
+.package-search label {
+  display: block;
+  color: var(--text-light);
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 0.6em;
+}
+
+.package-search label span {
+  color: var(--text-color);
+  font-size: 0.8rem;
+  font-weight: normal;
+}
+
+.package-search-controls { display: flex; flex-wrap: wrap; gap: 0.5em; }
+.package-search input, .package-search button {
+  font: inherit;
+  min-height: 44px;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  padding: 0.6em 0.9em;
+}
+.package-search input {
+  flex: 1 1 220px;
+  min-width: 0;
+  background: var(--bg-color);
+  color: var(--text-light);
+  font-size: 1rem;
+}
+.package-search input::placeholder { color: var(--text-color); opacity: 0.8; }
+.package-search button { background: var(--green); color: var(--white); cursor: pointer; }
+.package-search button:hover { background: var(--gren-dark); }
+.package-search #package-search-clear { background: var(--bg-color); color: var(--link-color); }
+.package-search :focus-visible { outline: 2px solid var(--link-color); outline-offset: 3px; }
+#package-search-status { margin: 0.7em 0 0; font-size: 0.85rem; }
+.package-search-results { list-style: none; margin: 1em 0 0; max-height: 28rem; overflow-y: auto; }
+.package-search-results > li { border-top: 1px solid var(--border-color); padding: 1em 0; margin: 0; overflow-wrap: anywhere; }
+.package-search-results strong { margin: 0; font-size: 1rem; }
+.package-search-version { margin-left: 1em; font-size: 0.85rem; }
+.package-search-results p { margin: 0.3em 0 0.6em; }
+.package-search-architectures { display: flex; flex-wrap: wrap; gap: 0.5em; }
+.package-search-architectures a { display: inline-block; padding: 0.5em 0.7em; border: 1px solid var(--link-color); border-radius: 3px; }
+.package-search-references { display: flex; flex-wrap: wrap; gap: 0.5em; margin: 0.5em 0; }
+.package-search-references a { display: inline-block; padding: 0.35em 0.5em; border: 1px solid var(--border-color); border-radius: 3px; }
+.package-search-target { outline: 2px solid var(--link-color); outline-offset: -2px; background: var(--bg-light); }
+
+@media (max-width: 480px) {
+  .package-search { padding: 1em; }
+  .package-search label span { display: block; margin-top: 0.2em; }
+  .package-search input { flex-basis: 100%; }
+}
+
+.arch-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  margin: 1.5em 0;
+}
+
+.arch-cards a,
+.arch-cards a:visited {
+  display: inline-block;
+  padding: 12px 24px;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  color: var(--link-color);
+  text-decoration: none;
+  font-family: "Courier New", monospace;
+  font-size: 1rem;
+  transition: var(--transition);
+}
+
+.arch-cards a:hover {
+  background-color: var(--accent-color);
+  color: var(--bg-color);
+  border-color: var(--accent-color);
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 10px; /* Less padding for smaller screens */
+    font-size: 13px; /* Smaller font size for small screens */
+  }
+
+  h1 { font-size: 1.5rem; } /* Smaller h1 for small screens */
+  h2 { font-size: 1.3rem; } /* Smaller h2 for small screens */
+  h3 { font-size: 1.1rem; } /* Smaller h3 for small screens */
+}
+.testing-page {
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.testing-hero {
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--green-tea);
+  background: linear-gradient(115deg, var(--bg-light), var(--bg-color) 78%);
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+  margin: 1.5rem 0 2rem;
+}
+
+.testing-hero h1 {
+  margin-top: 0.2em;
+  color: var(--text-light);
+}
+
+.testing-kicker {
+  color: var(--yellowish);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+.testing-hero > p:not(.testing-kicker) {
+  max-width: 68ch;
+}
+
+.testing-endpoint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  border-top: 1px solid var(--border-color);
+  padding-top: 1rem;
+  margin: 1.5rem 0 0;
+}
+
+.testing-endpoint span {
+  color: var(--text-color);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.testing-endpoint code {
+  color: var(--text-light);
+  overflow-wrap: anywhere;
+}
+
+.testing-section {
+  margin: 2rem 0;
+}
+
+.testing-section h2,
+.testing-panel h2 {
+  margin-top: 0;
+}
+
+.testing-arch-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 0.75rem;
+  list-style: none;
+  margin: 1rem 0 0;
+}
+
+.testing-arch-links li {
+  margin: 0;
+}
+
+.testing-arch-links a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border-color);
+  color: var(--text-light);
+  text-decoration: none;
+}
+
+.testing-arch-links a:hover {
+  border-color: var(--green-tea);
+  background: var(--bg-light);
+}
+
+.testing-arch-links span {
+  color: var(--yellowish);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.testing-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.testing-panel {
+  min-width: 0;
+  border: 1px solid var(--border-color);
+  padding: 1.25rem;
+}
+
+.testing-panel pre {
+  font-size: 0.9rem;
+}
+
+.testing-notice {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.7fr) 1.3fr;
+  gap: 1rem;
+  border-top: 1px solid var(--green-tea);
+  padding: 1rem 0;
+  margin: 2rem 0;
+}
+
+.testing-notice strong {
+  color: var(--yellowish);
+}
+
+.testing-notice span {
+  color: var(--text-color);
+}
+
+@media (max-width: 700px) {
+  .testing-grid,
+  .testing-notice {
+    grid-template-columns: 1fr;
+  }
+
+  .testing-panel {
+    padding: 1rem;
+  }
+}

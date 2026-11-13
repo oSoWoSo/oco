@@ -1,0 +1,32 @@
+--- a/libs/JUCELV2/modules/juce_core/system/juce_SystemStats.cpp
++++ b/libs/JUCELV2/modules/juce_core/system/juce_SystemStats.cpp
+@@ -138,10 +138,7 @@
+ {
+     String result;
+ 
+-   #if JUCE_ANDROID || JUCE_MINGW || JUCE_WASM
+-    jassertfalse; // sorry, not implemented yet!
+-
+-   #elif JUCE_WINDOWS
++   #if JUCE_WINDOWS
+     HANDLE process = GetCurrentProcess();
+     SymInitialize (process, nullptr, TRUE);
+ 
+@@ -172,7 +169,7 @@
+         }
+     }
+ 
+-   #else
++   #elif JUCE_MAC || JUCE_IOS || defined (__GLIBC__)
+     void* stack[128];
+     auto frames = backtrace (stack, numElementsInArray (stack));
+     char** frameStrings = backtrace_symbols (stack, frames);
+@@ -181,6 +178,8 @@
+         result << frameStrings[i] << newLine;
+ 
+     ::free (frameStrings);
++   #else
++    jassertfalse; // sorry, not implemented yet!
+    #endif
+ 
+     return result;

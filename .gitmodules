@@ -1,0 +1,4 @@
+[submodule "oco-builder"]
+	path = oco-builder
+	url = https://github.com/oSoWoSo/oco-builder
+	branch = main

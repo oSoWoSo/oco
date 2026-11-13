@@ -1,0 +1,33 @@
+# Template file for 'lemonade-server'
+pkgname=lemonade-server
+version=2026.45.3
+revision=1
+_httplibver=0.45.0
+build_style=cmake
+configure_args="-G Ninja -D FETCHCONTENT_FULLY_DISCONNECTED=ON
+ -D FETCHCONTENT_SOURCE_DIR_HTTPLIB=${XBPS_BUILDDIR}/${pkgname}-${version}/cpp-httplib-${_httplibver}"
+hostmakedepends="pkg-config cmake ninja git nodejs"
+makedepends="libwebsockets-devel openssl-devel libdrm-devel libzstd-devel cli11
+ json-c++ libcurl-devel libayatana-appindicator-glib-devel libdbusmenu-glib-devel libnotify-devel mbedtls-devel"
+depends="zstd unzip libwebsockets"
+short_desc="Local LLM Serving with GPU and NPU acceleration (Server)"
+maintainer="zenobit <zen@osowoso.org>"
+license="Apache-2.0"
+homepage="https://github.com/lemonade-sdk/lemonade"
+distfiles="${homepage}/archive/refs/tags/v${version}.tar.gz>lemonade-${version}.tar.gz
+ https://github.com/yhirose/cpp-httplib/archive/refs/tags/v${_httplibver}.tar.gz>cpp-httplib-${_httplibver}.tar.gz"
+checksum="f6ad565c4955ec64a1e9473d352fe15f12ab35a0db1b8741fc3b4b644e2419b7
+ 03121ca28d210ac8014021c2f2deda4a181f215b1638c493c40a4c7e6056495f"
+system_accounts="_lemonade"
+build_wrksrc="lemonade-${version}"
+
+post_install() {
+	vmkdir var/lib/lemonade 750 lemonade lemonade
+	touch ${DESTDIR}/var/lib/lemonade/.keep_lemonade-server_0
+
+	vmkdir etc/lemonade 750 lemonade lemonade
+
+	rm -rf ${DESTDIR}/usr/lib/systemd
+
+	vsv lemonade-server
+}

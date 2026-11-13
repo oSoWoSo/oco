@@ -1,0 +1,47 @@
+name: 🔎 symlinks
+run-name: >-
+  ${{
+    github.event_name == 'workflow_dispatch' && '🔎 manual' ||
+    github.event_name == 'push' && format('🔎 {0}', github.event.head_commit.message) ||
+    github.event_name == 'pull_request' && format('🔎 {0} (#{1})', github.event.pull_request.title, github.event.pull_request.number) ||
+    github.event_name == 'schedule' && '🔎 scheduled' ||
+    '🔎'
+  }}
+on:
+  push:
+    branches: [OCO]
+    paths:
+      - srcpkgs/**
+      - src/autobump-blacklist
+      - .github/scripts/ci/lint-autobump-symlinks.sh
+      - .github/scripts/lint-autobump-symlinks.sh
+      - .github/workflows/lint-autobump-symlinks.yml
+  pull_request:
+    paths:
+      - srcpkgs/**
+      - src/autobump-blacklist
+      - .github/scripts/ci/lint-autobump-symlinks.sh
+      - .github/scripts/lint-autobump-symlinks.sh
+      - .github/workflows/lint-autobump-symlinks.yml
+  #schedule:
+    #- cron: '43 4 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: lint-autobump-symlinks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint autobump-blacklist
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.BOT }}
+
+      - name: Run symlink lint
+        run: bash .github/scripts/ci/lint-autobump-symlinks.sh

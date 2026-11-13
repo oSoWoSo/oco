@@ -1,0 +1,1967 @@
+#!/bin/sh
+#
+# Manage the OCO repository: init, shlibs, update, website, and packages.
+# Merged from update-repo + CLONEme.sh + shlibs-update.
+#
+# Author: zenobit <zen@osowoso.org>
+# License: GPL-3.0-only
+
+# Pin collation so sort output is identical on CI (C locale) and local
+export LC_ALL=C
+SCRIPT_DIR=$(cd -- "$(dirname -- "$0")" && pwd)
+echo "SCRIPT_DIR = $SCRIPT_DIR"
+# shellcheck source=/dev/null
+[ -f "${SCRIPT_DIR}/.env" ] && . "${SCRIPT_DIR}/.env"
+
+# --- Repo management ---
+SRCPKGS='srcpkgs'
+TEMPLATES_LIST='/tmp/oco-templates-list'
+REPODATA_LIST_PY="${SCRIPT_DIR}/src/repodata-list.py"
+REPODATA_STRIP_PY="${SCRIPT_DIR}/src/repodata-strip.py"
+REPODATA_CLEAN_STAGE_PY="${SCRIPT_DIR}/src/repodata-clean-stage.py"
+README="${SCRIPT_DIR}/README.md"
+FEED_OPML="${SCRIPT_DIR}/src/feed.opml"
+NVCONF="${SCRIPT_DIR}/.nvchecker/nvchecker.toml"
+
+SURFER_URL='https://repo.osowoso.org'
+# Empty means production. Test publications use a distinct path on this host.
+SURF_PATH_PREFIX="${SURF_PATH_PREFIX:-}"
+# Use a Cloudron app password with username
+SURFER_USER="${SURFER_USER:-}"
+# Deprecated, kept only so existing callers keep working: retries are now
+# bounded by SURF_DEADLINE wall-clock, not by an attempt count.
+SURF_ATTEMPTS="${SURF_ATTEMPTS:-4}"
+# Initial retry delay; doubles each attempt, capped by SURF_BACKOFF_MAX.
+SURF_BACKOFF="${SURF_BACKOFF:-3}"
+# Wall-clock budget for a single retried request
+SURF_DEADLINE="${SURF_DEADLINE:-1500}"
+# Never wait on a dead socket; but do not cap a package upload
+SURF_CONNECT_TIMEOUT="${SURF_CONNECT_TIMEOUT:-20}"
+SURF_MAX_TIME="${SURF_MAX_TIME:-300}"
+SURF_BACKOFF_MAX="${SURF_BACKOFF_MAX:-30}"
+# Space-separated package names to strip from the repodata
+SURF_PURGE_PACKAGES="${SURF_PURGE_PACKAGES:-}"
+CI_URL="${CI_URL:-https://github.com/oSoWoSo/oco}"
+SIGNED_BY='oSoWoSo <mail@osowoso.org>'
+ARCHES='x86_64 x86_64-musl aarch64 aarch64-musl'
+
+# shellcheck source=src/pkg-helpers.sh
+. "${SCRIPT_DIR}/src/pkg-helpers.sh"
+
+# --- Init / clone (env-overridable) ---
+VOID_URL='https://github.com/void-linux/void-packages'
+OCO_URL='https://codeberg.org/oSoWoSo/oco'
+CLONE_DEST="${CLONE_DEST:-${XBPS_DISTDIR:-$HOME/void}}"
+CLONE_TEMP="${CLONE_TEMP:-/tmp}"
+CLONE_DEPTH="${CLONE_DEPTH:-}"
+OCO_BRANCH="${OCO_BRANCH:-OCO}"
+
+# --- Shlibs (env-overridable) ---
+SHLIBS_FILE="${SHLIBS_FILE:-${CLONE_DEST}/common/shlibs}"
+SHLIBS_APPEND="${SCRIPT_DIR}/shlibs_append"
+SHLIBS_REMOVE="${SCRIPT_DIR}/shlibs_remove"
+
+# --- UI helpers (ANSI) ---
+
+if [ -z "$NO_COLOR" ]; then
+	RED=$(printf '\033[0;31m')
+	GREEN=$(printf '\033[0;32m')
+	YELLOW=$(printf '\033[1;33m')
+	BLUE=$(printf '\033[0;34m')
+	NC=$(printf '\033[0m')
+fi
+_r() {
+	echo "${RED}${*}${NC}"
+}
+_g() {
+	echo "${GREEN}${1}${NC}"
+}
+_b() {
+	echo "${BLUE}${1}${NC}"
+}
+_y() {
+	echo "${YELLOW}${1}${NC}"
+}
+ask() {
+	printf '%s%s [Y/n] %s' "$YELLOW" "$1" "$NC"
+	read -r _ans || _ans=y
+	case "$_ans" in [Nn]*) return 1 ;; *) return 0 ;; esac
+}
+
+# --- Core helpers ---
+
+fatal() {
+	_r '[FATAL]:' "$@" >&2
+	exit 1
+}
+
+_re() {
+	fatal "${RED}${*}${NC}"
+}
+
+# --- GitHub authentication, optional ---
+_gh_token() {
+	if [ -n "${GH_TOKEN:-}" ]; then
+		printf '%s' "$GH_TOKEN"
+	elif command -v gh >/dev/null 2>&1; then
+		gh auth token 2>/dev/null || true
+	fi
+}
+
+_gh_auth_setup() {
+	_tok=$(_gh_token)
+	[ -n "$_tok" ] || return 0
+
+	_home=$(mktemp -d "${TMPDIR:-/tmp}/ocoman-curl.XXXXXX")
+	chmod 700 "$_home"
+	{
+		for _h in github.com api.github.com codeload.github.com \
+			objects.githubusercontent.com raw.githubusercontent.com; do
+			printf 'machine %s login x-access-token password %s\n' "$_h" "$_tok"
+		done
+	} >"$_home/_netrc"
+	chmod 600 "$_home/_netrc"
+	printf 'netrc-file = "%s"\n' "$_home/_netrc" >"$_home/.curlrc"
+	export CURL_HOME="$_home"
+}
+
+# --- Surfer transport helpers ---
+
+# We talk to Surfer exclusively through the @cloudron/surfer CLI
+# (`npm -g install @cloudron/surfer`, shipped by the oco `surfer-cli` package),
+# which speaks the REST API under ${SURFER_URL}/api/files/.
+#
+# Every helper below takes paths RELATIVE to the API root, e.g. /x86_64.
+_SURF_READY=""
+
+# Write ~/.surfer.json once, with mode 600. The CLI has no env-var auth
+# (cli/config.js only reads that file), and passing the token on the command
+# line would expose the app password in the process argv.
+#
+# Key names: cli/config.js reads `server` and `accessToken`. Older builds of
+# the CLI read `username`/`password` instead, and unknown keys are simply
+# ignored, so write all four -- writing only one pair breaks the other.
+# (For the same reason callers must use `surfer get -s ... -t ...`, never
+# `-u`/`-p`: those options do not exist, and `-s` is a subcommand option.)
+surf_cli_init() {
+	[ -n "$_SURF_READY" ] && return 0
+
+	command -v surfer > /dev/null 2>&1 ||
+		fatal 'the surfer CLI is not in PATH (npm -g install @cloudron/surfer)'
+	[ -n "${SURFER_USER:-}" ] ||
+		fatal 'SURFER_USER is required (Surfer CLI: Cloudron username)'
+	[ -n "${SURFER_TOKEN:-}" ] ||
+		fatal 'SURFER_TOKEN is required (Surfer CLI: Cloudron app password)'
+
+	_sbi_cfg="${HOME}/.surfer.json"
+	(
+		umask 077
+		cat > "$_sbi_cfg" <<EOF
+{"server": "${SURFER_URL}", "accessToken": "${SURFER_TOKEN}", "username": "${SURFER_USER}", "password": "${SURFER_TOKEN}"}
+EOF
+	)
+	chmod 600 "$_sbi_cfg" 2> /dev/null || true
+	unset _sbi_cfg
+
+	_SURF_READY=1
+	return 0
+}
+
+# Classify why a Surfer request failed, by probing a path that does not exist.
+# Returns: 0 reachable, 1 host down/unhealthy, 2 auth rejected (terminal).
+surf_diagnose() {
+	_sd_out=$(surfer get /__oco_probe__ 2>&1) || true
+	case "$_sd_out" in
+		*'No such file or directory'*)
+			return 0
+			;;
+		# The CLI prints 'Invalid token' for HTTP 401 (cli/actions.js).
+		# 'Invalid username or password' is what older builds printed.
+		*'Invalid token'* | *'Invalid username or password'*)
+			echo '::error::Surfer CLI rejected our credentials; check SURFER_USER/SURFER_TOKEN' >&2
+			return 2
+			;;
+		*'Run surfer config first'*)
+			echo '::error::surfer CLI could not read its config; expected ~/.surfer.json with server+accessToken' >&2
+			return 2
+			;;
+		*'Failed to connect'*)
+			echo "::error::Surfer host unreachable (${SURFER_URL} -> ${_sd_out})" >&2
+			return 1
+			;;
+	esac
+	echo "::error::Surfer CLI probe gave an unexpected answer: ${_sd_out}" >&2
+	return 1
+}
+
+# Shared retry driver: run "$@" until it succeeds or the SURF_DEADLINE
+surf_retry_loop() {
+	_srl_start=$(date +%s)
+	_srl_delay="$SURF_BACKOFF"
+	_srl_n=0
+	_srl_probed=0
+	while :; do
+		_srl_n=$((_srl_n + 1))
+		"$@" && return 0
+		_srl_now=$(date +%s)
+		_srl_used=$((_srl_now - _srl_start))
+		if [ "$_srl_used" -ge "$SURF_DEADLINE" ]; then
+			echo "  Surfer: giving up after ${_srl_n} attempt(s) over ${_srl_used}s" >&2
+			return 1
+		fi
+		echo "  Surfer: attempt ${_srl_n} failed (${_srl_used}s/${SURF_DEADLINE}s); retrying in ${_srl_delay}s" >&2
+		# Probe the site root once, not once per attempt: on a host that is
+		# already failing, extra requests only add load, and a terminal
+		# 401/403 shows up on the very first failure anyway.
+		if [ "$_srl_probed" -eq 0 ]; then
+			_srl_probed=1
+			_srl_sd=0
+			surf_diagnose || _srl_sd=$?
+			# Bad credentials never fix themselves; stop burning the budget.
+			[ "$_srl_sd" -eq 2 ] && return 1
+		fi
+		sleep "$_srl_delay"
+		_srl_delay=$((_srl_delay * 2))
+		[ "$_srl_delay" -gt "$SURF_BACKOFF_MAX" ] && _srl_delay="$SURF_BACKOFF_MAX"
+	done
+}
+
+surf_retry() {
+	surf_retry_loop surf_cli "$@"
+}
+
+# Raw CLI passthrough, so the shared retry driver can wrap it.
+surf_cli() {
+	surfer "$@"
+}
+
+# True when $1 is a plausible repodata index (magic bytes + readable tar +
+# an index.plist member). `surfer get` exits 0 even when it writes an error
+# page or a truncated body to stdout -- any non-401/404/222 HTTP response is
+# piped straight through (cli/actions.js) -- so the exit code alone proves
+# nothing about what landed in the file.
+repodata_looks_valid() {
+	python3 "${REPODATA_STRIP_PY}" --check "$1" > /dev/null 2>&1
+}
+
+# Download ${ARCH}-repodata into the given file. Contract: 0 = downloaded,
+# 1 = not there yet (first run), 2 = gave up.
+# 'surfer get' prints errors on stdout, so the payload and the error text
+# have to be told apart by what landed in the output file -- and a zero exit
+# code is not enough, hence repodata_looks_valid() below.
+fetch_repodata() {
+	command -v python3 >/dev/null 2>&1 ||
+		fatal 'python3 not found (needed to validate the downloaded index)'
+	_fr_rel=$(surf_api_path "$1") || return 2
+	_fr_out="$2"
+	_fr_start=$(date +%s)
+	_fr_delay="$SURF_BACKOFF"
+	_fr_n=0
+	_fr_last=''
+	while :; do
+		_fr_n=$((_fr_n + 1))
+		: > "$_fr_out"
+		# The CLI prints "Using server <url>" on stderr on every call; merging
+		# stderr into the payload would prepend that banner to the repodata and
+		# make repodata-strip.py misdetect a zstd index as plain tar
+		# ("invalid header"). Errors still go to stdout, so the classification
+		# below keeps working.
+		if surf_cli get "$_fr_rel" > "$_fr_out"; then
+			# Exit 0 only means "something was written". Anything the
+			# server answered with that is not the index (HTML error page,
+			# JSON body, half a stream) also exits 0, and used to reach
+			# repodata-strip.py as `tarfile.ReadError: invalid header`.
+			if repodata_looks_valid "$_fr_out"; then
+				return 0
+			fi
+			_fr_last="downloaded payload is not a repodata index: $(python3 "${REPODATA_STRIP_PY}" --check "$_fr_out" 2>&1 >/dev/null | head -n1)"
+			rm -f "$_fr_out"
+		else
+			_fr_last=$(cat "$_fr_out")
+		fi
+		case "$_fr_last" in
+			*'No such file or directory'*)
+				rm -f "$_fr_out"
+				return 1
+				;;
+			*'Invalid token'* | *'Invalid username or password'*)
+				rm -f "$_fr_out"
+				echo '::error::Surfer CLI rejected our credentials; check SURFER_USER/SURFER_TOKEN' >&2
+				return 2
+				;;
+			*'Run surfer config first'*)
+				rm -f "$_fr_out"
+				echo '::error::surfer CLI could not read its config; expected ~/.surfer.json with server+accessToken' >&2
+				return 2
+				;;
+		esac
+		_fr_now=$(date +%s)
+		_fr_used=$((_fr_now - _fr_start))
+		[ "$_fr_used" -ge "$SURF_DEADLINE" ] && break
+		echo "  Repodata fetch failed (${_fr_last}); attempt ${_fr_n}, ${_fr_used}s/${SURF_DEADLINE}s, retrying in ${_fr_delay}s" >&2
+		sleep "$_fr_delay"
+		_fr_delay=$((_fr_delay * 2))
+		[ "$_fr_delay" -gt "$SURF_BACKOFF_MAX" ] && _fr_delay="$SURF_BACKOFF_MAX"
+	done
+	rm -f "$_fr_out"
+	echo "  Repodata fetch gave up after ${_fr_n} attempt(s) over ${SURF_DEADLINE}s: ${_fr_last}" >&2
+	return 2
+}
+
+# Fatal unless the surfer CLI is available and its credentials are set.
+# Writes ~/.surfer.json on the first call; later calls are no-ops.
+surf_auth_check() {
+	surf_cli_init
+}
+
+# Remove a package name so it no longer resolves from OCO
+strip_orphans() {
+	_orphans_list="$1"
+	_repodata_file="$2"
+	if [ -s "$_orphans_list" ] && [ -f "$_repodata_file" ]; then
+		echo '==> Stripping removed packages from the index'
+		if ! command -v python3 >/dev/null 2>&1; then
+			fatal 'python3 not found!'
+		fi
+		if ! xargs python3 "${REPODATA_STRIP_PY}" "$_repodata_file" < "$_orphans_list"; then
+			fatal "==> repodata-strip failed; refusing to publish an index that still advertises removed packages"
+		fi
+		# Belt and braces: before signing + republishing, verify every orphan
+		# really left the index.
+		_still_present=0
+		while IFS= read -r _orph; do
+			[ -n "$_orph" ] || continue
+			if python3 "${REPODATA_LIST_PY}" "$_repodata_file" | \
+				awk -F '\t' -v p="$_orph" '$1==p {found=1} END {exit !found}' >/dev/null 2>&1; then
+				echo "  ERROR: ${_orph} still present in $_repodata_file after strip" >&2
+				_still_present=1
+			fi
+		done < "$_orphans_list"
+		if [ "$_still_present" -ne 0 ]; then
+			fatal "==> orphan entries still present after strip; refusing to upload ${_repodata_file}"
+		fi
+	fi
+}
+
+usage() {
+	prog=${0##*/}
+	cat <<-EOF
+	Usage: $prog -h | -u | -w | -m | -p | -s | -a | -c | -i | -o | -l | -t | -F
+	       $prog {update|build|main|upload|serve|archs|check-upstream|init|add-oco|shlibs|test|autobump|feeds|help}
+
+	Manage the OCO repository.
+
+	Options
+	  -h, --help           Print this message
+	  -i, --init           Clone void-packages + OCO to CLONE_DEST, apply shlibs
+	  -o, --add-oco        Add OCO remote + branch to an existing void-packages checkout
+	  tv <pkg...>          Copy template(s) from OCO to master, commit "New package: name-ver"
+	  to <pkg...>          Copy template(s) from master to OCO, commit "name ver"
+	  -u, --update         Update list, README, and build.yml
+	  -F, --feeds          Check that every template has a feed.opml entry
+
+	  -l, --shlibs         Apply shlibs patches to an existing checkout
+	  -a, --archs          Regenerate architecture pages only (single arch if ARCH is set)
+	  -m, --main           Regenerate main index page only (no arch pages; requires pandoc)
+	  -c, --check          Check upstream Void Linux for newer versions and additions
+	  -w, --build          Regenerate website (requires pandoc)
+	  -s, --serve          Serve website locally on port 8000
+	  -p, --upload         Upload built packages to the Surfer repository (CLI)
+	  -t, --test <pkg...>  Without <pkg> gum menu to choose, then trigger GitHub CI build
+	  autobump <pkg> [--force]
+	                      Autobump a package via GitHub workflow_dispatch
+	                      (--force ignores src/autobump-blacklist)
+
+	Compound: $prog -uw   (update + build)
+
+	Environment variables for -i and -l:
+	  CLONE_DEST    destination directory  (default: $XBPS_DISTDIR or ~/void)
+	  CLONE_TEMP    temp directory         (default: /tmp)
+	  CLONE_DEPTH   git clone depth        (default: full)
+	  OCO_BRANCH    local and remote branch name for OCO  (default: OCO)
+	  SHLIBS_FILE   shlibs file to patch   (default: CLONE_DEST/common/shlibs)
+	EOF
+}
+
+# --- Template field extraction ---
+
+# Single-pass extraction of common template fields.
+# Usage: read_template_fields <template_path>
+# Sets _tpl_version _tpl_homepage _tpl_maintainer _tpl_short_desc _tpl_archs
+read_template_fields() {
+	_tpl_version='' _tpl_homepage='' _tpl_maintainer=''
+	_tpl_short_desc='' _tpl_archs=''
+	while IFS= read -r _ln; do
+		case "$_ln" in
+			version=*)    [ -z "$_tpl_version" ]    && _tpl_version=${_ln#version=} ;;
+			homepage=*)   [ -z "$_tpl_homepage" ]   && _tpl_homepage=${_ln#homepage=} ;;
+			maintainer=*) [ -z "$_tpl_maintainer" ] && _tpl_maintainer=${_ln#maintainer=} ;;
+			short_desc=*) [ -z "$_tpl_short_desc" ] && _tpl_short_desc=${_ln#short_desc=} ;;
+			archs=*)      [ -z "$_tpl_archs" ]      && _tpl_archs=${_ln#archs=} ;;
+		esac
+	done < "$1"
+	_tpl_version=${_tpl_version#\"}
+	_tpl_version=${_tpl_version%\"}
+	_tpl_homepage=${_tpl_homepage#\"}
+	_tpl_homepage=${_tpl_homepage%\"}
+	_tpl_maintainer=${_tpl_maintainer#\"}
+	_tpl_maintainer=${_tpl_maintainer%\"}
+	_tpl_maintainer=${_tpl_maintainer%% <*}
+	_tpl_short_desc=${_tpl_short_desc#\"}
+	_tpl_short_desc=${_tpl_short_desc%\"}
+	_tpl_archs=${_tpl_archs#\"}
+	_tpl_archs=${_tpl_archs%\"}
+}
+
+# --- Package helpers ---
+
+pkg_name() {
+	# Accept either `name-version_revision` or `name-version_revision.arch`
+	# (callers may or may not have stripped the .xbps suffix already).
+	_pn_in="${1%.xbps}"
+	case "$_pn_in" in *.*) _pn_in="${_pn_in%.*}" ;; esac
+	if command -v xbps-uhelper >/dev/null 2>&1; then
+		_pn_out=$(xbps-uhelper getpkgname "$_pn_in" 2>/dev/null) \
+			&& [ -n "$_pn_out" ] && { printf '%s' "$_pn_out"; return; }
+	fi
+	# Fallback parser: name-version_revision -> drop last `-segment`
+	_pn_ver="${_pn_in##*-}"
+	printf '%s' "${_pn_in%-"${_pn_ver}"}"
+}
+
+# List packages PUBLISHED at the public URL for <arch>, one name per line.
+# Prefers `xbps-query` (canonical, validates signature); falls back to
+# fetching the repodata and parsing with python so the website can be
+# regenerated in environments without xbps (e.g. ubuntu-latest in CI).
+# Returns 0 on success (output may be empty -- that means the repo is
+# really empty for this arch), nonzero on failure.
+list_published_pkgs() {
+	_lpp_arch="$1"
+	_lpp_path=$(surf_api_path "/${_lpp_arch}") || return 1
+	_lpp_url="${SURFER_URL}${_lpp_path}"
+	_lpp_tmp=$(mktemp)
+	_lpp_rc=1
+
+	if command -v xbps-query >/dev/null 2>&1 \
+			&& command -v xbps-uhelper >/dev/null 2>&1; then
+		_lpp_root=$(mktemp -d)
+		# --rootdir on a fresh tempdir + -i + -M ensures we only see
+		# packages from the specified --repository (no xbps.d, no cache,
+		# no installed-pkg state interfering). XBPS_TARGET_ARCH handles
+		# cross-arch listing (aarch64-musl, etc.).
+		XBPS_TARGET_ARCH="$_lpp_arch" \
+			xbps-query --rootdir="$_lpp_root" --repository="$_lpp_url" \
+				-R -M -i -s '' > "$_lpp_tmp" 2>/dev/null
+		_lpp_rc=$?
+		rm -rf "$_lpp_root"
+		if [ "$_lpp_rc" -eq 0 ]; then
+			# Output: "[STATUS] pkgname-version_revision  short_desc"
+			awk '{print $2}' "$_lpp_tmp" | while IFS= read -r _pv; do
+				[ -n "$_pv" ] || continue
+				xbps-uhelper getpkgname "$_pv" 2>/dev/null
+			done
+			rm -f "$_lpp_tmp"
+			return 0
+		fi
+	fi
+
+	# Fallback: fetch the signed repodata and read index.plist with python.
+	if command -v python3 >/dev/null 2>&1; then
+		if curl -fsS -o "$_lpp_tmp" \
+				"${_lpp_url}/${_lpp_arch}-repodata" 2>/dev/null; then
+			python3 "${REPODATA_LIST_PY}" "$_lpp_tmp"
+			_lpp_rc=$?
+		else
+			_lpp_rc=1
+		fi
+	fi
+
+	rm -f "$_lpp_tmp"
+	return "$_lpp_rc"
+}
+
+# Returns 0 on success (printing the file list, possibly empty),
+# nonzero on transport failure (network/auth) so callers can react.
+# A directory listing comes back as
+#   Entries:
+#   \t /x86_64/foo.xbps
+#   \t /x86_64/subdir/
+# so: drop directories (trailing slash), keep .xbps, and reduce to basenames.
+fetch_remote_list() {
+	_frlc_path=$(surf_api_path "$1") || return 1
+	_frlc_out=$(surf_cli get "$_frlc_path" 2>&1)
+	_frlc_rc=$?
+	if [ "$_frlc_rc" -ne 0 ]; then
+		# An empty (or absent) directory is a legitimate state, not a
+		# transport failure -- report no packages and succeed.
+		case "$_frlc_out" in
+			*'No such file or directory'* | *'Empty directory'*)
+				return 0
+				;;
+		esac
+		echo "Error: surfer get ${1} failed (rc=${_frlc_rc}): ${_frlc_out}" >&2
+		return "$_frlc_rc"
+	fi
+	printf '%s\n' "$_frlc_out" \
+		| grep '\.xbps$' \
+		| grep -v '/$' \
+		| sed 's|.*/||'
+}
+
+# Delete one remote file, given its path relative to the API root.
+# Suppressed, not failed: whatever we delete is stale, not broken.
+delete_remote() {
+	_dr_path=$(surf_api_path "$1") || return 0
+	surf_retry del -y "$_dr_path" || true
+	return 0
+}
+
+# Upload one file into the remote directory $2 (relative to the API root).
+# 'surfer put' takes the destination DIRECTORY and does its own mtime+size
+# comparison, so we keep surf_retry so a dead host is retried, and we never
+# pass -d: that would purge anything we did not just upload.
+# Report, do not abort: do_upload() decides whether one bad file is fatal
+# (it is for .xbps, it is not for an index page), and it needs the chance
+# to collect every failure before deciding.
+upload_file() {
+	_uf_file="$1"
+	_uf_dir="$2"
+	_uf_fname="$(basename "$_uf_file")"
+	# 'put' wants an absolute path that ends in a slash.
+	_uf_dir=$(surf_api_path "$_uf_dir") || return 1
+	_uf_dir="/${_uf_dir#/}"
+	case "$_uf_dir" in
+		*/) ;;
+		*) _uf_dir="${_uf_dir}/" ;;
+	esac
+	echo "  Uploading: ${_uf_fname}"
+	if ! surf_retry put "$_uf_file" "$_uf_dir"; then
+		echo "::error::Failed to upload ${_uf_fname} to ${_uf_dir}" >&2
+		return 1
+	fi
+	return 0
+}
+
+# Prefix API-root-relative paths consistently for every CLI operation.
+surf_api_path() {
+	_sap_prefix=$SURF_PATH_PREFIX
+	case "$_sap_prefix" in
+		/*|*/|*..*|*'//'*) echo "Invalid SURF_PATH_PREFIX: $_sap_prefix" >&2; return 1 ;;
+	esac
+	_sap_path="/${1#/}"
+	[ -z "$_sap_prefix" ] || _sap_path="/${_sap_prefix}${_sap_path}"
+	printf '%s' "$_sap_path"
+}
+
+prune_orphans() {
+	# Args:
+	#   $1: remote pkg list (one filename per line)
+	#   $2: path to write orphan PACKAGE NAMES (dedup, one per line)
+	_remote_list="$1"
+	_orphans_out="$2"
+	[ -n "$_orphans_out" ] && : > "$_orphans_out"
+	echo '==> Pruning orphan packages (no template in srcpkgs)'
+	_srcpkgs="${SCRIPT_DIR}/${SRCPKGS}"
+	printf '%s\n' "$_remote_list" | while IFS= read -r _remote_pkg; do
+		[ -n "$_remote_pkg" ] || continue
+		_pkg=$(pkg_name "${_remote_pkg%.xbps}")
+		[ -d "${_srcpkgs}/${_pkg}" ] && continue
+		echo "  Orphan: $_remote_pkg ($_pkg)"
+		[ -n "$_orphans_out" ] && printf '%s\n' "$_pkg" >> "$_orphans_out"
+	done
+	if [ -n "$_orphans_out" ] && [ -s "$_orphans_out" ]; then
+		# Dedup in place (multiple .xbps per name from subpackages etc.)
+		sort -u -o "$_orphans_out" "$_orphans_out"
+	fi
+}
+
+delete_orphan_files() {
+	# Args:
+	#   $1: path to orphan PACKAGE NAMES (one per line)
+	#   $2: remote pkg list (one filename per line)
+	[ -s "$1" ] || return 0
+	echo '==> Deleting orphan package files'
+	_orphans_list="$1"
+	_remote_list="$2"
+	printf '%s\n' "$_remote_list" | while IFS= read -r _remote_pkg; do
+		[ -n "$_remote_pkg" ] || continue
+		_pkg=$(pkg_name "${_remote_pkg%.xbps}")
+		if grep -qx "$_pkg" "$_orphans_list"; then
+			# surfer del talks to the REST API (fsPromises.rm), not
+			# webdav-server, so these deletes cannot crash Surfer.
+			delete_remote "/${ARCH}/${_remote_pkg}"
+			delete_remote "/${ARCH}/${_remote_pkg}.sig2"
+		fi
+	done
+}
+
+# --- Website helpers (from create-web) ---
+
+_build_manual() {
+	command -v python3 >/dev/null 2>&1 || fatal 'python3 not installed!'
+	# The generator synchronizes root Manual.md before rendering; errors abort
+	# before the publishing phase rather than silently publishing a stale manual.
+	python3 "${SCRIPT_DIR}/src/gen-manual.py" "${SCRIPT_DIR}" "${SCRIPT_DIR}/docs/manual.html" $ARCHES \
+		|| fatal 'Failed to synchronize/generate the XBPS manual!'
+	rm -f "${SCRIPT_DIR}/docs/manual-index-template.html"
+	_g 'Generated: docs/manual.html'
+}
+
+_build_main_index() {
+	_title="${1:-Void Community Repository}"
+
+	_nav_arch_tmp=$(mktemp)
+	_readme_tmp=$(mktemp)
+	_svg_tmp=$(mktemp)
+
+	for _arch in $ARCHES; do
+		printf '  <li><a data-package-arch="%s" href="%s/">%s</a></li>\n' "$_arch" "$_arch" "$_arch" >> "$_nav_arch_tmp"
+	done
+	printf '  <li><a href="https://codeberg.org/osowoso/oco">&#x2934; source</a></li>\n' >> "$_nav_arch_tmp"
+	if [ -n "${CI_URL:-}" ]; then
+		printf '  <li><a href="%s">CI</a></li>\n' "$CI_URL" >> "$_nav_arch_tmp"
+	fi
+
+	pandoc README.md -f gfm > "$_readme_tmp"
+	cp src/svg-color.html "$_svg_tmp"
+
+	sed \
+		-e "s|__CSS_URL__|style.css|g" \
+		-e 's|__FAVICON__|<link rel="icon" href="favicon.ico" />|g' \
+		src/main-index-template.html \
+	| awk \
+		-v nav_arch="$_nav_arch_tmp" \
+		-v readme="$_readme_tmp" \
+		-v svg="$_svg_tmp" \
+		'/__NAV_ARCH_LINKS__/ { while ((getline ln < nav_arch) > 0) print ln; close(nav_arch); next }
+		 /__README_CONTENT__/  { while ((getline ln < readme)   > 0) print ln; close(readme);   next }
+		 /__SVGCOLOR__/        { while ((getline ln < svg)      > 0) print ln; close(svg);       next }
+		 { print }' \
+	> "docs/index.html"
+
+	rm -f "$_nav_arch_tmp" "$_readme_tmp" "$_svg_tmp"
+	_g "Generated: docs/index.html"
+}
+
+# --- Update ---
+
+list_templates() {
+	sed -n 's/^!\/srcpkgs\/\([^/]*\)[/]*$/\1/p' "${SCRIPT_DIR}/.gitignore" | sort -fu
+}
+
+generate_list() {
+	_gitignore="${SCRIPT_DIR}/.gitignore"
+
+	_new_pkgs=$(for _entry in "${SCRIPT_DIR}/${SRCPKGS}"/*/; do
+		[ -d "$_entry" ] || [ -L "$_entry" ] || continue
+		_pkg=${_entry%/}; _pkg=${_pkg##*/}
+		echo "$_pkg"
+	done | sort -f)
+
+	_tmp=$(mktemp)
+	awk '/^# Start of templates list$/{print; exit} {print}' "$_gitignore" > "$_tmp"
+	printf '%s\n' "$_new_pkgs" | sed '/^$/d; s|^|!/srcpkgs/|' >> "$_tmp"
+
+	if diff -q "$_gitignore" "$_tmp" >/dev/null 2>&1; then
+		echo '.gitignore templates: no changes'
+		rm -f "$_tmp"
+	else
+		mv "$_tmp" "$_gitignore"
+		echo '.gitignore templates: updated'
+	fi
+
+	list_templates > "$TEMPLATES_LIST"
+	echo 'Templates list synchronized from .gitignore'
+}
+
+
+
+detect_changes() {
+	if ! git rev-parse HEAD~1 >/dev/null 2>&1; then
+		echo '==> First commit'
+		_added=$(cat "$TEMPLATES_LIST")
+		_modified=''
+		_removed=''
+	else
+		_diff=$(git diff --name-status HEAD~1 HEAD -- "$SRCPKGS")
+		_added=$(   echo "$_diff" | awk '$1=="A"{print $2}' | cut -d/ -f2 | sort -u)
+		_modified=$(echo "$_diff" | awk '$1=="M"{print $2}' | cut -d/ -f2 | sort -u)
+		_removed=$( echo "$_diff" | awk '$1=="D"{print $2}' | cut -d/ -f2 | sort -u)
+	fi
+
+	_added=$(echo "$_added"     | sed '/^$/d')
+	_modified=$(echo "$_modified" | sed '/^$/d')
+	_removed=$(echo "$_removed"   | sed '/^$/d')
+
+	echo "==> Added:   $(echo "$_added" | tr '\n' ' ')"
+	echo "==> Modified: $(echo "$_modified" | tr '\n' ' ')"
+	echo "==> Removed: $(echo "$_removed" | tr '\n' ' ')"
+}
+
+# --- RSS feed (feed.opml) suggestions ---
+
+feed_xml_escape() {
+	printf '%s' "$1" |
+		sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g'
+}
+
+# Usage: feed_urls_from_nvchecker <pkg>
+# Derives upstream RSS/HTML urls from .nvchecker/nvchecker.toml section
+# [<pkg>] (source=github|gitea|gitlab). Handles quoted section names
+# (["llama.cpp"]) and `${pkgname}` placeholders.
+# Sets _feed_xml_url _feed_html_url; returns 0 when derivable, 1 otherwise.
+feed_urls_from_nvchecker() {
+	_feed_xml_url='' _feed_html_url=''
+	_fun_pkg="$1"
+	[ -f "$NVCONF" ] || return 1
+
+	_fun_tmp=$(awk '
+		$0 ~ /^\[/ {
+			s=$0; sub(/^\[/, "", s); sub(/\]$/, "", s); gsub(/"/, "", s)
+			insec = (s == pkg); next
+		}
+		insec && NF >= 3 {
+			if ($1 == "source") src = $3
+			else if ($1 == "github") repo = $3
+			else if ($1 == "gitea") repo = $3
+			else if ($1 == "gitlab") repo = $3
+			else if ($1 == "host") host = $3
+		}
+		END { print src; print repo; print host }
+	' pkg="$_fun_pkg" "$NVCONF")
+
+	# Note: in awk, $3 of 'host = "x"' is the field AFTER '='; but for
+	# 'source = "x"' the value is also $3. So all values are $3 above.
+	_fun_src=$(echo "$_fun_tmp" | sed -n '1p' | tr -d '"')
+	_fun_repo=$(echo "$_fun_tmp" | sed -n '2p' | tr -d '"')
+	_fun_host=$(echo "$_fun_tmp" | sed -n '3p' | tr -d '"')
+
+	case "$_fun_repo" in
+		*'${pkgname}'*)
+			_fun_repo=$(printf '%s' "$_fun_repo" |
+				sed "s/\${pkgname}/${_fun_pkg}/g")
+			;;
+	esac
+
+	case "$_fun_src" in
+		github | gitea | gitlab) ;;
+		*) return 1 ;;
+	esac
+	[ -n "$_fun_repo" ] || return 1
+
+	case "$_fun_src" in
+		github)
+			_feed_xml_url="https://github.com/${_fun_repo}/tags.atom"
+			_feed_html_url="https://github.com/${_fun_repo}/releases"
+			;;
+		gitea)
+			_fun_host=${_fun_host:-codeberg.org}
+			_feed_xml_url="https://${_fun_host}/${_fun_repo}/tags.rss"
+			_feed_html_url="https://${_fun_host}/${_fun_repo}/tags"
+			;;
+		gitlab)
+			_fun_host=${_fun_host:-gitlab.com}
+			_feed_xml_url="https://${_fun_host}/${_fun_repo}/-/tags?format=atom"
+			_feed_html_url="https://${_fun_host}/${_fun_repo}/-/tags"
+			;;
+	esac
+	return 0
+}
+
+# Usage: feed_urls_from_homepage <url>
+# Fallback: derive urls from a homepage pointing at a well-known host
+# (github.com / codeberg.org / gitlab.com). Keeps subgroup-style paths
+# (gitlab.com/group/sub/project).
+# Sets _feed_xml_url _feed_html_url; returns 0 on success, 1 otherwise.
+feed_urls_from_homepage() {
+	_feed_xml_url='' _feed_html_url=''
+	_fun_hp="$1"
+	_fun_host=''
+	_fun_path=''
+	case "$_fun_hp" in
+		https://github.com/*) _fun_host=github.com; _fun_path=${_fun_hp#https://github.com/} ;;
+		https://codeberg.org/*) _fun_host=codeberg.org; _fun_path=${_fun_hp#https://codeberg.org/} ;;
+		https://gitlab.com/*) _fun_host=gitlab.com; _fun_path=${_fun_hp#https://gitlab.com/} ;;
+		*) return 1 ;;
+	esac
+	_fun_path=${_fun_path%%\?*}
+	_fun_path=${_fun_path%%\#*}
+	[ -n "$_fun_path" ] || return 1
+
+	case "$_fun_host" in
+		github.com)
+			_feed_xml_url="https://github.com/${_fun_path}/tags.atom"
+			_feed_html_url="https://github.com/${_fun_path}/releases"
+			;;
+		codeberg.org)
+			_feed_xml_url="https://codeberg.org/${_fun_path}/tags.rss"
+			_feed_html_url="https://codeberg.org/${_fun_path}/tags"
+			;;
+		gitlab.com)
+			_feed_xml_url="https://gitlab.com/${_fun_path}/-/tags?format=atom"
+			_feed_html_url="https://gitlab.com/${_fun_path}/-/tags"
+			;;
+	esac
+	return 0
+}
+
+# Usage: feed_opml_has <pkg>
+# Returns 0 when an <outline> with title="<pkg>" exists under the
+# package-update folder of src/feed.opml, 1 otherwise (also when the file is missing)
+feed_opml_has() {
+	_fun_pkg="$1"
+	[ -f "$FEED_OPML" ] || return 1
+	awk -v p="$_fun_pkg" '
+		/<outline text="package-update">/ { sec = 1; next }
+		sec && /<outline/ && index($0, "title=\"" p "\"") { found = 1 }
+		END { exit (found ? 0 : 1) }
+	' "$FEED_OPML"
+	return $?
+}
+
+# Usage: check_feeds
+# Verify every (non-symlink) template has a feed.opml <outline>.
+# Templates listed in a feed blacklist file (src/feed-blacklist, or
+# src/feeds-blacklist / src/feed_blacklist) that lack a feed produce a
+# warning; any other template without a feed produces an error and a
+# non-zero exit status.
+check_feeds() {
+	_cf_failed=0
+	_cf_blacklist_files=''
+	for _f in "$SCRIPT_DIR/src/feed-blacklist" "$SCRIPT_DIR/src/feeds-blacklist" "$SCRIPT_DIR/src/feed_blacklist" "$SCRIPT_DIR/src/autobump-blacklist"; do
+		[ -f "$_f" ] && _cf_blacklist_files="$_cf_blacklist_files $_f"
+	done
+
+	[ -f "$FEED_OPML" ] || { echo 'Error: feed.opml not found' >&2; return 1; }
+
+	for _pkg in $(list_templates); do
+		[ -L "${SRCPKGS}/$_pkg" ] && continue
+		[ -f "${SRCPKGS}/$_pkg/template" ] || continue
+		feed_opml_has "$_pkg" && continue
+		if [ -n "$_cf_blacklist_files" ] && grep -qxF "$_pkg" $_cf_blacklist_files 2>/dev/null; then
+			echo "Warning: $_pkg has no feed (blacklisted)"
+		else
+			echo "Error: $_pkg has no feed"
+			_cf_failed=1
+		fi
+	done
+	return $_cf_failed
+}
+
+# aliases for compatibility
+check_feed() { check_feeds "$@"; }
+verify_feeds() { check_feeds "$@"; }
+verify_feed() { check_feeds "$@"; }
+feeds_check() { check_feeds "$@"; }
+feed_check() { check_feeds "$@"; }
+
+# Suggest missing feed.opml <outline> entries for templates that were
+# added or modified. Prints draft lines to stdout only when src/feed.opml
+# exists (i.e. local runs; CI checkout has no feed.opml -> silent skip).
+# Subpackage symlinks and already-present packages are skipped.
+suggest_feeds() {
+	[ -f "$FEED_OPML" ] || return 0
+	_feed_pkgs=$(printf '%s\n' "$_added $_modified" | tr ' ' '\n' |
+		sed '/^$/d' | sort -fu | tr '\n' ' ')
+	[ -n "$_feed_pkgs" ] || return 0
+
+	_feed_out=''
+	for _pkg in $_feed_pkgs; do
+		[ -L "${SRCPKGS}/$_pkg" ] && continue
+		feed_opml_has "$_pkg" && continue
+		[ -f "${SRCPKGS}/$_pkg/template" ] || continue
+		read_template_fields "${SRCPKGS}/$_pkg/template"
+
+		feed_urls_from_nvchecker "$_pkg"
+		if [ $? -ne 0 ]; then
+			feed_urls_from_homepage "$_tpl_homepage"
+		fi
+
+		_title=$(feed_xml_escape "$_pkg")
+		_desc=$(feed_xml_escape "$_tpl_short_desc")
+
+		if [ -n "$_feed_xml_url" ]; then
+			_feed_line="            <outline title=\"${_title}\" text=\"${_title}\" xmlUrl=\"${_feed_xml_url}\" htmlUrl=\"${_feed_html_url}\" description=\"${_desc}\" type=\"rss\"></outline>"
+		else
+			_feed_line="    # ${_pkg}: upstream feed nelze odvodit (zadna nvchecker sekce / homepage neni hosting) -- pridej rucne"
+		fi
+		_feed_out="$_feed_out
+$_feed_line"
+	done
+
+	[ -n "$_feed_out" ] || return 0
+	echo '==> RSS feed (feed.opml) proposals:'
+	echo '    (vlozit do <outline text="package-update">):'
+	echo "$_feed_out"
+}
+
+# --- Web ---
+
+generate_arch_pages() {
+	_template="${SCRIPT_DIR}/src/arch-index-template.html"
+	[ -f "$_template" ] || fatal "arch-index-template.html not found!"
+
+	_pkg_list=$(list_templates)
+
+	for _arch in $ARCHES; do
+		[ -z "${ARCH:-}" ] || [ "$_arch" = "$ARCH" ] || continue
+		_out_dir="${SCRIPT_DIR}/docs/${_arch}"
+		_out="${_out_dir}/index.html"
+		_repo_path=$(surf_api_path "/${_arch}") || fatal 'invalid repository path prefix'
+		_repo_url="${SURFER_URL}${_repo_path}"
+
+		mkdir -p "$_out_dir"
+
+		_nav_tmp=$(mktemp)
+		_pkg_tmp=$(mktemp)
+		_svg_tmp=$(mktemp)
+
+		for _a in $ARCHES; do
+			if [ "$_a" = "$_arch" ]; then
+				printf '  <li><a data-package-arch="%s" href="./" class="active">%s</a></li>\n' "$_arch" "$_arch" >> "$_nav_tmp"
+			else
+				printf '  <li><a data-package-arch="%s" href="../%s/">%s</a></li>\n' "$_a" "$_a" "$_a" >> "$_nav_tmp"
+			fi
+		done
+
+		# Determine which packages are actually PUBLISHED for this arch
+		_have_remote=''
+		_remote_names=''
+		_lpf=$(mktemp)
+		# Capture list_published_pkgs's exit BEFORE the pipe to sort,
+		# otherwise sort's success would mask a transport/parse failure.
+		if list_published_pkgs "$_arch" > "$_lpf"; then
+			_have_remote=1
+			_remote_names=$(sort -u "$_lpf")
+		else
+			_y "Warning: could not list published packages for ${_arch}; rendering full template list"
+		fi
+		rm -f "$_lpf"
+
+		{
+			printf '<table>\n<thead><tr>\n'
+			printf '  <th>package</th><th>version</th><th>homepage</th><th>maintainer</th><th>description</th>\n'
+			printf '</tr></thead>\n<tbody>\n'
+
+			_pkg_count=0
+			for _pkg in $_pkg_list; do
+				pkg_arch_ok "$_pkg" "$_arch" || continue
+				_tpl="${SRCPKGS}/${_pkg}/template"
+				[ -f "$_tpl" ] || continue
+
+				if [ "$_have_remote" = 1 ]; then
+					printf '%s\n' "$_remote_names" | grep -qx "$_pkg" || continue
+				fi
+
+				read_template_fields "$_tpl"
+
+				printf '<tr><td><strong>%s</strong></td><td>%s</td><td><a href="%s">%s</a></td><td>%s</td><td>%s</td></tr>\n' \
+					"$_pkg" "$_tpl_version" "$_tpl_homepage" "$_tpl_homepage" "$_tpl_maintainer" "$_tpl_short_desc"
+				_pkg_count=$((_pkg_count + 1))
+			done
+
+			printf '</tbody>\n</table>\n'
+		} > "$_pkg_tmp"
+
+		cp "${SCRIPT_DIR}/src/svg-color.html" "$_svg_tmp" 2>/dev/null || touch "$_svg_tmp"
+
+		sed \
+			-e "s|__ARCH__|${_arch}|g" \
+			-e 's|__CSS_URL__|../style.css|g' \
+			-e 's|__HOME_URL__|../index.html|g' \
+			-e "s|__REPO_URL__|${_repo_url}|g" \
+			-e "s|__GIT_CI_URL__|${CI_URL}|g" \
+			-e 's|__FAVICON__|<link rel="icon" href="../favicon.ico" />|g' \
+			"$_template" \
+		| awk \
+			-v nav="$_nav_tmp" \
+			-v tbl="$_pkg_tmp" \
+			-v svg="$_svg_tmp" \
+			'/__NAV_ARCH_LINKS__/ { while ((getline ln < nav) > 0) print ln; close(nav); next }
+			 /__PACKAGE_TABLE__/  { while ((getline ln < tbl) > 0) print ln; close(tbl); next }
+			 /__SVGCOLOR__/       { while ((getline ln < svg) > 0) print ln; close(svg); next }
+			 { print }' \
+		> "$_out"
+
+		rm -f "$_nav_tmp" "$_pkg_tmp" "$_svg_tmp"
+		echo "  Generated ($_pkg_count packages): docs/${_arch}/index.html"
+
+		if surf_auth_check; then
+			if ! upload_file "$_out" "/${_arch}"; then
+				fatal "Failed to upload ${_arch}/index.html!"
+			fi
+		fi
+	done
+}
+
+build_site() {
+	_title="${1:-Void Community Repository}"
+
+	if ! command -v pandoc >/dev/null 2>&1; then
+		fatal 'pandoc not installed!'
+	fi
+
+	if [ -f docs/CNAME ]; then
+		cp docs/CNAME src/
+	fi
+	rm -rf docs && mkdir -p docs
+	cp -r src/* docs/
+	rm -f docs/toggle.html docs/toc.html docs/svg-color.html docs/footer.html
+
+	_build_manual
+	_build_main_index "$_title"
+	generate_arch_pages
+	_g "Finished"
+
+	if surf_auth_check; then
+		echo '==> Uploading website assets'
+		_ws_failed=0
+		for _file in "${SCRIPT_DIR}/docs"/*; do
+			[ -f "$_file" ] || continue
+			upload_file "$_file" "/" || _ws_failed=1
+		done
+		[ "$_ws_failed" -eq 0 ] || echo '==> Warning: some website asset uploads failed'
+	fi
+}
+
+build_main() {
+	_title="${1:-Void Community Repository}"
+
+	if ! command -v pandoc >/dev/null 2>&1; then
+		fatal 'pandoc not installed!'
+	fi
+
+	if [ -f docs/CNAME ]; then
+		cp docs/CNAME src/
+	fi
+	mkdir -p docs
+	cp -r src/* docs/
+	rm -f docs/toggle.html docs/toc.html docs/svg-color.html docs/footer.html
+
+	_build_manual
+	_build_main_index "$_title"
+	_g "Finished"
+
+	if surf_auth_check; then
+		echo '==> Uploading website assets'
+		_ws_failed=0
+		for _file in "${SCRIPT_DIR}/docs"/*; do
+			[ -f "$_file" ] || continue
+			upload_file "$_file" "/" || _ws_failed=1
+		done
+		[ "$_ws_failed" -eq 0 ] || echo '==> Warning: some website asset uploads failed'
+	fi
+}
+
+# --- Named targets ---
+
+target_serve() {
+	if [ ! -f docs/index.html ]; then
+		_r 'Site not built!'
+		if ask 'Build first?'; then
+			build_site
+		else
+			_re 'Exiting'
+		fi
+	fi
+
+	_g 'Press Ctrl+C to stop'
+	python3 -m http.server -d docs 8000
+}
+
+# --- Upload ---
+
+do_upload() {
+	[ -n "$ARCH" ]         || fatal 'ARCH is required'
+	# xbps-rindex selects repodata from XBPS_ARCH, which differs from the
+	# runner's native architecture for cross-arch cleanup jobs.
+	export XBPS_ARCH="$ARCH" XBPS_TARGET_ARCH="$ARCH"
+	surf_auth_check
+	[ -n "$PRIV_KEY" ]     || fatal 'PRIV_KEY is required'
+
+	_builddir="${BUILDDIR:-$(pwd)}"
+	_arch_dir="/${ARCH}"
+
+	_work_dir=$(mktemp -d)
+
+	echo '==> Fetching remote package list'
+	if ! _remote_list=$(fetch_remote_list "$_arch_dir"); then
+		fatal 'could not list the remote package directory; refusing to upload with unknown remote state'
+	fi
+	[ -z "$_remote_list" ] && echo '  Note: remote package list is empty (repo empty or first run)'
+
+	# Run all temp-dir work in a subshell so cleanup is guaranteed on any exit.
+	(
+		cd "$_work_dir" || exit 1
+
+		echo '==> Downloading repodata'
+		fetch_repodata "${_arch_dir}/${ARCH}-repodata" "${ARCH}-repodata"
+		case $? in
+			0) ;;
+			1)
+				echo '==> No repodata yet (first run); starting fresh'
+				;;
+			*)
+				fatal "==> Error: repodata fetch failed (deadline ${SURF_DEADLINE}s exhausted)"
+				;;
+		esac
+
+		# Sanity check + auto-repair
+		if [ -f "${ARCH}-repodata" ]; then
+			_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+			_remote_count=$(printf '%s\n' "$_remote_list" | grep -c '\.xbps$' || true)
+			echo "  remote repodata advertises ${_rd_count} packages; remote dir lists ${_remote_count} files"
+			_depleted=0
+			if [ "${_remote_count}" -gt 0 ] && [ "$_rd_count" -lt $(( _remote_count / 2 )) ]; then
+				_depleted=1
+			fi
+			if [ "${_remote_count}" -gt 0 ] && [ ! -s "${ARCH}-repodata" ]; then
+				_depleted=1
+			fi
+			if [ "$_depleted" -eq 1 ]; then
+				echo "  ==> Index appears depleted; repairing by re-downloading all ${_remote_count} remote packages"
+				_repair_failed=0
+				printf '%s\n' "$_remote_list" | while IFS= read -r _rp; do
+					[ -n "$_rp" ] || continue
+					_rp_path=$(surf_api_path "${_arch_dir}/${_rp}") || continue
+					surf_cli get "$_rp_path" > "${_rp}" 2>/dev/null || true
+					surf_cli get "${_rp_path}.sig2" > "${_rp}.sig2" 2>/dev/null || true
+				done
+				rm -f "${ARCH}-repodata"
+				if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+					xbps-rindex -a ./*."${ARCH}".xbps 2>/dev/null || _repair_failed=1
+				fi
+				if [ "$_repair_failed" -ne 0 ]; then
+					fatal "==> index repair failed"
+				fi
+				_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+				echo "  repaired repodata advertises ${_rd_count} packages"
+			fi
+		fi
+
+		# Guard: srcpkgs must not be empty
+		_srcpkgs_count=$(find "${SCRIPT_DIR}/${SRCPKGS}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+		if [ "${_srcpkgs_count}" -eq 0 ]; then
+			fatal "==> refusing to publish: srcpkgs directory is empty or missing"
+		fi
+
+		# Sanity check: the downloaded index should advertise roughly as many
+		# packages as the remote directory lists. A large gap means the index
+		# is stale or truncated and publishing now would shrink the repo.
+		if [ -f "${ARCH}-repodata" ]; then
+			_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+			_remote_count=$(printf '%s\n' "$_remote_list" | grep -c '\.xbps$' || true)
+			echo "  remote repodata advertises ${_rd_count} packages; remote dir lists ${_remote_count} files"
+			_depleted=0
+			if [ "${_remote_count}" -gt 0 ] && [ "$_rd_count" -lt $(( _remote_count / 2 )) ]; then
+				_depleted=1
+			fi
+			if [ "${_remote_count}" -gt 0 ] && [ ! -s "${ARCH}-repodata" ]; then
+				_depleted=1
+			fi
+			if [ "$_depleted" -eq 1 ]; then
+				echo "  ==> Index appears depleted; repairing by re-downloading all ${_remote_count} remote packages"
+				_repair_failed=0
+				printf '%s\n' "$_remote_list" | while IFS= read -r _rp; do
+					[ -n "$_rp" ] || continue
+					_rp_path=$(surf_api_path "${_arch_dir}/${_rp}") || continue
+					if ! surf_cli get "$_rp_path" > "${_rp}" 2>/dev/null; then
+						echo "  failed to download ${_rp}" >&2
+					fi
+					if [ ! -s "${_rp}" ]; then
+						echo "  empty download for ${_rp}" >&2
+					fi
+					# signature
+					surf_cli get "${_rp_path}.sig2" > "${_rp}.sig2" 2>/dev/null || true
+				done
+				# Rebuild repodata from scratch using downloaded files
+				rm -f "${ARCH}-repodata"
+				if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+					xbps-rindex -a ./*."${ARCH}".xbps 2>/dev/null || _repair_failed=1
+				fi
+				if [ "$_repair_failed" -ne 0 ]; then
+					fatal "==> index repair failed"
+				fi
+				echo "  ==> repair complete"
+				_rd_count=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+				echo "  repaired repodata advertises ${_rd_count} packages"
+			fi
+		fi
+
+		# xbps-src drops every architecture into one binpkgs/, so an
+		# unqualified glob would republish other arches' .xbps into our
+		# ${ARCH} directory. Filter on the filename's architecture suffix.
+		if ls "${_builddir}"/*."${ARCH}".xbps >/dev/null 2>&1; then
+			cp "${_builddir}"/*."${ARCH}".xbps . 2>/dev/null || true
+			cp "${_builddir}"/*."${ARCH}".xbps.sig2 . 2>/dev/null || true
+		else
+			echo '==> No new packages to upload'
+		fi
+
+		_srcpkgs_count=$(find "${SCRIPT_DIR}/${SRCPKGS}" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l)
+		if [ "${_srcpkgs_count}" -eq 0 ]; then
+			fatal "==> refusing to publish: srcpkgs directory is empty or missing; cannot safely prune orphans"
+		fi
+		prune_orphans "$_remote_list" "${PWD}/orphans.txt"
+		if [ -n "$SURF_PURGE_PACKAGES" ]; then
+			# Caller (cleanup workflow) explicitly named packages to strip,
+			# independent of srcpkgs/ presence. Merge into the strip list.
+			echo '==> Adding explicitly-purged packages to strip list'
+			for _p in $SURF_PURGE_PACKAGES; do
+				grep -qx "$_p" "${PWD}/orphans.txt" 2>/dev/null || printf '%s\n' "$_p" >> "${PWD}/orphans.txt"
+			done
+			sort -u -o "${PWD}/orphans.txt" "${PWD}/orphans.txt" 2>/dev/null || true
+		fi
+
+		# Snapshot the remote index BEFORE stripping orphans. The strip block below
+		# deletes the orphan entries from the local repodata, so a snapshot taken
+		# after it would no longer contain them: the guard's "deliberately removed"
+		# budget would undercount (pruned_present = 0 for a real removal) and every
+		# rename/removal would trip a false shrink error after a successful publish.
+		if [ -f "${ARCH}-repodata" ]; then
+			_pre_index_list=$(mktemp)
+			python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null \
+				| sort -u > "$_pre_index_list" || true
+		fi
+		# NOTE: the orphan .xbps files are deleted only AFTER the new index
+		# is live (see "Deleting purged package files" below). Deleting first
+		# leaves the published index advertising downloads that 404 whenever
+		# anything downstream fails -- which is exactly what happened to
+		# tomlplusplus on x86_64.
+
+		if [ -s "${PWD}/orphans.txt" ] && [ -f "${ARCH}-repodata" ]; then
+			echo '==> Stripping removed packages from local repodata'
+			if command -v python3 >/dev/null 2>&1; then
+				# xargs avoids unquoted-expansion globbing on orphan names
+				xargs python3 "${REPODATA_STRIP_PY}" \
+					"${ARCH}-repodata" < "${PWD}/orphans.txt"
+				_strip_rc=$?
+			else
+				fatal 'python3 not found!'
+			fi
+			if [ "$_strip_rc" -ne 0 ]; then
+				fatal "==> repodata-strip failed; refusing to publish an index that still references removed packages (${ARCH})"
+			fi
+			# Double-check in the rewritten index that every stripped entry is actually gone before we sign + republish it
+			_still_missing=0
+			while IFS= read -r _orph; do
+				[ -n "$_orph" ] || continue
+				if python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" | \
+					awk -F '\t' -v p="$_orph" '$1==p {found=1} END {exit !found}' >/dev/null 2>&1; then
+					echo "  ERROR: ${_orph} still present in ${ARCH}-repodata after strip" >&2
+					_still_missing=1
+				fi
+			done < "${PWD}/orphans.txt"
+			if [ "$_still_missing" -ne 0 ]; then
+				fatal "==> orphan entries still present after strip; refusing to upload ${ARCH}-repodata"
+			fi
+		fi
+		_pruned_present=0
+		if [ -s "${PWD}/orphans.txt" ] && [ -f "$_pre_index_list" ]; then
+			while IFS= read -r _orph; do
+				[ -n "$_orph" ] || continue
+				grep -qx "$_orph" "$_pre_index_list" && _pruned_present=$((_pruned_present + 1)) || true
+			done < "${PWD}/orphans.txt"
+			echo "  ${_pruned_present} removed package(s) were present in the remote index"
+		fi
+		_new_names=""
+		if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+			for _new_pkg in ./*."${ARCH}".xbps; do
+				[ -f "$_new_pkg" ] || continue
+				_name=$(pkg_name "${_new_pkg##*/}")
+				# dedup: the same source package may produce multiple subpackages
+				case " $_new_names " in *" $_name "*) continue ;; esac
+				_new_names="$_new_names $_name"
+			done
+		fi
+		_added_new=0
+		if [ -n "$_new_names" ] && [ -f "$_pre_index_list" ]; then
+			for _name in $_new_names; do
+				grep -qx "$_name" "$_pre_index_list" || _added_new=$((_added_new + 1))
+			done
+			echo "  ${_added_new} new package(s) not previously in the remote index"
+		fi
+
+		if [ -f "${ARCH}-repodata" ]; then
+			# xbps-rindex -a reads stage.plist from the downloaded repodata. A stale
+			# stage left behind by an aborted previous transaction can make xbps-rindex
+			# refuse to commit new packages (the "Inconsistent shlibs" path leaves the
+			# stage unmerged and index.plist unchanged). Start from a clean stage so only
+			# the packages we are publishing get staged.
+			echo '==> Clearing stale stage from local repodata'
+			python3 "${REPODATA_CLEAN_STAGE_PY}" "${ARCH}-repodata" || true
+		fi
+
+		if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+			echo '==> Updating repository index'
+			_index_add_log=$(mktemp)
+			xbps-rindex -a ./*."${ARCH}".xbps >"$_index_add_log" 2>&1 \
+				|| fatal '==> Error: xbps-rindex failed to add packages to repodata'
+			# xbps-rindex exits 0 even when the shlib-consistency check aborts the commit
+			# (it prints "stage: added" and leaves index.plist untouched). Fail loudly
+			# rather than publishing an index that does not contain the new packages.
+			_count_after_add=$(python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | wc -l)
+			echo "  index: ${_count_after_add} packages registered."
+			_missing_new=0
+			for _name in $_new_names; do
+				if python3 "${REPODATA_LIST_PY}" "${ARCH}-repodata" 2>/dev/null | grep -qx "$_name"; then
+					:
+				else
+					echo "  ERROR: new package ${_name} not present in index after xbps-rindex -a" >&2
+					_missing_new=1
+				fi
+			done
+			if [ "$_missing_new" -ne 0 ]; then
+				cat "$_index_add_log" >&2 || true
+				rm -f "$_index_add_log"
+				fatal "==> xbps-rindex did not register the new package(s) in ${ARCH}-repodata; refusing to publish"
+			fi
+			rm -f "$_index_add_log"
+		fi
+
+		echo '==> Signing repository'
+		# Restrictive umask before write avoids a world-readable window
+		# between create-with-default-umask and chmod 600.
+		. "${SCRIPT_DIR}/src/oco-key.sh"
+		oco_key_write private.pem || fatal '==> Error: failed to write signing key'
+		xbps-rindex -s --signedby "$SIGNED_BY" --privkey private.pem "$PWD" \
+			|| fatal '==> Error: xbps-rindex failed to sign repository'
+
+
+		echo '==> Uploading packages'
+		# Two phases. The remote repodata is the base index that xbps-rindex -a
+		# builds on, so publishing it while a package upload is still missing
+		# would leave the repo advertising a download that 404s. Packages go
+		# first; the index is published only if every single one landed.
+		_upload_failed=0
+		for _file in ./*."${ARCH}".xbps ./*."${ARCH}".xbps.sig2; do
+			[ -f "$_file" ] || continue
+			_fname=$(basename "$_file")
+			upload_file "$_file" "${_arch_dir}" || _upload_failed=1
+		done
+		if [ "$_upload_failed" -ne 0 ]; then
+			fatal '==> Error: one or more package uploads failed; remote repodata left untouched'
+		fi
+
+		echo '==> Uploading repository index'
+		for _file in ./*-repodata; do
+			[ -f "$_file" ] || continue
+			_fname=$(basename "$_file")
+			# Surfer's `put` skips a fixed-name file when the remote copy looks
+			# newer/equal (mtime/size). Force a fresh mtime so the client always
+			# uploads and overwrites the remote index (rewrite, not delete).
+			touch -- "$_file"
+			upload_file "$_file" "${_arch_dir}" \
+				|| fatal "==> Error: failed to upload ${_fname}"
+		done
+
+		# Verify the published index actually landed. A deliberate rename/removal
+		# legitimately shrinks the index (orphans pruned) while new packages grow it
+		# back; only a shrink beyond that budget signals a stale or truncated index.
+		_verify_tmp=$(mktemp)
+		if fetch_repodata "${_arch_dir}/${ARCH}-repodata" "$_verify_tmp" >/dev/null 2>&1; then
+			_new_rd_count=$(python3 "${REPODATA_LIST_PY}" "$_verify_tmp" 2>/dev/null | wc -l)
+			echo "  published repodata advertises ${_new_rd_count} packages"
+			_expected=$(( ${_rd_count:-0} - _pruned_present + _added_new ))
+			if [ "${_rd_count:-0}" -gt 0 ] && [ "$_new_rd_count" -lt "$_expected" ]; then
+				rm -f "$_verify_tmp"
+				fatal "==> published index below expected (${_expected} expected, got ${_new_rd_count}); refusing to continue"
+			fi
+		else
+			rm -f "$_verify_tmp"
+			fatal "==> could not re-fetch published repodata for verification"
+		fi
+		rm -f "$_verify_tmp"
+
+		# Garbage-collect old versions only after every replacement package and
+		# the updated index have been successfully published.
+		if ls ./*."${ARCH}".xbps >/dev/null 2>&1; then
+			echo '==> Cleaning old package versions from remote'
+			for _new_pkg in ./*."${ARCH}".xbps; do
+				[ -f "$_new_pkg" ] || continue
+				_new_basename=$(basename "$_new_pkg")
+				_name=$(pkg_name "${_new_basename%.xbps}")
+				printf '%s\n' "$_remote_list" | while IFS= read -r _old_pkg; do
+					case "$_old_pkg" in
+						"${_name}-"[0-9]*) ;;
+						*) continue ;;
+					esac
+					_old_pkg_name=$(pkg_name "${_old_pkg%.xbps}")
+					[ "$_old_pkg_name" = "$_name" ] || continue
+					[ "$_old_pkg" = "$_new_basename" ] && continue
+					echo "  Deleting old: $_old_pkg"
+					delete_remote "${_arch_dir}/${_old_pkg}"
+					delete_remote "${_arch_dir}/${_old_pkg}.sig2"
+				done
+			done
+		fi
+
+		# Safe only now: the index no longer references these files.
+		delete_orphan_files "${PWD}/orphans.txt" "$_remote_list"
+
+	)
+	_upload_status=$?
+	rm -rf "$_work_dir"
+	[ "$_upload_status" -eq 0 ] || return "$_upload_status"
+	echo "==> Done: ${SURFER_URL}/${ARCH}/"
+}
+
+
+
+# --- Check upstream ---
+
+check_upstream() {
+	IGNORE_FILE="${SCRIPT_DIR}/src/ignore-pkgs"
+	STATE_FILE="${SCRIPT_DIR}/src/upstream-state"
+
+	_ignores=''
+	if [ -f "$IGNORE_FILE" ]; then
+		_ignores=$(grep -v '^#' "$IGNORE_FILE" | grep -v '^$' || true)
+	fi
+	_is_ignored() {
+		printf '%s\n' "$_ignores" | grep -xF "$1" >/dev/null 2>&1
+	}
+
+	_state_data=''
+	[ -f "$STATE_FILE" ] && _state_data=$(cat "$STATE_FILE")
+
+	echo '==> Fetching upstream commit feed...'
+	_feed=$(curl -sS 'https://github.com/void-linux/void-packages/commits/master.atom' 2>/dev/null) || echo 'Warning: Feed fetch failed!'
+
+	_recent=''
+	if [ -n "$_feed" ]; then
+		_tmp=$(mktemp)
+		echo "$_feed" | awk '
+			/<title>/ { if (in_title) next; in_title = 1; title = ""; next }
+			/<\/title>/ {
+				in_title = 0
+				gsub(/^[ \t]+|[ \t]+$/, "", title)
+				if (title != "" && title != "Recent Commits to void-packages:master") print title
+				title = ""; next
+			}
+			in_title { title = title $0 }
+		' 2>/dev/null | while IFS= read -r _msg; do
+			[ -z "$_msg" ] && continue
+			_p=$(echo "$_msg" | sed -n 's/^\([a-zA-Z0-9._+-][a-zA-Z0-9._+-]*\):.*/\1/p')
+			[ -n "$_p" ] && echo "$_p"
+			_p=$(echo "$_msg" | sed -n 's/^New package: \([a-zA-Z0-9._+-]*\)-.*/\1/p')
+			[ -n "$_p" ] && echo "$_p"
+		done > "$_tmp"
+		_recent=$(sort -u "$_tmp" 2>/dev/null | tr '\n' ' ')
+		rm -f "$_tmp"
+	fi
+
+	[ -n "$_recent" ] && echo "==> Recently changed upstream: $_recent" \
+		|| echo '==> (no packages parsed from feed)'
+
+	_old_state_field() {
+		echo "$_state_data" | grep "^${1}|" | head -n1 | cut -d'|' -f"${2}" 2>/dev/null || true
+	}
+
+	echo ''
+	echo '===================== Upstream check report ====================='
+	echo ''
+
+	_state_new=$(mktemp)
+	_newer_list='' _added_list='' _up_to_date=0 _no_upstream=0 _api_calls=0
+
+	for _d in "$SRCPKGS"/*/; do
+		[ -d "$_d" ] || continue
+		_pkg=${_d%/}; _pkg=${_pkg##*/}
+
+		_is_ignored "$_pkg" && {
+			printf '%s|ignored||ignored\n' "$_pkg" >> "$_state_new"
+			continue
+		}
+
+		_local_ver=$(grep '^version=' "$_d/template" 2>/dev/null \
+			| head -n1 | cut -d= -f2- | tr -d '"' | tr -d ' ')
+		[ -z "$_local_ver" ] && _local_ver='?'
+
+		_old_exists=$(_old_state_field "$_pkg" 2)
+		_old_ver=$(_old_state_field "$_pkg" 3)
+
+		_fetch=false
+		case " $_recent " in *" $_pkg "*) _fetch=true ;; esac
+		[ -z "$_old_exists" ] && _fetch=true
+		[ "$_old_exists" = 'ignored' ] && _fetch=true
+
+		if $_fetch; then
+			_up_template=$(curl -sf \
+				"https://raw.githubusercontent.com/void-linux/void-packages/master/srcpkgs/${_pkg}/template" \
+				2>/dev/null) || true
+			_api_calls=$((_api_calls + 1))
+			if [ -n "$_up_template" ]; then
+				_up_ver=$(echo "$_up_template" | grep '^version=' | head -n1 \
+					| cut -d= -f2- | tr -d '"' | tr -d ' ')
+				_up_exists='yes'
+			else
+				_up_exists='no'
+				_up_ver=''
+			fi
+		else
+			_up_exists="$_old_exists"
+			_up_ver="$_old_ver"
+		fi
+
+		if [ "$_up_exists" = 'yes' ] && [ -n "$_up_ver" ] && [ "$_local_ver" != "?" ]; then
+			if [ "$_up_ver" != "$_local_ver" ]; then
+				_lower=$(printf '%s\n%s' "$_up_ver" "$_local_ver" \
+					| sort -V 2>/dev/null | head -n1)
+				[ "$_lower" = "$_local_ver" ] && _newer_list="$_newer_list $_pkg"
+			fi
+		fi
+
+		_status='current'
+		if [ "$_up_exists" = 'yes' ] && [ "$_old_exists" = 'no' ]; then
+			_status='suggested_removal'
+			_added_list="$_added_list $_pkg"
+		fi
+
+		if [ "$_up_exists" = 'yes' ]; then
+			_up_to_date=$((_up_to_date + 1))
+		elif [ "$_up_exists" = 'no' ]; then
+			_no_upstream=$((_no_upstream + 1))
+		fi
+
+		printf '%s|%s|%s|%s\n' "$_pkg" "$_up_exists" "$_up_ver" "$_status" \
+			>> "$_state_new"
+	done
+
+	# shellcheck disable=SC2086
+	_ncnt=$(echo $_newer_list | wc -w | tr -d ' ')
+	# shellcheck disable=SC2086
+	_acnt=$(echo $_added_list | wc -w | tr -d ' ')
+	_icnt=$(grep -c '|ignored|' "$_state_new" 2>/dev/null) || _icnt=0
+
+	if [ "$_ncnt" -gt 0 ]; then
+		echo ''
+		for _p in $_newer_list; do
+			_nv=$(grep "^${_p}|" "$_state_new" | head -n1 | cut -d'|' -f3)
+			_lv=$(grep '^version=' "$SRCPKGS/$_p/template" 2>/dev/null \
+				| head -n1 | cut -d= -f2- | tr -d '"' | tr -d ' ')
+			printf '  '; _y "[NEWER] $_p: $_lv -> $_nv"
+		done
+	fi
+
+	if [ "$_acnt" -gt 0 ]; then
+		echo ''
+		for _p in $_added_list; do
+			_nv=$(grep "^${_p}|" "$_state_new" | head -n1 | cut -d'|' -f3)
+			printf '  '; _r "[ADDED] $_p (v$_nv) -- now exist in Void Linux!"
+			echo "         -> rm -rf srcpkgs/$_p/"
+			echo "         -> git rm srcpkgs/$_p/"
+		done
+	fi
+
+	echo ''
+	echo '================================================================='
+	echo ''
+	[ "$_ncnt" -gt 0 ] && printf '  %bNEWER%b:     %s\n' "$YELLOW" "$NC" "$_newer_list"
+	[ "$_acnt" -gt 0 ] && printf '  %bADDED%b:     %s\n' "$RED" "$NC" "$_added_list"
+	[ "$_icnt" -gt 0 ] && echo "  IGNORED:   $_icnt packages"
+	echo "  No change: $_up_to_date in repo, $_no_upstream not in Void Linux"
+	echo "  API calls: $_api_calls"
+
+	mv "$_state_new" "$STATE_FILE"
+	echo ''
+	_g "State saved to $STATE_FILE"
+}
+
+# --- Init / clone ---
+
+_clone_repo() {
+	_cr_name="$1" _cr_url="$2" _cr_dest="$3"
+	echo "==> Cloning ${_cr_name} ..."
+	if [ -n "$CLONE_DEPTH" ]; then
+		git clone --depth "$CLONE_DEPTH" "$_cr_url" "$_cr_dest" || fatal "cloning ${_cr_name} failed"
+	else
+		git clone "$_cr_url" "$_cr_dest" || fatal "cloning ${_cr_name} failed"
+	fi
+}
+
+init_destination_guard() {
+	_init_force=${OCOMAN_INIT_FORCE:-}
+	_init_dest=$(realpath -m -- "$CLONE_DEST") || fatal "cannot resolve CLONE_DEST: $CLONE_DEST"
+	case "$_init_dest" in
+		/|"$HOME"|/home|/root)
+			[ "$_init_force" = 1 ] || fatal "refusing dangerous CLONE_DEST '$_init_dest' (set OCOMAN_INIT_FORCE=1 to override)"
+			;;
+	esac
+	case "${HOME}/" in
+		"${_init_dest}/"*)
+			[ "$_init_force" = 1 ] || fatal "refusing CLONE_DEST that contains HOME: $_init_dest (set OCOMAN_INIT_FORCE=1 to override)"
+			;;
+	esac
+	case "${PWD}/" in
+		"${_init_dest}/"*)
+			[ "$_init_force" = 1 ] || fatal "refusing CLONE_DEST that contains the current directory: $_init_dest (set OCOMAN_INIT_FORCE=1 to override)"
+			;;
+	esac
+	if [ -d "$CLONE_DEST" ]; then
+		_init_entries=$(mktemp) || fatal 'cannot create temporary file to inspect CLONE_DEST'
+		if ! find "$CLONE_DEST" -mindepth 1 -print -quit > "$_init_entries" 2>/dev/null; then
+			rm -f "$_init_entries"
+			[ "$_init_force" = 1 ] || fatal "cannot inspect CLONE_DEST '$CLONE_DEST' (set OCOMAN_INIT_FORCE=1 to override)"
+		elif [ -s "$_init_entries" ] && [ "$_init_force" != 1 ]; then
+			rm -f "$_init_entries"
+			fatal "refusing to delete non-empty CLONE_DEST '$CLONE_DEST' (set OCOMAN_INIT_FORCE=1 to override)"
+		fi
+		rm -f "$_init_entries"
+	fi
+}
+
+do_init() {
+	init_destination_guard
+	_gh_auth_setup
+
+	# Clone void-packages directly to destination
+	if [ -e "$CLONE_DEST" ] || [ -L "$CLONE_DEST" ]; then
+		rm -rf -- "$CLONE_DEST" || fatal "failed to clear CLONE_DEST '$CLONE_DEST'"
+	fi
+	_clone_repo 'void-packages' "$VOID_URL" "$CLONE_DEST"
+
+	# Set up remotes
+	echo '==> Setting up remotes ...'
+	git -C "$CLONE_DEST" remote rename origin void || fatal 'Failed to rename remote!'
+	git -C "$CLONE_DEST" branch --set-upstream-to=void/master master
+	git -C "$CLONE_DEST" remote add OCO "$OCO_URL"
+
+	# Create OCO branch from the actual OCO remote
+	echo "==> Fetching OCO and creating ${OCO_BRANCH} branch ..."
+	git -C "$CLONE_DEST" fetch OCO
+	git -C "$CLONE_DEST" checkout -b "$OCO_BRANCH" --track "OCO/${OCO_BRANCH}" \
+		|| fatal "failed to create ${OCO_BRANCH} branch"
+
+	git -C "$CLONE_DEST" checkout master
+
+	# Overlay OCO files onto master (untracked) via git archive — skips .gitignore
+	echo '==> Overlaying OCO files onto master ...'
+	git -C "$CLONE_DEST" archive "OCO/${OCO_BRANCH}" \
+		| tar -x -C "$CLONE_DEST" --exclude='.gitignore'
+
+	# Apply shlibs on master
+	do_shlibs
+
+	echo '==> Initializing masterdir ...'
+	"${CLONE_DEST}/xbps-src" binary-bootstrap || fatal 'Binary-bootstrap failed!'
+
+	_g "==> Done: ${CLONE_DEST}"
+	_g '    master  → void/master (void-packages)'
+	_g "    ${OCO_BRANCH}      → OCO/${OCO_BRANCH}"
+}
+
+# --- Shlibs ---
+
+_shlibs_remove() {
+	_shlibs=$1 _removefile=$2 _line=''
+	echo '==> Removing shlibs entries'
+	while IFS= read -r _line; do
+		[ -z "$_line" ] && continue
+		grep -vF "$_line" "$_shlibs" > "${_shlibs}.tmp" \
+			&& mv "${_shlibs}.tmp" "$_shlibs"
+		echo "   - $_line"
+	done < "$_removefile"
+}
+
+_shlibs_append() {
+	_shlibs=$1 _appendfile=$2 _line=''
+	echo '==> Adding shlibs entries'
+	while IFS= read -r _line; do
+		[ -z "$_line" ] && continue
+		if ! grep -qF "$_line" "$_shlibs"; then
+			echo "$_line" >> "$_shlibs"
+			echo "   + $_line"
+		fi
+	done < "$_appendfile"
+}
+
+do_add_oco() {
+	echo '==> Adding OCO remote ...'
+	git -C "$CLONE_DEST" remote add OCO "$OCO_URL" || fatal 'OCO remote already exists, or other problem!'
+	git -C "$CLONE_DEST" fetch OCO
+	echo "==> Creating ${OCO_BRANCH} branch from OCO/${OCO_BRANCH} ..."
+	git -C "$CLONE_DEST" checkout -b "$OCO_BRANCH" --track "OCO/${OCO_BRANCH}" \
+		|| fatal "Failed to create branch ${OCO_BRANCH}!"
+	git -C "$CLONE_DEST" checkout -
+}
+
+_pkg_version() {
+	grep '^version=' "${CLONE_DEST}/srcpkgs/${1}/template" 2>/dev/null \
+		| head -n1 | cut -d= -f2- | tr -d '"'
+}
+
+do_to_void() {
+	[ $# -gt 0 ] || fatal 'Usage: ocoman tv <package...>'
+	for _pkg in "$@"; do
+		_src="${SCRIPT_DIR}/${SRCPKGS}/${_pkg}"
+		_dst="${CLONE_DEST}/${SRCPKGS}/${_pkg}"
+		if [ ! -d "$_src" ]; then
+			_g "  skipping ${_pkg} (not found in ${_src})"
+			continue
+		fi
+		# Sync the package directory verbatim (including symlinks) into the
+		# target void tree, regardless of git state.
+		rm -rf "$_dst"
+		mkdir -p "$(dirname "$_dst")"
+		cp -a "$_src" "$_dst" \
+			|| { _g "  skipping ${_pkg} (copy failed)"; continue; }
+		_g "  synced ${_pkg} -> ${_dst}"
+		# Do not create commits; only sync files.
+	done
+}
+
+do_to_oco() {
+	[ $# -gt 0 ] || fatal 'usage: ocoman to <package...>'
+	for _pkg in "$@"; do
+		git -C "$CLONE_DEST" checkout master -- "srcpkgs/${_pkg}/" \
+			|| { _g "  skipping ${_pkg} (not found in master)"; continue; }
+		_ver=$(_pkg_version "$_pkg")
+		git -C "$CLONE_DEST" commit -m "${_pkg} ${_ver}"
+	done
+}
+
+do_shlibs() {
+	[ -f "$SHLIBS_FILE" ] || fatal "shlibs file not found: ${SHLIBS_FILE}"
+	[ -f "$SHLIBS_REMOVE" ] && _shlibs_remove "$SHLIBS_FILE" "$SHLIBS_REMOVE"
+	[ -f "$SHLIBS_APPEND" ] && _shlibs_append "$SHLIBS_FILE" "$SHLIBS_APPEND"
+}
+
+# --- Test in CI ---
+
+_all_templates() {
+	find "${SCRIPT_DIR}/${SRCPKGS}" -maxdepth 1 -mindepth 1 -type d -printf '%f\n' 2>/dev/null | sort -f
+}
+
+_gh_repo_slug() {
+	_url=$(git -C "$SCRIPT_DIR" remote get-url gh 2>/dev/null || printf '%s' "$CI_URL")
+	_slug=${_url#*github.com/}
+	_slug=${_slug#*:}
+	_slug=${_slug%.git}
+	_slug=${_slug%/}
+	printf '%s' "$_slug"
+}
+
+do_test() {
+	command -v gh >/dev/null 2>&1 || fatal 'gh CLI is required: https://cli.github.com/'
+
+	_repo=$(_gh_repo_slug)
+	[ -n "$_repo" ] || fatal 'could not determine GitHub repository (add the "gh" git remote)'
+	_ref="${TEST_REF:-$(git -C "$SCRIPT_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo OCO)}"
+
+	_runner='auto'
+	_pkgs=''
+
+	if [ $# -gt 0 ]; then
+		for _p in "$@"; do
+			[ -d "${SCRIPT_DIR}/${SRCPKGS}/${_p}" ] || fatal "template not found: ${_p}"
+		done
+		_pkgs="$*"
+	else
+		command -v gum >/dev/null 2>&1 \
+			|| fatal 'gum is required for the interactive picker: https://github.com/charmbracelet/gum'
+
+		_mode=$(printf '%s\n' 'Single template' 'Multiple templates' \
+			| gum filter --reverse --limit 1 --header 'Selection mode?') \
+			|| { _y 'Aborted'; return 1; }
+
+		_runner=$(printf '%s\n' auto amd64 arm64 nativ self-hosted \
+			| gum filter --reverse --limit 1 --header 'Runner?' --selected auto) \
+			|| { _y 'Aborted'; return 1; }
+
+		_tpls=$(_all_templates)
+		[ -n "$_tpls" ] || fatal 'no templates found in srcpkgs'
+
+		case "$_mode" in
+			'Multiple templates')
+				_pkgs=$(printf '%s\n' "$_tpls" \
+					| gum filter --reverse --no-limit --height 15 \
+						--header 'Select templates (type to filter, Tab toggles, Enter confirms)') \
+					|| { _y 'Aborted'; return 1; }
+				;;
+			*)
+				_pkgs=$(printf '%s\n' "$_tpls" \
+					| gum filter --reverse --limit 1 --header 'Select a template') \
+					|| { _y 'Aborted'; return 1; }
+				;;
+		esac
+
+		_pkgs=$(printf '%s\n' "$_pkgs" | grep -v '^$' | tr '\n' ' ' | sed 's/ $//')
+		[ -n "$_pkgs" ] || { _r 'No templates selected; aborting'; return 1; }
+	fi
+
+	echo ''
+	_b '==> Dispatching CI build on GitHub'
+	echo "  Repository: $_repo"
+	echo "  Branch:     $_ref"
+	[ "$_runner" != 'auto' ] && echo "  Runner:     $_runner"
+	echo "  Templates:  $_pkgs"
+	echo ''
+
+	gh workflow run build.yml --repo "$_repo" --ref "$_ref" -f "runner=$_runner" -f "templates=$_pkgs"
+	[ $? -eq 0 ] || fatal 'failed to dispatch workflow (check gh auth / permissions)'
+
+	_run_id=$(gh run list --workflow=build.yml --branch "$_ref" --limit 1 \
+		--json databaseId --jq '.[0].databaseId' 2>/dev/null || true)
+	_g '==> CI build dispatched'
+	if [ -n "$_run_id" ]; then
+		_y "    Run:     https://github.com/${_repo}/actions/runs/${_run_id}"
+		echo "    Watch:   gh run watch $_run_id --repo $_repo"
+	else
+		echo '    See:   gh run list --workflow build.yml'
+	fi
+}
+
+do_autobump() {
+	command -v gh >/dev/null 2>&1 || fatal 'gh CLI is required: https://cli.github.com/'
+	command -v gum >/dev/null 2>&1 \
+		|| fatal 'gum is required for the interactive picker: https://github.com/charmbracelet/gum'
+
+	_repo=$(_gh_repo_slug)
+	[ -n "$_repo" ] || fatal 'could not determine GitHub repository (add the "gh" git remote)'
+	_ref="${TEST_REF:-$(git -C "$SCRIPT_DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo OCO)}"
+
+	_pkg=''
+	_force=0
+	for _a in "$@"; do
+		case "$_a" in
+			--force|-f) _force=1 ;;
+			-*) fatal "unknown option: $_a" ;;
+			*) [ -n "$_pkg" ] && fatal "only one package allowed: $_a"; _pkg="$_a" ;;
+		esac
+	done
+
+	if [ -z "$_pkg" ]; then
+		_tpls=$(_all_templates)
+		[ -n "$_tpls" ] || fatal 'no templates found in srcpkgs'
+		_pkg=$(printf '%s\n' "$_tpls" \
+			| gum filter --reverse --limit 1 --header 'Select a template to autobump') \
+			|| { _y 'Aborted'; return 1; }
+	fi
+	[ -d "${SCRIPT_DIR}/${SRCPKGS}/${_pkg}" ] || fatal "template not found: ${_pkg}"
+
+	echo ''
+	_b '==> Dispatching autobump on GitHub'
+	echo "  Repository: $_repo"
+	echo "  Branch:     $_ref"
+	echo "  Package:    $_pkg"
+	[ "$_force" = 1 ] && echo '  Force:      yes (ignore src/autobump-blacklist)'
+	echo ''
+
+	if [ "$_force" = 1 ]; then
+		gh workflow run autobump.yml --repo "$_repo" --ref "$_ref" \
+			-f "pkg=$_pkg" -f "force=true"
+	else
+		gh workflow run autobump.yml --repo "$_repo" --ref "$_ref" \
+			-f "pkg=$_pkg"
+	fi
+	[ $? -eq 0 ] || fatal 'failed to dispatch workflow (check gh auth / permissions)'
+
+	_run_id=$(gh run list --workflow=autobump.yml --branch "$_ref" --limit 1 \
+		--json databaseId --jq '.[0].databaseId' 2>/dev/null || true)
+	_g '==> Autobump dispatched'
+	if [ -n "$_run_id" ]; then
+		_y "    Run:     https://github.com/${_repo}/actions/runs/${_run_id}"
+		echo "    Watch:   gh run watch $_run_id --repo $_repo"
+	else
+		echo '    See:   gh run list --workflow autobump.yml'
+	fi
+}
+
+# --- Main ---
+
+main() {
+
+	case "${1:-}" in
+		help|--help|-h)                                   set -- -h ;;
+		update|--update|-u)                               set -- -u ;;
+		build|web|--build|--web|-w)                       set -- -w ;;
+		main|--main|-m)                                   set -- -m ;;
+		upload|publish|--upload|--publish|-p)             set -- -p ;;
+		serve|--serve|-s)                    target_serve; return 0 ;;
+		archs|--archs|-a)                                 set -- -a ;;
+		check-upstream|check|--check-upstream|--check|-c) set -- -c ;;
+		init|setup|--init|--setup|-i)                     set -- -i ;;
+		add-oco|--add-oco|-o)                             set -- -o ;;
+		to-void|--to-void|tv)      shift; do_to_void "$@"; return 0 ;;
+		to-oco|--to-oco|to)         shift; do_to_oco "$@"; return 0 ;;
+		autobump|--autobump)      shift; do_autobump "$@"; return 0 ;;
+		shlibs|--shlibs|-l)                               set -- -l ;;
+		test|--test|-t)                       shift; set -- -t "$@" ;;
+		feeds|--feeds|--check-feeds|-F)                   set -- -F ;;
+		*) ;;
+	esac
+
+	_opt='' OPTIND=1 OPTARG=''
+	_do_update='' _do_packages='' _do_web='' _do_main='' _do_archs='' _do_check='' _do_check_feeds='' _cf_rc=0
+	while getopts 'huwmpsacioltF' _opt; do
+		case "$_opt" in
+			h) usage; return 0 ;;
+			u) _do_update=1 ;;
+			w) _do_web=1 ;;
+			m) _do_main=1 ;;
+			p) _do_packages=1 ;;
+			s) target_serve; return 0 ;;
+			a) _do_archs=1 ;;
+			c) _do_check=1 ;;
+			i) _do_init=1 ;;
+			o) _do_add_oco=1 ;;
+			l) _do_shlibs=1 ;;
+			t) _do_test=1 ;;
+			F) _do_check_feeds=1 ;;
+			*) usage >&2; return 1 ;;
+		esac
+	done
+
+	[ -n "$_do_update$_do_packages$_do_web$_do_main$_do_archs$_do_check$_do_init$_do_add_oco$_do_shlibs$_do_test$_do_check_feeds" ] ||
+		{ usage >&2; return 1; }
+
+	if [ "$_do_update" = 1 ] || [ "$_do_web" = 1 ] || [ "$_do_main" = 1 ] || [ "$_do_check" = 1 ] \
+			|| [ "$_do_test" = 1 ] || [ "$_do_check_feeds" = 1 ]; then
+		[ -d "$SRCPKGS" ] || fatal "srcpkgs directory not found: ${SRCPKGS}"
+	fi
+
+	if [ "$_do_test" = 1 ]; then
+		shift $((OPTIND - 1))
+		do_test "$@"
+		return $?
+	fi
+
+	if [ "$_do_init" = 1 ]; then
+		do_init
+	fi
+	if [ "$_do_add_oco" = 1 ]; then
+		do_add_oco
+	fi
+	if [ "$_do_shlibs" = 1 ]; then
+		do_shlibs
+	fi
+	if [ "$_do_check_feeds" = 1 ]; then
+		check_feeds || _cf_rc=1
+	fi
+	if [ "$_do_update" = 1 ]; then
+		[ -f "$README" ] || fatal "README not found: ${README}"
+		generate_list
+		detect_changes
+		suggest_feeds
+	fi
+	if [ "$_do_web" = 1 ]; then
+		build_site
+	fi
+	if [ "$_do_main" = 1 ] && [ "$_do_web" != 1 ]; then
+		build_main
+	fi
+	if [ "$_do_archs" = 1 ] && [ "$_do_web" != 1 ]; then
+		generate_arch_pages
+	fi
+	if [ "$_do_check" = 1 ]; then
+		_gh_auth_setup
+		check_upstream
+	fi
+	if [ "$_do_packages" = 1 ]; then
+		do_upload
+	fi
+	return ${_cf_rc:-0}
+}
+
+main "$@"

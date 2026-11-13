@@ -1,0 +1,205 @@
+# Template file for 'graphite-gtk-theme'
+pkgname=graphite-gtk-theme
+version=2026.08.23
+revision=1
+hostmakedepends="sassc gnome-shell"
+depends="sassc"
+short_desc="Material design inspired GTK theme with light and dark variants"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/vinceliuice/Graphite-gtk-theme"
+distfiles="https://github.com/vinceliuice/Graphite-gtk-theme/archive/refs/tags/${version//./-}.tar.gz"
+checksum=a46a5c4bd9562332221c504a58da0d6f4d729c8a74ab26e002b41516df52acb9
+nostrip=yes
+_themedir="usr/share/themes"
+_colors="purple pink red orange yellow green teal blue"
+
+do_install() {
+	vmkdir ${_themedir}
+	for size in standard compact; do
+		./install.sh -t all -c dark -s ${size} --tweaks normal rimless black -d ${DESTDIR}/${_themedir} -n Graphite-black
+		./install.sh -t all -s ${size} --tweaks nord normal rimless -d ${DESTDIR}/${_themedir}
+		./install.sh -t all -s ${size} --tweaks normal rimless -d ${DESTDIR}/${_themedir}
+	done
+}
+
+graphite-gtk-theme-black_package() {
+	short_desc+=" - black variant"
+	depends="gtk-engine-murrine"
+	nostrip=yes
+	pkg_install() {
+		for color in "" -$(echo ${_colors} | sed 's| | -|g'); do
+			for res in "" -{,x}hdpi; do
+				vmove ${_themedir}/Graphite-black${color}-Dark${res}
+			done
+		done
+	}
+}
+
+graphite-gtk-theme-black-compact_package() {
+	short_desc+=" - black compact variant"
+	depends="gtk-engine-murrine"
+	nostrip=yes
+	pkg_install() {
+		for color in "" -$(echo ${_colors} | sed 's| | -|g'); do
+			for res in "" -{,x}hdpi; do
+				vmove ${_themedir}/Graphite-black${color}-Dark-compact${res}
+			done
+		done
+	}
+}
+
+graphite-gtk-theme-dark_package() {
+	short_desc+=" - dark variant"
+	depends="gtk-engine-murrine"
+	nostrip=yes
+	pkg_install() {
+		for color in "" -$(echo ${_colors} | sed 's| | -|g'); do
+			for res in "" -{,x}hdpi; do
+				vmove ${_themedir}/Graphite${color}-Dark${res}
+			done
+		done
+	}
+}
+
+graphite-gtk-theme-dark-compact_package() {
+	short_desc+=" - dark compact variant"
+	depends="gtk-engine-murrine"
+	nostrip=yes
+	pkg_install() {
+		for color in "" -$(echo ${_colors} | sed 's| | -|g'); do
+			for res in "" -{,x}hdpi; do
+				vmove ${_themedir}/Graphite${color}-Dark-compact${res}
+			done
+		done
+	}
+}
+
+graphite-gtk-theme-light_package() {
+	short_desc+=" - dark variant"
+	depends="gtk-engine-murrine"
+	nostrip=yes
+	pkg_install() {
+		for color in "" -$(echo ${_colors} | sed 's| | -|g'); do
+			for res in "" -{,x}hdpi; do
+				vmove ${_themedir}/Graphite${color}-Light${res}
+			done
+		done
+	}
+}
+
+graphite-gtk-theme-light-compact_package() {
+	short_desc+=" - light compact variant"
+	depends="gtk-engine-murrine"
+	nostrip=yes
+	pkg_install() {
+		for color in "" -$(echo ${_colors} | sed 's| | -|g'); do
+			for res in "" -{,x}hdpi; do
+				vmove ${_themedir}/Graphite${color}-Light-compact${res}
+			done
+		done
+	}
+}
+
+graphite-gtk-theme-nord_package() {
+	short_desc+=" - nord variant"
+	depends="gtk-engine-murrine"
+	nostrip=yes
+	pkg_install() {
+		for color in "" -$(echo ${_colors} | sed 's| | -|g'); do
+			for res in "" -{,x}hdpi; do
+				vmove ${_themedir}/Graphite${color}-nord${res}
+			done
+		done
+	}
+}
+
+graphite-gtk-theme-nord-compact_package() {
+	short_desc+=" - nord compact variant"
+	depends="gtk-engine-murrine"
+	nostrip=yes
+	pkg_install() {
+		for color in "" -$(echo ${_colors} | sed 's| | -|g'); do
+			for res in "" -{,x}hdpi; do
+				vmove ${_themedir}/Graphite${color}-compact-nord${res}
+			done
+		done
+	}
+}
+
+graphite-gtk-theme-nord-dark_package() {
+	short_desc+=" - nord dark variant"
+	depends="gtk-engine-murrine"
+	nostrip=yes
+	pkg_install() {
+		for color in "" -$(echo ${_colors} | sed 's| | -|g'); do
+			for res in "" -{,x}hdpi; do
+				vmove ${_themedir}/Graphite${color}-Dark-nord${res}
+			done
+		done
+	}
+}
+
+graphite-gtk-theme-nord-dark-compact_package() {
+	short_desc+=" - nord dark compact variant"
+	depends="gtk-engine-murrine"
+	nostrip=yes
+	pkg_install() {
+		for color in "" -$(echo ${_colors} | sed 's| | -|g'); do
+			for res in "" -{,x}hdpi; do
+				vmove ${_themedir}/Graphite${color}-Dark-compact-nord${res}
+			done
+		done
+	}
+}
+
+graphite-gtk-theme-nord-light_package() {
+	short_desc+=" - nord light variant"
+	depends="gtk-engine-murrine"
+	nostrip=yes
+	pkg_install() {
+		for color in "" -$(echo ${_colors} | sed 's| | -|g'); do
+			for res in "" -{,x}hdpi; do
+				vmove ${_themedir}/Graphite${color}-Light-nord${res}
+			done
+		done
+	}
+}
+
+graphite-gtk-theme-nord-light-compact_package() {
+	short_desc+=" - nord light compact variant"
+	depends="gtk-engine-murrine"
+	nostrip=yes
+	pkg_install() {
+		for color in "" -$(echo ${_colors} | sed 's| | -|g'); do
+			for res in "" -{,x}hdpi; do
+				vmove ${_themedir}/Graphite${color}-Light-compact-nord${res}
+			done
+		done
+	}
+}
+
+graphite-gtk-theme-compact_package() {
+	short_desc+=" - compact variant"
+	pkg_install() {
+		for color in "" -$(echo ${_colors} | sed 's| | -|g'); do
+			for res in "" -{,x}hdpi; do
+				vmove ${_themedir}/Graphite${color}-compact${res}
+			done
+		done
+	}
+}
+
+graphite-gtk-theme-compact-all_package() {
+	short_desc+=" - all compact variants"
+	metapackage=yes
+	depends="${sourcepkg}-black-compact ${sourcepkg}-dark-compact ${sourcepkg}-light-compact
+	 ${sourcepkg}-nord-compact ${sourcepkg}-nord-dark-compact ${sourcepkg}-nord-light-compact"
+}
+
+graphite-gtk-theme-all_package() {
+	short_desc+=" - all variants"
+	metapackage=yes
+	depends="${sourcepkg}-black ${sourcepkg}-dark ${sourcepkg}-light ${sourcepkg}-nord
+	 ${sourcepkg}-nord-dark ${sourcepkg}-nord-light ${sourcepkg}-compact-all"
+}

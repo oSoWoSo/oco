@@ -1,0 +1,12 @@
+# Template file for 'xut'
+pkgname=xut
+version=0.4.2
+revision=1
+build_style=gnu-makefile
+depends="git xtools ncurses"
+short_desc="Work with templates from unofficial repositories"
+maintainer="mobinmob <mobinmob@disroot.org>"
+license="GPL-2.0-only"
+homepage="https://codeberg.org/mobinmob/xut"
+distfiles="https://codeberg.org/mobinmob/xut/archive/v.${version}.tar.gz"
+checksum=134d10394999dc6370e8b517f1f28030509f89aa4e1667c2f86b73b47f4260d7

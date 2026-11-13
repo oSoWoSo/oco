@@ -1,0 +1,21 @@
+# Template file for 'python3-inline-snapshot'
+pkgname=python3-inline-snapshot
+version=0.32.6
+revision=1
+build_style=python3-pep517
+hostmakedepends="hatchling"
+makedepends=""
+depends="python3-asttokens python3-executing python3-pytest python3-rich
+ python3-typing_extensions"
+checkdepends="black pyright python3 ${depends} python3-anyio python3-isort
+ python3-dirty-equals python3-hypothesis python3-freezegun python3-mypy"
+short_desc="Boosts efficiency when writing tests"
+maintainer="zenobit <zen@osowoso.org>"
+license="0BSD"
+homepage="https://15r10nk.github.io/inline-snapshot/latest"
+distfiles="https://github.com/15r10nk/inline-snapshot/archive/refs/tags/${version}.tar.gz"
+checksum=7e0c42b3037c25fe237a6f2cb888e970b21ecabe8269731a0c3dd402611e81aa
+
+post_install() {
+	vlicense LICENSE
+}

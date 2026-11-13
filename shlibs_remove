@@ -1,0 +1,11 @@
+libhyprutils.so.10 hyprutils-0.11.0_1
+libggml-opencl.so.0 llama.cpp-0.5.0_1
+libggml.so.0 llama.cpp-0.5.0_1
+libmtmd.so.0 llama.cpp-0.5.0_1
+libggml-blas.so.0 llama.cpp-0.5.0_1
+libggml-rpc.so.0 llama.cpp-0.5.0_1
+libggml-base.so.0 llama.cpp-0.5.0_1
+libggml-cpu.so.0 llama.cpp-0.5.0_1
+libllama.so.0 llama.cpp-0.5.0_1
+libggml-vulkan.so.0 llama.cpp-0.5.0_1
+libllama-common.so.0 llama.cpp-0.5.0_1

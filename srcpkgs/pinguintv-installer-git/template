@@ -1,0 +1,24 @@
+# Template file for 'pinguintv-installer-git'
+pkgname=pinguintv-installer-git
+version=0.0.0
+revision=1
+archs="x86_64"
+build_style=gnu-makefile
+hostmakedepends="pkg-config"
+makedepends="base-devel gtk+3-devel"
+depends="gparted polkit"
+short_desc="New GUI Installer for void"
+maintainer="Bella109 <belladev109@proton.me>"
+license="GPL-3.0-only"
+homepage="https://pinguin-tv.de/installer.html"
+distfiles="https://codeberg.org/pinguin-void/Pinguin-Installer/archive/main.tar.gz"
+# commit 6a74e27d33de46c8b17adeb961f6a7395e89e7f3
+checksum=191da40cb6e6b43251adfcbf0bb6173df77f8d3d39656f58c26e5bd300a6881d
+
+post_extract() {
+	rm $wrksrc/pinguin-installer
+}
+
+do_install() {
+	vbin pinguin-installer
+}

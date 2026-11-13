@@ -1,0 +1,17 @@
+# Template file for 'libcprime'
+pkgname=libcprime
+version=5.0.1
+revision=1
+build_style=cmake
+hostmakedepends="qt6-base"
+makedepends="qt6-base-devel"
+short_desc="Library for bookmarking, saving activities, sharing files and more"
+maintainer="zenobit <zen@osowoso.org>"
+license="AGPL-3.0-only"
+homepage="https://gitlab.com/cubocore/libcprime"
+distfiles="https://gitlab.com/cubocore/libcprime/-/archive/v${version}/libcprime-v${version}.tar.gz"
+checksum=2e700de57e9937d222d9b06c0db270ce0fd1296f68a8eed7d436b24e09ec5af0
+
+post_install() {
+	vlicense LICENSE
+}

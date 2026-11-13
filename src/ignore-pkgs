@@ -1,0 +1,9 @@
+# Packages to keep in this repo even if they exist upstream in void-packages.
+# One package name per line, '#' for comments.
+#
+# These packages will NOT be flagged as "obsolete / suggested for removal"
+# when detected in void-linux/void-packages.
+#
+# Examples:
+# my-custom-patch
+# another-pkg

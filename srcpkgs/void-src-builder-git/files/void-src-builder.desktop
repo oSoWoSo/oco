@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Void SRC Builder
+Comment=Graphical interface for building and installing Void Linux packages
+Exec=void-src-builder
+Icon=builder
+Terminal=false
+Type=Application
+Categories=System;Settings;Utility;
+Keywords=void;linux;xbps;src;builder;package;manager;

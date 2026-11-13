@@ -1,0 +1,68 @@
+diff '--color=auto' -ruN sfizz-1.2.3/plugins/editor/external/vstgui4/vstgui/lib/platform/linux/x11fileselector.cpp sfizzz/plugins/editor/external/vstgui4/vstgui/lib/platform/linux/x11fileselector.cpp
+--- sfizz-1.2.3/plugins/editor/external/vstgui4/vstgui/lib/platform/linux/x11fileselector.cpp	2026-05-05 19:27:32.087548268 +0200
++++ sfizzz/plugins/editor/external/vstgui4/vstgui/lib/platform/linux/x11fileselector.cpp	2026-05-06 22:06:19.751998116 +0200
+@@ -22,10 +22,10 @@
+ #if LINUX
+ // Use execvpe on Linux to support also NixOS based distributions
+ static constexpr auto kdialogpath = "kdialog";
+-static constexpr auto zenitypath = "zenity";
++static constexpr auto zenitypath = "sfzselect";
+ #else
+ static constexpr auto kdialogpath = "/usr/bin/kdialog";
+-static constexpr auto zenitypath = "/usr/bin/zenity";
++static constexpr auto zenitypath = "/usr/local/bin/sfzselect";
+ #endif
+ 
+ //------------------------------------------------------------------------
+@@ -128,18 +128,6 @@
+ 		std::vector<std::string> args;
+ 		args.reserve (16);
+ 		args.push_back (zenitypath);
+-		args.push_back ("--file-selection");
+-		if (style == PlatformFileSelectorStyle::SelectDirectory)
+-			args.push_back ("--directory");
+-		else if (style == PlatformFileSelectorStyle::SelectSaveFile)
+-		{
+-			args.push_back ("--save");
+-			args.push_back ("--confirm-overwrite");
+-		}
+-		if (!config.title.empty ())
+-			args.push_back ("--title=" + config.title.getString ());
+-		if (!config.initialPath.empty ())
+-			args.push_back ("--filename=" + config.initialPath.getString ());
+ 		if (startProcess (convertToArgv (args).data ()))
+ 		{
+ 			return true;
+diff '--color=auto' -ruN sfizz-1.2.3/plugins/editor/src/editor/Editor.cpp sfizzz/plugins/editor/src/editor/Editor.cpp
+--- sfizz-1.2.3/plugins/editor/src/editor/Editor.cpp	2026-05-05 19:27:32.103468059 +0200
++++ sfizzz/plugins/editor/src/editor/Editor.cpp	2026-05-06 22:01:48.173999152 +0200
+@@ -1160,8 +1160,8 @@
+             textLabel->setFont(font);
+             textLabel->setLineLayout(CMultiLineTextLabel::LineLayout::wrap);
+             textLabel->setText(
+-                "The required program \"zenity\" is missing.\n"
+-                "Install this software package first, and restart sfizz.");
++                "The \"sfzselect\" script is missing.\n"
++                "Create it in /usr/local/bin, and restart sfizz.");
+         }
+ #endif
+ 
+diff '--color=auto' -ruN sfizz-1.2.3/plugins/editor/src/editor/NativeHelpers.cpp sfizzz/plugins/editor/src/editor/NativeHelpers.cpp
+--- sfizz-1.2.3/plugins/editor/src/editor/NativeHelpers.cpp	2026-05-05 19:27:32.103647991 +0200
++++ sfizzz/plugins/editor/src/editor/NativeHelpers.cpp	2026-05-06 22:02:49.142998920 +0200
+@@ -199,13 +199,13 @@
+ }
+ 
+ static const std::string zenityPath = [] {
+-    auto glibPath = g_find_program_in_path("zenity");
++    auto glibPath = g_find_program_in_path("sfzselect");
+     if (glibPath) {
+         std::string s { glibPath };
+         g_free(glibPath);
+         return s;
+     } else {
+-        return std::string("/usr/bin/zenity");
++        return std::string("/usr/local/bin/sfzselect");
+     }
+ }();
+ 

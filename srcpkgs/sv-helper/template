@@ -1,0 +1,31 @@
+# Template file for 'sv-helper'
+pkgname=sv-helper
+version=5.0.0
+revision=1
+depends="runit"
+checkdepends="make bats bats-assert bats-support tar procps-ng"
+short_desc="Utilities to help administer a runit-as-pid1 system"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/rubyists/sv-helper"
+distfiles="https://github.com/rubyists/sv-helper/archive/v${version}.tar.gz"
+checksum=bc1019e6b5ee6b282cbc4737c581c918857b760100f0ee903e1439488bdfb0c5
+
+system_accounts="rsvlog"
+rsvlog_homedir="/var/log"
+rsvlog_descr="User for logging"
+
+# Not yet solved
+o_check() {
+	bats test/
+}
+
+do_install() {
+	vbin sv-helper.sh sv-helper
+	vbin rsvlog.sh rsvlog
+	for cmd in sv-list svls sv-find sv-enable sv-disable; do
+		ln -s sv-helper $DESTDIR/usr/bin/$cmd
+	done
+	vdoc Readme.adoc
+	vlicense COPYING
+}

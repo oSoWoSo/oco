@@ -1,0 +1,206 @@
+# Template file for 'surge-xt'
+pkgname=surge-xt
+version=1.3.4
+#TODO: Create update script which doesn't brake template everytime is bump tried'
+#TODO: Use releases if posible instead of like git submodule?
+revision=2
+build_style=cmake
+nocross=yes
+metapackage=yes
+configure_args="-D SURGE_BUILD_LV2=TRUE -D CMAKE_BUILD_TYPE=Release -W no-dev
+ -D SURGE_BUILD_TESTRUNNER=OFF -D SURGE_SKIP_PIE_CHANGE=TRUE"
+# nopie=yes
+hostmakedepends="pkg-config"
+makedepends="cairo-devel jack-devel libX11-devel libxcb-devel libxkbcommon-devel
+ xcb-util-devel xcb-util-keysyms-devel xcb-util-cursor-devel glib-devel
+ libXrandr-devel libXinerama-devel libXcursor-devel alsa-lib-devel gendesk"
+depends="jack surge-xt-common surge-xt-lv2 surge-xt-clap surge-xt-vst3 surge-xt-standalone"
+short_desc="Subtractive hybrid synthesizer"
+maintainer="Trve_AY <anthonyh@purplehaze.noho.st>"
+license="GPL-3.0-only"
+homepage="https://surge-synthesizer.github.io/"
+
+_JUCE="cf5754b19c87ea63758802e3f4239c05a77f1412"
+_LuaJIT="ec6edc5c39c25e4eb3fca51b753f9995e97215da"
+_PEGTL="64af78c6a7959cd5753ad165ec9f65591aa96f2d"
+_extensions="087dd16e2d17e6b3f1c9a92817a8a7348ea08168"
+_eurorack="f7614460cd3e295f6f6132f9052984c7bca9a69d"
+_fmt="a33701196adfad74917046096bf5a2aa0ab0bb50"
+_libsamplerate="d0ea53db94a329bce56e9382852e0931d7744651"
+_melatonin="b7a0f2de07ed8692963605561fe1a3793885994b"
+_ESP="3eb56f2452244b343ce738efd067d1082b67f9b4"
+_pffft="96292e6965f74d5e08108f5f717df0bf8aa06b57"
+_pybind11="0bd8896a4010f2d91b2340570c24fa08606ec406"
+_simde="71fd833d9666141edcd1d3c109a80e228303d8d7"
+_blocks="ae9c7e4f3ab58c9b26c5b45995a8adc16ec0830d"
+_cpputils="9418be4d6e059e236db43f99925f46492203ec55"
+_effects="43a54d94370986f7fe92931493435f2a8b67603f"
+_filters="9eb74b595c0fc244fdd67452fc17948edec4cf28"
+_plugininfra="49ee7eb761bc06d0c0a012659f975d59b868e3e8"
+_waveshapers="42bfa678e4f2447d0f4c9a51b7ba7ea68f6da108"
+_tuning="4cbe55f2da86c0302368a681406553a1dd7074dd"
+_clap="df8f16c69ba1c1a15fb105f0c5a2e5b9ac6be742"
+_helpers="7b53a685e11465154b4ccba3065224dbcbf8a893"
+_munit="da8f73412998e4f1adf1100dc187533a51af77fd"
+_filesystem="614bbe87b80435d87ab8791564370e0c1d13627d"
+_miniz="16413c213de38e703d883006193734e8b1178d5d"
+_skins="a15af71b2796824d9660653209dee98c1737ee31"
+
+distfiles="https://github.com/surge-synthesizer/surge/archive/refs/tags/release_xt_${version}.tar.gz
+https://github.com/surge-synthesizer/JUCE/archive/${_JUCE}.tar.gz
+https://github.com/LuaJIT/LuaJIT/archive/${_LuaJIT}.tar.gz
+https://github.com/taocpp/PEGTL/archive/${_PEGTL}.tar.gz
+https://github.com/free-audio/clap-juce-extensions/archive/${_extensions}.tar.gz
+https://github.com/surge-synthesizer/eurorack/archive/${_eurorack}.tar.gz
+https://github.com/fmtlib/fmt/archive/${_fmt}.tar.gz
+https://github.com/libsndfile/libsamplerate/archive/${_libsamplerate}.tar.gz
+https://github.com/sudara/melatonin_inspector/archive/${_melatonin}.tar.gz
+https://github.com/ODDSound/MTS-ESP/archive/${_ESP}.tar.gz
+https://github.com/surge-synthesizer/pffft/archive/${_pffft}.tar.gz
+https://github.com/pybind/pybind11/archive/${_pybind11}.tar.gz
+https://github.com/simd-everywhere/simde/archive/${_simde}.tar.gz
+https://github.com/surge-synthesizer/sst-basic-blocks/archive/${_blocks}.tar.gz
+https://github.com/surge-synthesizer/sst-cpputils/archive/${_cpputils}.tar.gz
+https://github.com/surge-synthesizer/sst-effects/archive/${_effects}.tar.gz
+https://github.com/surge-synthesizer/sst-filters/archive/${_filters}.tar.gz
+https://github.com/surge-synthesizer/sst-plugininfra/archive/${_plugininfra}.tar.gz
+https://github.com/surge-synthesizer/sst-waveshapers/archive/${_waveshapers}.tar.gz
+https://github.com/surge-synthesizer/tuning-library/archive/${_tuning}.tar.gz
+https://github.com/free-audio/clap/archive/${_clap}.tar.gz
+https://github.com/free-audio/clap-helpers/archive/${_helpers}.tar.gz
+https://github.com/nemequ/munit/archive/${_munit}.tar.gz
+https://github.com/gulrak/filesystem/archive/${_filesystem}.tar.gz
+https://github.com/richgel999/miniz/archive/${_miniz}.tar.gz
+https://github.com/surge-synthesizer/surge-extra-content/archive/${_skins}.tar.gz"
+
+skip_extraction="${_JUCE}.tar.gz ${_LuaJIT}.tar.gz ${_PEGTL}.tar.gz ${_extensions}.tar.gz ${_eurorack}.tar.gz ${_fmt}.tar.gz ${_libsamplerate}.tar.gz ${_melatonin}.tar.gz ${_ESP}.tar.gz ${_pffft}.tar.gz ${_pybind11}.tar.gz ${_simde}.tar.gz ${_blocks}.tar.gz ${_cpputils}.tar.gz ${_effects}.tar.gz ${_filters}.tar.gz ${_plugininfra}.tar.gz ${_waveshapers}.tar.gz ${_tuning}.tar.gz ${_clap}.tar.gz ${_helpers}.tar.gz ${_munit}.tar.gz ${_filesystem}.tar.gz ${_miniz}.tar.gz ${_skins}.tar.gz"
+
+checksum="38545c4bf290dd96acce587924b9aed62662ffbff33cea1fe907339b5ab15810
+ b1098ba19ad73ad96e0f60c7455433425e104a8130baab9e7535f5743fbfc0f0
+ 64ac400317bc02a4d10ddd6759370898280421bcb1d20b52601ca289f57aa65d
+ a6e98bed5730eb88afd0a5cac5d9a3eae7ebaa196f01f2f30d0148c951c2d578
+ c6e54577e17aa7c88634a66781ba9fb2983aab6635df09b26cd7729ee95c4355
+ c59a242525c94b648ed614463061cd648a76b7dd36268ba870faefbb0d3c3458
+ e166f622392d1a739121e450f3bbbcda3ec94ee67fcb042b660e7926af89590a
+ 98634e656c521e7f9d34a3c75ceb9cb5949ef8aceb114766ad2dd7a2eaf3a574
+ a480b1e54e11419637a593f36c3479b1bc3b616d16270573e4152513c87ddf4e
+ 7239fb2b94cb3ad6aaa5799fcce31bd2c50955133db0fdad7d02fab4a4e52e1e
+ 30feb3c31df04eac257730aeab9e2d7a3d8d845f9abafd30dc65ae5ff66e7316
+ da8d650ff0e5905481ad1c15bde8324e377e691cd083320d17859ac21f8b7022
+ 72b2c14a487560b7eb203795f2c2fead5c7499662e639944cca2a9bb19f09029
+ 335b9797777da09982680c0a610b0d52d0939d3fff80781ea81cda61af727051
+ c3fdba3c2b50d142b817b0a55ccd8e3721f9b7995c8d611a74d52bd72ea4f4c1
+ 762692b8152ab39386c6de4a0cc1d851e93dd3ab74c076048ebfab23f1c5d285
+ d4828c0dd4687a6b2a9f30e864154fefcdb01da50fa46c280f8badf3b48dfdf2
+ 8e4bdcd68aa1face31263a9a54990157d9afd2f1b0e17de9c99f55deaec8c32b
+ 6e69e3a0a139a6d09c3d8fcd4a09a875dfd3c87df1e9512d99bcccda1bca5053
+ 1d4d58888be16b9805a288a0658f9cab328d4e37d58be72b6b2e843cab101373
+ 8d683a56092447b3be59e794e693dee61e2965fb4fbbeb2f97888389a6454818
+ eaf5869b2b40dcfc71a1e3f73167a2255c2fc2d53f553f813b6c051e54df1374
+ 835a9ee03e3b9560af5a2e4465394e00337398f5baba9d686083b8e1d93f0c30
+ 203360b131364acd24eac25842cda5d1bcc53d12756bd7adfa1031f06aa5dabf
+ e80e4eab8cfb529e53beefa2021cb47f302a2519d81b4660a6b2cdc5dd791fb9
+ ef3932988b7323c1f2b78c405df635fe149a1db917f2db3257a8ed67476e2a56"
+
+if [ "$XBPS_TARGET_LIBC" = musl ]; then
+	makedepends+=" libexecinfo-devel"
+	LIBS="-lexecinfo"
+	CXXFLAGS+=" -Wno-error=cpp"
+fi
+
+post_extract() {
+	vsrcextract -C libs/JUCE "${_JUCE}.tar.gz"
+	vsrcextract -C libs/LuaJitLib/LuaJIT "${_LuaJIT}.tar.gz"
+	vsrcextract -C libs/PEGTL "${_PEGTL}.tar.gz"
+	vsrcextract -C libs/clap-juce-extensions "${_extensions}.tar.gz"
+	vsrcextract -C libs/eurorack/eurorack "${_eurorack}.tar.gz"
+	vsrcextract -C libs/fmt "${_fmt}.tar.gz"
+	vsrcextract -C libs/libsamplerate "${_libsamplerate}.tar.gz"
+	vsrcextract -C libs/melatonin_inspector "${_melatonin}.tar.gz"
+	vsrcextract -C libs/oddsound-mts/MTS-ESP "${_ESP}.tar.gz"
+	vsrcextract -C libs/pffft "${_pffft}.tar.gz"
+	vsrcextract -C libs/pybind11 "${_pybind11}.tar.gz"
+	vsrcextract -C libs/simde "${_simde}.tar.gz"
+	vsrcextract -C libs/sst/sst-basic-blocks "${_blocks}.tar.gz"
+	vsrcextract -C libs/sst/sst-cpputils "${_cpputils}.tar.gz"
+	vsrcextract -C libs/sst/sst-effects "${_effects}.tar.gz"
+	vsrcextract -C libs/sst/sst-filters "${_filters}.tar.gz"
+	vsrcextract -C libs/sst/sst-plugininfra "${_plugininfra}.tar.gz"
+	vsrcextract -C libs/sst/sst-waveshapers "${_waveshapers}.tar.gz"
+	vsrcextract -C libs/tuning-library "${_tuning}.tar.gz"
+	vsrcextract -C libs/clap-juce-extensions/clap-libs/clap "${_clap}.tar.gz"
+	vsrcextract -C libs/clap-juce-extensions/clap-libs/clap-helpers "${_helpers}.tar.gz"
+	vsrcextract -C libs/simde/test/munit "${_munit}.tar.gz"
+	vsrcextract -C libs/sst/sst-plugininfra/libs/filesystem/ghc-filesystem "${_filesystem}.tar.gz"
+	vsrcextract -C libs/sst/sst-plugininfra/libs/miniz "${_miniz}.tar.gz"
+
+	# some extra skins
+	mkdir skins
+	vsrcextract -C skins "${_skins}.tar.gz"
+	mv skins/Skins/* resources/data/skins
+	rm -r resources/data/skins/_previews
+}
+
+pre_build() {
+	# Get rid of those spaces and capital letters
+	sed -i 's/Surge XT/surge-xt/g' src/surge-xt/CMakeLists.txt
+	sed -i 's/Surge XT Effects/surge-xt-effects/g' src/surge-fx/CMakeLists.txt
+}
+
+surge-xt-common_package() {
+	short_desc+=" - documentation, extra patches and skins"
+	pkg_install() {
+		vmove usr/share/surge-xt
+		vmkdir usr/share/doc/surge-xt
+		vcopy ${XBPS_BUILDDIR}/${sourcepkg}-${version}/doc/* usr/share/doc/surge-xt
+	}
+}
+
+surge-xt-lv2_package() {
+	short_desc+=" - lv2 only"
+	depends+=" lv2"
+	pkg_install() {
+		vmove usr/lib/lv2
+	}
+}
+
+surge-xt-vst3_package() {
+	short_desc+=" - vst3 only"
+	pkg_install() {
+		vmove usr/lib/vst3
+	}
+}
+
+surge-xt-clap_package() {
+	short_desc+=" - clap only"
+	pkg_install() {
+		vmove usr/lib/clap
+	}
+}
+
+surge-xt-standalone_package() {
+	short_desc+=" - standalone only"
+	pkg_install() {
+		vmove usr/bin
+		vmkdir usr/share/applications
+		vmkdir usr/share/icons/hicolor/512x512/apps
+		vcopy ${XBPS_BUILDDIR}/${sourcepkg}-${version}/resources/assets/Logo/PNG/surge_icon_512.png usr/share/icons/hicolor/512x512/apps/surge-xt.png
+		vcopy ${XBPS_BUILDDIR}/${sourcepkg}-${version}/resources/assets/Logo/PNG/surge_fx_icon_512.png usr/share/icons/hicolor/512x512/apps/surge-fx.png
+		cd ${PKGDESTDIR}/usr/share/applications
+		# generate desktop file
+		gendesk -n \
+		  --exec surge-xt \
+		  --name surge-xt \
+		  --pkgname surge-xt \
+		  --pkgdesc "${short_desc}" \
+		  --icon surge-xt \
+		  --genericname "${short_desc}"
+		gendesk -n \
+		  --exec surge-xt-effects \
+		  --name surge-fx \
+		  --pkgname surge-fx \
+		  --pkgdesc "${short_desc}" \
+		  --icon surge-fx \
+		  --genericname "surge-xt effects"
+	}
+}

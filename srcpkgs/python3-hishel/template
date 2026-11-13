@@ -1,0 +1,19 @@
+# Template file for 'python3-hishel'
+pkgname=python3-hishel
+version=1.1.9
+revision=1
+build_style=python3-pep517
+hostmakedepends="hatchling hatch-fancy-pypi-readme"
+makedepends=""
+depends="python3-msgpack python3-typing_extensions"
+checkdepends="python3-pytest python3-anysqlite python3-typing_extensions python3-inline-snapshot"
+short_desc=" Elegant HTTP Caching for Python"
+maintainer="zenobit <zen@osowoso.org>"
+license="BSD-3-Clause"
+homepage="https://github.com/karpetrosyan/hishel"
+distfiles="https://github.com/karpetrosyan/hishel/archive/refs/tags/${version}.tar.gz"
+checksum=3cc598295cfb21160937ddb0c42af8f1d50492648c2c8b488715199aa37a0d4c
+
+post_install() {
+	vlicense LICENSE
+}

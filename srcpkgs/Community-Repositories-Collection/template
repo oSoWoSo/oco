@@ -1,0 +1,260 @@
+# Template file for 'Community-Repositories-Collection'
+pkgname=Community-Repositories-Collection
+version=1
+revision=11
+metapackage=yes
+short_desc="CRC: Collection of community repositories"
+maintainer="zenobit <zen@osowoso.org>"
+license="Public Domain"
+homepage="https://repo.osowoso.org"
+
+CRC-black-hole_package() {
+	archs="x86_64*"
+	short_desc="${short_desc} - blackhole repository"
+	homepage="https://github.com/Event-Horizon-VL/blackhole-vl"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://mirror.black-hole.dev/${XBPS_TARGET_MACHINE}" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-black-hole.conf
+	}
+}
+
+CRC-brgvos_package() {
+	archs="x86_64"
+	short_desc="${short_desc} - BRGV-OS repository"
+	homepage="https://github.com/florintanasa/void-packages-brgvos"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://repository.brgv-os.ro/x86_64-current" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-brgvos.conf
+	}
+}
+
+CRC-brgvos-testing_package() {
+	archs="x86_64"
+	short_desc="${short_desc} - BRGV-OS repository"
+	homepage="https://github.com/florintanasa/void-packages-brgvos"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://repository.brgv-os.ro/repository-test/" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-brgvos.conf
+	}
+}
+
+CRC-oco-testing_package() {
+	archs="x86_64* aarch64*"
+	short_desc="${short_desc} - OCO testing repository"
+	homepage="https://repo.osowoso.org/testing.html"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://repo.osowoso.org/testing/${XBPS_TARGET_MACHINE}" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-oco-testing.conf
+	}
+}
+
+CRC-cereus-core_package() {
+	archs="x86_64* i686"
+	short_desc="${short_desc} - Cereus Linux Core repository"
+	homepage="https://codeberg.org/cereus-linux/cereus-pkgs"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://sourceforge.net/projects/cereus-linux/files/repos/cereus-core/${XBPS_TARGET_MACHINE}" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-cereus-core.conf
+	}
+}
+
+CRC-cereus-extra_package() {
+	archs="x86_64* i686"
+	short_desc="${short_desc} - Cereus Linux Extra repository"
+	homepage="https://codeberg.org/cereus-linux/cereus-pkgs"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://sourceforge.net/projects/cereus-linux/files/repos/cereus-extra/${XBPS_TARGET_MACHINE}" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-cereus-extra.conf
+	}
+}
+
+CRC-cosmic_package() {
+	archs="x86_64*"
+	short_desc="${short_desc} - Cosmic sys109 repository by Bella109"
+	homepage="https://codeberg.org/Bella109/void-packages"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://repo.sys109.de/repo/${XBPS_TARGET_MACHINE}" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-cosmic.conf
+	}
+}
+
+CRC-d77void_package() {
+	archs="x86_64*"
+	short_desc="${short_desc} - d77 Void repository"
+	homepage="https://github.com/d77void/srcpkgs-d77"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		repo="https://sourceforge.net/projects/d77void/files/"
+		case "${XBPS_TARGET_MACHINE}" in
+			x86_64) repo+="d77void-repo" ;;
+			x86_64-musl) repo+="d77void-musl" ;;
+		esac
+		echo "repository=${repo}" > ${PKGDESTDIR}/etc/xbps.d/20-CRC-d77void.conf
+	}
+}
+
+CRC-dms_package() {
+	archs="x86_64*"
+	short_desc="${short_desc} - dux shell by duxlabs"
+	homepage="https://duxlabs.dev"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://void.danklinux.com/dms/current" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-dms.conf
+	}
+}
+
+CRC-dux_package() {
+	archs="x86_64*"
+	short_desc="${short_desc} - dux apps by duxlabs"
+	homepage="https://duxlabs.dev"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://void.danklinux.com/danklinux/current" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-dux.conf
+	}
+}
+
+CRC-hyprland_package() {
+	archs="x86_64* aarch64*"
+	short_desc="${short_desc} - Hyprland repository by sofijacom"
+	homepage="https://github.com/sofijacom/hyprland-void"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		repo="https://raw.githubusercontent.com/sofijacom/hyprland-void/repository-"
+		case "${XBPS_TARGET_MACHINE}" in
+			x86_64) repo+="x86_64-glibc" ;;
+			x86_64-musl) repo+="x86_64-musl" ;;
+			aarch64) repo+="aarch64-glibc" ;;
+			aarch64-musl) repo+="aarch64-musl" ;;
+		esac
+		echo "repository=${repo}" > ${PKGDESTDIR}/etc/xbps.d/20-CRC-hyprland.conf
+	}
+}
+
+CRC-jake_package() {
+	archs="x86_64"
+	short_desc="${short_desc} - JakeAtLinux (jpedmedia.com) repository"
+	homepage="https://codeberg.org/JakeAtLinux/void-repo"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=${homepage}/raw/branch/main/x86_64" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-jake.conf
+	}
+}
+
+CRC-lazy_package() {
+	archs="x86_64"
+	short_desc="${short_desc} - LazyLinux repository"
+	homepage="https://github.com/lazylinuxos/lazy-repo"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=${homepage}/releases/latest/download" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-lazy.conf
+	}
+}
+
+CRC-librewolf_package() {
+	archs="x86_64"
+	short_desc="${short_desc} - Librewolf repository by index-0"
+	homepage="https://github.com/index-0/librewolf-void"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=${homepage}/releases/latest/download" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-librewolf.conf
+	}
+}
+
+CRC-noid_package() {
+	archs="x86_64"
+	short_desc="${short_desc} - Noid Linux repository"
+	homepage="https://github.com/noid-linux/xbps-repo"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=${homepage}/releases/latest/download" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-noid.conf
+	}
+}
+
+CRC-odyssey_package() {
+	archs="x86_64"
+	short_desc="${short_desc} - Odyssey Linux repository"
+	homepage="https://code.odysseylinux.org/nobody"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://repo.odysseylinux.org/odyssey-repo/x86_64" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-odyssey.conf
+	}
+}
+
+CRC-sofijacom_package() {
+	archs="x86_64"
+	short_desc="${short_desc} - Sofijacom repository"
+	homepage="https://github.com/sofijacom/void-package"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=${homepage}/releases/latest/download" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-sofijacom.conf
+	}
+}
+
+CRC-sonicde_package() {
+	archs="aarch64* x86_64* i686"
+	short_desc="${short_desc} - SonicDE repository by nerdyslacker"
+	homepage="https://github.com/sonicde-void/sonicde-void"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=${homepage}/releases/latest/download" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-sonicde.conf
+	}
+}
+
+CRC-split_package() {
+	archs="aarch64* x86_64*"
+	short_desc="${short_desc} - Split Linux repository"
+	homepage="https://gitlab.com/splitlinux/split-packages"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=${homepage}/-/raw/master/binpkgs" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-split.conf
+	}
+}
+
+CRC-voiders_package() {
+	archs="aarch64* x86_64*"
+	short_desc="${short_desc} - Voiders repository"
+	homepage="https://codeberg.org/voiders-community/repository"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://repo.voiders.dev" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-voiders.conf
+	}
+}
+
+CRC-vostock_package() {
+	archs="x86_64"
+	short_desc="${short_desc} - Vostock Linux repository"
+	homepage="https://github.com/vostoklinux/vostok-packages"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://repo.vostoklinux.org/current" > ${PKGDESTDIR}/etc/xbps.d/20-CRC-vostock.conf
+	}
+}
+
+CRC-xlibre_package() {
+	archs="x86_64"
+	short_desc="${short_desc} - Xlibre repository by sofijacom"
+	homepage="https://github.com/xlibre-void/xlibre"
+	pkg_install() {
+		vmkdir etc/xbps.d
+		echo "repository=https://github.com/xlibre-void/xlibre/releases/latest/download" > \
+			${PKGDESTDIR}/etc/xbps.d/20-CRC-xlibre.conf
+	}
+}

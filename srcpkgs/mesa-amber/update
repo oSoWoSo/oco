@@ -1,0 +1,2 @@
+site="https://gitlab.freedesktop.org/mesa/mesa/-/tags"
+pattern='/tags/mesa-\K[\d.]+'

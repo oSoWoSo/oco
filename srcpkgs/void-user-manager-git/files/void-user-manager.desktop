@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Void User Manager
+Comment=Manage users and runit services
+Exec=void-user-manager
+Icon=user
+Type=Application
+Categories=System;Settings;
+Terminal=false

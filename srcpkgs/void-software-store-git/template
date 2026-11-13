@@ -1,0 +1,45 @@
+# Template file for 'void-software-store-git'
+pkgname=void-software-store-git
+version=999
+revision=2
+depends="python3 python3-gobject gtk4 libadwaita libayatana-appindicator papirus-icon-theme topgrade"
+short_desc="GUI Software Management"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://codeberg.org/pinguin-void/void-software-store"
+distfiles="https://codeberg.org/pinguin-void/void-software-store/archive/166a0698944306f0316e0dfe9221aea7da8c556e.tar.gz"
+checksum=8405f505ac866181e6e213103245cedf93cae2c64d03cc21417d10214984781b
+conflicts="void-software-store"
+
+do_install() {
+	vmkdir usr/lib/void-software-store/scripts
+	vcopy README.md usr/lib/void-software-store
+	vcopy settings.json usr/lib/void-software-store
+	vcopy apps.json usr/lib/void-software-store
+	vcopy webapps.json usr/lib/void-software-store
+	vcopy styles.css usr/lib/void-software-store
+	vcopy webapp_favicons usr/lib/void-software-store
+
+	vinstall void-tray.py 644 usr/lib/void-software-store
+	vinstall software.py 644 usr/lib/void-software-store
+
+	vinstall scripts/codecs.sh 644 usr/lib/void-software-store/scripts
+	vinstall scripts/install_freeoffice.sh 644 usr/lib/void-software-store/scripts
+	vinstall scripts/install_qmapshack.sh 644 usr/lib/void-software-store/scripts
+
+	vbin "${FILESDIR}/void-software-store"
+	vbin "${FILESDIR}/void-tray"
+
+	vmkdir usr/share/applications
+	vcopy "${FILESDIR}/void-tray.desktop" usr/share/applications
+	vcopy "${FILESDIR}/com.voidlinux.softwarestore.desktop" usr/share/applications
+
+	vmkdir etc/xdg/autostart
+	vcopy "${FILESDIR}/void-tray.desktop" etc/xdg/autostart
+
+	vmkdir usr/share/pixmaps
+	vcopy void-software-store.png usr/share/pixmaps
+
+	# No license file provided
+	# vlicense LICENSE
+}

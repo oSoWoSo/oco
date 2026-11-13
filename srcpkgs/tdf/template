@@ -1,0 +1,19 @@
+# Template file for 'tdf'
+pkgname=tdf
+version=0.5.0
+revision=1
+build_style=cargo
+make_build_args="--features cbz,epub"
+hostmakedepends="pkg-config unzip"
+makedepends="fontconfig-devel clang21-devel"
+short_desc="TUI PDF viewer"
+maintainer="zenobit <zen@osowoso.org>"
+license="AGPL-3.0-only"
+homepage="https://github.com/itsjunetime/tdf"
+changelog="https://raw.githubusercontent.com/itsjunetime/tdf/refs/heads/main/CHANGELOG.md"
+distfiles="https://github.com/itsjunetime/tdf/archive/refs/tags/v${version}.tar.gz"
+checksum=f9cdcc89e03efdb002938428905ff6cd9ef7ee9941f7b4fa1f473f9f6c49eb6e
+
+post_install() {
+	vlicense LICENSE
+}

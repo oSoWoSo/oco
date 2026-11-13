@@ -1,0 +1,34 @@
+# Template file for 'candy-icons-git'
+pkgname=candy-icons-git
+version=0.11.1
+revision=5
+# depends="breeze-icons adwaita-icon-theme hicolor-icon-theme"
+short_desc="Sweet gradient icons, sweet rainbow folders included"
+maintainer="Trve_AY <anthonyh@purplehaze.noho.st>"
+license="GPL-3.0-only"
+homepage="https://www.opendesktop.org/p/1305251/"
+
+_candy="278998cb51c68de9d590c84d8fd1625223772792"
+_rainbow="40a5d36e50437901c7eaa1119bb9ae8006e2fe5c"
+
+distfiles="https://github.com/EliverLara/candy-icons/archive/${_candy}.tar.gz
+ https://github.com/EliverLara/Sweet-folders/archive/${_rainbow}.tar.gz"
+checksum="2b940ccee268ea8c7a42f674f67a24d005c295b7ca61807a30d8a737f52ab4b8
+ 386f66922f9811e42a2b1e4018d5f43f759cb5d778c74345a1483d6c076402e5"
+
+post_build() {
+	#symlinks for ungoogled chromium
+	cd candy-icons-${_candy}/apps/scalable
+	ln -s chromium.svg ungoogled-chromium.svg
+	ln -s chromium.svg ungoogled-chromium-browser.svg
+	ln -s chromium.svg Ungoogled-Chromium.svg
+	ln -s chromium.svg Ungoogled-Chromium-browser.svg
+}
+
+do_install() {
+	vmkdir usr/share/icons
+	vcopy candy-icons-${_candy} usr/share/icons/candy-icons
+	for f in Sweet-folders-${_rainbow}/Sweet-* ; do
+	vcopy $f usr/share/icons
+	done
+}

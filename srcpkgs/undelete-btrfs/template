@@ -1,0 +1,18 @@
+# Template file for 'undelete-btrfs'
+pkgname=undelete-btrfs
+version=1.0
+revision=1
+short_desc="Undelete files in a BTRFS file system"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/danthem/undelete-btrfs"
+distfiles="https://github.com/danthem/undelete-btrfs/archive/refs/tags/v${version}.tar.gz"
+checksum=65d0aef4fc746e7d31ed1ad5eac06dbb36495c87a8787ac84c2e15e47f5f34a0
+
+do_install() {
+	vbin undelete.sh undelete-btrfs
+}
+
+post_install() {
+	vdoc README.md
+}

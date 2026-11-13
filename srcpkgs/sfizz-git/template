@@ -1,0 +1,134 @@
+# Template file for 'sfizz-git'
+pkgname=sfizz-git
+version=1.2.3
+revision=2
+build_style=cmake
+metapackage=yes
+configure_args="-DSFIZZ_USE_SNDFILE=ON -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=ON
+ -DWAVPACK_INSTALL_PKGCONFIG_MODULE=ON"
+hostmakedepends="pkg-config ghc"
+makedepends="pango-devel cairo-devel jack-devel fontconfig-devel freetype-devel
+ libX11-devel libxcb-devel libxkbcommon-devel libsamplerate-devel libgomp-devel
+ xcb-util-devel xcb-util-keysyms-devel xcb-util-cursor-devel glib-devel zenity
+ libsndfile-devel ghc-devel"
+depends="jack sfizz-lv2 sfizz-vst3 sfizz-lib sfizz-cli"
+short_desc="SFZ sampler"
+maintainer="Trve_AY <anthonyh@purplehaze.noho.st>"
+license="BSD-2-Clause"
+homepage="https://sfztools.github.io/sfizz/"
+nocross=yes
+
+_sfzlib="4e70dc0bef53b41f2853ed46e26f5911114c92d0"
+_abseil="c2435f8342c2d0ed8101cb43adfd605fdc52dca2"
+_filesystem="8a2edd6d92ed820521d42c94d179462bf06b5ed3"
+_simde="2bf459d4ed6d7ed6b9f31bd9e07c91bace5009e0"
+_munit="da8f73412998e4f1adf1100dc187533a51af77fd"
+_dr_libs="4b3d07849537ce0b71b22180c0b1335eacc6e9be"
+_miniaudio="d1a166c83ab445b1c14bc83d37c84e18d172e5f5"
+_libaiff="78864a4a2e769e426be8cfd78ae7f5f72e236c33"
+_wavpack="07ffb331d23c16e2d2979370441f63ea722760bc"
+_vstgui="18d9ec4646cf075745dc90b452ace35262cd17c4"
+_base="efd9bf7877097bf23950bff48af5f3a4eef345a1"
+_pluginterfaces="37de655a51b28a558645621b39d48a00292be5e2"
+_sdk="e099a33fe9d78295f58f919ec3bb58968dd5752c"
+_sfzt_auwrapper="4ad0429a38b8aad3d823ca398ec7e72874a2f236"
+
+distfiles="https://github.com/sfztools/sfizz-ui/archive/refs/tags/${version}.tar.gz
+ https://github.com/sfztools/sfizz/archive/${_sfzlib}.tar.gz
+ https://github.com/abseil/abseil-cpp/archive/${_abseil}.tar.gz
+ https://github.com/gulrak/filesystem/archive/${_filesystem}.tar.gz
+ https://github.com/simd-everywhere/simde/archive/${_simde}.tar.gz
+ https://github.com/nemequ/munit/archive/${_munit}.tar.gz
+ https://github.com/mackron/dr_libs/archive/${_dr_libs}.tar.gz
+ https://github.com/dr-soft/miniaudio/archive/${_miniaudio}.tar.gz
+ https://github.com/sfztools/libaiff/archive/${_libaiff}.tar.gz
+ https://github.com/dbry/WavPack/archive/${_wavpack}.tar.gz
+ https://github.com/sfztools/vstgui/archive/${_vstgui}.tar.gz
+ https://github.com/steinbergmedia/vst3_base/archive/${_base}.tar.gz
+ https://github.com/steinbergmedia/vst3_pluginterfaces/archive/${_pluginterfaces}.tar.gz
+ https://github.com/steinbergmedia/vst3_public_sdk/archive/${_sdk}.tar.gz
+ https://github.com/sfztools/sfzt_auwrapper/archive/${_sfzt_auwrapper}.tar.gz"
+
+skip_extraction="${_sfzlib}.tar.gz ${_abseil}.tar.gz ${_filesystem}.tar.gz ${_simde}.tar.gz ${_munit}.tar.gz ${_dr_libs}.tar.gz ${_miniaudio}.tar.gz ${_libaiff}.tar.gz ${_wavpack}.tar.gz ${_vstgui}.tar.gz ${_base}.tar.gz ${_pluginterfaces}.tar.gz ${_sdk}.tar.gz ${_sfzt_auwrapper}.tar.gz"
+
+checksum="c96d7f41e7b515b67eb0494936af6336026acd14b374df1307935526b242496f
+ ed8bc516d304aa929fb70e5eb5f07b18ea051fbabd7de0329dd759fe278e3e3d
+ 9892836ab0d3f099b8c15076c6f4168144f452d097bd49da215fe0df36a2d48c
+ 3742a0d47da885da0e671008d72e7de5b7dbc3ccd3eed731166268b52e176cd4
+ 03f466eae94075d8bf5224d81eb9a396d2acfd2a37fc622d0941dfba1bf52e5d
+ 835a9ee03e3b9560af5a2e4465394e00337398f5baba9d686083b8e1d93f0c30
+ 65ecc2859a85457bd6ded7956d4773044edff0cc6ca84a5e0fcbd86e47278a2e
+ 336576323b6f56d506ac5265344d522948e24e5e72031ff1dc6cc4537232bfb1
+ a0db06448a9cf8de4df08f40d7ad7169c73e97b78a4477feb31dfbd2662277df
+ d96f0b92720cd222eb869ad0db1068bfd5abc5f9dc37746ebce68ba73c4790f4
+ 696df1eae33694efbf3e537c161924fb8ad5ec32b09e974ff462ade959e69661
+ a8fafac260ec8617edb31f3a7eb52cfd898a250d4beccd08ecbe83143ebd2536
+ c9c468f4a7d9c6d498b7b865d82652fb9ceb6e65a091148adf395b4f6e595acb
+ 979adadbd4b32dd34bd57c70480a2fad71709ff5270de01082310c92dd37b3fb
+ 4be4569dc487ab5170914732c59106dbe0cbadcfbd8f048c23267ba459a554b8"
+
+case "$XBPS_TARGET_MACHINE" in
+	x86_64*|i686*)
+		;;
+	*)
+		configure_args+=" -DSFIZZ_USE_SSE=OFF"
+		;;
+esac
+
+if [ "$XBPS_TARGET_LIBC" = musl ]; then
+	CXXFLAGS+=" -D_LARGEFILE64_SOURCE"
+fi
+
+post_extract() {
+	vsrcextract -C library "${_sfzlib}.tar.gz"
+	vsrcextract -C library/external/abseil-cpp "${_abseil}.tar.gz"
+	vsrcextract -C library/external/filesystem "${_filesystem}.tar.gz"
+	vsrcextract -C library/external/simde "${_simde}.tar.gz"
+	vsrcextract -C library/external/simde/test/munit "${_munit}.tar.gz"
+	vsrcextract -C library/external/st_audiofile/thirdparty/dr_libs "${_dr_libs}.tar.gz"
+	vsrcextract -C library/external/st_audiofile/thirdparty/dr_libs/tests/external/miniaudio "${_miniaudio}.tar.gz"
+	vsrcextract -C library/external/st_audiofile/thirdparty/libaiff "${_libaiff}.tar.gz"
+	vsrcextract -C library/external/st_audiofile/thirdparty/wavpack "${_wavpack}.tar.gz"
+	vsrcextract -C plugins/editor/external/vstgui4 "${_vstgui}.tar.gz"
+	vsrcextract -C plugins/vst/external/VST_SDK/VST3_SDK/base "${_base}.tar.gz"
+	vsrcextract -C plugins/vst/external/VST_SDK/VST3_SDK/pluginterfaces "${_pluginterfaces}.tar.gz"
+	vsrcextract -C plugins/vst/external/VST_SDK/VST3_SDK/public.sdk "${_sdk}.tar.gz"
+	vsrcextract -C plugins/vst/external/sfzt_auwrapper "${_sfzt_auwrapper}.tar.gz"
+}
+
+pre_build() {
+	sed -i '21s/(/= / ; 21s/)//' plugins/editor/external/vstgui4/vstgui/lib/finally.h
+}
+
+sfizz-lv2_package() {
+	short_desc+=" - lv2 plugin"
+	depends+=" lv2"
+	pkg_install() {
+		vmove usr/lib/lv2
+	}
+}
+
+sfizz-vst3_package() {
+	short_desc+=" - vst3 plugin"
+	pkg_install() {
+		vmove usr/lib/vst3
+	}
+}
+
+sfizz-lib_package() {
+	short_desc+=" - c++ library"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/lib/libsfizz.so*
+		vmove usr/lib/pkgconfig
+		vlicense LICENSE
+	}
+}
+
+sfizz-cli_package() {
+	short_desc+=" - cli jack client"
+	pkg_install() {
+		vmove usr/bin
+		vmove usr/share
+	}
+}

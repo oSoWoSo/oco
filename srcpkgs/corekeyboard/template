@@ -1,0 +1,13 @@
+# Template file for 'corekeyboard'
+pkgname=corekeyboard
+version=5.0.1
+revision=1
+build_style=cmake
+hostmakedepends="libcprime qt6-base"
+makedepends="libcprime qt6-base-devel"
+short_desc="X11 based virtual keyboard for C Suite"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-3.0-only"
+homepage="https://gitlab.com/cubocore/coreapps/corekeyboard"
+distfiles="https://gitlab.com/cubocore/coreapps/corekeyboard/-/archive/v${version}/corekeyboard-v${version}.tar.gz"
+checksum=8d041c1fd9f1a361710d96a015e2f85d5c7eacc24c48b5574c6cae06e6f28eed

@@ -1,0 +1,85 @@
+diff -r a/gtk/v3/gtk_export.go b/gtk/v3/gtk_export.go
+--- a/gtk/v3/gtk_export.go	2026-11-09 05:06:29.225969152 +0100
++++ b/gtk/v3/gtk_export.go	2026-11-09 05:06:29.226428494 +0100
+@@ -2,6 +2,8 @@
+ 
+ package gtk
+ 
++// #cgo pkg-config: gtk+-3.0
++
+ import (
+ 	"runtime"
+ 	"unsafe"
+diff -r a/pango/pango.go b/pango/pango.go
+--- a/pango/pango.go	2026-11-09 05:06:29.247161847 +0100
++++ b/pango/pango.go	2026-11-09 05:06:29.251694508 +0100
+@@ -182,7 +182,6 @@
+ 	GTypeCoverageLevel          = coreglib.Type(C.pango_coverage_level_get_type())
+ 	GTypeDirection              = coreglib.Type(C.pango_direction_get_type())
+ 	GTypeEllipsizeMode          = coreglib.Type(C.pango_ellipsize_mode_get_type())
+-	GTypeFontColor              = coreglib.Type(C.pango_font_color_get_type())
+ 	GTypeFontScale              = coreglib.Type(C.pango_font_scale_get_type())
+ 	GTypeGravity                = coreglib.Type(C.pango_gravity_get_type())
+ 	GTypeGravityHint            = coreglib.Type(C.pango_gravity_hint_get_type())
+@@ -240,7 +239,6 @@
+ 		coreglib.TypeMarshaler{T: GTypeCoverageLevel, F: marshalCoverageLevel},
+ 		coreglib.TypeMarshaler{T: GTypeDirection, F: marshalDirection},
+ 		coreglib.TypeMarshaler{T: GTypeEllipsizeMode, F: marshalEllipsizeMode},
+-		coreglib.TypeMarshaler{T: GTypeFontColor, F: marshalFontColor},
+ 		coreglib.TypeMarshaler{T: GTypeFontScale, F: marshalFontScale},
+ 		coreglib.TypeMarshaler{T: GTypeGravity, F: marshalGravity},
+ 		coreglib.TypeMarshaler{T: GTypeGravityHint, F: marshalGravityHint},
+@@ -14595,26 +14593,7 @@
+ 	return _ok
+ }
+ 
+-// Color returns the color field of the font description.
+-//
+-// This field determines whether the font description should match fonts that
+-// have color glyphs, or fonts that don't.
+-func (desc *FontDescription) Color() FontColor {
+-	var _arg0 *C.PangoFontDescription // out
+-	var _cret C.PangoFontColor        // in
+ 
+-	_arg0 = (*C.PangoFontDescription)(gextras.StructNative(unsafe.Pointer(desc)))
+-
+-	_cret = C.pango_font_description_get_color(_arg0)
+-	runtime.KeepAlive(desc)
+-
+-	var _fontColor FontColor // out
+-
+-	_fontColor = FontColor(_cret)
+-
+-	return _fontColor
+-}
+-
+ // Family gets the family name field of a font description.
+ //
+ // See pango.FontDescription.SetFamily().
+@@ -15008,26 +14987,7 @@
+ 	runtime.KeepAlive(size)
+ }
+ 
+-// SetColor sets the color field of a font description.
+-//
+-// This field determines whether the font description should match fonts that
+-// have color glyphs, or fonts that don't.
+-//
+-// The function takes the following parameters:
+-//
+-//   - color: PangoFontColor value.
+-func (desc *FontDescription) SetColor(color FontColor) {
+-	var _arg0 *C.PangoFontDescription // out
+-	var _arg1 C.PangoFontColor        // out
+ 
+-	_arg0 = (*C.PangoFontDescription)(gextras.StructNative(unsafe.Pointer(desc)))
+-	_arg1 = C.PangoFontColor(color)
+-
+-	C.pango_font_description_set_color(_arg0, _arg1)
+-	runtime.KeepAlive(desc)
+-	runtime.KeepAlive(color)
+-}
+-
+ // SetFamily sets the family name field of a font description.
+ //
+ // The family name represents a family of related font styles, and will resolve

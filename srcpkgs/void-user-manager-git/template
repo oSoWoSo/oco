@@ -1,0 +1,23 @@
+# Template file for 'void-user-manager-git'
+pkgname=void-user-manager-git
+version=0.0.0
+revision=2
+archs="x86_64"
+depends="gtk4 libadwaita polkit"
+short_desc="Modern, lightweight user and service management application"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-2.0-only"
+homepage="https://codeberg.org/pinguin-void/void-user-manager"
+distfiles="https://codeberg.org/pinguin-void/void-user-manager/archive/1770265a247550a12758df8fb1104e872dbf0bad.tar.gz"
+checksum=6cbc36e29379bc4d57d0bdc5a4f639777ccff8c0427cdaf51a10fdecf19e819e
+
+do_install() {
+	vmkdir usr/share/applications
+	vcopy "${FILESDIR}/void-user-manager.desktop" usr/share/applications
+
+	vmkdir usr/share/icons
+	vcopy user.png usr/share/icons
+
+	vinstall user.py 644 usr/lib/void-user-manager
+	vbin "${FILESDIR}/void-user-manager"
+}

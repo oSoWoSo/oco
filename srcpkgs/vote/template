@@ -1,0 +1,33 @@
+# Template file for 'vote'
+pkgname=vote
+version=0.92
+revision=1
+depends="gum-panel xtools"
+#checkdepends="${depends} clitest jq perl"
+short_desc="XBPS package management helper for VoidLinux"
+maintainer="zenobit <zenobit@disroot.org>"
+license="AGPL-3.0-only"
+homepage="https://codeberg.org/oSoWoSo/vote"
+distfiles="https://codeberg.org/oSoWoSo/vote/archive/${version}.tar.gz"
+checksum=6e260ebb63f52b9499dcc1f5a5f5e5976977678177a786e1dc1c84ea3ab43a29
+
+do_install() {
+	vmkdir usr/share/vote
+	vmkdir usr/share/icons
+	vmkdir usr/share/applications
+
+	vcopy etc usr/share/vote
+	vcopy frontends usr/share/vote
+	vcopy lang usr/share/vote
+	vcopy lib usr/share/vote
+
+	vcopy assets/vote.kdl usr/share/vote
+	vcopy assets/vote.svg usr/share/icons
+	vcopy assets/vote.desktop usr/share/applications
+	vbin vote
+	#vcompletion bash-completion/completions/vpm bash
+}
+
+post_install() {
+	vlicense LICENSE.agpl
+}

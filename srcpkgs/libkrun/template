@@ -1,0 +1,23 @@
+# Template file for 'libkrun'
+pkgname=libkrun
+version=1.19.6
+revision=1
+build_style=gnu-makefile
+hostmakedepends="cargo pkg-config llvm23-devel"
+short_desc="Library providing Virtualization-based process isolation capabilities"
+maintainer="zenobit <zen@osowoso.org>"
+license="Apache-2.0"
+homepage="https://github.com/libkrun/libkrun"
+distfiles="https://github.com/libkrun/libkrun/archive/refs/tags/v${version}.tar.gz"
+checksum=7025d72208172dc06f791ad5af7ccaafeabdac9869f74ccb45fb6d4f6e5991cd
+nocross="TODO?"
+
+libkrun-devel_package() {
+	depends="libkrun>=${version}_${revision}"
+	short_desc+=" - development files"
+	pkg_install() {
+		vmove usr/include
+		vmove usr/lib/pkgconfig
+		vmove usr/lib/*.so
+	}
+}

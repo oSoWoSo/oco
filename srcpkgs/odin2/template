@@ -1,0 +1,103 @@
+# Template file for 'odin2'
+pkgname=odin2
+version=2.4.1
+revision=2
+build_style=cmake
+patch_args="-Np1 --binary"
+metapackage=yes
+hostmakedepends="pkg-config"
+makedepends="libX11-devel alsa-lib-devel MesaLib-devel libcurl-devel libwebkit2gtk41-devel lv2 gendesk"
+depends="jack odin2-common odin2-lv2 odin2-clap odin2-vst3 odin2-standalone"
+short_desc="24 voice polyphinic synthesizer with modulation and FX"
+maintainer="Trve_AY <anthonyh@purplehaze.noho.st>"
+license="GPL-3.0-only"
+homepage="https://thewavewarden.com/pages/odin-2"
+nocross=yes
+
+_juce="2f980209cc4091a4490bb1bafc5d530f16834e58"
+_jucelv2="e825ad977cf4499a7bfa05b97b208236f8fd253b"
+_clapjuce="f11e8c3284e7ff2629534148cbd98da9f602bfea"
+_clap="84ad6fe9739d3070ed0eb05c24be303a899ab813"
+_claphelp="2bb43c18788c689708ead6f127a2d75e772ab389"
+_json="960b763ecd144f156d05ec61f577b04107290137"
+_tuning="8eb7232ac24ac2f97a052063161c0c4f5fd763e3"
+
+distfiles="https://github.com/TheWaveWarden/odin2/archive/refs/tags/v${version}.tar.gz
+https://github.com/juce-framework/JUCE/archive/${_juce}.tar.gz
+https://github.com/lv2-porting-project/JUCE/archive/${_jucelv2}.tar.gz
+https://github.com/free-audio/clap-juce-extensions/archive/${_clapjuce}.tar.gz
+https://github.com/free-audio/clap/archive/${_clap}.tar.gz
+https://github.com/free-audio/clap-helpers/archive/${_claphelp}.tar.gz
+https://github.com/nlohmann/json/archive/${_json}.tar.gz
+https://github.com/surge-synthesizer/tuning-library/archive/${_tuning}.tar.gz
+"
+
+skip_extraction="${_juce}.tar.gz ${_jucelv2}.tar.gz ${_clapjuce}.tar.gz ${_clap}.tar.gz ${_json}.tar.gz ${_claphelp}.tar.gz ${_tuning}.tar.gz"
+
+checksum="3acc6f28c19fbde70a503c2ef7ffb961bdc5ef8292ccbdfeb2894d490a5428e6
+ 4d695ead0f90b2a01de910ae80809ae92dead7527c01589518c78f8626a9dde2
+ b29323bfeb6599a6fbcf26ffa1d3d531df98ef336b0be7a419a7d77e6ee05acc
+ cde52a4f16743aeca96481639bd1328159dcad830ddc62ac3b1f509843529f8b
+ 87699efad3af3a96d291c73785fae30bcde72ab4a994549940d1cc18901ac05f
+ 13cd0106ffb4ecd764d9355d46342a79d87e0ea037e5f129fe4bd29a542d6c95
+ ba6e7817353793d13e5214ed819ea5b0defc0ffb2a348f4e34b10ac6f1c50154
+ a4f03d0d0ee6d7712fe47cd27b6006a32dc20387b35a2e4ebe7e7339e748a249"
+
+post_extract() {
+	vsrcextract -C libs/JUCE "${_juce}.tar.gz"
+	vsrcextract -C libs/JUCELV2 "${_jucelv2}.tar.gz"
+	vsrcextract -C libs/clap-juce-extensions  "${_clapjuce}.tar.gz"
+	vsrcextract -C libs/clap-juce-extensions/clap-libs/clap  "${_clap}.tar.gz"
+	vsrcextract -C libs/clap-juce-extensions/clap-libs/clap-helpers  "${_claphelp}.tar.gz"
+	vsrcextract -C libs/json  "${_json}.tar.gz"
+	vsrcextract -C libs/tuning-library  "${_tuning}.tar.gz"
+}
+
+odin2-common_package() {
+	short_desc+=" - documentation"
+	pkg_install() {
+		vmkdir usr/share/doc/odin2
+		vcopy ${XBPS_BUILDDIR}/${sourcepkg}-${version}/manual/manual.pdf usr/share/doc/odin2
+	}
+}
+
+odin2-lv2_package() {
+	short_desc+=" - lv2 only"
+	depends+=" lv2"
+	pkg_install() {
+		vmove usr/lib/lv2
+	}
+}
+
+odin2-vst3_package() {
+	short_desc+=" - vst3 only"
+	pkg_install() {
+		vmove usr/lib/vst3
+	}
+}
+
+odin2-clap_package() {
+	short_desc+=" - clap only"
+	pkg_install() {
+		vmove usr/lib/clap
+	}
+}
+
+odin2-standalone_package() {
+	short_desc+=" - standalone only"
+	pkg_install() {
+		vmove usr/bin
+		vmkdir usr/share/applications
+		vmkdir usr/share/icons/hicolor/512x512/apps
+		vcopy ${XBPS_BUILDDIR}/${sourcepkg}-${version}/manual/graphics/logo.png usr/share/icons/hicolor/512x512/apps/odin2.png
+		cd ${PKGDESTDIR}/usr/share/applications
+		# generate desktop file
+		gendesk -n \
+		  --exec Odin2 \
+		  --name Odin2 \
+		  --pkgname odin2 \
+		  --pkgdesc "${short_desc}" \
+		  --icon odin2 \
+		  --genericname "Virtual polyphonic synthesizer"
+	}
+}

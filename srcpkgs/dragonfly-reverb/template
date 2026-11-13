@@ -1,0 +1,96 @@
+# Template file for 'dragonfly-reverb'
+pkgname=dragonfly-reverb
+version=3.2.10
+revision=1
+build_style=gnu-makefile
+metapackage=yes
+hostmakedepends="pkg-config"
+makedepends="jack-devel libX11-devel libXext-devel libXrandr-devel MesaLib-devel"
+depends="jack dragonfly-reverb-lv2 dragonfly-reverb-vst dragonfly-reverb-vst3
+dragonfly-reverb-clap dragonfly-reverb-standalone dragonfly-reverb-doc"
+short_desc="Collection of reverbs"
+maintainer="Trve_AY <anthonyh@purplehaze.noho.st>"
+license="GPL-3.0-only"
+homepage="https://michaelwillis.github.io/dragonfly-reverb"
+nocross=yes
+
+_dpf="dc6557a3c935ae4bb68f89d8bc698a805fff788e"
+_pugl="844528e197c51603f6cef3238b4a48d23bf60eb7"
+
+distfiles="https://github.com/michaelwillis/dragonfly-reverb/archive/refs/tags/${version}.tar.gz
+https://github.com/DISTRHO/DPF/archive/${_dpf}.tar.gz
+https://github.com/DISTRHO/pugl/archive/${_pugl}.tar.gz
+"
+
+skip_extraction="${_dpf}.tar.gz ${_pugl}.tar.gz"
+
+checksum="3bd9e9bf9be7c1108102b6923fe576e83a9e2d80f9b9421301177f223353a62e
+ f5e971cc6716f31f0b5edfd14200687d9384ee12e448647c34f932afb7fed554
+ d7548b38dc4cfab3e04f32ce048b5721ff27f8facb84f6fcd488ab9216691ea4"
+
+post_extract() {
+	vsrcextract -C dpf "${_dpf}.tar.gz"
+	vsrcextract -C dpf/dgl/src/pugl-upstream "${_pugl}.tar.gz"
+}
+
+dragonfly-reverb-doc_package() {
+	short_desc+=" - documentation"
+	pkg_install() {
+		vmove usr/share/doc/${sourcepkg}
+	}
+}
+
+dragonfly-reverb-standalone_package() {
+	short_desc+=" - standalone only"
+	pkg_install() {
+		vmove usr/bin
+	}
+}
+
+dragonfly-reverb-vst_package() {
+	short_desc+=" - vst only"
+	pkg_install() {
+		vmove usr/lib/vst
+	}
+}
+
+dragonfly-reverb-vst3_package() {
+	short_desc+=" - vst3 only"
+	pkg_install() {
+		vmove usr/lib/vst3
+	}
+}
+
+dragonfly-reverb-clap_package() {
+	short_desc+=" - clap only"
+	pkg_install() {
+		vmove usr/lib/clap
+	}
+}
+
+dragonfly-reverb-lv2_package() {
+	short_desc+=" - lv2 only"
+	depends+=" lv2"
+	pkg_install() {
+		vmove usr/lib/lv2
+	}
+}
+
+do_install() {
+	# makefile has no install target
+	vmkdir usr/bin
+	vmkdir usr/lib/lv2
+	vmkdir usr/lib/vst
+	vmkdir usr/lib/vst3
+	vmkdir usr/lib/clap
+	vmkdir usr/share/doc/${pkgname}
+	vcopy bin/DragonflyEarlyReflections usr/bin
+	vcopy bin/DragonflyHallReverb usr/bin
+	vcopy bin/DragonflyPlateReverb usr/bin
+	vcopy bin/DragonflyRoomReverb usr/bin
+	vcopy bin/*.so usr/lib/vst
+	vcopy bin/*.vst3 usr/lib/vst3
+	vcopy bin/*.clap usr/lib/clap
+	vcopy bin/*.lv2 usr/lib/lv2
+	vcopy docs/* usr/share/doc/${pkgname}
+}

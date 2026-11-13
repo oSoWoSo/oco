@@ -1,0 +1,25 @@
+# Template file for 'vibepanel'
+pkgname=vibepanel
+version=0.17.2
+revision=1
+build_style=cargo
+hostmakedepends="pkg-config"
+makedepends="gtk4-devel gtk4-layer-shell-devel pulseaudio-devel eudev-libudev-devel"
+depends="upower NetworkManager"
+checkdepends="dbus"
+short_desc="GTK4 panel for Wayland with notifications, OSD, and quick settings"
+maintainer="LinuxNation <linuxnation@posteo.com>"
+license="MIT"
+homepage="https://github.com/prankstr/vibepanel"
+changelog="https://github.com/prankstr/vibepanel/releases"
+distfiles="https://github.com/prankstr/vibepanel/archive/refs/tags/v${version}.tar.gz"
+checksum=999375815359fe984447e0a1129a13ecf2d45031e06194f47f8e885424abb96b
+make_check_pre="dbus-run-session"
+
+do_install() {
+	vbin target/${RUST_TARGET}/release/vibepanel
+}
+
+post_install() {
+	vlicense LICENSE
+}

@@ -1,0 +1,15 @@
+# SFIZZ
+
+This package contains a patch, that replaces zenity with a user defined script to select sfz files, located in `/usr/local/bin/sfzselect`
+You need to write this file yourself, here is a script example :
+
+```bash
+# select a file for liquidsfz
+
+dir="$HOME/.local/sfz"
+theme="$ROFI_THEMES/theme_hist.rasi"
+f=$(find $dir | cut -d/ -f6- | grep -E "\.(sfz|xml)$"| rofi -theme $theme -font "$ROFI_FONT 20" -dmenu -i)
+echo "$dir/$f"
+```
+
+If you prefer sticking with zenity, just delete the `patches` dir.

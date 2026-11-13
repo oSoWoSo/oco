@@ -1,0 +1,19 @@
+# Template file for 'cosmic-panel'
+pkgname=cosmic-panel
+version=1.11.0
+revision=1
+build_style=cargo
+make_install_args="--path cosmic-panel-bin"
+hostmakedepends="pkg-config"
+makedepends="libxkbcommon-devel"
+short_desc="COSMIC applet for creating panels and docks"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-3.0-only"
+homepage="https://github.com/pop-os/cosmic-panel"
+distfiles="https://github.com/pop-os/cosmic-panel/archive/refs/tags/epoch-${version}.tar.gz"
+checksum=ef0de256580e1f1600c5a662179862976ba0b8475b45e99e9eb2713bed8e1007
+
+post_install() {
+	vmkdir usr/share/cosmic
+	vcopy "data/default_schema/*" usr/share/cosmic
+}

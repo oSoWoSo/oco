@@ -1,0 +1,43 @@
+# Template file for 'android-sdk'
+pkgname=android-sdk
+version=36
+revision=1
+_Tversion=29.0.3
+archs="x86_64"
+hostmakedepends="unzip"
+short_desc="Android SDK platform 36 and build-tools 29.0.3"
+maintainer="zenobit <zen@osowoso.org>"
+license="Apache-2.0"
+homepage="https://developer.android.com/studio"
+distfiles="https://dl.google.com/android/repository/platform-${version}_r02.zip>android-platform-${version}.zip
+ https://dl.google.com/android/repository/build-tools_r${_Tversion}-linux.zip>android-build-tools-${_Tversion}.zip"
+checksum="37607369a28c5b640b3a7998868d45898ebcb777565a0e85f9acf36f29631d2e
+ 5652d8cd5eaaade0b853bfe0ae6cbfa0706a6f70a0ebb25ca24a6f484ec3d855"
+nostrip=yes
+noshlibprovides=yes
+noverifyrdeps=yes
+
+do_extract() {
+	mkdir -p ${wrksrc}
+	unzip -q ${XBPS_SRCDISTDIR}/${pkgname}-${version}/android-platform-${version}.zip \
+		-d ${wrksrc}/platform-extract
+	unzip -q ${XBPS_SRCDISTDIR}/${pkgname}-${version}/android-build-tools-${_Tversion}.zip \
+		-d ${wrksrc}/build-tools-extract
+}
+
+do_install() {
+	# platform-36 zip contains android-36/ directory
+	vmkdir opt/android-sdk/platforms
+	cp -a ${wrksrc}/platform-extract/android-36 \
+		${DESTDIR}/opt/android-sdk/platforms/
+
+	# build-tools zip — contents go directly into 29.0.3/
+	vmkdir opt/android-sdk/build-tools/29.0.3
+	cp -a ${wrksrc}/build-tools-extract/. \
+		${DESTDIR}/opt/android-sdk/build-tools/29.0.3/
+
+	# Pre-accepted license hash (required by AGP)
+	vmkdir opt/android-sdk/licenses
+	printf "8933bad161af4178b1185d1a37fbf41ea5269c55\n" \
+		> ${DESTDIR}/opt/android-sdk/licenses/android-sdk-license
+}

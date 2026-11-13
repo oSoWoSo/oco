@@ -1,0 +1,23 @@
+# Template file for 'drako'
+pkgname=drako
+version=0.4.3
+revision=1
+build_style=go
+go_import_path="github.com/lucky7xz/drako"
+depends="git"
+checkdepends="${depends}"
+short_desc="Grid-based, customizable TUI-Deck launcher"
+maintainer="zenobit <zen@osowoso.org>"
+license="AGPL-3.0-only"
+homepage="https://github.com/lucky7xz/drako"
+distfiles="https://github.com/lucky7xz/drako/archive/refs/tags/v${version}.tar.gz"
+checksum=88154c606b9d66ba920a77bb5769830cd26d60feba8528c0f613a22e799a5f60
+
+do_check() {
+	go vet ./...
+	go test ./...
+}
+
+post_install() {
+	vlicense LICENCE
+}

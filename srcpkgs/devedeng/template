@@ -1,0 +1,15 @@
+# Template file for 'devedeng'
+pkgname=devedeng
+version=4.22.1
+revision=2
+build_style=python3-module
+hostmakedepends="gettext python3-setuptools"
+depends="cdrtools desktop-file-utils dvdauthor ffmpeg gtk+3
+ hicolor-icon-theme python3-gobject python3-setuptools vcdimager"
+short_desc="Create video DVDs and CDs"
+maintainer="Bella109 <belladev109@proton.me>"
+license="GPL-3.0-or-later"
+homepage="https://www.rastersoft.com/programas/devede.html"
+distfiles="https://gitlab.com/rastersoft/devedeng/-/archive/${version}/${pkgname}-${version}.tar.bz2"
+checksum=228b7eab9c6934e36e5e9e7b407cd6809e8f4ce398cba571cb86704aade3b617
+nocross=yes # vcdimager dependecy needs native build

@@ -1,0 +1,30 @@
+# Template file for 'Trilium'
+pkgname=Trilium
+version=0.107.0
+revision=1
+hostmakedepends="nodejs pnpm"
+short_desc="Build your personal knowledge base with Trilium Notes"
+maintainer="zenobit <zen@osowoso.org>"
+license="AGPL-3.0-only"
+homepage="https://github.com/TriliumNext/Trilium"
+distfiles="https://github.com/TriliumNext/Trilium/archive/refs/tags/v${version}.tar.gz"
+checksum=011e22eeab44a9932a61f9dd749f850ac74f4e669d3ee3011f7a46f202eb41ca
+nodebug=1
+nostrip=1
+noshlibprovides=1
+noverifyrdeps="usr/lib/trilium"
+
+do_build() {
+	export HOME="$wrksrc"
+	export PNPM_HOME="$wrksrc/.pnpm-home"
+	pnpm install --frozen-lockfile --ignore-scripts
+	pnpm server:build
+}
+
+do_install() {
+	vmkdir usr/lib/trilium
+	vcopy apps/server/dist/ usr/lib/trilium
+	vmkdir usr/bin
+	vbin "${wrksrc}/apps/server/dist/main.mjs" trilium-server
+	vlicense LICENSE
+}

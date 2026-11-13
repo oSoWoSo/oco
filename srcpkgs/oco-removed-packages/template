@@ -1,0 +1,29 @@
+# Template file for 'oco-removed-packages'
+pkgname=oco-removed-packages
+version=0.1.20261006
+revision=1
+metapackage=yes
+short_desc="Uninstalls packages removed from OCO repository"
+maintainer="zenobit <zen@osowoso.org>"
+license="Public Domain"
+homepage="https://repo.osowoso.org"
+
+replaces="
+ gradle<=9.0.0_1
+ surfer<=7.2.6_1
+ tomlplusplus<=3.4.0_1
+ tomlplusplus-devel<=3.4.0_1
+"
+
+if [ "$XBPS_TARGET_LIBC" = "musl" ]; then
+	#replaces+=" timidity<=2.15.0_1"
+	:
+fi
+
+case "$XBPS_TARGET_MACHINE" in
+	ppc64*) ;;
+	ppc*) ;;
+	armv6l*) ;;
+	armv7l*) ;;
+	aarch64*) ;;
+esac

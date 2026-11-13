@@ -1,0 +1,67 @@
+name: 🔄Report Codeberg PR status
+on:
+  workflow_run:
+    workflows: ["🏗️ build"]
+    types: [completed]
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  report:
+    name: Post GitHub build result to Codeberg PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout trusted default-branch revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Read the triggering workflow run context
+        id: context
+        uses: actions/github-script@v9
+        with:
+          # Read-only via workflow_run token; scripts never touch secrets here.
+          github-token: ${{ github.token }}
+          script: |
+            const run = context.payload.workflow_run;
+            const headBranch = run.head_branch;
+            // Mirrored Codeberg PRs appear as mirror/codeberg/pr-<n>.
+            const m = /^mirror\/codeberg\/pr-(\d+)$/.exec(headBranch);
+            if (!m) {
+              core.setOutput('skip', 'true');
+              return;
+            }
+            const prNumber = Number(m[1]);
+            const headSha = run.head_sha;
+            // Map the build workflow conclusion to a Forgejo status state.
+            const conclusion = run.conclusion;
+            const state = conclusion === 'success'
+              ? 'success'
+              : conclusion === 'skipped' || conclusion === 'cancelled'
+                ? 'error'
+                : 'failure';
+            const description = state === 'success'
+              ? 'GitHub Actions checks passed'
+              : state === 'failure'
+                ? 'GitHub Actions checks failed'
+                : 'GitHub Actions build did not complete';
+            core.setOutput('skip', 'false');
+            core.setOutput('pr_number', String(prNumber));
+            core.setOutput('head_sha', headSha);
+            core.setOutput('state', state);
+            core.setOutput('description', description);
+            core.setOutput('run_url', run.html_url);
+
+      - name: Post result to Codeberg
+        if: steps.context.outputs.skip == 'false'
+        env:
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+          COMMIT_SHA: ${{ steps.context.outputs.head_sha }}
+          STATUS_STATE: ${{ steps.context.outputs.state }}
+          STATUS_DESCRIPTION: ${{ steps.context.outputs.description }}
+          TARGET_URL: ${{ steps.context.outputs.run_url }}
+        run: python3 .github/scripts/ci/codeberg-status.py

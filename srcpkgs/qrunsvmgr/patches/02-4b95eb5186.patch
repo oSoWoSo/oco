@@ -1,0 +1,69 @@
+From 4b95eb51867f0d7627c2d025f744686bfceb9ff4 Mon Sep 17 00:00:00 2001
+From: ItsZariep <itszariep@disroot.org>
+Date: Sat, 20 Dec 2025 02:26:31 -0600
+Subject: [PATCH] Add small timeout
+
+---
+ src/CMakeLists.txt |  2 +-
+ src/main.cpp       | 17 ++++++++++++++---
+ 2 files changed, 15 insertions(+), 4 deletions(-)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 3f5dfc7..d385bb7 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -1,5 +1,5 @@
+ cmake_minimum_required(VERSION 3.16)
+-project(QRunsvMgr VERSION 0.2.5 LANGUAGES CXX)
++project(QRunsvMgr VERSION 0.2.6 LANGUAGES CXX)
+ set(CMAKE_CXX_STANDARD 17)
+ set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ add_compile_options(-Wall -Wextra -pedantic)
+diff --git a/src/main.cpp b/src/main.cpp
+index 7eefb83..2680438 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -7,7 +7,7 @@ bool tryConnectHelper()
+ {
+ 	QLocalSocket socket;
+ 	socket.connectToServer("/tmp/service_helper.sock");
+-	return socket.waitForConnected(2000); // 2s timeout
++	return socket.waitForConnected(2000);
+ }
+ 
+ int main(int argc, char *argv[])
+@@ -15,6 +15,9 @@ int main(int argc, char *argv[])
+ 	QApplication app(argc, argv);
+ 	MainWindow window;
+ 
++	int retryCount = 0;
++	const int maxRetries = 16;
++
+ 	QTimer *checkTimer = new QTimer(&window);
+ 	QObject::connect(checkTimer, &QTimer::timeout, [&]()
+ 	{
+@@ -25,14 +28,22 @@ int main(int argc, char *argv[])
+ 			bool privileged = window.isPrivileged();
+ 			if (!privileged)
+ 			{
+-				 window.removeSystemTab();
++				window.removeSystemTab();
+ 			}
+ 			
+ 			window.show();
+ 		}
+ 		else
+ 		{
+-			qDebug("Helper not available, retrying in 1 second...");
++			retryCount++;
++			qDebug("Helper not available, retrying in 1 second... (attempt %d/%d)", retryCount, maxRetries);
++
++			if (retryCount >= maxRetries)
++			{
++				qDebug("Failed to connect to helper after %d seconds. Exiting.", maxRetries);
++				checkTimer->stop();
++				app.quit();
++			}
+ 		}
+ 	});
+ 

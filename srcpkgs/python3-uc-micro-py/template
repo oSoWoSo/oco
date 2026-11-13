@@ -1,0 +1,17 @@
+# Template file for 'python3-uc-micro-py'
+pkgname=python3-uc-micro-py
+version=2.0.0
+revision=1
+build_style=python3-pep517
+hostmakedepends="python3-flit_core python3-setuptools"
+makedepends="python3-setuptools"
+short_desc="Unicode category micro library"
+maintainer="Orphaned <orphan@voidlinux.org>"
+license="MIT"
+homepage="https://github.com/tsutsu3/uc.micro-py"
+distfiles="https://files.pythonhosted.org/packages/78/67/9a363818028526e2d4579334460df777115bdec1bb77c08f9db88f6389f2/uc_micro_py-2.0.0.tar.gz"
+checksum=c53691e495c8db60e16ffc4861a35469b0ba0821fe409a8a7a0a71864d33a811
+
+post_install() {
+	vlicense LICENSE
+}

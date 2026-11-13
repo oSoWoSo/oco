@@ -1,0 +1,16 @@
+# Template file for 'python3-structlog'
+pkgname=python3-structlog
+version=26.1.0
+revision=1
+build_style=python3-pep517
+hostmakedepends="hatchling hatch-fancy-pypi-readme hatch-vcs"
+short_desc="Simple, powerful, and fast logging for Python"
+maintainer="zenobit <zen@osowoso.org>"
+license="Apache-2.0, MIT"
+homepage="https://github.com/hynek/structlog"
+distfiles="https://github.com/hynek/structlog/archive/refs/tags/${version}.tar.gz"
+checksum=a32b711804f80404b1c6de47556df2215c399acec2d38199e91ceb4a2ca1fd51
+
+post_install() {
+	vlicense LICENSE-MIT
+}

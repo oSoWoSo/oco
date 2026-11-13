@@ -1,0 +1,15 @@
+# Template file for 'ghgrab'
+pkgname=ghgrab
+version=2.3.1
+revision=1
+build_style=cargo
+short_desc="Terminal tool to browse and download files in git forges"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/abhixdd/ghgrab"
+distfiles="https://github.com/abhixdd/ghgrab/archive/refs/tags/v${version}.tar.gz"
+checksum=1efbe3553a29a2c62d71b0a1eee18937ae2beb80f9313426bfe1a152064ff5a7
+
+post_install() {
+	vlicense LICENSE
+}

@@ -1,0 +1,73 @@
+name: 🧹 cleanup
+
+on:
+  workflow_call:
+    inputs:
+      packages:
+        description: Space-separated package names to strip from the repository index
+        required: false
+        type: string
+        default: ''
+      repository_prefix:
+        description: 'Surfer public path prefix (empty for production; testing for test repository)'
+        required: false
+        type: string
+        default: ''
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: Space-separated package names to strip from the repository index
+        required: false
+        default: ''
+      repository_prefix:
+        description: 'Surfer public path prefix'
+        required: false
+        type: string
+        default: testing
+
+permissions:
+  contents: read
+  actions: write
+  packages: read
+
+jobs:
+  request:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+
+      - name: Checkout request source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Refuse production cleanup from non-OCO refs
+        if: inputs.repository_prefix == '' && github.ref != 'refs/heads/OCO'
+        env:
+          REF: ${{ github.ref }}
+        run: bash .github/scripts/ci/guard-oco-ref.sh
+
+      - name: Create cleanup request
+        env:
+          PACKAGES: ${{ inputs.packages }}
+          PREFIX: ${{ inputs.repository_prefix }}
+          SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          RUNNER_TEMP: ${{ runner.temp }}
+        run: bash .github/scripts/ci/cleanup-request.sh
+
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: surfer-publication
+          path: ${{ runner.temp }}/surfer-publication
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    needs: request
+    uses: ./.github/workflows/write-surfer.yml
+    with:
+      destination: ${{ inputs.repository_prefix == 'testing' && 'testing' || 'production' }}
+      artifact_name: surfer-publication
+    secrets: inherit

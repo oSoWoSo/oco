@@ -1,0 +1,24 @@
+# Template file for 'raysession'
+pkgname=raysession
+version=0.18.0
+revision=4
+build_style=gnu-makefile
+make_build_args="LRELEASE=/usr/lib/qt6/bin/lrelease"
+make_install_args="LRELEASE=/usr/lib/qt6/bin/lrelease"
+hostmakedepends="qt6-base qt6-tools python3-pyqt6-devel-tools which"
+makedepends="python3-pyqt6-devel"
+depends="python3-pyliblo3 python3-pyqt6-svg python3-pyqt6-widgets python3-pyqt6-gui python3-pyqt6-xml python3-QtPy python3-tkinter"
+short_desc="Session manager for audio programs using the NSM API"
+maintainer="Trve_AY <anthonyh@purplehaze.noho.st>"
+license="GPL-2.0-only"
+homepage="https://raysession.tuxfamily.org/"
+_hpbay="59506428aa245c89fdfc2c17428c638187a6b9fe"
+distfiles="https://github.com/Houston4444/RaySession/archive/refs/tags/v${version}.tar.gz
+ https://github.com/Houston4444/HoustonPatchbay/archive/${_hpbay}.tar.gz"
+checksum="2fa4c3396b64bd3684115d0bd447bcba6fa5dd7e2ab2d469ecfb292ca36b504b
+ 8888dae4f111192ac64e58b21bc68c7c2e6a99a8071a54233c07e7037b20ceba"
+skip_extraction="${_hpbay}.tar.gz"
+
+post_extract() {
+	vsrcextract -C HoustonPatchbay "${_hpbay}.tar.gz"
+}

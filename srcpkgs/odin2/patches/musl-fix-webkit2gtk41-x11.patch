@@ -1,0 +1,11 @@
+--- a/libs/JUCELV2/modules/juce_gui_extra/native/juce_linux_X11_WebBrowserComponent.cpp
++++ b/libs/JUCELV2/modules/juce_gui_extra/native/juce_linux_X11_WebBrowserComponent.cpp
+@@ -197,7 +197,7 @@
+     }
+ 
+     //==============================================================================
+-    DynamicLibrary gtkLib { "libgtk-3.so" }, webkitLib { "libwebkit2gtk-4.0.so" };
++    DynamicLibrary gtkLib { "libgtk-3.so" }, webkitLib { "libwebkit2gtk-4.1.so" };
+     const bool webKitIsAvailable = loadWebkitSymbols() && loadGtkSymbols();
+ 
+     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (WebKitSymbols)

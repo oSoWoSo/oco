@@ -1,0 +1,28 @@
+# Template file for 'NuvioDesktop'
+pkgname=NuvioDesktop
+version=0.3.8
+revision=1
+archs="x86_64*"
+hostmakedepends="pkg-config"
+makedepends="openjdk21 openjdk21-jmods"
+depends="openjdk21"
+short_desc="Multi Media Hub - multiple sources for watching Series, Movies and Anime"
+maintainer="Bella109 <belladev109@proton.me>"
+license="GPL-3.0-only"
+homepage="https://github.com/blarns/NuvioForLinux"
+distfiles="https://github.com/blarns/NuvioForLinux/archive/refs/tags/v${version}.tar.gz"
+checksum=e4a507f815ee755616edf9ab64f8206504605a5d38cc1dc9a04e8a2bb03425c8
+make_check=no # No test targets
+
+do_build() {
+	# Use gradle wrapper with --no-daemon to avoid native file watcher that requires glibc
+	# Using wrapper (not system gradle) because the project requires Gradle 8.x for AGP compatibility
+	./gradlew --no-daemon :composeApp:packageUberJarForCurrentOS
+}
+
+do_install() {
+	vinstall composeApp/build/compose/jars/nuvio-linux-x64-${version}.jar 644 usr/share/NuvioDesktop NuvioDesktop.jar
+	vbin ${FILESDIR}/Nuvio
+	vinstall ${FILESDIR}/nuvio.desktop 644 usr/share/applications
+	vinstall ${FILESDIR}/nuvio.svg 644 /usr/share/icons/hicolor/scalable/apps
+}

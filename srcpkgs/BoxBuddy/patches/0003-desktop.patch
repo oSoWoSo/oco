@@ -1,0 +1,12 @@
+Subject: [PATCH 1/1] data: run the boxbuddy binary, not boxbuddy-rs
+
+--- a/io.github.dvlv.boxbuddyrs.desktop
++++ b/io.github.dvlv.boxbuddyrs.desktop
+@@ -1,6 +1,6 @@
+ [Desktop Entry]
+ Name=BoxBuddy
+-Exec=boxbuddy-rs
++Exec=boxbuddy
+ Type=Application
+ Icon=io.github.dvlv.boxbuddyrs
+ Categories=Utility;

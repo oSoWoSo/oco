@@ -1,0 +1,24 @@
+# Template file for 'menu-themes'
+pkgname=menu-themes
+version=0.9.0
+revision=2
+archs="x86_64 aarch64"
+depends="kando"
+short_desc="Collection of menu themes for Kando"
+maintainer="zenobit <zen@osowoso.org>"
+license="CC-BY-4.0,CC0-1.0,MIT,OFL-1.1"
+homepage="https://github.com/kando-menu/menu-themes"
+distfiles="https://github.com/kando-menu/menu-themes/archive/refs/tags/v${version}.tar.gz"
+checksum=8da46380e619b60b3b772cbe221ae868888f7324b9852752aaf805461f21806d
+
+do_install() {
+	vmkdir usr/share/kando/menu-themes
+	vcopy themes/* usr/share/kando/menu-themes
+}
+
+post_install() {
+	vlicense LICENSES/CC-BY-4.0.txt
+	vlicense LICENSES/CC0-1.0.txt
+	vlicense LICENSES/MIT.txt
+	vlicense LICENSES/OFL-1.1.txt
+}

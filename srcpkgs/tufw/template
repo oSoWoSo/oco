@@ -1,0 +1,19 @@
+# Template file for 'tufw'
+pkgname=tufw
+version=0.2.8
+revision=2
+build_style=go
+go_import_path=github.com/peltho/tufw
+go_package=github.com/peltho/tufw/cmd/tufw
+hostmakedepends="pkg-config"
+depends="ufw"
+short_desc="Terminal UI for ufw"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/peltho/tufw"
+distfiles="https://github.com/peltho/tufw/archive/refs/tags/v${version}.tar.gz"
+checksum=ad4693be3ddd0e27d4329401ad1e10f66188c7388688b05fa62c71324efdd009
+
+post_install() {
+	vlicense LICENSE.txt
+}

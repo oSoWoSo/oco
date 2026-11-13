@@ -1,0 +1,31 @@
+# Template file for 'caerus'
+pkgname=caerus
+version=0.8.2
+revision=1
+build_style=cargo
+hostmakedepends="pkg-config clang"
+makedepends="gtk4-devel libxbps-devel glib-devel"
+depends="polkit"
+short_desc="Package manager for Void Linux, inspired by Synaptic"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-3.0-or-later"
+homepage="https://github.com/mendescotta/Caerus"
+distfiles="https://github.com/mendescotta/Caerus/archive/refs/tags/v${version}.tar.gz"
+checksum=12f506238bf40f6fc42cab668ab51c9fa2f9122db33b966e5f3d80d528378fc8
+
+do_install() {
+	vbin target/${RUST_TARGET}/release/caerus
+	vinstall target/${RUST_TARGET}/release/caerus-helper 755 usr/libexec
+
+	vinstall caerus/data/org.voidlinux.caerus.policy 644 usr/share/polkit-1/actions
+	vinstall caerus/data/org.voidlinux.caerus.desktop 644 usr/share/applications
+	vinstall caerus/data/org.voidlinux.caerus.metainfo.xml 644 usr/share/metainfo
+	vinstall caerus/data/icons/hicolor/scalable/apps/org.voidlinux.caerus.svg \
+		644 usr/share/icons/hicolor/scalable/apps
+
+	find caerus/data/icons/hicolor/scalable -name '*.svg' -not -path '*/apps/*' \
+	| while read -r svg; do
+		rel="${svg#caerus/data/icons/hicolor/}"
+		vinstall "${svg}" 644 "usr/share/icons/hicolor/$(dirname "${rel}")"
+	done
+}

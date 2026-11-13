@@ -1,0 +1,11 @@
+--- a/src/utils.rs
++++ b/src/utils.rs
+@@ -714,7 +714,7 @@
+ 
+     let language_code = env::var("LANG").unwrap_or_else(|_| "en_US".to_string());
+ 
+-    let mut locale_directory = String::from("./po");
++    let mut locale_directory = String::from("/usr/share/locale");
+ 
+     // --TRANSLATORS: Comment out the next 8 lines to test your development locale
+     /*if is_flatpak() {

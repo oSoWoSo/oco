@@ -1,0 +1,529 @@
+From e3a30230009f3fd8494b7594ce5a5d5405d22230 Mon Sep 17 00:00:00 2001
+From: ItsZariep <itszariep@disroot.org>
+Date: Wed, 27 May 2026 10:59:20 -0600
+Subject: [PATCH] Fix hardcoded sockets paths
+
+---
+ .gitignore                          |   1 +
+ CMakeLists.txt                      | 170 ++++++++++++++++++++++++++++
+ README.md                           |  22 ++--
+ src/CMakeLists.txt                  | 103 -----------------
+ src/MainWindow.cpp                  |   4 +-
+ src/ServiceItem.cpp                 |  18 ++-
+ src/ServiceItem.h                   |  13 ++-
+ src/helpers/ServiceHelper-dinit.cpp |   2 +-
+ src/helpers/ServiceHelper-runit.cpp |   2 +-
+ src/helpers/ServiceHelper-s6.cpp    |   2 +-
+ src/main.cpp                        |   3 +-
+ 11 files changed, 213 insertions(+), 127 deletions(-)
+ create mode 100644 CMakeLists.txt
+ delete mode 100644 src/CMakeLists.txt
+
+diff --git a/.gitignore b/.gitignore
+index a896de8..4a84730 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -1,2 +1,3 @@
+ *.o
+ src/build
++build
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 0000000..47920ce
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,170 @@
++cmake_minimum_required(VERSION 3.16)
++
++project(QRunsvMgr VERSION 0.2.6 LANGUAGES CXX)
++
++set(CMAKE_CXX_STANDARD 17)
++set(CMAKE_CXX_STANDARD_REQUIRED ON)
++
++add_compile_options(-Wall -Wextra -pedantic)
++set(CMAKE_AUTOMOC ON)
++
++set(SRC_DIR ${CMAKE_SOURCE_DIR}/src)
++
++option(BUILD_QT_GUI "Build the Qt GUI (qrunsvmgr-qt)" ON)
++option(BUILD_RUNIT_HELPER "Build runit service helper" ON)
++option(BUILD_DINIT_HELPER "Build dinit service helper" OFF)
++option(BUILD_S6_HELPER "Build s6 service helper" OFF)
++
++find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network)
++find_package(PkgConfig REQUIRED)
++
++if(BUILD_DINIT_HELPER)
++	pkg_check_modules(DINITCTL REQUIRED libdinitctl)
++endif()
++
++qt_standard_project_setup()
++
++configure_file(
++	${SRC_DIR}/Version.h.in
++	${CMAKE_BINARY_DIR}/Version.h
++	@ONLY
++)
++
++if(BUILD_QT_GUI)
++	add_executable(qrunsvmgr-qt
++		${SRC_DIR}/main.cpp
++		${SRC_DIR}/MainWindow.h
++		${SRC_DIR}/MainWindow.cpp
++		${SRC_DIR}/ServiceItem.h
++		${SRC_DIR}/ServiceItem.cpp
++		${SRC_DIR}/ConfigDialog.h
++		${SRC_DIR}/ConfigDialog.cpp
++		${SRC_DIR}/Settings.h
++		${SRC_DIR}/Settings.cpp
++	)
++
++	target_link_libraries(qrunsvmgr-qt PRIVATE
++		Qt6::Core
++		Qt6::Widgets
++		Qt6::Network
++	)
++
++	target_include_directories(qrunsvmgr-qt PRIVATE
++		${CMAKE_BINARY_DIR}
++		${SRC_DIR}
++	)
++
++	message(STATUS "Building Qt GUI: qrunsvmgr-qt")
++endif()
++
++if(BUILD_RUNIT_HELPER)
++	add_executable(qrunsvmgr-helper-runit
++		${SRC_DIR}/helpers/ServiceHelper-runit.cpp
++	)
++
++	target_link_libraries(qrunsvmgr-helper-runit PRIVATE
++		Qt6::Core
++		Qt6::Network
++	)
++
++	set_target_properties(qrunsvmgr-helper-runit
++		PROPERTIES OUTPUT_NAME "qrunsvmgr-helper-runit"
++	)
++
++	message(STATUS "Building runit helper")
++endif()
++
++if(BUILD_DINIT_HELPER)
++	add_executable(qrunsvmgr-helper-dinit
++		${SRC_DIR}/helpers/ServiceHelper-dinit.cpp
++	)
++
++	target_link_libraries(qrunsvmgr-helper-dinit PRIVATE
++		Qt6::Core
++		Qt6::Network
++		${DINITCTL_LIBRARIES}
++	)
++
++	target_include_directories(qrunsvmgr-helper-dinit PRIVATE
++		${DINITCTL_INCLUDE_DIRS}
++	)
++
++	target_compile_options(qrunsvmgr-helper-dinit PRIVATE
++		${DINITCTL_CFLAGS_OTHER}
++	)
++
++	set_target_properties(qrunsvmgr-helper-dinit
++		PROPERTIES OUTPUT_NAME "qrunsvmgr-helper-dinit"
++	)
++
++	message(STATUS "Building dinit helper")
++endif()
++
++if(BUILD_S6_HELPER)
++	add_executable(qrunsvmgr-helper-s6
++		${SRC_DIR}/helpers/ServiceHelper-s6.cpp
++	)
++
++	target_link_libraries(qrunsvmgr-helper-s6 PRIVATE
++		Qt6::Core
++		Qt6::Network
++	)
++
++	set_target_properties(qrunsvmgr-helper-s6
++		PROPERTIES OUTPUT_NAME "qrunsvmgr-helper-s6"
++	)
++
++	message(STATUS "Building s6 helper")
++endif()
++
++configure_file(
++	${SRC_DIR}/qrunsvmgr
++	${CMAKE_BINARY_DIR}/qrunsvmgr
++	COPYONLY
++)
++
++set(INSTALL_TARGETS)
++
++if(BUILD_QT_GUI)
++	list(APPEND INSTALL_TARGETS qrunsvmgr-qt)
++endif()
++
++if(BUILD_RUNIT_HELPER)
++	list(APPEND INSTALL_TARGETS qrunsvmgr-helper-runit)
++endif()
++
++if(BUILD_DINIT_HELPER)
++	list(APPEND INSTALL_TARGETS qrunsvmgr-helper-dinit)
++endif()
++
++if(BUILD_S6_HELPER)
++	list(APPEND INSTALL_TARGETS qrunsvmgr-helper-s6)
++endif()
++
++install(TARGETS ${INSTALL_TARGETS}
++	RUNTIME DESTINATION bin
++)
++
++install(FILES ${SRC_DIR}/qrunsvmgr
++	DESTINATION bin
++	PERMISSIONS
++		OWNER_EXECUTE OWNER_WRITE OWNER_READ
++		GROUP_EXECUTE GROUP_READ
++		WORLD_EXECUTE WORLD_READ
++)
++
++install(FILES ${SRC_DIR}/qrunsvmgr.desktop
++	DESTINATION share/applications
++	PERMISSIONS
++		OWNER_READ OWNER_WRITE OWNER_EXECUTE
++		GROUP_READ GROUP_EXECUTE
++		WORLD_READ WORLD_EXECUTE
++)
++
++if(BUILD_QT_GUI)
++	add_custom_target(run
++		COMMAND ./qrunsvmgr --runit
++		DEPENDS qrunsvmgr-qt
++		WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
++	)
++endif()
+\ No newline at end of file
+diff --git a/README.md b/README.md
+index 08307e7..daac549 100644
+--- a/README.md
++++ b/README.md
+@@ -4,7 +4,6 @@
+ 
+ `qrunsvmgr` is a lightweight graphical interface for managing system services. It provides a simple way to start, stop, and monitor your system services.
+ 
+-
+ ## Features:
+ 
+ - [x] Start, stop, and restart services
+@@ -16,21 +15,21 @@
+ - [x] View services status
+ - [x] Different backends
+ 
+-## Building
++## Build and use
++
++<details>
+ 
+ ```
+ git clone https://codeberg.org/itszariep/qrunsvmgr
+-cd qrunsvmgr/src
++cd qrunsvmgr
+ ```
++
+ ```
+-mkdir build
+-cd build
++mkdir -B build
+ ```
++
+ ```
+-cmake ..
+-```
+-```
+-cmake --build .
++cmake --build build
+ ```
+ 
+  You will have: `qrunsvmgr-qt`, `qrunsvmgr-helper-runit`/`qrunsvmgr-helper-dinit` and `qrunsvgr`. use the last for easily launching the program, with --{init} as argument, for example:
+@@ -43,6 +42,11 @@ cmake --build .
+  qrunsvmgr --dinit
+  ```
+  
++> [!NOTE]  
++>  Since i cannot reliable get the current init or user setup, if you want to use the menu entry, you should patch the qrunsvmgr.desktop file (it defaults to `--runit`)
++
++</details>
++
+ ## Backends
+ 
+ Originally, QRunsvMgr was going to be exclusively for `runit`, however, due to the IPC structure I created, I realized that I could make the backend run in a different way and the GUI would still be compatible.
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+deleted file mode 100644
+index d385bb7..0000000
+--- a/src/CMakeLists.txt
++++ /dev/null
+@@ -1,103 +0,0 @@
+-cmake_minimum_required(VERSION 3.16)
+-project(QRunsvMgr VERSION 0.2.6 LANGUAGES CXX)
+-set(CMAKE_CXX_STANDARD 17)
+-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+-add_compile_options(-Wall -Wextra -pedantic)
+-set(CMAKE_AUTOMOC ON)
+-
+-option(BUILD_QT_GUI "Build the Qt GUI (qrunsvmgr-qt)" ON)
+-option(BUILD_RUNIT_HELPER "Build runit service helper" ON)
+-option(BUILD_DINIT_HELPER "Build dinit service helper" ON)
+-option(BUILD_S6_HELPER "Build s6 service helper" OFF)
+-
+-find_package(Qt6 REQUIRED COMPONENTS Core Widgets Network)
+-find_package(PkgConfig REQUIRED)
+-
+-if(BUILD_DINIT_HELPER)
+-	pkg_check_modules(DINITCTL REQUIRED libdinitctl)
+-endif()
+-
+-qt_standard_project_setup()
+-configure_file(${CMAKE_SOURCE_DIR}/Version.h.in ${CMAKE_BINARY_DIR}/Version.h @ONLY)
+-
+-if(BUILD_QT_GUI)
+-	add_executable(qrunsvmgr-qt
+-		main.cpp
+-		MainWindow.h
+-		MainWindow.cpp
+-		ServiceItem.h
+-		ServiceItem.cpp
+-		ConfigDialog.h
+-		ConfigDialog.cpp
+-		Settings.h
+-		Settings.cpp
+-	)
+-	target_link_libraries(qrunsvmgr-qt PRIVATE Qt6::Core Qt6::Widgets Qt6::Network)
+-	target_include_directories(qrunsvmgr-qt PRIVATE ${CMAKE_BINARY_DIR})
+-	message(STATUS "Building Qt GUI: qrunsvmgr-qt")
+-endif()
+-
+-if(BUILD_RUNIT_HELPER)
+-	add_executable(qrunsvmgr-helper-runit helpers/ServiceHelper-runit.cpp)
+-	target_link_libraries(qrunsvmgr-helper-runit PRIVATE Qt6::Core Qt6::Network)
+-	set_target_properties(qrunsvmgr-helper-runit PROPERTIES OUTPUT_NAME "qrunsvmgr-helper-runit")
+-	message(STATUS "Building runit helper")
+-endif()
+-
+-if(BUILD_DINIT_HELPER)
+-	add_executable(qrunsvmgr-helper-dinit helpers/ServiceHelper-dinit.cpp)
+-	target_link_libraries(qrunsvmgr-helper-dinit PRIVATE Qt6::Core Qt6::Network ${DINITCTL_LIBRARIES})
+-	target_include_directories(qrunsvmgr-helper-dinit PRIVATE ${DINITCTL_INCLUDE_DIRS})
+-	target_compile_options(qrunsvmgr-helper-dinit PRIVATE ${DINITCTL_CFLAGS_OTHER})
+-	set_target_properties(qrunsvmgr-helper-dinit PROPERTIES OUTPUT_NAME "qrunsvmgr-helper-dinit")
+-	message(STATUS "Building dinit helper")
+-endif()
+-
+-if(BUILD_S6_HELPER)
+-	add_executable(qrunsvmgr-helper-s6 helpers/ServiceHelper-s6.cpp)
+-	target_link_libraries(qrunsvmgr-helper-s6 PRIVATE Qt6::Core Qt6::Network)
+-	set_target_properties(qrunsvmgr-helper-s6 PROPERTIES OUTPUT_NAME "qrunsvmgr-helper-s6")
+-	message(STATUS "Building s6 helper")
+-endif()
+-
+-configure_file(${CMAKE_SOURCE_DIR}/qrunsvmgr ${CMAKE_BINARY_DIR}/qrunsvmgr COPYONLY)
+-
+-set(INSTALL_TARGETS)
+-
+-if(BUILD_QT_GUI)
+-	list(APPEND INSTALL_TARGETS qrunsvmgr-qt)
+-endif()
+-if(BUILD_RUNIT_HELPER)
+-	list(APPEND INSTALL_TARGETS qrunsvmgr-helper-runit)
+-endif()
+-if(BUILD_DINIT_HELPER)
+-	list(APPEND INSTALL_TARGETS qrunsvmgr-helper-dinit)
+-endif()
+-if(BUILD_S6_HELPER)
+-	list(APPEND INSTALL_TARGETS qrunsvmgr-helper-s6)
+-endif()
+-
+-install(TARGETS ${INSTALL_TARGETS}
+-	RUNTIME DESTINATION bin
+-)
+-
+-install(FILES ${CMAKE_SOURCE_DIR}/qrunsvmgr
+-	DESTINATION bin
+-	PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+-				GROUP_EXECUTE GROUP_READ
+-				WORLD_EXECUTE WORLD_READ
+-)
+-install(FILES ${CMAKE_SOURCE_DIR}/qrunsvmgr.desktop
+-	DESTINATION share/applications
+-	PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE
+-				GROUP_READ GROUP_EXECUTE
+-				WORLD_READ WORLD_EXECUTE
+-)
+-
+-if(BUILD_QT_GUI)
+-	add_custom_target(run
+-		COMMAND ./qrunsvmgr --runit
+-		DEPENDS qrunsvmgr-qt
+-		WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
+-	)
+-endif()
+diff --git a/src/MainWindow.cpp b/src/MainWindow.cpp
+index 7fb27e1..1c78fec 100644
+--- a/src/MainWindow.cpp
++++ b/src/MainWindow.cpp
+@@ -216,7 +216,7 @@ void MainWindow::openConfigDialog()
+ QJsonObject MainWindow::sendHelperRequest(const QString &cmd, const QJsonObject &payload)
+ {
+ 	QLocalSocket socket;
+-	socket.connectToServer("/tmp/service_helper.sock");
++	socket.connectToServer(ServiceItem::serviceSocketPath());
+ 
+ 	if (!socket.waitForConnected(1000))
+ 	{
+@@ -379,7 +379,7 @@ void MainWindow::notifyHelperOnExit()
+ 	payload["cmd"] = "shutdown";
+ 
+ 	QLocalSocket socket;
+-	socket.connectToServer("/tmp/service_helper.sock");
++	socket.connectToServer(ServiceItem::serviceSocketPath());
+ 	if (socket.waitForConnected(500))
+ 	{
+ 		QJsonDocument doc(payload);
+diff --git a/src/ServiceItem.cpp b/src/ServiceItem.cpp
+index 223a8e4..c2f6a7f 100644
+--- a/src/ServiceItem.cpp
++++ b/src/ServiceItem.cpp
+@@ -17,6 +17,19 @@
+ #include <unistd.h>
+ #include <sys/stat.h>
+ 
++QString ServiceItem::serviceSocketPath()
++{
++	QString tempPath =
++	QStandardPaths::writableLocation(QStandardPaths::TempLocation);
++
++	if (tempPath.isEmpty())
++	{
++		tempPath = QDir::tempPath();
++	}
++
++	return QDir(tempPath).filePath("qrunsvmgr.sock");
++}
++
+ void ServiceItem::showMessageBox(const std::function<void()> &boxFunc)
+ {
+ 	MainWindow *mainWin = getMainWindow();
+@@ -33,13 +46,12 @@ void ServiceItem::showMessageBox(const std::function<void()> &boxFunc)
+ 	}
+ }
+ 
+-
+ bool ServiceItem::sendHelperCommand(const QString &cmd, const QJsonObject &extra)
+ {
+ 	qDebug() << "[ServiceItem]" << serviceInfo.name << "sendHelperCommand:" << cmd << "extra:" << extra;
+ 
+ 	QLocalSocket socket;
+-	socket.connectToServer("/tmp/service_helper.sock");
++	socket.connectToServer(ServiceItem::serviceSocketPath());
+ 	if (!socket.waitForConnected(1000))
+ 	{
+ 		qWarning() << "[ServiceItem]" << serviceInfo.name << "Cannot connect to helper daemon";
+@@ -166,7 +178,7 @@ ServiceStatus ServiceItem::readServiceStatus()
+ 	req["targetPath"] = serviceInfo.targetPath;
+ 
+ 	QLocalSocket socket;
+-	socket.connectToServer("/tmp/service_helper.sock");
++	socket.connectToServer(ServiceItem::serviceSocketPath());
+ 	if (!socket.waitForConnected(1000))
+ 	{
+ 		return ServiceStatus::Unknown;
+diff --git a/src/ServiceItem.h b/src/ServiceItem.h
+index ef2d514..63137ad 100644
+--- a/src/ServiceItem.h
++++ b/src/ServiceItem.h
+@@ -1,14 +1,14 @@
+ #ifndef SERVICEITEM_H
+ #define SERVICEITEM_H
+ 
+-#include <QWidget>
+ #include <QHBoxLayout>
+-#include <QLabel>
+-#include <QPushButton>
+-#include <QMenu>
+-#include <QTimer>
+ #include <QJsonObject>
+-#include <functional>
++#include <QLabel>
++#include <QMenu>
++#include <QPushButton>
++#include <QStandardPaths>
++#include <QTimer>
++#include <QWidget>
+ 
+ struct ServiceInfo
+ {
+@@ -37,6 +37,7 @@ public:
+ 		const QString &targetPath, QWidget *parent = nullptr);
+ 
+ 	void updateStatus();
++	static QString serviceSocketPath();
+ 
+ private slots:
+ 	void startService();
+diff --git a/src/helpers/ServiceHelper-dinit.cpp b/src/helpers/ServiceHelper-dinit.cpp
+index 97ae518..d08cecd 100644
+--- a/src/helpers/ServiceHelper-dinit.cpp
++++ b/src/helpers/ServiceHelper-dinit.cpp
+@@ -30,7 +30,7 @@ class ServiceHelper : public QObject
+ 			{
+ 				tempPath = QDir::tempPath();
+ 			}
+-			socketPath = QDir(tempPath).filePath("service_helper.sock");
++			socketPath = QDir(tempPath).filePath("qrunsvmgr.sock");
+ 			qDebug() << "=== ServiceHelper starting ===";
+ 			qDebug() << "Temp path:" << tempPath;
+ 			qDebug() << "Socket path:" << socketPath;
+diff --git a/src/helpers/ServiceHelper-runit.cpp b/src/helpers/ServiceHelper-runit.cpp
+index 3e0ee06..6501797 100644
+--- a/src/helpers/ServiceHelper-runit.cpp
++++ b/src/helpers/ServiceHelper-runit.cpp
+@@ -25,7 +25,7 @@ class ServiceHelper : public QObject
+ 				tempPath = QDir::tempPath();
+ 			}
+ 
+-			socketPath = QDir(tempPath).filePath("service_helper.sock");
++			socketPath = QDir(tempPath).filePath("qrunsvmgr.sock");
+ 
+ 			qDebug() << "=== ServiceHelper starting ===";
+ 			qDebug() << "Temp path:" << tempPath;
+diff --git a/src/helpers/ServiceHelper-s6.cpp b/src/helpers/ServiceHelper-s6.cpp
+index b96baed..1ed4c40 100644
+--- a/src/helpers/ServiceHelper-s6.cpp
++++ b/src/helpers/ServiceHelper-s6.cpp
+@@ -25,7 +25,7 @@ public:
+ 		if (tempPath.isEmpty())
+ 			tempPath = QDir::tempPath();
+ 
+-		socketPath = QDir(tempPath).filePath("service_helper.sock");
++		socketPath = QDir(tempPath).filePath("qrunsvmgr.sock");
+ 
+ 		qDebug() << "=== ServiceHelper (s6) starting ===";
+ 		qDebug() << "Temp path:" << tempPath;
+diff --git a/src/main.cpp b/src/main.cpp
+index 2680438..040bf01 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -2,11 +2,12 @@
+ #include <QTimer>
+ #include <QLocalSocket>
+ #include "MainWindow.h"
++#include "ServiceItem.h"
+ 
+ bool tryConnectHelper()
+ {
+ 	QLocalSocket socket;
+-	socket.connectToServer("/tmp/service_helper.sock");
++	socket.connectToServer(ServiceItem::serviceSocketPath());
+ 	return socket.waitForConnected(2000);
+ }
+ 

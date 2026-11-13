@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Void Software Store
+Comment=Software management for Void Community Linux
+Exec=void-software-store
+Icon=void-software-store
+Terminal=false
+Categories=System;PackageManager;
+StartupWMClass=com.voidlinux.softwarestore

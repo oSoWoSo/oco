@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Void Live Creator
+GenericName=Live ISO Builder
+Comment=Create a custom Void Linux Live ISO from your system
+Comment[de]=Erstelle eine eigene Void Linux Live ISO von deinem System
+Comment[fr]=Créer un Live ISO Void Linux personnalisé
+Comment[es]=Crear una ISO Live de Void Linux personalizada
+Exec=/usr/local/bin/void-live-creator
+Icon=drive-optical
+Terminal=false
+Categories=System;Utility;
+Keywords=void;linux;iso;live;creator;builder;backup;

@@ -1,0 +1,15 @@
+# Template file for 'python3-PyGithub'
+pkgname=python3-PyGithub
+version=2.10.0
+revision=1
+build_style=python3-pep517
+hostmakedepends="python3-setuptools_scm python3-wheel"
+depends="python3-pynacl python3-requests python3-PyJWT python3-typing_extensions python3-urllib3"
+checkdepends="${depends} python3-pytest python3-responses"
+short_desc="Python library to access the GitHub API v3"
+maintainer="Orphan <orphan@voidlinux.org>"
+license="LGPL-3.0-only"
+homepage="https://pygithub.readthedocs.io/"
+distfiles="${PYPI_SITE}/p/pygithub/pygithub-${version}.tar.gz"
+checksum=90ff24ef1cd1bd57124c2a3869cafee9d7b066909129ecdaba2c2d1903bc118d
+#make_check=no # Requires GitHub API credentials

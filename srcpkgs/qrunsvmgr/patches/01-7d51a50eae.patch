@@ -1,0 +1,21 @@
+From 7d51a50eae6c11f0f907d1fbb319cd8acae45cdd Mon Sep 17 00:00:00 2001
+From: ItsZariep <itszariep@disroot.org>
+Date: Tue, 11 Nov 2025 14:11:02 -0600
+Subject: [PATCH] .
+
+---
+ src/MainWindow.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/MainWindow.cpp b/src/MainWindow.cpp
+index 5706bd0..7fb27e1 100644
+--- a/src/MainWindow.cpp
++++ b/src/MainWindow.cpp
+@@ -48,6 +48,7 @@ MainWindow::MainWindow(QWidget *parent)
+ 		"services",
+ 		"preferences-system-services",
+ 		"preferences-system-session-services",
++		"preferences-system-startup",
+ 		"system-config-services"
+ 	};
+ 

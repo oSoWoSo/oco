@@ -1,0 +1,28 @@
+#!/bin/sh
+export PORT="${PORT:-20128}"
+export DATA_DIR="${DATA_DIR:-${XDG_DATA_HOME:-${HOME}/.local/share}/omniroute}"
+# APP_LOG_TO_FILE (not LOG_TO_FILE) is the env var the app actually reads
+export APP_LOG_TO_FILE="${APP_LOG_TO_FILE:-false}"
+# When file logging is enabled, write to DATA_DIR instead of the read-only /usr/lib path
+export APP_LOG_FILE_PATH="${APP_LOG_FILE_PATH:-${DATA_DIR}/logs/application/app.log}"
+
+mkdir -p "${DATA_DIR}/logs/application"
+
+# Generate JWT_SECRET if not set and persist across restarts
+CONFIG_DIR="${HOME}/.config/omniroute"
+mkdir -p "${CONFIG_DIR}"
+if [ -z "${JWT_SECRET}" ]; then
+	if [ -f "${CONFIG_DIR}/omniroute.conf" ]; then
+		. "${CONFIG_DIR}/omniroute.conf"
+	fi
+	if [ -z "${JWT_SECRET}" ]; then
+		JWT_SECRET=$(openssl rand -base64 48)
+		printf 'JWT_SECRET=%s\n' "${JWT_SECRET}" > "${CONFIG_DIR}/omniroute.conf"
+		chmod 600 "${CONFIG_DIR}/omniroute.conf"
+	fi
+fi
+
+# Set initial password if not set
+export INITIAL_PASSWORD=${INITIAL_PASSWORD:-CHANGEME}
+
+exec node /usr/lib/omniroute/.next/standalone/server.js "$@"

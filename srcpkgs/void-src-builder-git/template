@@ -1,0 +1,28 @@
+# Template file for 'void-src-builder-git'
+pkgname=void-src-builder-git
+version=0.0.0
+revision=2
+depends="python3 python3-gobject gtk+3 gobject-introspection git desktop-file-utils"
+short_desc="Build packages from the Void source code"
+maintainer="zenobit <zen@osowoso.org>"
+license="GPL-2.0-only"
+homepage="https://codeberg.org/pinguin-void/void-src-builder"
+distfiles="https://codeberg.org/pinguin-void/void-src-builder/archive/798fa83d255441b452bb9bc7104db1d8498d4c24.tar.gz"
+checksum=749d60d8c6b77d52eee3634de3b5c8af69f4f284a575386701dc0ab8e76acd21
+
+do_install() {
+	# No license file provided
+	#vlicense LICENSE
+
+	vinstall void-src-builder.py 644 usr/lib/void-src-builder
+	vbin "${FILESDIR}/void-src-builder"
+
+	vmkdir usr/share/void-src-builder
+	vcopy README.md usr/share/void-src-builder
+
+	vmkdir usr/share/icons
+	vcopy builder.png usr/share/icons
+
+	vmkdir usr/share/applications
+	vcopy "${FILESDIR}/void-src-builder.desktop" usr/share/applications
+}

@@ -1,0 +1,20 @@
+# Template file for 'gh-lazy'
+pkgname=gh-lazy
+version=0.6.6
+revision=2
+build_style=python3-pep517
+hostmakedepends="hatchling"
+depends="python3-rich python3-PyGithub python3-dateutil python3-pydantic
+ python3-requests python3-click python3-hishel python3-httpx python3-textual
+ python3-linkify-it-py python3-uc-micro-py"
+checkdepends="${depends} python3-pytest python3-typing_extensions python3-idna python3-anyio"
+short_desc="Terminal UI for interacting with GitHub"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/gizmo385/gh-lazy"
+distfiles="https://github.com/gizmo385/gh-lazy/archive/refs/tags/v${version}.tar.gz"
+checksum=a831aaddaf714571e1a0465034c1f177d84e88be6dfc7a319b8a8bff14f64d23
+
+post_install() {
+	vlicense LICENSE
+}

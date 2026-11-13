@@ -1,0 +1,17 @@
+# Template file for 'svi'
+pkgname=svi
+version=0.2.2
+revision=1
+build_style=python3-pep517
+hostmakedepends="hatchling"
+depends="python3-gobject"
+short_desc="Graphical installer for Void Linux, built with GTK4 and Python"
+maintainer="zenobit <zen@osowoso.org>"
+license="AGPL-3.0-only"
+homepage="https://codeberg.org/LinuxNation/svi"
+distfiles="https://codeberg.org/LinuxNation/svi/archive/v${version}.tar.gz"
+checksum=9288a6dd0346d4d0cd65ea02e1af193655784fc1e8b0b28e1bfd65d3c6a464e6
+
+post_install() {
+	vlicense LICENSE
+}

@@ -2,7 +2,7 @@
 
 # Script to ease packaging more apps together
 
-# Architecture selectable via --arch / XBPS_TARGET_ARCH env.
+# Architecture selectable via --arch / XBPS_TARGET_ARCH env
 _cli_arch=""
 _i=0
 _cli_args=("$@")
@@ -45,22 +45,20 @@ readonly XBPS_DISTDIR="${XBPS_DISTDIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && 
 sourceDir="${sourceDir:-$XBPS_DISTDIR/srcpkgs}"
 destinationDir="${destinationDir:-/home/z/Projekty/oco/srcpkgs}"
 
-# The bump, lint and build phases must run as the build user, never as root:
-#
-#  - xbps-src refuses to run as root (it needs XBPS_ALLOW_CHROOT_BREAKOUT).
-#  - The chroot user database is written from the identity of the user that
-#    prepares the masterdir, so a root-prepared masterdir has no entry for
-#    the build user and package tests resolving the current user fail with
-#    "user: unknown userid <uid>".
-#  - Files created as root inside the hostdir/masterdir are not writable by
-#    the build user afterwards.
-export XBPS_HOSTDIR="${XBPS_HOSTDIR:-$XBPS_DISTDIR/hostdir}"
-
-# Run a command as the build user. Outside CI (no builder account) the
-# command runs as the current user.
 _as_builder() {
 	if [ "$(id -u)" -eq 0 ] && command -v sudo >/dev/null 2>&1 && id builder >/dev/null 2>&1; then
-		sudo -E -H -u builder "$@"
+		sudo -E -H builder "$@"
+	else
+		"$@"
+	fi
+}
+
+# The bump, lint and build phases must run as the build user, never as root
+export XBPS_HOSTDIR="${XBPS_HOSTDIR:-$XBPS_DISTDIR/hostdir}"
+
+_as_builder() {
+	if [ "$(id -u)" -eq 0 ] && command -v sudo >/dev/null 2>&1 && id builder >/dev/null 2>&1; then
+		sudo -Eu builder "$@"
 	else
 		"$@"
 	fi

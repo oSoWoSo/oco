@@ -1,0 +1,56 @@
+--- a/internal/session/hook_peer_test.go
++++ b/internal/session/hook_peer_test.go
+@@ -4,11 +4,13 @@
+ 
+ import (
+ 	"os/exec"
++	"runtime"
+ 	"syscall"
+ 	"testing"
+ 	"time"
+ 
+ 	"github.com/Gaurav-Gosain/tuios/internal/procinfo"
++	"golang.org/x/sys/unix"
+ )
+ 
+ // TestHookOfPeerMatchesTheStartTime: a caller is a hook only when a process
+@@ -24,9 +26,22 @@
+ // The negative controls are in e2e/tui/NEGATIVE_CONTROLS.md, "The owners of
+ // hook and herdr plugin surfaces".
+ func TestHookOfPeerMatchesTheStartTime(t *testing.T) {
++	// Orphaned children (the sleep below, whose parent shell is killed
++	// first) are reparented to the nearest live child subreaper. CI runs
++	// inside a PID namespace whose init may take its time reaping; making
++	// the test binary the subreaper keeps that reaping on the test so the
++	// final pid-reuse checks below cannot see a lingering zombie.
++	if runtime.GOOS == "linux" {
++		_ = unix.Prctl(unix.PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0)
++	}
++
+ 	// The trailing : keeps sh from running sleep in its own place, so
+ 	// sleep is a child of the shell.
+ 	shell := exec.Command("sh", "-c", "sleep 30; :")
++	// Start the shell in its own session. In a PID namespace getsid(2)
++	// answers 0 for a process whose session leader lives outside the
++	// namespace, which the session-based ownership probes below cannot use.
++	shell.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+ 	if err := shell.Start(); err != nil {
+ 		t.Fatal(err)
+ 	}
+@@ -139,6 +154,16 @@
+ 		t.Logf("the shell had ended: %v", err)
+ 	}
+ 	<-waited
++	// The subshell's child sleep was reparented to this subreaper once its
++	// parent shell died; wait it out so its pid slot is freed and the
++	// pid-reuse checks below do not see a lingering zombie.
++	if runtime.GOOS == "linux" {
++		for {
++			if _, err := syscall.Wait4(b, nil, 0, nil); err != syscall.EINTR {
++				break
++			}
++		}
++	}
+ 	for _, pr := range []struct {
+ 		pid   int
+ 		start uint64

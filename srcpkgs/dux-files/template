@@ -1,6 +1,6 @@
 # Template file for 'dux-files'
 pkgname=dux-files
-version=2.1.1
+version=2.1.2
 revision=1
 build_style=go
 build_helper=qemu
@@ -15,8 +15,8 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://github.com/duxlabs-dev/dux-files"
 changelog="https://github.com/duxlabs-dev/dux-files/releases"
-distfiles="https://github.com/duxlabs-dev/dux-files/archive/refs/tags/v${version}.tar.gz>dux-files.tar.gz"
-checksum=400c2f2fb3b88ae793535f81ca1e528686814991a7096a74c28488842280534c
+distfiles="https://github.com/duxlabs-dev/dux-files/archive/refs/tags/v${version}.tar.gz"
+checksum=f2b1fc9da8ae7269999cce91843d0345edcb5f6cc4b2a05bdf40bf2a862add51
 
 pre_check() {
 		mkdir -p /host

@@ -1,6 +1,6 @@
 # Template file for 'better-sqlite3'
 pkgname=better-sqlite3
-version=13.1.1
+version=13.2.0
 revision=1
 hostmakedepends="nodejs nodejs-devel python3"
 depends="nodejs"
@@ -9,7 +9,7 @@ maintainer="zenobit <zenobit@disroot.org>"
 license="MIT"
 homepage="https://github.com/WiseLibs/better-sqlite3"
 distfiles="https://github.com/WiseLibs/better-sqlite3/archive/refs/tags/v${version}.tar.gz"
-checksum=59e71f43b809adc26c34e05c45e75cba3d090de0b159a7934ba75f8fd43d7c50
+checksum=81b486394c36226980b904b8f4bd80168398e995c953fb9d3151b8c2a780a789
 python_version=3
 nocross="node-gyp has no target node headers available when cross building"
 

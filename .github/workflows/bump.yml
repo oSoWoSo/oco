@@ -1,0 +1,185 @@
+name: 📦 bumper
+run-name: >-
+  ${{
+    format('📦{0}: {1}{2}{3}{4}{5}{6}',
+      inputs.group,
+      inputs.bump == true && 'bump' || '',
+      inputs.lint == true && (inputs.bump == true && ' lint' || 'lint') || '',
+      inputs.build == true && ((inputs.bump == true || inputs.lint == true) && ' build' || 'build') || '',
+      inputs.copy == true && ((inputs.bump == true || inputs.lint == true || inputs.build == true) && ' copy' || 'copy') || '',
+      inputs.order == true && ((inputs.bump == true || inputs.lint == true || inputs.build == true || inputs.copy == true) && ' order' || 'order') || '',
+      inputs.record_order == true && ((inputs.bump == true || inputs.lint == true || inputs.build == true || inputs.copy == true || inputs.order == true) && ' record_order' || 'record_order') || ''
+    )
+  }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      group:
+        description: 'Group name'
+        required: true
+        type: choice
+        options:
+          - cosmic
+          - cosmic-minimal
+          - dux
+          - hypr
+          - nwg
+          - sonic
+          - xlibre
+          - xlibre-minimal
+          - test
+      bump:
+        description: 'Bump'
+        required: false
+        default: false
+        type: boolean
+      lint:
+        description: 'Lint'
+        required: false
+        default: false
+        type: boolean
+      build:
+        description: 'Build'
+        required: false
+        default: false
+        type: boolean
+      order:
+        description: 'Show build order'
+        required: false
+        default: false
+        type: boolean
+      record_order:
+        description: 'Record build order'
+        required: false
+        default: false
+        type: boolean
+      xbps_target_arch:
+        description: 'XBPS target architecture'
+        required: false
+        default: x86_64
+        type: choice
+        options:
+          - x86_64
+          - x86_64-musl
+          - aarch64
+          - aarch64-musl
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    name: bump.sh ${{ inputs.group }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    container:
+      image: ghcr.io/osowoso/oco-builder-x86_64:latest
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.BOT }}
+      options: --privileged
+    defaults:
+      run:
+        working-directory: extra
+    env:
+      XBPS_TARGET_ARCH: ${{ inputs.xbps_target_arch }}
+      XBPS_DISTDIR: /void-packages
+      OCO_TOKEN: ${{ secrets.BOT }}
+      XBPS_ALLOW_CHROOT_BREAKOUT: yes
+      SOURCE_DATE_EPOCH: 1700000000
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.BOT }}
+          path: extra
+
+      - name: Configure git identity
+        run: |
+          if ! git rev-parse --git-dir >/dev/null 2>&1; then
+            echo "Not a git repository; skipping git identity (local act test)"
+            exit 0
+          fi
+          git config user.name "oSoWoSo-bot"
+          git config user.email "bot@osowoso.org"
+          git config --global user.name "oSoWoSo-bot"
+          git config --global user.email "bot@osowoso.org"
+          git config --global --add safe.directory /void-packages
+          git config --global --add safe.directory '*'
+
+      - name: Require at least one operation
+        run: |
+          if [ "${{ inputs.bump }}" != "true" ] && [ "${{ inputs.lint }}" != "true" ] && \
+             [ "${{ inputs.build }}" != "true" ] && \
+             [ "${{ inputs.order }}" != "true" ] && [ "${{ inputs.record_order }}" != "true" ]; then
+            echo "::error::select at least one operation flag"
+            exit 1
+          fi
+
+      - name: Merge templates into void-packages
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-merge-templates.sh"
+        working-directory: ${{ github.workspace }}
+
+      - name: Resolve paths
+        id: paths
+        run: |
+          echo "sourceDir=${XBPS_DISTDIR}/srcpkgs" >> "$GITHUB_OUTPUT"
+          echo "destinationDir=${GITHUB_WORKSPACE}/extra/srcpkgs" >> "$GITHUB_OUTPUT"
+
+
+      - name: Ensure xxautobump
+        shell: bash
+        run: |
+          if command -v xxautobump >/dev/null 2>&1; then
+            echo "xxautobump already available"
+            exit 0
+          fi
+          tmp=$(mktemp -d)
+          curl -fsSL https://github.com/Piraty/xxtools/archive/refs/heads/master.tar.gz -o "$tmp/xxtools.tar.gz"
+          tar -xzf "$tmp/xxtools.tar.gz" -C "$tmp"
+          install -m 0755 "$tmp"/xxtools-*/xxautobump /usr/local/bin/xxautobump
+          rm -rf "$tmp"
+
+      - name: Prepare container
+        run: oco-prepare
+
+      - name: Prepare sources directory
+        run: |
+          mkdir -p /host/sources
+          chown -R builder:builder /host/sources
+
+      - name: Build args and run bump.sh
+        env:
+          sourceDir: ${{ steps.paths.outputs.sourceDir }}
+          destinationDir: ${{ steps.paths.outputs.destinationDir }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=("${{ inputs.group }}")
+          if [ "${{ inputs.bump }}" = "true" ]; then args+=(--bump); fi
+          if [ "${{ inputs.lint }}" = "true" ]; then args+=(--lint); fi
+          if [ "${{ inputs.build }}" = "true" ]; then args+=(--build); fi
+          if [ "${{ inputs.order }}" = "true" ]; then args+=(--order); fi
+          if [ "${{ inputs.record_order }}" = "true" ]; then args+=(--record-order); fi
+          args+=(--arch "${{ inputs.xbps_target_arch }}")
+          if [ -n "${{ inputs.extra_args }}" ]; then
+            read -ra extra <<< "${{ inputs.extra_args }}"
+            args+=("${extra[@]}")
+          fi
+          printf 'Running: ./bump.sh %s\n' "${args[*]}"
+          ./bump.sh "${args[@]}"
+      - name: Commit and push changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! git rev-parse --git-dir >/dev/null 2>&1; then
+            echo "Not a git repository; skipping commit (local act test)"
+            exit 0
+          fi
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "bump.sh: ${{ inputs.group }}"
+          git push origin HEAD:${GITHUB_REF_NAME}

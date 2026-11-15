@@ -61,7 +61,7 @@ jobs:
           git fetch origin +refs/heads/OCO:refs/remotes/origin/OCO
 
           if [[ "${FORCE:-}" != "true" ]]; then
-            # A GitHub-originated push that reached Codeberg via toCB.yml is
+            # A GitHub-originated push that reached Codeberg via sync.yml is
             # already present here; do nothing.
             if git merge-base --is-ancestor "$codeberg_head" origin/OCO; then
               echo "Codeberg OCO is already up to date on GitHub; nothing to do."

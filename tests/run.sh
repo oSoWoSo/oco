@@ -1735,6 +1735,9 @@ python3 "$SCRIPT_DIR/tests/test_codeberg_status.py" || _FAIL=$((_FAIL + 1))
 echo '== build-summary.sh =='
 sh "$SCRIPT_DIR/tests/test_build_summary.sh" || _FAIL=$((_FAIL + 1))
 
+echo '== push-mirror.sh =='
+sh "$SCRIPT_DIR/tests/test_push_mirror.sh" || _FAIL=$((_FAIL + 1))
+
 echo '== feedsparser.py =='
 python3 "$SCRIPT_DIR/tests/test_feedsparser.py" || _FAIL=$((_FAIL + 1))
 

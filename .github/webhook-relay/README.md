@@ -7,7 +7,7 @@ This Cloudflare Worker receives Codeberg/Forgejo webhooks and dispatches the rel
 | `pull_request` on `OCO` | `codeberg_pr` | `mirror-codeberg-pr.yml` → creates/updates the mirrored GitHub PR, and reflects merges/closes on closed events |
 | `push` to `OCO` | `codeberg_push` | `sync-codeberg-to-github.yml` → fast-forwards GitHub `OCO` |
 
-The reverse directions (GitHub → Codeberg) run natively on GitHub (`mirror-pr-to-codeberg.yml`, `toCB.yml`) and need no webhook.
+The reverse directions (GitHub → Codeberg) run natively on GitHub (`mirror-pr-to-codeberg.yml`, `sync.yml`) and need no webhook.
 
 ## Deploy
 

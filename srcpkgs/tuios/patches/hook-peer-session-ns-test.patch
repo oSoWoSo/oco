@@ -1,32 +1,6 @@
---- a/internal/session/hook_peer_test.go
-+++ b/internal/session/hook_peer_test.go
-@@ -4,11 +4,13 @@
- 
- import (
- 	"os/exec"
-+	"runtime"
- 	"syscall"
- 	"testing"
- 	"time"
- 
- 	"github.com/Gaurav-Gosain/tuios/internal/procinfo"
-+	"golang.org/x/sys/unix"
- )
- 
- // TestHookOfPeerMatchesTheStartTime: a caller is a hook only when a process
-@@ -24,9 +26,22 @@
- // The negative controls are in e2e/tui/NEGATIVE_CONTROLS.md, "The owners of
- // hook and herdr plugin surfaces".
- func TestHookOfPeerMatchesTheStartTime(t *testing.T) {
-+	// Orphaned children (the sleep below, whose parent shell is killed
-+	// first) are reparented to the nearest live child subreaper. CI runs
-+	// inside a PID namespace whose init may take its time reaping; making
-+	// the test binary the subreaper keeps that reaping on the test so the
-+	// final pid-reuse checks below cannot see a lingering zombie.
-+	if runtime.GOOS == "linux" {
-+		_ = unix.Prctl(unix.PR_SET_CHILD_SUBREAPER, 1, 0, 0, 0)
-+	}
-+
+--- a/internal/session/hook_peer_test.go	2026-11-14 17:28:45.000000000 +0000
++++ b/internal/session/hook_peer_test.go	2026-11-14 23:38:00.528918704 +0000
+@@ -27,6 +27,10 @@
  	// The trailing : keeps sh from running sleep in its own place, so
  	// sleep is a child of the shell.
  	shell := exec.Command("sh", "-c", "sleep 30; :")
@@ -37,20 +11,28 @@
  	if err := shell.Start(); err != nil {
  		t.Fatal(err)
  	}
-@@ -139,6 +154,16 @@
+@@ -131,10 +135,23 @@
+ 		}
+ 	}
+ 
+-	// Both processes end by their own pids.
++	// Both processes end by their own pids. Kill the sleep first and let its
++	// shell reap it: killing the shell at once would orphan the sleep into a
++	// zombie, and inside a PID namespace the init that inherits it is slow to
++	// reap, so the pid-reuse checks below would see the sleep still there.
+ 	if err := syscall.Kill(b, syscall.SIGKILL); err != nil {
+ 		t.Fatal(err)
+ 	}
++	deadline = time.Now().Add(10 * time.Second)
++	for {
++		if st, ok := procinfo.StartTime(b); !ok || st != bStart {
++			break
++		}
++		if time.Now().After(deadline) {
++			t.Fatalf("the sleep %d was never reaped by its shell", b)
++		}
++		time.Sleep(5 * time.Millisecond)
++	}
+ 	if err := shell.Process.Kill(); err != nil {
  		t.Logf("the shell had ended: %v", err)
  	}
- 	<-waited
-+	// The subshell's child sleep was reparented to this subreaper once its
-+	// parent shell died; wait it out so its pid slot is freed and the
-+	// pid-reuse checks below do not see a lingering zombie.
-+	if runtime.GOOS == "linux" {
-+		for {
-+			if _, err := syscall.Wait4(b, nil, 0, nil); err != syscall.EINTR {
-+				break
-+			}
-+		}
-+	}
- 	for _, pr := range []struct {
- 		pid   int
- 		start uint64

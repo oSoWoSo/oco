@@ -5,7 +5,6 @@ run-name: >-
       inputs.group,
       inputs.bump == true && 'bump' || '',
       inputs.lint == true && (inputs.bump == true && ' lint' || 'lint') || '',
-      inputs.build == true && ((inputs.bump == true || inputs.lint == true) && ' build' || 'build') || '',
       inputs.copy == true && ((inputs.bump == true || inputs.lint == true || inputs.build == true) && ' copy' || 'copy') || '',
       inputs.order == true && ((inputs.bump == true || inputs.lint == true || inputs.build == true || inputs.copy == true) && ' order' || 'order') || '',
       inputs.record_order == true && ((inputs.bump == true || inputs.lint == true || inputs.build == true || inputs.copy == true || inputs.order == true) && ' record_order' || 'record_order') || ''
@@ -39,11 +38,6 @@ on:
         required: false
         default: false
         type: boolean
-      build:
-        description: 'Build'
-        required: false
-        default: false
-        type: boolean
       order:
         description: 'Show build order'
         required: false
@@ -54,16 +48,6 @@ on:
         required: false
         default: false
         type: boolean
-      xbps_target_arch:
-        description: 'XBPS target architecture'
-        required: false
-        default: x86_64
-        type: choice
-        options:
-          - x86_64
-          - x86_64-musl
-          - aarch64
-          - aarch64-musl
 permissions:
   contents: write
 
@@ -110,13 +94,12 @@ jobs:
       - name: Require at least one operation
         run: |
           if [ "${{ inputs.bump }}" != "true" ] && [ "${{ inputs.lint }}" != "true" ] && \
-             [ "${{ inputs.build }}" != "true" ] && \
              [ "${{ inputs.order }}" != "true" ] && [ "${{ inputs.record_order }}" != "true" ]; then
             echo "::error::select at least one operation flag"
             exit 1
           fi
 
-      - name: Merge templates into void-packages
+      - name: Merge templates into oco
         run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-merge-templates.sh"
         working-directory: ${{ github.workspace }}
 
@@ -125,7 +108,6 @@ jobs:
         run: |
           echo "sourceDir=${XBPS_DISTDIR}/srcpkgs" >> "$GITHUB_OUTPUT"
           echo "destinationDir=${GITHUB_WORKSPACE}/extra/srcpkgs" >> "$GITHUB_OUTPUT"
-
 
       - name: Ensure xxautobump
         shell: bash
@@ -148,7 +130,7 @@ jobs:
           mkdir -p /host/sources
           chown -R builder:builder /host/sources
 
-      - name: Build args and run bump.sh
+      - name: run bump.sh
         env:
           sourceDir: ${{ steps.paths.outputs.sourceDir }}
           destinationDir: ${{ steps.paths.outputs.destinationDir }}
@@ -158,16 +140,11 @@ jobs:
           args=("${{ inputs.group }}")
           if [ "${{ inputs.bump }}" = "true" ]; then args+=(--bump); fi
           if [ "${{ inputs.lint }}" = "true" ]; then args+=(--lint); fi
-          if [ "${{ inputs.build }}" = "true" ]; then args+=(--build); fi
           if [ "${{ inputs.order }}" = "true" ]; then args+=(--order); fi
           if [ "${{ inputs.record_order }}" = "true" ]; then args+=(--record-order); fi
-          args+=(--arch "${{ inputs.xbps_target_arch }}")
-          if [ -n "${{ inputs.extra_args }}" ]; then
-            read -ra extra <<< "${{ inputs.extra_args }}"
-            args+=("${extra[@]}")
-          fi
           printf 'Running: ./bump.sh %s\n' "${args[*]}"
           ./bump.sh "${args[@]}"
+
       - name: Commit and push changes
         shell: bash
         run: |

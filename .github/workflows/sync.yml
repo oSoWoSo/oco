@@ -78,5 +78,5 @@ jobs:
           GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
           TANGLED_REPO: ${{ vars.TANGLED_REPO || 'osowoso.tngl.sh@tangled.org:did:plc:z2yxj2v2yh4iywcwal6kglwe' }}
           TANGLED_SSH_KEY: ${{ secrets.TANGLED_SSH_KEY }}
-          TANGLED_KNOWN_HOSTS: ${{ secrets.TANGLED_KNOWN_HOSTS }}
+          TANGLED_KNOWN_HOSTS: ${{ secrets.TANGLED_KNOWN_HOSTS || 'tangled.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2UShEm/FFPmYZUizaPnIqOJuynoCQpcLhl5PPHd02n' }}
         run: bash .github/scripts/ci/push-mirror.sh

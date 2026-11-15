@@ -19,7 +19,7 @@ git_do() {
 
 # Each host is a local bare repository, so the real push path runs end to end
 # without a network or an SSH server.
-for _h in codeberg gitlab tangled; do
+for _h in codeberg gitlab tangled srht; do
         git_do init -q --bare "$TMP_DIR/$_h.git"
 done
 
@@ -29,6 +29,7 @@ git_do commit -q --allow-empty -m first
 git_do push -q "$TMP_DIR/codeberg.git" OCO
 git_do push -q "$TMP_DIR/gitlab.git" OCO
 git_do push -q "$TMP_DIR/tangled.git" OCO
+git_do push -q "$TMP_DIR/srht.git" OCO
 git_do commit -q --allow-empty -m second
 
 push_mirror() {
@@ -41,6 +42,9 @@ push_mirror() {
         TANGLED_REPO="$TMP_DIR/tangled.git" \
         TANGLED_SSH_KEY=dummy-key \
         TANGLED_KNOWN_HOSTS=dummy-host \
+        SRHT_REPO="$TMP_DIR/srht.git" \
+        SRHT_SSH_KEY=dummy-key \
+        SRHT_KNOWN_HOSTS=dummy-host \
         BRANCH="${BRANCH:-OCO}" \
         bash "$PUSH_SH"
 }
@@ -65,7 +69,7 @@ expect_eq() {
 }
 
 # --- a fast-forward push per host ---------------------------------------
-for _h in codeberg gitlab tangled; do
+for _h in codeberg gitlab tangled srht; do
         HOST=$_h push_mirror >/dev/null 2>&1
         expect_rc $? 0 "$_h: fast-forward push failed"
         expect_eq "$(head_of "$_h" OCO)" "$(git rev-parse HEAD)" \
@@ -99,7 +103,7 @@ expect_eq "$(head_of gitlab feature)" "$(git rev-parse HEAD)" \
         'gitlab: BRANCH was not honoured'
 
 # --- argument validation -------------------------------------------------
-HOST=sourcehut push_mirror >/dev/null 2>&1
+HOST=nosuchhost push_mirror >/dev/null 2>&1
 expect_rc $? 2 'an unknown host must exit 2'
 
 HOST=codeberg FORCE=2 push_mirror >/dev/null 2>&1
@@ -118,6 +122,11 @@ esac
 out=$(HOME="$HOME_DIR" TANGLED_REPO="$TMP_DIR/tangled.git" TANGLED_SSH_KEY=k \
         TANGLED_KNOWN_HOSTS=h BRANCH=credentials-only HOST=tangled bash "$PUSH_SH" 2>&1)
 expect_rc $? 0 "tangled must not need the other hosts' credentials"
+
+# ...and the same holds for sr.ht.
+out=$(HOME="$HOME_DIR" SRHT_REPO="$TMP_DIR/srht.git" SRHT_SSH_KEY=k \
+        SRHT_KNOWN_HOSTS=h BRANCH=credentials-only-srht HOST=srht bash "$PUSH_SH" 2>&1)
+expect_rc $? 0 "srht must not need the other hosts' credentials"
 
 out=$(HOME="$HOME_DIR" GITLAB_REPO="$TMP_DIR/gitlab.git" BRANCH=OCO HOST=gitlab \
         bash "$PUSH_SH" 2>&1)

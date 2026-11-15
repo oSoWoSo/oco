@@ -13,6 +13,7 @@ on:
           - codeberg
           - gitlab
           - tangled
+          - srht
         default: all
       force:
         description: Overwrite the remote branch even when the histories diverged (git push --force)
@@ -37,8 +38,8 @@ jobs:
           set -euo pipefail
           # A push always mirrors everywhere; a manual run may pick one host.
           case "${HOST:-all}" in
-            all) printf 'hosts=["codeberg","gitlab","tangled"]\n' ;;
-            codeberg | gitlab | tangled) printf 'hosts=["%s"]\n' "$HOST" ;;
+            all) printf 'hosts=["codeberg","gitlab","tangled","srht"]\n' ;;
+            codeberg | gitlab | tangled | srht) printf 'hosts=["%s"]\n' "$HOST" ;;
             *)
               echo "::error::unknown host: ${HOST}"
               exit 1
@@ -79,4 +80,7 @@ jobs:
           TANGLED_REPO: ${{ vars.TANGLED_REPO || 'osowoso.tngl.sh@tangled.org:did:plc:z2yxj2v2yh4iywcwal6kglwe' }}
           TANGLED_SSH_KEY: ${{ secrets.TANGLED_SSH_KEY }}
           TANGLED_KNOWN_HOSTS: ${{ secrets.TANGLED_KNOWN_HOSTS || 'tangled.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAII2UShEm/FFPmYZUizaPnIqOJuynoCQpcLhl5PPHd02n' }}
+          SRHT_REPO: ${{ vars.SRHT_REPO || 'git@git.sr.ht:~osowoso/oco' }}
+          SRHT_SSH_KEY: ${{ secrets.SRHT_SSH_KEY }}
+          SRHT_KNOWN_HOSTS: ${{ secrets.SRHT_KNOWN_HOSTS || 'git.sr.ht ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMZvRd4EtM7R+IHVMWmDkVU3VLQTSwQDSAvW0t2Tkj60' }}
         run: bash .github/scripts/ci/push-mirror.sh

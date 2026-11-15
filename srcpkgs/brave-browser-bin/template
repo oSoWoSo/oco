@@ -131,6 +131,7 @@ do_install() {
 
 brave-origin-bin_package() {
 	short_desc+=" - minimalist version"
+	depends="desktop-file-utils hicolor-icon-theme hwids xdg-utils"
 	pkg_install() {
 		vmove opt/brave-origin
 		for size in 16 24 32 48 64 128 256; do

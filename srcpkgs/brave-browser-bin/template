@@ -1,7 +1,7 @@
 # Template file for 'brave-browser-bin'
 pkgname=brave-browser-bin
 version=1.99.57
-revision=1
+revision=2
 archs="x86_64 aarch64"
 hostmakedepends="unzip"
 depends="desktop-file-utils hicolor-icon-theme hwids xdg-utils"
@@ -132,6 +132,7 @@ do_install() {
 brave-origin-bin_package() {
 	short_desc+=" - minimalist version"
 	depends="desktop-file-utils hicolor-icon-theme hwids xdg-utils"
+	noshlibprovides=yes
 	pkg_install() {
 		vmove opt/brave-origin
 		for size in 16 24 32 48 64 128 256; do

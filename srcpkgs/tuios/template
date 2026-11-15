@@ -1,18 +1,19 @@
 # Template file for 'tuios'
 pkgname=tuios
-version=0.13.0
+version=0.13.1
 revision=1
 build_style=go
 build_helper=qemu
 go_import_path="github.com/Gaurav-Gosain/tuios"
 go_package="./cmd/tuios"
+make_check_args="-skip=TestBoardSortsALongColumnByItsKeys/budget|TestKeystrokeFrameBudget" # wall-time budgets flaky on slow CI runners
 hostmakedepends="git"
 short_desc="Terminal UI OS (Terminal Multiplexer)"
 maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://github.com/Gaurav-Gosain/tuios"
 distfiles="https://github.com/Gaurav-Gosain/tuios/archive/refs/tags/v${version}.tar.gz"
-checksum=d48e613ef09e02954b72b128b660048705037eaa07630fc054c5f2edd619af64
+checksum=9f34163e076611002ff09780014d227d8b80efb0ad95dcd7bfa0e2c188971010
 
 post_install() {
 	vlicense LICENSE

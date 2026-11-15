@@ -1,8 +1,8 @@
 # Template file for 'xlibre-xf86-video-intel'
 pkgname=xlibre-xf86-video-intel
 _pkgname=xf86-video-intel
-version=25.0.2
-revision=3
+version=25.0.3
+revision=1
 archs="i686* x86_64*"
 build_style=gnu-configure
 configure_args="--with-default-dri=3 --libexecdir=/usr/lib"
@@ -14,7 +14,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="MIT"
 homepage="https://github.com/X11Libre/xf86-video-intel"
 distfiles="https://github.com/X11Libre/${_pkgname}/archive/refs/tags/${pkgname}-${version}.tar.gz"
-checksum=e4513cf871374cc5df4d0ae5dcd2787539c38801295ab5a9b3470cf0dd193a43
+checksum=436303892e1eb72c4e2678510f6af5b0b62d00fbdc6f5be73865212a09cd5480
 provides="xf86-video-intel-${version}_${revision}"
 replaces="xf86-video-intel>=0"
 

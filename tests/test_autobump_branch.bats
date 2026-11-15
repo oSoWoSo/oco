@@ -94,3 +94,29 @@ EOF
   ! git show HEAD:.github/autobump-dependencies.tsv >/dev/null 2>&1
   [ "$(git rev-list --count origin/OCO..HEAD)" -eq 1 ]
 }
+
+@test "branch checkouts cleanly when the runner is on a different branch" {
+  prepare_bump
+  # The apply step edits the worktree template while the workflow is checked
+  # out on the dispatch source (e.g. a PR head), not OCO. The branch script
+  # must force its way onto the fresh OCO ref without refusing to overwrite
+  # the local edit, and commit the bumped snapshot on top.
+  git -C "$WORK" fetch -q origin OCO
+  git -C "$WORK" checkout -qb "pr/alpha"
+  sed -i -E 's/^(revision=).*/\12/' "$WORK/srcpkgs/alpha/template"
+  git -C "$WORK" add .
+  git -C "$WORK" commit -qm "feature work"
+  sed -i -E 's/^(revision=).*/\13/' "$WORK/srcpkgs/alpha/template"
+  [ -n "$(git -C "$WORK" status --short)" ]
+
+  cd "$WORK"
+  run env RUNNER_TEMP="$RUNNER_TEMP" TEMPLATE="$TEMPLATE" VERSION="$VERSION" \
+    OCO_TOKEN="$OCO_TOKEN" GH_REPO="$GH_REPO" GITHUB_ENV="$GITHUB_ENV" \
+    GITHUB_OUTPUT="$GITHUB_OUTPUT" PATH="$PATH" PUSH_LOG="$PUSH_LOG" \
+    REAL_GIT="$REAL_GIT" bash "$BRANCH_SCRIPT"
+  [ "$status" -eq 0 ]
+  [ "$(git branch --show-current)" = "autobump/alpha" ]
+  [ "$(git rev-list --count origin/OCO..HEAD)" -eq 1 ]
+  git show HEAD:srcpkgs/alpha/template | grep -qx 'version=1.1'
+  [ -s "$PUSH_LOG" ]
+}

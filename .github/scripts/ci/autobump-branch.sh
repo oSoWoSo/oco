@@ -25,7 +25,11 @@ if [[ -f $manifest ]]; then
 fi
 
 git fetch --no-tags --depth=1 origin "+refs/heads/OCO:refs/remotes/origin/OCO"
-git checkout -B "$BRANCH" refs/remotes/origin/OCO
+# The runner may be checked out on any branch (e.g. the PR head that
+# triggered workflow_dispatch), so the worktree holds the uncommitted bumps
+# it snapshotted above. Force the move so git does not refuse to replace a
+# template it would overwrite; the snapshot is replayed right after.
+git checkout -f -B "$BRANCH" refs/remotes/origin/OCO
 if [[ -f $manifest_snapshot ]]; then
 	mkdir -p "$(dirname "$manifest")"
 	cp "$manifest_snapshot" "$manifest"

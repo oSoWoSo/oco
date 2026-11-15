@@ -52,7 +52,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          token: ${{ secrets.BOT }}
+          token: ${{ secrets.BOT || github.token }}
       - name: Check website JavaScript syntax
         run: node --check src/main.js
       - name: Install feed update runtime deps

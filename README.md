@@ -34,12 +34,14 @@ https://github.com/oSoWoSo/oco-builder
 https://repo.osowoso.org
 - Just built (RSS feed)  
 https://repo.osowoso.org/feed.xml
-- GitLab mirror (only push, no PRs or issues accepted)  
+- GitLab mirror (push only)  
 https://gitlab.com/osowoso/oco
-- Tangled mirror (only push, no PRs or issues accepted)  
+- Tangled mirror (push only)  
 https://tangled.org/osowoso.tngl.sh/oco
-- sr.ht mirror (only push, no PRs or issues accepted)
+- sr.ht mirror (push only)  
 https://git.sr.ht/~osowoso/oco
+- repo.or.cz mirror (pulled hourly, so repo could be bit behind other mirrors)  
+https://repo.or.cz/oco.git
 
 ## What we don't build? (From source)
 Browsers: It's waste of energy and when you finish building is maybe already new version out  

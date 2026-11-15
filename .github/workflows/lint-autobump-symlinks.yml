@@ -41,7 +41,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v7
         with:
-          token: ${{ secrets.BOT }}
+          token: ${{ secrets.BOT || github.token }}
 
       - name: Run symlink lint
         run: bash .github/scripts/ci/lint-autobump-symlinks.sh

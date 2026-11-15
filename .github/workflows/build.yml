@@ -126,7 +126,7 @@ jobs:
       image: ghcr.io/osowoso/oco-builder-x86_64:latest
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.BOT }}
+        password: ${{ secrets.BOT || github.token }}
       options: --platform linux/amd64 --privileged
       volumes:
         - /dev:/dev
@@ -167,7 +167,7 @@ jobs:
       image: ghcr.io/osowoso/oco-builder-${{ matrix.config.host }}:latest
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.BOT }}
+        password: ${{ secrets.BOT || github.token }}
       options: --platform ${{ matrix.config.platform }} --privileged
       volumes:
         - /dev:/dev
@@ -216,7 +216,7 @@ jobs:
         env:
           BUILD_LOG: ${{ runner.temp }}/build-log.txt
           GH_REPO: ${{ github.repository }}
-          GH_TOKEN: ${{ secrets.BOT }}
+          GH_TOKEN: ${{ secrets.BOT || github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-summary.sh"
 
@@ -323,7 +323,7 @@ jobs:
       image: ghcr.io/osowoso/oco-builder-${{ matrix.config.host }}:latest
       credentials:
         username: ${{ github.actor }}
-        password: ${{ secrets.BOT }}
+        password: ${{ secrets.BOT || github.token }}
       options: --platform ${{ matrix.config.platform }} --privileged
       volumes:
         - /dev:/dev
@@ -341,7 +341,7 @@ jobs:
       - name: Checkout this repo
         uses: actions/checkout@v7
         with:
-          token: ${{ secrets.BOT }}
+          token: ${{ secrets.BOT || github.token }}
           path: extra
 
       - name: Prepare container

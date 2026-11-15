@@ -195,7 +195,7 @@ def _close_mirror(api, target_forge: str, target_number, *, merged: bool, merge_
 
     # Forgejo only records a manually-merged PR when ``merge_commit_id`` is
     # already reachable in the base branch. The GitHub merge reaches Codeberg
-    # OCO through toCB.yml, which races this workflow, so retry briefly and
+    # OCO through sync.yml, which races this workflow, so retry briefly and
     # fall back to closing the mirror PR with a comment if the commit has not
     # propagated yet.
     payload = {"do": "manually-merged"}

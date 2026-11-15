@@ -1,0 +1,82 @@
+name: 🔁 sync
+run-name: "🔁 ${{ github.event_name == 'workflow_dispatch' && inputs.host || 'all' }}${{ inputs.force && ' --force' || '' }}"
+on:
+  push:
+    branches: [OCO]
+  workflow_dispatch:
+    inputs:
+      host:
+        description: Mirror to push to
+        type: choice
+        options:
+          - all
+          - codeberg
+          - gitlab
+          - tangled
+        default: all
+      force:
+        description: Overwrite the remote branch even when the histories diverged (git push --force)
+        type: boolean
+        default: false
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    name: 🗺️ plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      hosts: ${{ steps.plan.outputs.hosts }}
+    steps:
+      - name: Resolve the hosts to sync
+        id: plan
+        env:
+          HOST: ${{ inputs.host }}
+        run: |
+          set -euo pipefail
+          # A push always mirrors everywhere; a manual run may pick one host.
+          case "${HOST:-all}" in
+            all) printf 'hosts=["codeberg","gitlab","tangled"]\n' ;;
+            codeberg | gitlab | tangled) printf 'hosts=["%s"]\n' "$HOST" ;;
+            *)
+              echo "::error::unknown host: ${HOST}"
+              exit 1
+              ;;
+          esac >> "$GITHUB_OUTPUT"
+
+  sync:
+    name: 🫸 ${{ matrix.host }}
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      # One failing host must not stop the others.
+      fail-fast: false
+      matrix:
+        host: ${{ fromJSON(needs.plan.outputs.hosts) }}
+    # Per host, so a manual run of one mirror never cancels another.
+    concurrency:
+      group: sync-${{ matrix.host }}-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Push ${{ github.ref_name }} to ${{ matrix.host }}
+        env:
+          HOST: ${{ matrix.host }}
+          BRANCH: ${{ github.ref_name }}
+          FORCE: ${{ inputs.force && '1' || '0' }}
+          CODEBERG_REPO: ${{ vars.CODEBERG_REPO || 'git@codeberg.org:oSoWoSo/oco.git' }}
+          CODEBERG_SSH_KEY: ${{ secrets.CODEBERG_SSH_KEY }}
+          CODEBERG_KNOWN_HOSTS: ${{ secrets.CODEBERG_KNOWN_HOSTS }}
+          GITLAB_REPO: ${{ vars.GITLAB_REPO || 'https://gitlab.com/osowoso/oco.git' }}
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+          TANGLED_REPO: ${{ vars.TANGLED_REPO || 'osowoso.tngl.sh@tangled.org:did:plc:z2yxj2v2yh4iywcwal6kglwe' }}
+          TANGLED_SSH_KEY: ${{ secrets.TANGLED_SSH_KEY }}
+          TANGLED_KNOWN_HOSTS: ${{ secrets.TANGLED_KNOWN_HOSTS }}
+        run: bash .github/scripts/ci/push-mirror.sh

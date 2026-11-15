@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Push the checked-out HEAD to one mirror host.
 #
-# Callers set HOST (codeberg, gitlab or tangled), BRANCH and, optionally,
-# FORCE=1. Every host's credentials and repository arrive as environment
-# variables; only the ones the selected host needs are required, so the
-# workflow can hand all of them to a single script.
+# Callers set HOST (codeberg, gitlab, tangled or srht), BRANCH and,
+# optionally, FORCE=1. Every host's credentials and repository arrive as
+# environment variables; only the ones the selected host needs are required,
+# so the workflow can hand all of them to a single script.
 set -euo pipefail
 
-: "${HOST:?HOST is required (codeberg, gitlab or tangled)}"
+: "${HOST:?HOST is required (codeberg, gitlab, tangled or srht)}"
 : "${BRANCH:?BRANCH is required}"
 
 case "${FORCE:-0}" in
@@ -19,18 +19,27 @@ esac
 _git=(git)
 
 case "$HOST" in
-  codeberg|tangled)
-    if [ "$HOST" = codeberg ]; then
-      : "${CODEBERG_SSH_KEY:?CODEBERG_SSH_KEY is required}"
-      : "${CODEBERG_KNOWN_HOSTS:?CODEBERG_KNOWN_HOSTS is required}"
-      url="${CODEBERG_REPO:?CODEBERG_REPO is required}"
-      key="$CODEBERG_SSH_KEY" known_hosts="$CODEBERG_KNOWN_HOSTS"
-    else
-      : "${TANGLED_SSH_KEY:?TANGLED_SSH_KEY is required}"
-      : "${TANGLED_KNOWN_HOSTS:?TANGLED_KNOWN_HOSTS is required}"
-      url="${TANGLED_REPO:?TANGLED_REPO is required}"
-      key="$TANGLED_SSH_KEY" known_hosts="$TANGLED_KNOWN_HOSTS"
-    fi
+  codeberg|tangled|srht)
+    case "$HOST" in
+      codeberg)
+        : "${CODEBERG_SSH_KEY:?CODEBERG_SSH_KEY is required}"
+        : "${CODEBERG_KNOWN_HOSTS:?CODEBERG_KNOWN_HOSTS is required}"
+        url="${CODEBERG_REPO:?CODEBERG_REPO is required}"
+        key="$CODEBERG_SSH_KEY" known_hosts="$CODEBERG_KNOWN_HOSTS"
+        ;;
+      tangled)
+        : "${TANGLED_SSH_KEY:?TANGLED_SSH_KEY is required}"
+        : "${TANGLED_KNOWN_HOSTS:?TANGLED_KNOWN_HOSTS is required}"
+        url="${TANGLED_REPO:?TANGLED_REPO is required}"
+        key="$TANGLED_SSH_KEY" known_hosts="$TANGLED_KNOWN_HOSTS"
+        ;;
+      srht)
+        : "${SRHT_SSH_KEY:?SRHT_SSH_KEY is required}"
+        : "${SRHT_KNOWN_HOSTS:?SRHT_KNOWN_HOSTS is required}"
+        url="${SRHT_REPO:?SRHT_REPO is required}"
+        key="$SRHT_SSH_KEY" known_hosts="$SRHT_KNOWN_HOSTS"
+        ;;
+    esac
     mkdir -p "$HOME/.ssh"
     printf '%s\n' "$key" > "$HOME/.ssh/id_ed25519"
     chmod 600 "$HOME/.ssh/id_ed25519"
@@ -46,7 +55,7 @@ case "$HOST" in
     _git=(git -c "http.extraheader=Authorization: Basic ${auth}")
     ;;
   *)
-    printf 'HOST must be codeberg, gitlab or tangled (got: %s)\n' "$HOST" >&2
+    printf 'HOST must be codeberg, gitlab, tangled or srht (got: %s)\n' "$HOST" >&2
     exit 2
     ;;
 esac

@@ -19,9 +19,9 @@ echo "bumped=true" >>"$GITHUB_OUTPUT"
 echo "packages=$(cut -f1 "$plan" | paste -sd' ' -)" >>"$GITHUB_OUTPUT"
 echo "count=$(cut -f1 "$plan" | wc -l)" >>"$GITHUB_OUTPUT"
 
-# The branch is named after the target and the version it moves to.
-# A target that only gets a revision bump has no new version, so
-# the first version of the batch names the branch instead.
+# The branch is named after the target only: autobump/<template>.
+# Every version bump reuses the same branch, so the newest version
+# always force-pushes over an older one.
 version=$(awk -F '\t' -v pkg="$TEMPLATE" '$1 == pkg { print $2; exit }' "$plan")
 if [[ -z $version ]]; then
 	version=$(awk -F '\t' '$3 == "version" { print $2; exit }' "$plan")

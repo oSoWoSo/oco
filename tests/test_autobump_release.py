@@ -198,7 +198,7 @@ class CheckPrTests(unittest.TestCase):
         self.addCleanup(shutil.rmtree, self.tmp, True)
         self.plan = {
             "pr_number": 7,
-            "head_ref": "autobump/alpha-1.1",
+            "head_ref": "autobump/alpha",
             "head_sha": "a" * 40,
             "base_sha": "b" * 40,
             "packages": "alpha beta",
@@ -208,7 +208,7 @@ class CheckPrTests(unittest.TestCase):
             "number": 7,
             "base": {"ref": "OCO", "sha": "b" * 40},
             "head": {"repo": {"full_name": "oSoWoSo/oco"}, "sha": "a" * 40,
-                     "ref": "autobump/alpha-1.1"},
+                     "ref": "autobump/alpha"},
             "user": {"login": "oSoWoSo-bot"},
             "changed_files": 3,
             "state": "open",
@@ -224,6 +224,24 @@ class CheckPrTests(unittest.TestCase):
             self.files(["README.md", "srcpkgs/alpha/template", "srcpkgs/beta/template"]),
             repo="oSoWoSo/oco", plan=self.plan, allow_merged=True)
         self.assertEqual(packages, ["alpha", "beta"])
+
+    def test_branch_target_is_an_exact_package_match(self):
+        # Stable branches carry only the template name; the version suffix
+        # no longer exists, so neither does the old "package-" prefix scan.
+        self.assertEqual(release.branch_target_package("autobump/alpha", {"alpha"}), "alpha")
+        self.assertIsNone(release.branch_target_package("autobump/alpha-1.1", {"alpha"}))
+        self.assertIsNone(release.branch_target_package("autobump/nope", {"alpha"}))
+        self.assertIsNone(release.branch_target_package("ci/alpha", {"alpha"}))
+
+    def test_branch_target_handles_prefix_package_names(self):
+        # A package whose name is a prefix of a sibling must still resolve
+        # to itself, not to the longer sibling.
+        known = {"hyprland", "hyprland-share-picker"}
+        self.assertEqual(release.branch_target_package("autobump/hyprland", known),
+                         "hyprland")
+        self.assertEqual(
+            release.branch_target_package("autobump/hyprland-share-picker", known),
+            "hyprland-share-picker")
 
     def make_repo_root(self, pack: str, *members: str) -> Path:
         root = self.tmp / "repo"
@@ -244,12 +262,12 @@ class CheckPrTests(unittest.TestCase):
         # requested package while the changed packages are the pack members.
         root = self.make_repo_root("sonic", "sonic-namespace", "sf-io",
                                    "sf-keyring", "sf-settings-ui")
-        plan = dict(self.plan, head_ref="autobump/sonic-namespace-6.31.0.1",
+        plan = dict(self.plan, head_ref="autobump/sonic-namespace",
                     packages="sf-io sf-keyring sf-settings-ui")
         packages = ["sf-io", "sf-keyring", "sf-settings-ui"]
-        pr = dict(self.pr, head_ref="autobump/sonic-namespace-6.31.0.1")
+        pr = dict(self.pr, head_ref="autobump/sonic-namespace")
         pr["head"] = {"repo": {"full_name": "oSoWoSo/oco"}, "sha": "a" * 40,
-                      "ref": "autobump/sonic-namespace-6.31.0.1"}
+                      "ref": "autobump/sonic-namespace"}
         self.assertEqual(
             release.check_pr(pr, self.files([f"srcpkgs/{p}/template" for p in packages]),
                              repo="oSoWoSo/oco", plan=plan,
@@ -259,7 +277,7 @@ class CheckPrTests(unittest.TestCase):
     def test_a_pack_batch_without_the_packs_file_is_still_rejected(self):
         # Without a packs file (no trusted repo root) the branch target
         # must literally be among the changed packages.
-        plan = dict(self.plan, head_ref="autobump/sonic-namespace-6.31.0.1",
+        plan = dict(self.plan, head_ref="autobump/sonic-namespace",
                     packages="sf-io")
         with self.assertRaises(ValueError):
             release.check_pr(
@@ -274,7 +292,7 @@ class CheckPrTests(unittest.TestCase):
         (root / "srcpkgs" / "sf-io").mkdir()
         (root / "srcpkgs" / "sf-io" / "template").write_text(
             "pkgname=sf-io\nversion=1.0\nrevision=1\n", encoding="utf-8")
-        plan = dict(self.plan, head_ref="autobump/sonic-namespace-6.31.0.1",
+        plan = dict(self.plan, head_ref="autobump/sonic-namespace",
                     packages="sf-io")
         with self.assertRaises(ValueError):
             release.check_pr(
@@ -283,10 +301,10 @@ class CheckPrTests(unittest.TestCase):
                 repo="oSoWoSo/oco", plan=plan, allow_merged=True, repo_root=root)
 
     def test_a_patch_file_under_a_changed_package_is_accepted(self):
-        plan = dict(self.plan, packages="alpha", head_ref="autobump/alpha-1.1")
-        pr = dict(self.pr, changed_files=3, head_ref="autobump/alpha-1.1")
+        plan = dict(self.plan, packages="alpha", head_ref="autobump/alpha")
+        pr = dict(self.pr, changed_files=3, head_ref="autobump/alpha")
         pr["head"] = {"repo": {"full_name": "oSoWoSo/oco"}, "sha": "a" * 40,
-                      "ref": "autobump/alpha-1.1"}
+                      "ref": "autobump/alpha"}
         packages = release.check_pr(
             pr,
             self.files(["README.md", "srcpkgs/alpha/template",
@@ -295,10 +313,10 @@ class CheckPrTests(unittest.TestCase):
         self.assertEqual(packages, ["alpha"])
 
     def test_a_new_package_with_a_patch_is_accepted(self):
-        plan = dict(self.plan, packages="alpha newpkg", head_ref="autobump/newpkg-1.0")
-        pr = dict(self.pr, changed_files=3, head_ref="autobump/newpkg-1.0")
+        plan = dict(self.plan, packages="alpha newpkg", head_ref="autobump/newpkg")
+        pr = dict(self.pr, changed_files=3, head_ref="autobump/newpkg")
         pr["head"] = {"repo": {"full_name": "oSoWoSo/oco"}, "sha": "a" * 40,
-                      "ref": "autobump/newpkg-1.0"}
+                      "ref": "autobump/newpkg"}
         files = [
             {"filename": "srcpkgs/alpha/template", "status": "modified"},
             {"filename": "srcpkgs/newpkg/template", "status": "added"},
@@ -320,9 +338,9 @@ class CheckPrTests(unittest.TestCase):
         files = self.files(["srcpkgs/alpha/template", "srcpkgs/beta/template"])
         files[0] = {"filename": "srcpkgs/alpha/template", "status": "added"}
         plan = dict(self.plan, packages="beta")
-        pr = dict(self.pr, head_ref="autobump/beta-2.0")
+        pr = dict(self.pr, head_ref="autobump/beta")
         pr["head"] = {"repo": {"full_name": "oSoWoSo/oco"}, "sha": "a" * 40,
-                      "ref": "autobump/beta-2.0"}
+                      "ref": "autobump/beta"}
         with self.assertRaises(ValueError):
             release.check_pr(pr, files, repo="oSoWoSo/oco", plan=plan,
                              allow_merged=True)

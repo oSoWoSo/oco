@@ -187,7 +187,7 @@ def test_autobump_merge_commit_message_for_a_batch() -> None:
 def test_release_pr_author_validation() -> None:
     plan = {
         "pr_number": 42,
-        "head_ref": "autobump/target-1.2.3",
+        "head_ref": "autobump/target",
         "head_sha": "a" * 40,
         "base_sha": "b" * 40,
         "packages": "target",
@@ -200,7 +200,7 @@ def test_release_pr_author_validation() -> None:
             "base": {"ref": "OCO", "sha": "b" * 40},
             "head": {
                 "repo": {"full_name": "owner/repo"},
-                "ref": "autobump/target-1.2.3",
+                "ref": "autobump/target",
                 "sha": "a" * 40,
             },
             "user": {"login": author},

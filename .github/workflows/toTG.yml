@@ -1,0 +1,30 @@
+name: 🫸Tangled
+on:
+  push:
+    branches: [OCO]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: push-to-tangled-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  push-to-tangled:
+    name: 🫸Tangled
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Push branch to Tangled
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.TANGLED_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.TANGLED_KNOWN_HOSTS }}
+          TANGLED_REPO: ${{ vars.TANGLED_REPO || 'osowoso.tngl.sh@tangled.org:did:plc:z2yxj2v2yh4iywcwal6kglwe' }}
+          BRANCH: ${{ github.ref_name }}
+          FORCE: "0"
+        run: bash .github/scripts/ci/push-tangled.sh

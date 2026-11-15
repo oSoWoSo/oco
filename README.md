@@ -40,6 +40,8 @@ https://gitlab.com/osowoso/oco
 https://tangled.org/osowoso.tngl.sh/oco
 - sr.ht mirror (only push, no PRs or issues accepted)
 https://git.sr.ht/~osowoso/oco
+- repo.or.cz mirror (pulled periodically by repo.or.cz, no PRs or issues accepted)
+https://repo.or.cz/oco.git
 
 ## What we don't build? (From source)
 Browsers: It's waste of energy and when you finish building is maybe already new version out  

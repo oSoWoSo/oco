@@ -1,7 +1,7 @@
 name: 📦 bumper
 run-name: >-
   ${{
-    format('📦{0}: {1}{2}{3}{4}{5}{6}',
+    format('📦{0}: {1}{2}{3}{4}{5}',
       inputs.group,
       inputs.bump == true && 'bump' || '',
       inputs.lint == true && (inputs.bump == true && ' lint' || 'lint') || '',

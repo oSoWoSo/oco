@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BRANCH="autobump/${TEMPLATE}-${VERSION}"
+BRANCH="autobump/${TEMPLATE}"
 plan="$RUNNER_TEMP/autobump-plan.tsv"
 snapshot="$RUNNER_TEMP/autobump-templates"
 manifest_snapshot="$RUNNER_TEMP/autobump-dependencies.tsv"

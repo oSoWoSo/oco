@@ -102,9 +102,8 @@ def branch_target_package(head_ref: str, known_packages: set[str]) -> str | None
     if not head_ref.startswith(prefix):
         return None
     rest = head_ref[len(prefix):]
-    for package in sorted(known_packages, key=len, reverse=True):
-        if rest.startswith(package + "-"):
-            return package
+    if rest in known_packages:
+        return rest
     return None
 
 

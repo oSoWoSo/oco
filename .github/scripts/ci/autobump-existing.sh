@@ -2,11 +2,16 @@
 set -euo pipefail
 
 # Reuse an open autobump PR only when it already contains every
-# package in this plan. Partial single-package PRs must be folded
-# into the complete dependency batch instead of suppressing it.
+# package in this plan. Branches are stable (autobump/<template>), so
+# an open PR on the exact branch this run would update is never a reason
+# to skip: the newest version force-pushes over the old one in place.
+# Partial single-package PRs must be folded into the complete dependency
+# batch instead of suppressing it.
+target_branch="autobump/${TEMPLATE}"
 existing_number=""
-while IFS=$'\t' read -r number _ref; do
+while IFS=$'\t' read -r number ref; do
   [[ -n $number ]] || continue
+  [[ $ref != "$target_branch" ]] || continue
   files=$(gh api "repos/${GH_REPO}/pulls/${number}/files?per_page=100" \
     --jq '.[].filename')
   covered=true

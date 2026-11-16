@@ -37,6 +37,12 @@ PY
 		done
 	fi
 
+	if grep -rIl 'KF\${QT_MAJOR_VERSION}' . >/dev/null 2>&1; then
+		grep -rIl 'KF\${QT_MAJOR_VERSION}' . | while IFS= read -r f; do
+			sed -i 's/KF\${QT_MAJOR_VERSION}/SF\${QT_MAJOR_VERSION}/g' "$f"
+		done
+	fi
+
 	if grep -rIl 'Kf6' . >/dev/null 2>&1; then
 		grep -rIl 'Kf6' . | while IFS= read -r f; do
 			sed -i 's/Kf6/Sf6/g' "$f"

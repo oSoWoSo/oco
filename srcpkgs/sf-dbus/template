@@ -21,7 +21,7 @@ post_patch() {
 }
 
 sf-dbus-devel_package() {
-	depends="qt6-base-devel ${sourcepkg}>=${version}_${revision}"
+	depends="${sourcepkg}>=${version}_${revision} qt6-base-devel"
 	short_desc+=" - development files"
 	pkg_install() {
 		vmove usr/include

@@ -19,7 +19,7 @@ if [ -z "$CROSS_BUILD" ]; then
 	configure_args+=" -DBINARY_ICONS_RESOURCE=ON"
 else
 	hostmakedepends+=" libbreeze-icons-devel"
-	configure_args+=" -DBINARY_ICONS_RESOURCE=OFF -DSF6_HOST_TOOLING=/usr/lib/cmake"
+	configure_args+=" -DBINARY_ICONS_RESOURCE=OFF"
 fi
 
 post_patch() {

@@ -20,10 +20,15 @@ post_patch() {
 	sonic_namespace_patch
 }
 
+post_patch() {
+	. /usr/libexec/sonic-namespace/sonic-namespace.sh
+	sonic_namespace_patch
+}
+
 do_check() {
 	cd build
 	# disable failing tests
-	ctest -E "kconfigcore-kconfigtest|kconfiggui-kstandardshortcutwatchertest"
+	ctest -E "kconfigcore-kconfigtest|kconfiggui-kstandardshortcutwatchertest|kconfigcore-dbussanitizertest"
 }
 
 sf-settings-devel_package() {

@@ -15,6 +15,9 @@ license="LGPL-2.0-only OR LGPL-3.0-only"
 homepage="https://github.com/Sonic-DE/sonic-frameworks-quick-ui"
 distfiles="https://github.com/Sonic-DE/sonic-frameworks-quick-ui/archive/refs/tags/${version}.tar.gz"
 checksum=c9a9aff7aed0027ed2d43f4ba1253d87506c879cbb1f527b86ad45c3ed272f35
+provides="kf6-kirigami-${version}_${revision}"
+conflicts="kf6-kirigami"
+replaces="kf6-kirigami>=0"
 
 post_patch() {
 	. /usr/libexec/sonic-namespace/sonic-namespace.sh

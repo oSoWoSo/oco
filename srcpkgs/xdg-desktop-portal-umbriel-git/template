@@ -7,10 +7,9 @@ build_style=meson
 configure_args="$(vopt_feature picker picker)"
 hostmakedepends="pkgconf wayland-devel glib-devel cmake"
 makedepends="sdbus-c++-devel pipewire-devel wayland-devel wayland-protocols
- libdrm-devel libgbm-devel cairo-devel tomlplusplus-devel json-c++
+ libdrm-devel libei-devel libgbm-devel cairo-devel tomlplusplus-devel json-c++
  $(vopt_if picker gtk4-devel)"
 depends="xdg-desktop-portal"
-checkdepends="libei-devel"
 short_desc="XDG Desktop Portal backend for the Umbriel compositor"
 maintainer="Coolllyn <leanhduc673@gmail.com>"
 license="MIT"

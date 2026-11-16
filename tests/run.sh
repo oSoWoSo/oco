@@ -1723,6 +1723,9 @@ python3 "$SCRIPT_DIR/tests/test_detect_update.py" || _FAIL=$((_FAIL + 1))
 echo '== autobump-batch.py =='
 python3 "$SCRIPT_DIR/tests/test_autobump_batch.py" || _FAIL=$((_FAIL + 1))
 
+echo '== vur-closure.py =='
+python3 "$SCRIPT_DIR/tests/test_vur_closure.py" || _FAIL=$((_FAIL + 1))
+
 echo '== autobump-release.py =='
 python3 "$SCRIPT_DIR/tests/test_autobump_release.py" || _FAIL=$((_FAIL + 1))
 

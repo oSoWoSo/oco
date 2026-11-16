@@ -29,14 +29,15 @@ teardown() {
   rm -rf "$TEST_DIR"
 }
 
-# Source push_template() from the real script up to where it stages files.
-# The tail (branch push, run polling, status reporting) talks to GitHub and is
-# out of scope here. The caller must set $template first.
+# Source push_template() from the real script up to where the template is
+# staged and its skip/keep status is decided. The tail (branch commit, push,
+# run polling, status reporting) talks to GitHub and is out of scope here.
+# The caller must set $template first.
 load_push_template() {
   local body
   body="$(awk '
     /^push_template\(\) \{/ {p=1; print; next}
-    p && /git add .*common\/shlibs/ {print; print "}"; p=0; next}
+    p && /pushed_branches\+=\("\$\{template\}"\)/ {print; print "}"; p=0; next}
     p {print}
   ' "$BATS_TEST_DIRNAME/../.github/scripts/ci/vur-check.sh")"
   eval "$body"
@@ -131,4 +132,38 @@ assert_staged_symlink() {
   [ -f "$VUR/srcpkgs/libbtrfsutil/template" ]
   assert_staged_symlink libbtrfs-devel btrfs-progs
   [ -e "$VUR/srcpkgs/libbtrfs-devel/template" ]
+}
+
+@test "two carried templates stage into the same single test branch" {
+    mkdir -p "$OCO/srcpkgs/alpha" "$OCO/srcpkgs/beta"
+    printf 'pkgname=alpha\nversion=1.0\nrevision=1\n' >"$OCO/srcpkgs/alpha/template"
+    printf 'pkgname=beta\nversion=1.0\nrevision=1\n' >"$OCO/srcpkgs/beta/template"
+
+    # The batch driver pushes everything onto one branch: emulate CARRY by
+    # overlaying both templates into the same worktree and staging once.
+    template=alpha
+    load_push_template
+    push_template alpha
+    push_template beta
+
+    # Both templates resolve from the branch worktree (same staging area).
+    [ -f "$VUR/srcpkgs/alpha/template" ]
+    [ -f "$VUR/srcpkgs/beta/template" ]
+    [ "$(git -C "$VUR" diff --cached --name-only | grep -c '^srcpkgs/')" -ge 2 ]
+}
+
+@test "an already-matching carried template is skipped" {
+    mkdir -p "$OCO/srcpkgs/alpha"
+    printf 'pkgname=alpha\nversion=1.0\nrevision=1\n' >"$OCO/srcpkgs/alpha/template"
+    # VUR master already ships the exact same template.
+    mkdir -p "$VUR/srcpkgs/alpha"
+    printf 'pkgname=alpha\nversion=1.0\nrevision=1\n' >"$VUR/srcpkgs/alpha/template"
+    git -C "$VUR" add . && git -C "$VUR" commit -qm upstream
+
+    template=alpha
+    load_push_template
+    run push_template alpha
+    [ "$status" -eq 1 ]
+    # Nothing staged by this template.
+    [ -z "$(git -C "$VUR" diff --cached --name-only)" ]
 }

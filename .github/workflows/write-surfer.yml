@@ -11,6 +11,11 @@ on:
         description: Publication request artifact
         required: true
         type: string
+      skip_prune:
+        description: Skip orphan pruning against the checked-out templates
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   actions: read
@@ -85,6 +90,7 @@ jobs:
           ARCHES: ${{ steps.request.outputs.package_arches }}
           PURGES: ${{ steps.request.outputs.purge_packages }}
           AUTO_DETECT_PURGE: ${{ steps.request.outputs.auto_detect_purge }}
+          SKIP_PRUNE: ${{ inputs.skip_prune }}
           DESTINATION: ${{ inputs.destination }}
           PRIV_KEY: ${{ secrets.PRIV_KEY }}
           SURFER_USER: ${{ secrets.SURFER_USER }}

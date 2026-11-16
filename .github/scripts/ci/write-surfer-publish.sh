@@ -9,6 +9,9 @@ AUTO_DETECT_PURGE=${AUTO_DETECT_PURGE:-false}
 export PATH="/opt/xbps/usr/bin:$PATH"
 case "$DESTINATION" in production) export SURF_PATH_PREFIX='' ;; testing) export SURF_PATH_PREFIX=testing ;; esac
 export SURF_PURGE_PACKAGES="$PURGES"
+if [[ ${SKIP_PRUNE:-false} == true ]]; then
+  export SURF_SKIP_PRUNE=1
+fi
 . extra/src/oco-key.sh
 oco_key_write /tmp/private.pem
 for arch in $ARCHES; do

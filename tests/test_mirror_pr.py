@@ -70,6 +70,22 @@ class MirrorPullRequestTests(unittest.TestCase):
         self.assertEqual(payload["title"], "Fix package")
         self.assertIn("Mirrored from https://github.com/contributor/oco/pull/12", payload["body"])
 
+    def test_opened_testing_pr_mirrors_onto_testing_base(self):
+        self.event["pull_request"] = {
+            **self.event["pull_request"],
+            "base": {"ref": "testing"},
+        }
+        mirror.BASE_BRANCH = "testing"
+        try:
+            result = mirror.mirror_pr(self.event, "github", self.api, self.push)
+        finally:
+            mirror.BASE_BRANCH = "OCO"
+
+        self.assertEqual(result["number"], 77)
+        method, path, payload = self.calls[-1]
+        self.assertEqual((method, path), ("POST", "/pulls"))
+        self.assertEqual(payload["base"], "testing")
+
     def test_retry_updates_existing_mirror_instead_of_creating_duplicate(self):
         self.api_responses = [{
             "number": 77,

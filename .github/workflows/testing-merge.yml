@@ -1,0 +1,48 @@
+name: 🧪 merge testing PR
+
+on:
+  workflow_run:
+    workflows:
+      - 🏗️ build
+    types: [completed]
+
+permissions:
+  contents: write
+  actions: read
+  pull-requests: write
+
+jobs:
+  merge:
+    name: Merge passed PR into testing
+    if: >-
+      ${{
+        github.event.workflow_run.event == 'pull_request' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        !startsWith(github.event.workflow_run.head_branch, 'autobump/') &&
+        !startsWith(github.event.workflow_run.head_branch, 'mirror/')
+      }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: testing-pr-merge
+      cancel-in-progress: false
+      queue: max
+    steps:
+      - name: Checkout trusted base
+        uses: actions/checkout@v7
+        with:
+          ref: testing
+          path: oco
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Merge passed PR into testing
+        env:
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
+        run: |
+          set -euo pipefail
+          python3 oco/src/testing-merge.py \
+            --run-id "$RUN_ID" --head-sha "$HEAD_SHA" --head-repo "$HEAD_REPO"

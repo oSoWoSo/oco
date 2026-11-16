@@ -14,7 +14,7 @@ from urllib.parse import urlencode, urlparse
 from urllib.request import Request, urlopen
 
 REPOSITORY = "oSoWoSo/oco"
-BASE_BRANCH = "OCO"
+BASE_BRANCH = os.environ.get("BASE_BRANCH", "OCO")
 OPEN_ACTIONS = {"opened", "reopened", "synchronize", "edited"}
 CLOSED_ACTIONS = {"closed"}
 FORGE_HOSTS = {"github": "github.com", "codeberg": "codeberg.org"}
@@ -367,7 +367,13 @@ def main() -> int:
             "action": action,
             "pull_request": codeberg_pull_request(os.environ["PR_NUMBER"]),
         }
+        # The Codeberg PR's base is authoritative; mirror it onto the same base
+        # on GitHub rather than assuming OCO.
+        globals()["BASE_BRANCH"] = event["pull_request"]["base"]["ref"]
     else:
+        # Mirror the PR onto the same base branch it targets on the source
+        # forge (OCO or testing) instead of assuming OCO.
+        globals()["BASE_BRANCH"] = os.environ["PR_BASE_REF"]
         event = {
             "action": action,
             "pull_request": {

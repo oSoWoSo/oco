@@ -1,0 +1,65 @@
+name: 🔄 sync testing branch
+
+on:
+  push:
+    branches: [OCO]
+  schedule:
+    # Keep the testing branch fresh even when OCO is idle, so template
+    # updates made directly on testing are re-based and re-published.
+    - cron: '23 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-testing-branch
+  cancel-in-progress: false
+
+jobs:
+  rebase:
+    name: Rebase testing on OCO
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout OCO
+        uses: actions/checkout@v7
+        with:
+          ref: OCO
+          path: oco
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Fetch testing branch
+        run: |
+          set -euo pipefail
+          git -C oco fetch --no-tags origin +refs/heads/testing:refs/remotes/origin/testing
+          git -C oco checkout -B testing origin/testing
+
+      - name: Rebuild testing on top of the new OCO head
+        run: |
+          set -euo pipefail
+          git -C oco checkout -B rebuilt origin/OCO
+          # The testing branch is OCO plus its testing-only templates: files
+          # that exist on testing but not on the current OCO. OCO always wins
+          # for files present on both branches, so testing tracks upstream.
+          while read -r path; do
+            [ -n "$path" ] || continue
+            git -C oco checkout testing -- "$path"
+          done < <(git -C oco diff --name-status --no-renames origin/OCO testing |
+                    awk '$1 == "A" { print $2 }')
+          git -C oco add -A
+          if git -C oco diff --cached --quiet; then
+            echo "Testing branch already matches OCO; nothing to commit."
+            exit 0
+          fi
+          git -C oco -c user.name=oSoWoSo-bot -c user.email=bot@osowoso.org commit -q -m "testing: keep testing templates on OCO base"
+
+      - name: Push testing branch
+        run: |
+          set -euo pipefail
+          expected="$(git -C oco rev-parse origin/testing)"
+          git -C oco push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            "rebuilt:refs/heads/testing" --force-with-lease="refs/heads/testing:${expected}"
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}

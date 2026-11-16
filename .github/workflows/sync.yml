@@ -2,7 +2,7 @@ name: 🔁 sync
 run-name: "🔁 ${{ github.event_name == 'workflow_dispatch' && inputs.host || 'all' }}${{ inputs.force && ' --force' || '' }}"
 on:
   push:
-    branches: [OCO]
+    branches: [OCO, testing]
   workflow_dispatch:
     inputs:
       host:

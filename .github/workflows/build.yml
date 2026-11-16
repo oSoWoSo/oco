@@ -22,6 +22,7 @@ on:
   pull_request:
     branches:
       - OCO
+      - testing
   repository_dispatch:
     types: [build]
   workflow_dispatch:
@@ -84,6 +85,7 @@ jobs:
       matrix: ${{ steps.detect.outputs.matrix }}
       publish_target: ${{ steps.detect.outputs.publish_target }}
       repository_prefix: ${{ steps.detect.outputs.repository_prefix }}
+      canonical_publish: ${{ steps.detect.outputs.canonical_publish }}
       skip_autobump: ${{ steps.detect.outputs.skip_autobump }}
     steps:
       - uses: actions/checkout@v7
@@ -426,6 +428,7 @@ jobs:
           SOURCE_RUN_ID: ${{ github.run_id }}
           REMOVED: ${{ needs.detect.outputs.removed }}
           RESULTS: ${{ needs.detect.outputs.packages != '' }}
+          SKIP_PRUNE: ${{ needs.detect.outputs.publish_target == 'testing' && needs.detect.outputs.canonical_publish != 'true' }}
         run: |
           set -eu
           root="$RUNNER_TEMP/surfer-publication"
@@ -447,7 +450,7 @@ jobs:
           arches = sorted(p.name for p in (root / "packages").iterdir() if p.is_dir())
           results = sorted(p.stem for p in (root / "results").glob("*.tsv"))
           purges = os.environ["REMOVED"].split()
-          manifest = {"schema_version": 1, "destination": os.environ["DESTINATION"], "source_sha": os.environ["SOURCE_SHA"], "source_run_id": os.environ["SOURCE_RUN_ID"], "package_arches": arches, "result_arches": results, "purge_packages": purges, "update_arch_pages": True, "update_feed": True, "update_main_index": False}
+          manifest = {"schema_version": 1, "destination": os.environ["DESTINATION"], "source_sha": os.environ["SOURCE_SHA"], "source_run_id": os.environ["SOURCE_RUN_ID"], "package_arches": arches, "result_arches": results, "purge_packages": purges, "update_arch_pages": True, "update_feed": True, "update_main_index": True if os.environ["DESTINATION"] == "testing" else False}
           (root / "manifest.json").write_text(json.dumps(manifest) + "\n")
           if purges:
               (root / "purge-packages.txt").write_text("\n".join(purges) + "\n")
@@ -466,6 +469,7 @@ jobs:
     with:
       destination: ${{ needs.detect.outputs.publish_target }}
       artifact_name: surfer-publication
+      skip_prune: ${{ needs.detect.outputs.publish_target == 'testing' && needs.detect.outputs.canonical_publish != 'true' }}
     secrets: inherit
 
   close-update-issues:

@@ -41,7 +41,14 @@ SURF_MAX_TIME="${SURF_MAX_TIME:-300}"
 SURF_BACKOFF_MAX="${SURF_BACKOFF_MAX:-30}"
 # Space-separated package names to strip from the repodata
 SURF_PURGE_PACKAGES="${SURF_PURGE_PACKAGES:-}"
+# Skip orphan pruning on upload. Set for test-channel publications whose
+# branch is not the canonical package set (OCO / testing), so a sparse feature
+# branch no longer strips every package it does not carry.
+SURF_SKIP_PRUNE="${SURF_SKIP_PRUNE:-}"
 CI_URL="${CI_URL:-https://github.com/oSoWoSo/oco}"
+# Branch of the oco repository the website is generated from. Only affects
+# template links in the package search results.
+OCO_SITE_BRANCH="${OCO_SITE_BRANCH:-OCO}"
 SIGNED_BY='oSoWoSo <mail@osowoso.org>'
 ARCHES='x86_64 x86_64-musl aarch64 aarch64-musl'
 
@@ -628,6 +635,7 @@ _build_main_index() {
 	sed \
 		-e "s|__CSS_URL__|style.css|g" \
 		-e 's|__FAVICON__|<link rel="icon" href="favicon.ico" />|g' \
+		-e "s|__GIT_BRANCH__|${OCO_SITE_BRANCH}|g" \
 		src/main-index-template.html \
 	| awk \
 		-v nav_arch="$_nav_arch_tmp" \
@@ -969,6 +977,7 @@ generate_arch_pages() {
 			-e "s|__ARCH__|${_arch}|g" \
 			-e 's|__CSS_URL__|../style.css|g' \
 			-e 's|__HOME_URL__|../index.html|g' \
+			-e "s|__GIT_BRANCH__|${OCO_SITE_BRANCH}|g" \
 			-e "s|__REPO_URL__|${_repo_url}|g" \
 			-e "s|__GIT_CI_URL__|${CI_URL}|g" \
 			-e 's|__FAVICON__|<link rel="icon" href="../favicon.ico" />|g' \
@@ -1202,7 +1211,12 @@ do_upload() {
 		if [ "${_srcpkgs_count}" -eq 0 ]; then
 			fatal "==> refusing to publish: srcpkgs directory is empty or missing; cannot safely prune orphans"
 		fi
-		prune_orphans "$_remote_list" "${PWD}/orphans.txt"
+		if [ -n "$SURF_SKIP_PRUNE" ]; then
+			echo '==> Skipping orphan prune (SURF_SKIP_PRUNE); canonical branch publish will reconcile'
+			: > "${PWD}/orphans.txt"
+		else
+			prune_orphans "$_remote_list" "${PWD}/orphans.txt"
+		fi
 		if [ -n "$SURF_PURGE_PACKAGES" ]; then
 			# Caller (cleanup workflow) explicitly named packages to strip,
 			# independent of srcpkgs/ presence. Merge into the strip list.

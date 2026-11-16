@@ -13,7 +13,12 @@ for file in publication/results/*.tsv; do
   cp "$file" "$RUNNER_TEMP/feed-results/build-results-$arch/results.tsv"
 done
 
-feed_url=https://repo.osowoso.org/_webdav/feed.xml
+DESTINATION=${DESTINATION:-}
+if [[ $DESTINATION == testing ]]; then
+  feed_url=https://repo.osowoso.org/_webdav/testing/feed.xml
+else
+  feed_url=https://repo.osowoso.org/_webdav/feed.xml
+fi
 feed_file="$RUNNER_TEMP/feed.xml"
 download_body="$RUNNER_TEMP/feed-download.body"
 upload_body="$RUNNER_TEMP/feed-upload.body"

@@ -52,6 +52,16 @@ repository_prefix=testing
 echo "publish_target=$publish_target" >>"$GITHUB_OUTPUT"
 echo "repository_prefix=$repository_prefix" >>"$GITHUB_OUTPUT"
 
+# A publication prunes orphans against the checked-out templates. That is only
+# safe for branches that represent the canonical package set: OCO (production)
+# and the testing branch (OCO + testing templates). A sparse feature branch
+# publishing to the testing channel must not strip every package it lacks.
+canonical_publish=false
+if [ "$publish_target" = production ] || [ "${CURRENT_BRANCH:-}" = testing ]; then
+        canonical_publish=true
+fi
+echo "canonical_publish=$canonical_publish" >>"$GITHUB_OUTPUT"
+
 ZERO_SHA="0000000000000000000000000000000000000000"
 all_packages() {
 	list_srcpkgs srcpkgs | tr '\n' ' ' | sed 's/ $//'

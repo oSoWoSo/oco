@@ -174,12 +174,13 @@ document.addEventListener('DOMContentLoaded', () => {
             description.textContent = pkg.description;
             const references = document.createElement('div');
             references.className = 'package-search-references';
+            const siteBranch = window.OCO_SITE_BRANCH || 'OCO';
             const templateLink = document.createElement('a');
-            templateLink.href = `https://codeberg.org/osowoso/oco/src/branch/OCO/srcpkgs/${encodeURIComponent(pkg.name)}/template`;
+            templateLink.href = `https://codeberg.org/osowoso/oco/src/branch/${siteBranch}/srcpkgs/${encodeURIComponent(pkg.name)}/template`;
             templateLink.textContent = 'Template (Codeberg)';
             references.append(templateLink);
             const githubLink = document.createElement('a');
-            githubLink.href = `https://github.com/oSoWoSo/oco/blob/OCO/srcpkgs/${encodeURIComponent(pkg.name)}/template`;
+            githubLink.href = `https://github.com/oSoWoSo/oco/blob/${siteBranch}/srcpkgs/${encodeURIComponent(pkg.name)}/template`;
             githubLink.textContent = 'GitHub fallback';
             references.append(githubLink);
             if (pkg.homepage) {

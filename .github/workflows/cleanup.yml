@@ -70,4 +70,8 @@ jobs:
     with:
       destination: ${{ inputs.repository_prefix == 'testing' && 'testing' || 'production' }}
       artifact_name: surfer-publication
+      # The testing channel's canonical template set lives on the testing
+      # branch; this workflow checks out the default branch, so pruning there
+      # would strip every testing-only package. Purge exactly what was named.
+      skip_prune: ${{ inputs.repository_prefix == 'testing' }}
     secrets: inherit

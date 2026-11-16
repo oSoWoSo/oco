@@ -1091,6 +1091,16 @@ assert_eq "$(grep '^repository_prefix=' "$_detect_wd/out-manual-prod/output" | c
 _run_detect_case dispatch 0000000000000000000000000000000000000000 refs/heads/OCO repository_dispatch production >/dev/null 2>&1
 it 'repository_dispatch defaults to testing even on OCO'
 assert_eq "$(grep '^repository_prefix=' "$_detect_wd/out-dispatch/output" | cut -d= -f2-)" testing
+
+_run_detect_case tbranch 0000000000000000000000000000000000000000 refs/heads/testing push production testing >/dev/null 2>&1
+it 'testing-branch push selects testing and is the canonical publication'
+assert_eq "$(grep '^publish_target=' "$_detect_wd/out-tbranch/output" | cut -d= -f2-)" testing
+assert_eq "$(grep '^repository_prefix=' "$_detect_wd/out-tbranch/output" | cut -d= -f2-)" testing
+assert_eq "$(grep '^canonical_publish=' "$_detect_wd/out-tbranch/output" | cut -d= -f2-)" true
+
+_run_detect_case tfeature 0000000000000000000000000000000000000000 refs/heads/mypkg push production mypkg >/dev/null 2>&1
+it 'sparse feature-branch testing publish is not canonical'
+assert_eq "$(grep '^canonical_publish=' "$_detect_wd/out-tfeature/output" | cut -d= -f2-)" false
 rm -rf "$_detect_wd"
 
 eval "$(awk '

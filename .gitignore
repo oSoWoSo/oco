@@ -233,6 +233,7 @@
 !/srcpkgs/libspng
 !/srcpkgs/libtsm
 !/srcpkgs/libtsm-devel
+!/srcpkgs/lightcraft
 !/srcpkgs/linuxcommandlibrary
 !/srcpkgs/linuxcommandlibrary-desktop
 !/srcpkgs/llama.cpp

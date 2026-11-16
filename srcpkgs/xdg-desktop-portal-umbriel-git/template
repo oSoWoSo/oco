@@ -16,7 +16,7 @@ maintainer="Coolllyn <leanhduc673@gmail.com>"
 license="MIT"
 homepage="https://github.com/noctalia-dev/xdg-desktop-portal-umbriel"
 distfiles="https://github.com/noctalia-dev/xdg-desktop-portal-umbriel/archive/${_commit}.tar.gz"
-checksum="cd282567b4d4e6da37efb465c478c495d747d4620c85db4cdb3cd34d6b304212"
+checksum=cd282567b4d4e6da37efb465c478c495d747d4620c85db4cdb3cd34d6b304212
 
 build_options="picker"
 build_options_default="picker"

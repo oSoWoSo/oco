@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-"""Merge a passed PR into the testing branch.
+"""Merge a passed T-autobump PR into the testing branch.
 
 Runs from a ``workflow_run`` of the build workflow (triggered by the
 ``testing-merge.yml`` workflow). The workflow_run conclusion already
 establishes that the PR build passed; this script additionally verifies that
 the run is really a pull_request, targets the ``testing`` branch, belongs to
-this repository, and that the run's head SHA is still the PR's head. It then
-merges the PR head into ``testing`` via the GitHub API.
+this repository, and that the run's head SHA is still the PR's head.
 
-Only same-repository PRs are merged: a fork PR head is untrusted and can be
-rewritten after its build, so it is left for manual review.
+OCO parity: just as only bot-created ``autobump/<template>`` branches
+auto-merge into OCO, only bot-created ``T-autobump/<template>`` branches
+auto-merge into ``testing``. The merge is a *rebase and fast-forward* via the
+GitHub API (``merge_method=rebase``), which preserves the PR's real commits
+instead of creating a synthetic squash commit. Every other PR is left for
+manual review.
 """
 
 from __future__ import annotations
@@ -22,7 +25,8 @@ from urllib.parse import urlencode
 
 API_ROOT = "https://api.github.com/repos/oSoWoSo/oco"
 TARGET_BRANCH = "testing"
-SQUASH_NOTICE = "Merged automatically after a passed testing build by the OCO testing merge workflow."
+AUTO_MERGE_PREFIX = "T-autobump/"
+TRUSTED_AUTHORS = {"oSoWoSo-bot", "zen0bit", "zenobit"}
 
 
 def api_request(method: str, path: str, token: str, payload: dict | None = None) -> dict | None:
@@ -71,7 +75,7 @@ def main() -> int:
 
     # Re-verify the head immediately before merging. A contributor can push new
     # commits or the branch can be force-rewritten between the build run and
-    # this API call; squashing whatever is there now would publish untested code.
+    # this API call; rebasing whatever is there now would publish untested code.
     current = api_request("GET", f"/pulls/{match['number']}", token)
     if not current or current.get("head", {}).get("sha") != args.head_sha:
         print(f"PR #{match['number']} head changed since the passed build "
@@ -81,19 +85,32 @@ def main() -> int:
         print(f"PR #{match['number']} no longer targets {TARGET_BRANCH}; skip.")
         return 0
 
+    # OCO parity gate: only bot-created T-autobump branches auto-merge.
+    head_ref = current.get("head", {}).get("ref", "")
+    if not head_ref.startswith(AUTO_MERGE_PREFIX):
+        print(f"PR #{match['number']} head {head_ref!r} is not a "
+              f"{AUTO_MERGE_PREFIX} branch; left for review.")
+        return 0
+    author = current.get("user", {}).get("login", "")
+    if author not in TRUSTED_AUTHORS:
+        print(f"PR #{match['number']} author {author!r} is not trusted; left for review.")
+        return 0
+
+    # Rebase and fast-forward: preserve the PR's real commits on top of the
+    # current testing tip (no synthetic squash/merge commit).
     merged = api_request(
         "PUT",
         f"/pulls/{match['number']}/merge",
         token,
         {
-            "commit_title": f"Merge PR #{match['number']}: {match['title']}",
-            "commit_message": SQUASH_NOTICE,
-            "merge_method": "squash",
+            "sha": current["head"]["sha"],
+            "merge_method": "rebase",
         },
     )
     if not merged or merged.get("merged") is not True:
         raise RuntimeError(f"Merge of PR #{match['number']} did not succeed: {merged}")
-    print(f"Merged PR #{match['number']} into {TARGET_BRANCH} ({merged.get('sha', '')}).")
+    print(f"Rebased+fast-forwarded PR #{match['number']} into {TARGET_BRANCH} "
+          f"({merged.get('sha', '')}).")
     return 0
 
 

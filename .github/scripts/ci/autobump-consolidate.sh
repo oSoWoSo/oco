@@ -30,4 +30,4 @@ while IFS=$'\t' read -r number _ref; do
     echo "Closed superseded autobump PR #${number}"
   fi
 done <<<"$(gh api "repos/${GH_REPO}/pulls?state=open&per_page=100" \
-  --jq '.[] | select(.head.ref | startswith("autobump/")) | "\(.number)\t\(.head.ref)"')"
+  --jq '.[] | select(.head.ref | startswith("'"${BRANCH_PREFIX:-autobump}"'/")) | "\(.number)\t\(.head.ref)"')"

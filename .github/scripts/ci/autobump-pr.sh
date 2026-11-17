@@ -67,7 +67,7 @@ number=$(gh api "repos/${GH_REPO}/pulls" \
 	--method POST \
 	-f title="$title" \
 	-f head="$BRANCH" \
-	-f base=OCO \
+	-f base="${BASE_REF:-OCO}" \
 	-F body=@"$RUNNER_TEMP/pr-body.md" \
 	--jq '.number')
 

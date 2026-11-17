@@ -2,12 +2,12 @@
 set -euo pipefail
 
 # Reuse an open autobump PR only when it already contains every
-# package in this plan. Branches are stable (autobump/<template>), so
+# package in this plan. Branches are stable (<prefix>/<template>), so
 # an open PR on the exact branch this run would update is never a reason
 # to skip: the newest version force-pushes over the old one in place.
 # Partial single-package PRs must be folded into the complete dependency
 # batch instead of suppressing it.
-target_branch="autobump/${TEMPLATE}"
+target_branch="${BRANCH_PREFIX:-autobump}/${TEMPLATE}"
 existing_number=""
 while IFS=$'\t' read -r number ref; do
   [[ -n $number ]] || continue
@@ -27,7 +27,7 @@ while IFS=$'\t' read -r number ref; do
     break
   fi
 done <<<"$(gh api "repos/${GH_REPO}/pulls?state=open&per_page=100" \
-  --jq '.[] | select(.head.ref | startswith("autobump/")) | "\(.number)\t\(.head.ref)"')"
+  --jq '.[] | select(.head.ref | startswith("'"${BRANCH_PREFIX:-autobump}"'/")) | "\(.number)\t\(.head.ref)"')"
 
 if [[ -n $existing_number ]]; then
   echo "::notice::the complete batch is already covered by open pull request #${existing_number}"

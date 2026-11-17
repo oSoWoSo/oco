@@ -10,6 +10,14 @@ tm = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(tm)
 
 ARGS = ["--run-id", "1", "--head-sha", "a" * 40, "--head-repo", "oSoWoSo/oco"]
+T_PULL = {
+    "number": 9,
+    "title": "foo 1.2.3",
+    "state": "open",
+    "base": {"ref": "testing"},
+    "head": {"ref": "T-autobump/foo", "sha": "a" * 40, "repo": {"full_name": "oSoWoSo/oco"}},
+    "user": {"login": "oSoWoSo-bot"},
+}
 
 
 class TestingMergeTests(unittest.TestCase):
@@ -50,30 +58,55 @@ class TestingMergeTests(unittest.TestCase):
         self.assertEqual(self.calls, [("GET", "/pulls?state=open&base=testing&per_page=100", "token", None)])
 
     def test_head_changed_since_build_skips_merge(self):
+        current = dict(T_PULL)
+        current["head"] = dict(current["head"], sha="b" * 40)
         self.get_responses = [
-            [{"number": 9, "head": {"sha": self.HEAD}, "title": "t", "base": {"ref": "testing"}}],
-            {"number": 9, "head": {"sha": "b" * 40}, "base": {"ref": "testing"}},
+            [dict(T_PULL)],
+            current,
         ]
         self.assertEqual(self.run_main(), 0)
         self.assertFalse(any(m == "PUT" for m, _, _, _ in self.calls))
 
     def test_base_changed_skips_merge(self):
+        current = dict(T_PULL)
+        current["base"] = {"ref": "OCO"}
         self.get_responses = [
-            [{"number": 9, "head": {"sha": self.HEAD}, "title": "t", "base": {"ref": "testing"}}],
-            {"number": 9, "head": {"sha": self.HEAD}, "base": {"ref": "OCO"}},
+            [dict(T_PULL)],
+            current,
         ]
         self.assertEqual(self.run_main(), 0)
         self.assertFalse(any(m == "PUT" for m, _, _, _ in self.calls))
 
-    def test_merges_matching_passed_pr(self):
+    def test_non_t_autobump_head_left_for_review(self):
+        current = dict(T_PULL)
+        current["head"] = dict(current["head"], ref="feature/foo")
         self.get_responses = [
-            [{"number": 9, "head": {"sha": self.HEAD}, "title": "Add pkg", "base": {"ref": "testing"}}],
-            {"number": 9, "head": {"sha": self.HEAD}, "base": {"ref": "testing"}},
+            [dict(T_PULL)],
+            current,
+        ]
+        self.assertEqual(self.run_main(), 0)
+        self.assertFalse(any(m == "PUT" for m, _, _, _ in self.calls))
+
+    def test_untrusted_author_left_for_review(self):
+        current = dict(T_PULL)
+        current["user"] = {"login": "some-contributor"}
+        self.get_responses = [
+            [dict(T_PULL)],
+            current,
+        ]
+        self.assertEqual(self.run_main(), 0)
+        self.assertFalse(any(m == "PUT" for m, _, _, _ in self.calls))
+
+    def test_merges_matching_passed_pr_with_rebase(self):
+        self.get_responses = [
+            [dict(T_PULL)],
+            dict(T_PULL),
         ]
         self.assertEqual(self.run_main(), 0)
         method, path, _tok, payload = self.calls[-1]
         self.assertEqual((method, path), ("PUT", "/pulls/9/merge"))
-        self.assertEqual(payload["merge_method"], "squash")
+        self.assertEqual(payload["merge_method"], "rebase")
+        self.assertEqual(payload["sha"], self.HEAD)
 
 
 if __name__ == "__main__":

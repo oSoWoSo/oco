@@ -1742,6 +1742,9 @@ python3 "$SCRIPT_DIR/tests/test_autobump_release.py" || _FAIL=$((_FAIL + 1))
 echo '== mirror-pr.py =='
 python3 "$SCRIPT_DIR/tests/test_mirror_pr.py" || _FAIL=$((_FAIL + 1))
 
+echo '== testing-merge.py =='
+python3 "$SCRIPT_DIR/tests/test_testing_merge.py" || _FAIL=$((_FAIL + 1))
+
 echo '== codeberg-status.py =='
 python3 "$SCRIPT_DIR/tests/test_codeberg_status.py" || _FAIL=$((_FAIL + 1))
 

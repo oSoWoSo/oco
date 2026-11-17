@@ -17,6 +17,7 @@ on:
       - '!WIP'
       - '!WIP/**'
       - '!autobump/**'
+      - '!T-autobump/**'
     paths:
       - 'srcpkgs/**'
   pull_request:
@@ -115,13 +116,28 @@ jobs:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: bash "${GITHUB_WORKSPACE}/.github/scripts/ci/build-detect.sh"
 
+  sync-testing:
+    name: 🔄 sync testing base
+    needs: detect
+    if: >-
+      ${{
+        (github.event_name == 'push' && github.ref_name == 'testing') ||
+        (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'testing')
+      }}
+    uses: ./.github/workflows/sync-testing.yml
+
   lint:
     name: Lint templates
     permissions:
       contents: read
       packages: read
-    needs: detect
-    if: github.event_name == 'pull_request' && needs.detect.outputs.packages != ''
+    needs: [detect, sync-testing]
+    if: >-
+      ${{
+        github.event_name == 'pull_request' &&
+        needs.detect.outputs.packages != '' &&
+        (needs.sync-testing.result == 'success' || needs.sync-testing.result == 'skipped')
+      }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     container:
@@ -161,8 +177,13 @@ jobs:
     permissions:
       contents: read
       packages: read
-    needs: detect
-    if: github.event_name == 'pull_request' && needs.detect.outputs.packages != ''
+    needs: [detect, sync-testing]
+    if: >-
+      ${{
+        github.event_name == 'pull_request' &&
+        needs.detect.outputs.packages != '' &&
+        (needs.sync-testing.result == 'success' || needs.sync-testing.result == 'skipped')
+      }}
     runs-on: ${{ matrix.config.runner }}
     timeout-minutes: 240
     container:
@@ -263,7 +284,12 @@ jobs:
           REMOVED: ${{ needs.detect.outputs.removed }}
         run: |
           set -euo pipefail
-          if [[ "$BASE_REF" != OCO || "$HEAD_REF" != autobump/* ]]; then
+          # A required build is OCO<-autobump/* or testing<-T-autobump/*.
+          if [[ "$BASE_REF" == OCO && "$HEAD_REF" == autobump/* ]]; then
+            required=true
+          elif [[ "$BASE_REF" == testing && "$HEAD_REF" == T-autobump/* ]]; then
+            required=true
+          else
             echo "Build not required for this PR"
             exit 0
           fi

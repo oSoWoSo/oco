@@ -82,6 +82,7 @@
             <outline title="flyline" text="flyline" xmlUrl="https://github.com/HalFrgrd/flyline/tags.atom" htmlUrl="https://github.com/HalFrgrd/flyline/releases" description="Bash plugin to replace readline for a modern line editing experience" type="rss"></outline>
             <outline title="forgejo-runner" text="forgejo-runner" xmlUrl="https://code.forgejo.org/forgejo/runner/tags.rss" htmlUrl="https://code.forgejo.org/forgejo/runner/tags" description="Continuous integration for Forgejo" type="rss"></outline>
             <outline title="FreeTube" text="FreeTube" xmlUrl="https://github.com/FreeTubeApp/FreeTube/tags.atom" htmlUrl="https://github.com/FreeTubeApp/FreeTube/releases" description="Client for watching YouTube Videos" type="rss"></outline>
+            <outline title="fresh" text="fresh" xmlUrl="https://github.com/sinelaw/fresh/tags.atom" htmlUrl="https://github.com/sinelaw/fresh/releases" description="Terminal based IDE &amp; text editor: easy, powerful and fast" type="rss"></outline>
             <outline title="FTXUI" text="FTXUI" xmlUrl="https://github.com/ArthurSonzogni/FTXUI/tags.atom" htmlUrl="https://github.com/ArthurSonzogni/FTXUI/releases" description="C++ Functional Terminal User Interface" type="rss"></outline>
             <outline title="fvs2" text="fvs2" xmlUrl="https://github.com/fvs-lab/fvs2/tags.atom" htmlUrl="https://github.com/fvs-lab/fvs2/releases" description="Fused Versioned Storage" type="rss"></outline>
             <outline title="gama" text="gama" xmlUrl="https://github.com/termkit/gama/tags.atom" htmlUrl="https://github.com/termkit/gama/releases" description="Manage your GitHub Actions from Terminal with great UI" type="rss"></outline>
@@ -315,7 +316,6 @@
             <outline title="zen-browser-bin" text="zen-browser-bin" xmlUrl="https://github.com/zen-browser/desktop/tags.atom" htmlUrl="https://github.com/zen-browser/desktop/releases" description="New Browser based on Firefox" type="rss"></outline>
             <outline title="zen-origin-bin" text="zen-origin-bin" xmlUrl="https://github.com/zen-browser/desktop/tags.atom" htmlUrl="https://github.com/zen-browser/desktop/releases" description="New Browser based on Firefox" type="rss"></outline>
             <outline title="zig" text="zig" xmlUrl="https://github.com/ziglang/zig/tags.atom" htmlUrl="https://github.com/ziglang/zig/releases" description="Programming language designed for robustness, optimality, and clarity" type="rss"></outline>
-
         </outline>
     </body>
 </opml>

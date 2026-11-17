@@ -104,3 +104,8 @@ libSF6NewStuffWidgets.so.6 sf-addons-downloader-6.31.0_1
 libSF6Package.so.6 sf-package-6.31.0_1
 libSF6Syndication.so.6 sf-feeds-6.31.0_1
 libSF6Svg.so.6 sf-svg-6.31.0.1_1
+libPlasmaActivities.so.7 sonic-activities-6.8.2_1
+libkdecorations3.so.6 sonic-decoration-6.8.2_1
+libkdecorations3private.so.2 sonic-decoration-6.8.2_1
+libPlasma.so.8 sonic-interface-libraries-6.8.2_1
+libPlasmaQuick.so.8 sonic-interface-libraries-6.8.2_1

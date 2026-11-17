@@ -9,3 +9,17 @@ libggml-cpu.so.0 llama.cpp-0.5.0_1
 libllama.so.0 llama.cpp-0.5.0_1
 libggml-vulkan.so.0 llama.cpp-0.5.0_1
 libllama-common.so.0 llama.cpp-0.5.0_1
+libKirigami.so.6 kf6-kirigami-6.25.0_1
+libKirigamiControls.so.6 kf6-kirigami-6.25.0_1
+libKirigamiDelegates.so.6 kf6-kirigami-6.25.0_1
+libKirigamiDialogs.so.6 kf6-kirigami-6.25.0_1
+libKirigamiLayouts.so.6 kf6-kirigami-6.25.0_1
+libKirigamiLayoutsPrivate.so.6 kf6-kirigami-6.25.0_1
+libKirigamiPlatform.so.6 kf6-kirigami-6.25.0_1
+libKirigamiPolyfill.so.6 kf6-kirigami-6.25.0_1
+libKirigamiPrimitives.so.6 kf6-kirigami-6.25.0_1
+libKirigamiPrivate.so.6 kf6-kirigami-6.25.0_1
+libKirigamiTemplates.so.6 kf6-kirigami-6.25.0_1
+libPlasmaActivities.so.7 plasma-activities-6.5.1_1
+libkdecorations3.so.6 kf6-kdecoration-6.5.1_1
+libkdecorations3private.so.2 kf6-kdecoration-6.5.1_1

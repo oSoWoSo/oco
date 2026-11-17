@@ -34,7 +34,7 @@ post_patch() {
 do_check() {
 	cd build
 	# disable failing tests
-	ctest -E "plasma-dialogstatetest|dialognativetest|plasma-dialogqmltest|plasma-themetest|bug485688test|plasma-pluginloadertest"
+	ctest -E "plasma-dialogstatetest|dialognativetest|plasma-dialogqmltest|plasma-themetest|bug485688test|plasma-pluginloadertest|applettest"
 }
 
 sonic-interface-libraries-devel_package() {

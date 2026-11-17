@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BRANCH="autobump/${TEMPLATE}"
+BRANCH="${BRANCH_PREFIX:-autobump}/${TEMPLATE}"
 plan="$RUNNER_TEMP/autobump-plan.tsv"
 snapshot="$RUNNER_TEMP/autobump-templates"
 manifest_snapshot="$RUNNER_TEMP/autobump-dependencies.tsv"
@@ -11,7 +11,8 @@ git config user.name "oSoWoSo-bot"
 git config user.email "mail@osowoso.org"
 
 # Keep the bumped templates aside: the branch is cut from the
-# current OCO, so the bump has to be replayed onto it.
+# current base (OCO, or testing for the T-autobump prefix), so the
+# bump has to be replayed onto it.
 rm -rf "$snapshot"
 rm -f "$manifest_snapshot"
 mkdir -p "$snapshot"
@@ -24,12 +25,13 @@ if [[ -f $manifest ]]; then
 	mv "$manifest" "$manifest_snapshot"
 fi
 
-git fetch --no-tags --depth=1 origin "+refs/heads/OCO:refs/remotes/origin/OCO"
+BASE_REF="${BASE_REF:-OCO}"
+git fetch --no-tags --depth=1 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
 # The runner may be checked out on any branch (e.g. the PR head that
 # triggered workflow_dispatch), so the worktree holds the uncommitted bumps
 # it snapshotted above. Force the move so git does not refuse to replace a
 # template it would overwrite; the snapshot is replayed right after.
-git checkout -f -B "$BRANCH" refs/remotes/origin/OCO
+git checkout -f -B "$BRANCH" "refs/remotes/origin/${BASE_REF}"
 if [[ -f $manifest_snapshot ]]; then
 	mkdir -p "$(dirname "$manifest")"
 	cp "$manifest_snapshot" "$manifest"
@@ -42,7 +44,7 @@ while IFS=$'\t' read -r package version kind _order; do
 	cp "$snapshot/$package/template" "$tpl"
 	git add "$tpl"
 	if git diff --cached --quiet; then
-		echo "::error::rebase onto OCO left ${tpl} unchanged; nothing to bump"
+		echo "::error::rebase onto ${BASE_REF} left ${tpl} unchanged; nothing to bump"
 		exit 1
 	fi
 	if [[ $kind == version ]]; then

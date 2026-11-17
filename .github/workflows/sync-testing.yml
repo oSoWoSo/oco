@@ -1,26 +1,34 @@
 name: 🔄 sync testing branch
 
+# Rebase testing on top of the latest OCO, invoked as a reusable workflow by
+# build.yml right before a build that needs the testing branch. testing
+# templates need OCO's updated base (common shlibs, hostmakedepends, XBPS
+# infra) to build against. There is no schedule and no rebase on every OCO
+# push: testing stays stale until a build from the testing branch actually
+# needs the fresh base.
+#
+# The rebase preserves every testing-only commit/file; it never creates a
+# commit message and never deletes a testing change. On conflict it halts with
+# a non-zero exit so the caller's build is blocked until a maintainer resolves
+# the conflict manually.
 on:
-  push:
-    branches: [OCO]
-  schedule:
-    # Keep the testing branch fresh even when OCO is idle, so template
-    # updates made directly on testing are re-based and re-published.
-    - cron: '23 4 * * *'
-  workflow_dispatch:
+  workflow_call:
+    outputs:
+      testing_head:
+        description: SHA of the rebased testing branch after the sync (the
+          fresh base a testing-targeted build should run against).
+        value: ${{ jobs.rebase.outputs.testing_head }}
 
 permissions:
   contents: write
 
-concurrency:
-  group: sync-testing-branch
-  cancel-in-progress: false
-
 jobs:
   rebase:
-    name: Rebase testing on OCO
+    name: Rebase testing on latest OCO
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    outputs:
+      testing_head: ${{ steps.rebase.outputs.testing_head }}
     steps:
       - name: Checkout OCO
         uses: actions/checkout@v7
@@ -34,32 +42,20 @@ jobs:
         run: |
           set -euo pipefail
           git -C oco fetch --no-tags origin +refs/heads/testing:refs/remotes/origin/testing
+
+      - name: Rebase testing on top of the new OCO head
+        id: rebase
+        run: |
+          set -euo pipefail
           git -C oco checkout -B testing origin/testing
+          git -C oco rebase origin/OCO
+          echo "testing_head=$(git -C oco rev-parse HEAD)" >>"$GITHUB_OUTPUT"
 
-      - name: Rebuild testing on top of the new OCO head
+      - name: Push rebased testing branch
         run: |
           set -euo pipefail
-          git -C oco checkout -B rebuilt origin/OCO
-          # The testing branch is OCO plus its testing-only templates: files
-          # that exist on testing but not on the current OCO. OCO always wins
-          # for files present on both branches, so testing tracks upstream.
-          while read -r path; do
-            [ -n "$path" ] || continue
-            git -C oco checkout testing -- "$path"
-          done < <(git -C oco diff --name-status --no-renames origin/OCO testing |
-                    awk '$1 == "A" { print $2 }')
-          git -C oco add -A
-          if git -C oco diff --cached --quiet; then
-            echo "Testing branch already matches OCO; nothing to commit."
-            exit 0
-          fi
-          git -C oco -c user.name=oSoWoSo-bot -c user.email=bot@osowoso.org commit -q -m "testing: keep testing templates on OCO base"
-
-      - name: Push testing branch
-        run: |
-          set -euo pipefail
-          expected="$(git -C oco rev-parse origin/testing)"
+          old_head="$(git -C oco rev-parse origin/testing)"
           git -C oco push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
-            "rebuilt:refs/heads/testing" --force-with-lease="refs/heads/testing:${expected}"
+            "HEAD:refs/heads/testing" --force-with-lease="refs/heads/testing:${old_head}"
         env:
           GH_TOKEN: ${{ secrets.WORKFLOWS }}

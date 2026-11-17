@@ -15,6 +15,14 @@ on:
         description: 'Package name to autobump'
         required: false
         type: string
+      base:
+        description: 'Base branch to cut the autobump branch and open the PR against (OCO or testing)'
+        required: false
+        default: OCO
+        type: choice
+        options:
+        - OCO
+        - testing
       force:
         description: 'Bump even when the package is in src/autobump-blacklist'
         required: false
@@ -54,6 +62,8 @@ jobs:
       OCO_TOKEN: ${{ secrets.WORKFLOWS }}
       XBPS_SRC: /void-packages/xbps-src
       GH_REPO: ${{ github.repository }}
+      BASE_REF: ${{ inputs.base || 'OCO' }}
+      BRANCH_PREFIX: ${{ inputs.base == 'testing' && 'T-autobump' || 'autobump' }}
     steps:
       - name: Require a package on manual dispatch
         if: github.event_name == 'workflow_dispatch' && inputs.pkg == ''
@@ -67,6 +77,7 @@ jobs:
         with:
           token: ${{ secrets.BOT }}
           path: extra
+          ref: ${{ inputs.base == 'testing' && 'testing' || '' }}
 
       - name: Extract template from issue body
         id: template

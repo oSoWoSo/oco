@@ -99,14 +99,14 @@ jobs:
           # Get the latest stable release tag.
           get_latest() {
               local repo="$1"
-          
+
               if [[ -n "${latest_cache[$repo]+x}" ]]; then
                   printf '%s\n' "${latest_cache[$repo]}"
                   return
               fi
-          
+
               local latest=""
-          
+
               # Try latest GitHub release.
               latest="$(
                   gh api \
@@ -114,13 +114,13 @@ jobs:
                       --jq '.tag_name' \
                       2>/dev/null || true
               )"
-          
+
               # Ignore API error responses.
               if [[ "$latest" == "{"* || "$latest" == "["* ||
                     ! "$latest" =~ ^[^[:space:]]+$ ]]; then
                   latest=""
               fi
-          
+
               # Fall back to version-like tags.
               if [[ -z "$latest" ]]; then
                   latest="$(
@@ -134,9 +134,9 @@ jobs:
                       tail -n1 || true
                   )"
               fi
-          
+
               latest_cache["$repo"]="$latest"
-          
+
               printf '%s\n' "$latest"
           }
 

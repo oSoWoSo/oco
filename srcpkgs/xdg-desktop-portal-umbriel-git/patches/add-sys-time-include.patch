@@ -1,0 +1,12 @@
+diff --git a/src/picker/theme.cpp b/src/picker/theme.cpp
+index f9afcf1..698ea0a 100644
+--- a/src/picker/theme.cpp
++++ b/src/picker/theme.cpp
+@@ -9,6 +9,7 @@
+ #include <nlohmann/json.hpp>
+ #include <stdexcept>
+ #include <sys/socket.h>
++#include <sys/time.h>
+ #include <sys/un.h>
+ #include <unistd.h>
+ #include <utility>

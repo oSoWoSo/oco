@@ -191,9 +191,119 @@ _build_one() {
 	return 0
 }
 
+# Bump a single template through the shared autobump pipeline
+# (autobump-batch.py plan/apply + bump-template.sh / bump-revision.sh).
+# Conservative fallback: when the batch machinery is unavailable, leave it
+# to the caller's legacy xxautobump loop.
+_bump_single() {
+	local pkg="$1" batch root plan
+	if command -v python3 >/dev/null 2>&1; then
+		batch="$XBPS_DISTDIR/.github/scripts/autobump-batch.py"
+		[[ -f "$batch" ]] || batch="$XBPS_DISTDIR/.github/autobump-batch.py"
+		[[ -f "$batch" ]] || return 1
+	else
+		return 1
+	fi
+	# Operate on the repository holding $sourceDir (the void checkout when
+	# sourceDir points at its srcpkgs/, otherwise the OCO checkout).
+	if [[ "$sourceDir" == */srcpkgs && -f "${sourceDir%/srcpkgs}/xbps-src" ]]; then
+		root="${sourceDir%/srcpkgs}"
+	else
+		root="$XBPS_DISTDIR"
+	fi
+	if [[ ! -f "$root/.github/autobump-packs.tsv" && -f "$(dirname "$root")/.github/autobump-packs.tsv" ]]; then
+		root="$(dirname "$root")"
+	fi
+	if [[ -L "$sourceDir/$pkg" ]]; then
+		_y "$pkg is a symlink; skipping bump"
+		SKIPPED+=("$pkg (symlink)")
+		return 0
+	fi
+	if [[ -f "$sourceDir/$pkg/template" ]] && ! grep -qE '^[[:space:]]*distfiles=' "$sourceDir/$pkg/template"; then
+		_y "$pkg has no distfiles; treating as metapackage"
+		SKIPPED+=("$pkg (metapackage)")
+		return 0
+	fi
+	echo -e "\n================================"
+	echo "📦 Processing: $pkg"
+	echo "================================"
+	plan=$(mktemp) || {
+		_r "Error creating temporary file"
+		FAILED+=("$pkg")
+		return 1
+	}
+	local xbps_arg=()
+	if [[ -n "${XBPS_SRC:-}" ]]; then
+		xbps_arg=(--xbps-src "$XBPS_SRC")
+	elif [[ -x "$root/xbps-src" ]]; then
+		xbps_arg=(--xbps-src "$root/xbps-src")
+	fi
+	if ! python3 "$batch" plan "$pkg" --output "$plan" --repo-root "$root" "${xbps_arg[@]}" 2>"$plan.err"; then
+		_r "Error planning $pkg"
+		cat "$plan.err" >&2
+		rm -f "$plan" "$plan.err"
+		FAILED+=("$pkg (plan)")
+		return 0
+	fi
+	rm -f "$plan.err"
+	if [[ ! -s "$plan" ]]; then
+		_y "No updated version found for $pkg"
+		SKIPPED+=("$pkg (bump)")
+		rm -f "$plan"
+		return 0
+	fi
+	if ! python3 "$batch" apply --plan "$plan" --repo-root "$root" 2>"$plan.err"; then
+		_r "Error bumping $pkg"
+		cat "$plan.err" >&2
+		rm -f "$plan" "$plan.err"
+		FAILED+=("$pkg (apply)")
+		return 0
+	fi
+	rm -f "$plan.err"
+	local failed=0
+	while IFS=$'\t' read -r package version kind _order; do
+		[[ -n "$package" ]] || continue
+		if [[ "$kind" == version ]]; then
+			_g "$package bumped to $version"
+			SUCCEEDED+=("$package (bumped to $version)")
+			if [[ "$build" = 1 ]]; then
+				if _build_one "$package"; then
+					if git add . && git commit -m "$package: update to $version"; then
+						_g "$package committed successfully"
+					else
+						_r "Error committing $package"
+						FAILED+=("$package (commit)")
+						failed=$((failed + 1))
+					fi
+				else
+					_r "Error building $package"
+					FAILED+=("$package (build)")
+					failed=$((failed + 1))
+				fi
+			fi
+		else
+			_g "$package: raised revision for updated dependencies"
+			SUCCEEDED+=("$package (revision bump)")
+		fi
+	done <"$plan"
+	rm -f "$plan"
+	if ((failed)); then
+		_r "Bumping done with $failed error(s)"
+		return 1
+	fi
+	_g "Bumping done"
+	return 0
+}
+
 _bump() {
 	local package revdeps dep new output failed=0
 	local -A _bumped=()
+	if ((${#packageList[@]} == 1)); then
+		if _bump_single "${packageList[0]}"; then
+			return 0
+		fi
+		_y "Falling back to xxautobump for ${packageList[0]}"
+	fi
 	for package in "${packageList[@]}"; do
 		if [[ -L "$sourceDir/$package" ]]; then
 			_y "$package is a symlink; skipping bump"
@@ -593,8 +703,8 @@ _help() {
 		$(gum style --foreground '#14a113' 'Script to help with group packaging')
 
 		Possible arguments are:
-		u OR --bump     Bump all group packages
-		l OR --lint     Lint all group packages
+		u OR --bump     Bump all group packages, or a single template
+		l OR --lint     Lint all group packages, or a single template
 		b OR --build    Build all group packages
 		c OR --copy     Copy templates + their subpackages (symlinks)
 		i OR --install  Install all group packages
@@ -613,8 +723,8 @@ _help() {
 Script to help with group packaging
 
 Possible arguments are:
-  u OR --bump     Bump all group packages
-  l OR --lint     Lint all group packages
+  u OR --bump     Bump all group packages, or a single template
+  l OR --lint     Lint all group packages, or a single template
   b OR --build    Build all group packages
   c OR --copy     Copy templates + their subpackages (symlinks)
   i OR --install  Install all group packages
@@ -650,40 +760,57 @@ show_packs() {
 	awk -F'\t' '!/^#/ && NF>=2 {print $1}' "$gf" | sort -u
 }
 
+case "${1:-}" in
+-h | --help)
+	_help
+	exit 0
+	;;
+esac
+
 if [ -z "$1" ]; then
-	echo 'Pick group as first argument:'
+	echo 'Pick a group or a single template as first argument:'
 	show_packs
 	echo 'Then pick second argument'
 	_help
 	exit 1
-else
-	group="$1"
 fi
 
 gf="$(_groups_file)"
-if [[ ! -f "$gf" ]]; then
-	_r "Groups file not found: $gf"
-	exit 1
-fi
-if ! show_packs | grep -qx "$group"; then
-	echo 'Pick group as first argument:'
-	show_packs
-	exit 1
-fi
-shift
-
-mapfile -t packageList < <(awk -F'\t' -v g="$group" '
-	$1==g && !/^#/ {
-		pkg=$2
-		sub(/#.*/, "", pkg)
-		gsub(/^[ \t]+|[ \t]+$/, "", pkg)
-		if (pkg != "") print pkg
-	}
-' "$gf")
-
-if ((${#packageList[@]} == 0)); then
-	_r "No packages found for group '$group' in $gf"
-	exit 1
+declare -a packageList=()
+group=''
+if show_packs | grep -qx -- "$1"; then
+	# $1 is a declared group name: resolve it to its package list.
+	group="$1"
+	gf="$(_groups_file)"
+	if [[ ! -f "$gf" ]]; then
+		_r "Groups file not found: $gf"
+		exit 1
+	fi
+	mapfile -t packageList < <(awk -F'\t' -v g="$group" '
+		$1==g && !/^#/ {
+			pkg=$2
+			sub(/#.*/, "", pkg)
+			gsub(/^[ \t]+|[ \t]+$/, "", pkg)
+			if (pkg != "") print pkg
+		}
+	' "$gf")
+	if ((${#packageList[@]} == 0)); then
+		_r "No packages found for group '$group' in $gf"
+		exit 1
+	fi
+	shift
+else
+	# $1 is not a group, so treat it as a single template.
+	template="$1"
+	if [[ ! -d "$sourceDir/$template" ]]; then
+		echo "Unknown group or template: $template"
+		echo 'Pick a group or a single template as first argument:'
+		show_packs
+		exit 1
+	fi
+	group="$template"
+	packageList=("$template")
+	shift
 fi
 
 if [ $# -eq 0 ]; then

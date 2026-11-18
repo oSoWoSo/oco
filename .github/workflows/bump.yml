@@ -1,21 +1,22 @@
 name: 📦 bumper
 run-name: >-
   ${{
-    format('📦{0}: {1}{2}{3}{4}{5}',
-      inputs.group,
-      inputs.bump == true && 'bump' || '',
-      inputs.lint == true && (inputs.bump == true && ' lint' || 'lint') || '',
-      inputs.copy == true && ((inputs.bump == true || inputs.lint == true || inputs.build == true) && ' copy' || 'copy') || '',
-      inputs.order == true && ((inputs.bump == true || inputs.lint == true || inputs.build == true || inputs.copy == true) && ' order' || 'order') || '',
-      inputs.record_order == true && ((inputs.bump == true || inputs.lint == true || inputs.build == true || inputs.copy == true || inputs.order == true) && ' record_order' || 'record_order') || ''
-    )
+    github.event_name == 'workflow_dispatch' && (inputs.pkg != '' && format('📦 {0}', inputs.pkg) ||
+     format('📦 {0}', inputs.group)) ||
+    github.event_name == 'issues' && format('📦 {0} (#{1})', github.event.issue.title, github.event.issue.number) ||
+    '📦'
   }}
-
 on:
+  issues:
+    types: [opened, labeled, edited]
   workflow_dispatch:
     inputs:
+      pkg:
+        description: 'Single template to bump (opens a PR; supersedes group)'
+        required: false
+        type: string
       group:
-        description: 'Group name'
+        description: 'Group name to bump/lint (ignored when pkg is set)'
         required: true
         type: choice
         options:
@@ -48,14 +49,39 @@ on:
         required: false
         default: false
         type: boolean
+      base:
+        description: 'Base branch to cut the bump branch and open the PR against (OCO or testing; pkg dispatch only)'
+        required: false
+        default: OCO
+        type: choice
+        options:
+          - OCO
+          - testing
+      force:
+        description: 'Bump even when the package is in src/autobump-blacklist (pkg dispatch only)'
+        required: false
+        default: false
+        type: boolean
+      automerge:
+        description: 'Open as oSoWoSo-bot so a successful build auto-merges (pkg dispatch only)'
+        required: false
+        default: false
+        type: boolean
 permissions:
   contents: write
+  issues: write
+  pull-requests: write
+  packages: read
+concurrency:
+  group: bumper-${{ inputs.pkg || github.event.issue.number || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   bump:
-    name: bump.sh ${{ inputs.group }}
+    name: 📦 ${{ inputs.pkg || inputs.group || github.event.issue.number }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.issue.labels.*.name, 'package-update')
     container:
       image: ghcr.io/osowoso/oco-builder-x86_64:latest
       credentials:
@@ -66,24 +92,51 @@ jobs:
       run:
         working-directory: extra
     env:
-      XBPS_TARGET_ARCH: ${{ inputs.xbps_target_arch }}
+      XBPS_TARGET_ARCH: x86_64
       XBPS_DISTDIR: /void-packages
-      OCO_TOKEN: ${{ secrets.BOT }}
-      XBPS_ALLOW_CHROOT_BREAKOUT: yes
-      SOURCE_DATE_EPOCH: 1700000000
+      XBPS_ALLOW_CHROOT_BREAKOUT: 'yes'
+      SOURCE_DATE_EPOCH: '1700000000'
+      INPUT_PKG: ${{ inputs.pkg }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      ISSUE_BODY: ${{ github.event.issue.body }}
+      OCO_TOKEN: ${{ secrets.WORKFLOWS }}
+      XBPS_SRC: /void-packages/xbps-src
+      GH_REPO: ${{ github.repository }}
+      BASE_REF: ${{ inputs.base || 'OCO' }}
+      BRANCH_PREFIX: ${{ inputs.base == 'testing' && 'T-autobump' || 'autobump' }}
     steps:
+      - name: Decide operating mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "issues" ]; then
+            echo "mode=autobump" >> "$GITHUB_OUTPUT"
+          elif [ -n "${{ inputs.pkg }}" ]; then
+            if [ "${{ inputs.bump }}" = "true" ]; then
+              echo "mode=autobump" >> "$GITHUB_OUTPUT"
+            elif [ "${{ inputs.lint }}" = "true" ]; then
+              echo "mode=lint" >> "$GITHUB_OUTPUT"
+            else
+              # Legacy shortcut: pkg alone means "bump", matching the old autobump dispatch.
+              echo "mode=autobump" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            if [ "${{ inputs.bump }}" != "true" ] && [ "${{ inputs.lint }}" != "true" ] && \
+               [ "${{ inputs.order }}" != "true" ] && [ "${{ inputs.record_order }}" != "true" ]; then
+              echo "::error::select at least one operation flag (or dispatch with a pkg)"
+              exit 1
+            fi
+            echo "mode=group" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Checkout repo
         uses: actions/checkout@v7
         with:
           token: ${{ secrets.BOT }}
           path: extra
+          ref: ${{ inputs.base == 'testing' && 'testing' || '' }}
 
       - name: Configure git identity
         run: |
-          if ! git rev-parse --git-dir >/dev/null 2>&1; then
-            echo "Not a git repository; skipping git identity (local act test)"
-            exit 0
-          fi
           git config user.name "oSoWoSo-bot"
           git config user.email "bot@osowoso.org"
           git config --global user.name "oSoWoSo-bot"
@@ -91,25 +144,114 @@ jobs:
           git config --global --add safe.directory /void-packages
           git config --global --add safe.directory '*'
 
-      - name: Require at least one operation
-        run: |
-          if [ "${{ inputs.bump }}" != "true" ] && [ "${{ inputs.lint }}" != "true" ] && \
-             [ "${{ inputs.order }}" != "true" ] && [ "${{ inputs.record_order }}" != "true" ]; then
-            echo "::error::select at least one operation flag"
-            exit 1
-          fi
-
-      - name: Merge templates into oco
+      - name: Merge OCO templates into XBPS checkout
+        if: steps.mode.outputs.mode == 'autobump' || steps.mode.outputs.mode == 'lint' || steps.mode.outputs.mode == 'group'
         run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-merge-templates.sh"
         working-directory: ${{ github.workspace }}
 
+      # ---- Single-template mode (pkg dispatch or package-update issue) ----
+      - name: Extract template from issue body
+        id: template
+        if: steps.mode.outputs.mode == 'autobump' || steps.mode.outputs.mode == 'lint'
+        run: bash .github/scripts/ci/autobump-template.sh
+
+      - name: Skip if dismissed or already handled
+        id: marker
+        if: steps.mode.outputs.mode == 'autobump' || steps.mode.outputs.mode == 'lint'
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
+        run: bash .github/scripts/ci/autobump-marker.sh
+
+      - name: Blacklist check
+        id: blacklist
+        if: (steps.mode.outputs.mode == 'autobump' || steps.mode.outputs.mode == 'lint') && steps.marker.outputs.handled == 'false'
+        env:
+          FORCE: ${{ inputs.force }}
+          REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
+        run: bash .github/scripts/ci/autobump-blacklist.sh
+
+      - name: Lint the single template
+        id: lint-single
+        if: steps.mode.outputs.mode == 'lint' && steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true'
+        env:
+          PACKAGES: ${{ steps.template.outputs.template }}
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-lint.sh"
+        working-directory: ${{ github.workspace }}
+
+      - name: Plan the dependency batch
+        id: plan
+        if: (steps.mode.outputs.mode == 'autobump') && steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true'
+        timeout-minutes: 30
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
+          FORCE: ${{ inputs.force }}
+        run: bash .github/scripts/ci/autobump-plan.sh
+
+      - name: Skip when the batch is already open
+        id: existing
+        if: steps.mode.outputs.mode == 'autobump' && steps.marker.outputs.handled == 'false' && steps.plan.outputs.bumped == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
+        run: bash .github/scripts/ci/autobump-existing.sh
+
+      - name: Apply the batch
+        id: apply
+        if: steps.mode.outputs.mode == 'autobump' && steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.plan.outputs.bumped == 'true'
+        timeout-minutes: 30
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
+        run: bash .github/scripts/ci/autobump-apply.sh
+
+      - name: Check OSV advisories (informational)
+        id: osv
+        if: steps.mode.outputs.mode == 'autobump' && steps.apply.outputs.bumped == 'true'
+        continue-on-error: true
+        run: bash .github/scripts/ci/autobump-osv.sh
+
+      - name: Nothing to bump
+        if: steps.mode.outputs.mode == 'autobump' && steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.plan.outputs.bumped != 'true'
+        run: bash .github/scripts/ci/autobump-nothing.sh
+
+      - name: Create branch + push
+        id: branch
+        if: steps.mode.outputs.mode == 'autobump' && steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.apply.outputs.bumped == 'true'
+        env:
+          VERSION: ${{ steps.plan.outputs.version }}
+        run: bash .github/scripts/ci/autobump-branch.sh
+
+      - name: Open PR
+        id: pr
+        if: steps.mode.outputs.mode == 'autobump' && steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.apply.outputs.bumped == 'true'
+        env:
+          GH_TOKEN: ${{ inputs.automerge && secrets.BOT || secrets.WORKFLOWS }}
+          AUTOMERGE: ${{ inputs.automerge }}
+        run: bash .github/scripts/ci/autobump-pr.sh
+
+      - name: Consolidate related package PRs
+        if: steps.mode.outputs.mode == 'autobump' && steps.pr.outputs.number != '' && steps.existing.outputs.handled == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.BOT }}
+          BATCH_PR: ${{ steps.pr.outputs.number }}
+        run: bash .github/scripts/ci/autobump-consolidate.sh
+
+      - name: Comment on issue
+        if: github.event_name != 'workflow_dispatch' && steps.mode.outputs.mode == 'autobump' && steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.apply.outputs.bumped == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOWS }}
+          PR_NUMBER: ${{ steps.pr.outputs.number || steps.existing.outputs.number }}
+          REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
+        run: bash .github/scripts/ci/autobump-comment.sh
+
+      # ---- Group mode (workflow_dispatch without pkg) ----
       - name: Resolve paths
         id: paths
+        if: steps.mode.outputs.mode == 'group'
         run: |
           echo "sourceDir=${XBPS_DISTDIR}/srcpkgs" >> "$GITHUB_OUTPUT"
           echo "destinationDir=${GITHUB_WORKSPACE}/extra/srcpkgs" >> "$GITHUB_OUTPUT"
 
       - name: Ensure xxautobump
+        if: steps.mode.outputs.mode == 'group'
         shell: bash
         run: |
           if command -v xxautobump >/dev/null 2>&1; then
@@ -123,14 +265,17 @@ jobs:
           rm -rf "$tmp"
 
       - name: Prepare container
+        if: steps.mode.outputs.mode == 'group'
         run: oco-prepare
 
       - name: Prepare sources directory
+        if: steps.mode.outputs.mode == 'group'
         run: |
           mkdir -p /host/sources
           chown -R builder:builder /host/sources
 
       - name: run bump.sh
+        if: steps.mode.outputs.mode == 'group'
         env:
           sourceDir: ${{ steps.paths.outputs.sourceDir }}
           destinationDir: ${{ steps.paths.outputs.destinationDir }}
@@ -146,13 +291,10 @@ jobs:
           ./bump.sh "${args[@]}"
 
       - name: Commit and push changes
+        if: steps.mode.outputs.mode == 'group'
         shell: bash
         run: |
           set -euo pipefail
-          if ! git rev-parse --git-dir >/dev/null 2>&1; then
-            echo "Not a git repository; skipping commit (local act test)"
-            exit 0
-          fi
           git add -A
           if git diff --cached --quiet; then
             echo "No changes to commit"

@@ -11,12 +11,12 @@ Issues carry version markers that the autobump workflow keys off:
     `<!-- autobump:no -->`               marks templates excluded from
                                          the automated bump (`src/autobump-
                                          blacklist` or symlink aliases);
-                                         autobump.yml then treats the
-                                         issue as a head-up only.
+                                         the 📦 bumper workflow then treats
+                                         the issue as a head-up only.
 
 Open issues are repaired in place: when a stale `autobump:no` marker no
 longer matches the template's current eligibility the body is rewritten,
-which re-triggers autobump.yml on its `edited` event.
+which re-triggers the 📦 bumper workflow on its `edited` event.
 
 There is at most one open `package-update` issue per template. When a
 second open issue exists for the same template, only the one tracking
@@ -1158,10 +1158,10 @@ def sync_issue_markers(issue, package, blacklist):
     """Repair stale `autobump:no` markers on an already-open issue.
 
     When `src/autobump-pkgs` disappeared (replaced by the blacklist),
-    feedsparser marked every issue feed-only, so autobump.yml stopped
-    opening PRs. Rewriting the body re-triggers autobump.yml on the
-    `edited` event. Returns True when the body was (or, in dry-run,
-    would be) rewritten.
+    feedsparser marked every issue feed-only, so the bumper workflow
+    stopped opening PRs. Rewriting the body re-triggers the 📦 bumper
+    workflow on the `edited` event. Returns True when the body was (or,
+    in dry-run, would be) rewritten.
     """
     body = issue.get("body") or ""
     has_no = AUTOBUMP_NO in body

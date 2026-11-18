@@ -11,6 +11,7 @@ on:
     paths:
       - 'srcpkgs/**'
       - 'src/build.yml.in'
+      - 'src/bump.yml.in'
       - 'src/autobump.yml.in'
       - 'src/autobump-blacklist'
       - 'ocoman'

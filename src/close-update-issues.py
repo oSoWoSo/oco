@@ -27,13 +27,14 @@ falling back to the `**Package:**` and `**Upstream version:**` headings.
 `--list-stale` instead reports every open issue against the version the
 repository currently ships, and never writes to GitHub. It exists because an
 issue can outlive its own premise: feedsparser files an issue from what the
-feed reported, autobump.yml re-detects from the template's `update` file,
-and when those two disagree the issue is closed by nothing. It is flagged
-STALE when the shipped version already satisfies the request, or when the
-issue carries `<!-- autobump:no -->` or `<!-- autobump:skip for V -->`, which
-autobump.yml posts only after detection has already said there is nothing to
-do for that request. `V` binds the marker to one upstream version: editing the
-issue body to a newer one leaves the old marker non-matching.
+feed reported, the 📦 bumper workflow re-detects from the template's
+`update` file, and when those two disagree the issue is closed by nothing.
+It is flagged STALE when the shipped version already satisfies the request,
+or when the issue carries `<!-- autobump:no -->` or
+`<!-- autobump:skip for V -->`, which the bumper posts only after detection
+has already said there is nothing to do for that request. `V` binds the
+marker to one upstream version: editing the issue body to a newer one leaves
+the old marker non-matching.
 
 At most one open issue per package is expected (the update report is
 deduplicated), but if duplicates exist all matching ones are closed.

@@ -122,13 +122,20 @@ can override the source and OCO template directories. Operations include
 `--lint`, `--build`, `--bump`, `--copy`, `--install`, `--order`, and `--all`.  
 Review template and shlibs changes before committing them.
 
+`./bump.sh <template> --bump` (or `--lint`) works on a single template the  
+same way `ocoman autobump <pkg>` does — it plans the batch with  
+`autobump-batch.py`, bumps through the shared `bump-template.sh` helper and  
+refreshes checksums. The 📦 bumper CI workflow (`bump.yml`) accepts the same  
+single-template dispatch, opens a PR (base `OCO` or `testing`) and also  
+answers `package-update` issues automatically.
+
 The helper's `--order` and `--build` use `xbps-src sort-dependencies` to sort  
 the XBPS-known dependency graph without compiling packages. XBPS evaluates  
 template-declared dependencies and subpackages; runtime dependencies that are  
 only discoverable from built binaries cannot be guaranteed before a build.  
 Sonic's `sonic-*` pattern automatically includes new Sonic templates.
 
-The autobump workflow runs in the `oco-builder` image and resolves the current  
+The 📦 bumper workflow runs in the `oco-builder` image and resolves the current  
 graph with `xbps-src show-build-deps`, without compiling packages. When a  
 package in a configured pack has an upstream update, CI checks the whole pack  
 for newer versions and revision-bumps only known direct consumers of changed  

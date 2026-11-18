@@ -1,8 +1,8 @@
 # Template file for 'xdg-desktop-portal-umbriel-git'
 pkgname=xdg-desktop-portal-umbriel-git
-version=0.1.0.20261117
-revision=2
-_commit=ed91d04331b03257d5bd58a075b9cd6743d3efb2
+version=0.1.0.20261118
+revision=1
+_commit=6b5e084779706096a8da5161f946b982bac2abeb
 build_style=meson
 configure_args="$(vopt_bool picker picker)"
 hostmakedepends="pkgconf wayland-devel glib-devel cmake"
@@ -17,7 +17,7 @@ maintainer="Coolllyn <leanhduc673@gmail.com>"
 license="MIT"
 homepage="https://github.com/noctalia-dev/xdg-desktop-portal-umbriel"
 distfiles="https://github.com/noctalia-dev/xdg-desktop-portal-umbriel/archive/${_commit}.tar.gz"
-checksum="e4ede7f3543b0387b223a7d9724dfb3e42bbc2ee8a4394ea65d88a3bb9435306"
+checksum="5f9d6ddb971029255df0c8e4ad75e6e66254ced45817a6d63379b0e0ee3e2986"
 
 build_options="picker"
 build_options_default="picker"

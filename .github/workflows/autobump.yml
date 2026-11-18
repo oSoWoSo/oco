@@ -1,14 +1,16 @@
+# DEPRECATED: use the 📦 bumper workflow (.github/workflows/bump.yml) instead.
+# It supports the same single-template dispatch and `package-update` issues,
+# plus group operations. This workflow is kept for a transitional period but
+# must not receive new triggers. On issue `edited` events both workflows would
+# race, so this one intentionally skips the issue trigger now.
 name: 🛰️ autobump
 run-name: >-
   ${{
     github.event_name == 'workflow_dispatch' && (inputs.pkg != '' && format('🛰️ {0}', inputs.pkg) ||
      '🛰️') ||
-    github.event_name == 'issues' && format('🛰️ {0} (#{1})', github.event.issue.title, github.event.issue.number) ||
     '🛰️'
   }}
 on:
-  issues:
-    types: [opened, labeled, edited]
   workflow_dispatch:
     inputs:
       pkg:
@@ -39,15 +41,15 @@ permissions:
   pull-requests: write
   packages: read
 concurrency:
-  group: autobump-${{ inputs.pkg || github.event.issue.number || github.run_id }}
+  group: autobump-${{ inputs.pkg || github.run_id }}
   cancel-in-progress: true
 
 jobs:
   autobump:
-    name: 🛰️ ${{ inputs.pkg || github.event.issue.number }}
+    name: 🛰️ ${{ inputs.pkg }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    if: github.event_name == 'workflow_dispatch' || contains(github.event.issue.labels.*.name, 'package-update')
+    if: github.event_name == 'workflow_dispatch'
     container:
       image: ghcr.io/osowoso/oco-builder-x86_64:latest
       credentials:

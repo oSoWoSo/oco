@@ -376,7 +376,7 @@ usage() {
 	  -p, --upload         Upload built packages to the Surfer repository (CLI)
 	  -t, --test <pkg...>  Without <pkg> gum menu to choose, then trigger GitHub CI build
 	  autobump <pkg> [--force]
-	                      Autobump a package via GitHub workflow_dispatch
+	                      Autobump a package via the 📦 bumper workflow_dispatch
 	                      (--force ignores src/autobump-blacklist)
 
 	Compound: $prog -uw   (update + build)
@@ -1863,22 +1863,22 @@ do_autobump() {
 	echo ''
 
 	if [ "$_force" = 1 ]; then
-		gh workflow run autobump.yml --repo "$_repo" --ref "$_ref" \
+		gh workflow run bump.yml --repo "$_repo" --ref "$_ref" \
 			-f "pkg=$_pkg" -f "force=true"
 	else
-		gh workflow run autobump.yml --repo "$_repo" --ref "$_ref" \
+		gh workflow run bump.yml --repo "$_repo" --ref "$_ref" \
 			-f "pkg=$_pkg"
 	fi
 	[ $? -eq 0 ] || fatal 'failed to dispatch workflow (check gh auth / permissions)'
 
-	_run_id=$(gh run list --workflow=autobump.yml --branch "$_ref" --limit 1 \
+	_run_id=$(gh run list --workflow=bump.yml --branch "$_ref" --limit 1 \
 		--json databaseId --jq '.[0].databaseId' 2>/dev/null || true)
 	_g '==> Autobump dispatched'
 	if [ -n "$_run_id" ]; then
 		_y "    Run:     https://github.com/${_repo}/actions/runs/${_run_id}"
 		echo "    Watch:   gh run watch $_run_id --repo $_repo"
 	else
-		echo '    See:   gh run list --workflow autobump.yml'
+		echo '    See:   gh run list --workflow bump.yml'
 	fi
 }
 

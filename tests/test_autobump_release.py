@@ -350,7 +350,7 @@ class CheckPrTests(unittest.TestCase):
             release.check_pr(
                 self.pr,
                 self.files(["srcpkgs/alpha/template",
-                            ".github/workflows/autobump.yml"]),
+                            ".github/workflows/bump.yml"]),
                 repo="oSoWoSo/oco", plan=self.plan, allow_merged=True)
 
     def test_a_plan_that_does_not_match_the_templates_is_rejected(self):

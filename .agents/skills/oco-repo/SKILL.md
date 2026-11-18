@@ -128,7 +128,7 @@ Pitfalls to check when a build fails:
 
 ### Debugging CI
 
-- Workflows: `build.yml` (generated), `autobump.yml`, `scan.yml`, `update.yml`, `feed-update.yml`, `vur-check.yml`, `write-surfer.yml`, `mirror-*`, `sync-codeberg-to-github.yml`.
+- Workflows: `build.yml` (generated), `bump.yml` (📦 bumper; replaces the deprecated `autobump.yml`), `scan.yml`, `update.yml`, `feed-update.yml`, `vur-check.yml`, `write-surfer.yml`, `mirror-*`, `sync-codeberg-to-github.yml`.
 - Validate workflow syntax locally with `act` (see `act-workflows` skill), especially `concurrency.queue`.
 - `tooling.yml` runs `node --check src/main.js` and helper tests (bats + python) under `tests/`.
 - CI uses `oco-builder` image; confirm image tag references (memory: check whether CI always resolves newest image).
@@ -139,8 +139,8 @@ Pitfalls to check when a build fails:
 - Blacklist: `src/autobump-blacklist`.
 - Packs: `.github/autobump-packs.tsv` (group + glob patterns).
 - Dependencies: `.github/autobump-dependencies.tsv`.
-- Autobump dispatch: `ocoman autobump <pkg> [--force]` (force ignores blacklist).
-- CI: `autobump.yml` runs in `oco-builder`, resolves graph via `xbps-src show-build-deps` without compiling; checks whole pack for newer versions; revision-bumps known direct consumers.
+- Autobump dispatch: `ocoman autobump <pkg> [--force]` (force ignores blacklist), dispatches the 📦 bumper workflow.
+- CI: the 📦 bumper workflow (`bump.yml`) runs in `oco-builder`, resolves graph via `xbps-src show-build-deps` without compiling; checks whole pack for newer versions; revision-bumps known direct consumers. It answers `package-update` issues and dispatches single templates.
 - Ruleset 23215878 blocks deletion of `autobump/*` branches.
 
 ## Shlibs

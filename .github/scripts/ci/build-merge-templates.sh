@@ -22,3 +22,6 @@ for template in extra/srcpkgs/*; do
   ln -s "$target_name" "/void-packages/srcpkgs/$template_name"
 done
 chown -R builder:builder /void-packages/srcpkgs /void-packages/common
+
+mkdir -p /host/sources
+chown -R builder:builder /host/sources

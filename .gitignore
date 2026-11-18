@@ -29,7 +29,9 @@
 # Scripts
 !/ocoman
 !/xut
+!/bump.sh
 
+# templates
 !/srcpkgs/
 /srcpkgs/*
 

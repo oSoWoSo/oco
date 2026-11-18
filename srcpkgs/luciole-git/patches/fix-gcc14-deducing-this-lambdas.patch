@@ -1,0 +1,52 @@
+--- a/src/browser/directory_tree.cpp
++++ b/src/browser/directory_tree.cpp
+@@ -200,12 +200,15 @@
+   std::vector<DirectoryEntries::Index> rows;
+   std::unordered_map<EntryId, EntryId> parents;
+   std::set<EntryId> retained;
++  auto& nodes = m_nodes;
++  const auto& rootSnapshot = m_root;
++  const bool foldersOnly = m_foldersOnly;
+   const auto append = [&](this auto&& self, const DirectoryEntry& entry, std::size_t depth) -> void {
+     if (depth >= maxDepth + 1) {
+       return;
+     }
+-    const auto found = m_nodes.find(entry.id);
+-    if (found == m_nodes.end()) {
++    const auto found = nodes.find(entry.id);
++    if (found == nodes.end()) {
+       return;
+     }
+     auto& node = *found->second;
+@@ -224,12 +227,12 @@
+     for (std::size_t i = 0; i < children.size(); ++i) {
+       const auto& child = children[i];
+       currentIds.emplace(child.name, Node::Identity{child.id, child.identity()});
+-      if (m_foldersOnly && !child.isFolderLink()) {
++      if (foldersOnly && !child.isFolderLink()) {
+         continue;
+       }
+       if (parents.empty()) {
+-        rows.reserve(m_root.entries.size() + children.size());
+-        for (std::size_t root = 0; root < m_root.entries.size(); ++root) {
++        rows.reserve(rootSnapshot.entries.size() + children.size());
++        for (std::size_t root = 0; root < rootSnapshot.entries.size(); ++root) {
+           rows.push_back({0, root});
+         }
+       }
+--- a/src/browser/directory_model.cpp
++++ b/src/browser/directory_model.cpp
+@@ -393,11 +393,12 @@
+     }
+     m_rows.clear();
+     std::unordered_set<EntryId> visited;
++    auto& rows = m_rows;
+     const auto append = [&](this auto&& self, EntryId id, std::size_t depth) -> void {
+       if (depth > 32 || !visited.insert(id).second) {
+         return;
+       }
+-      m_rows.push_back(id);
++      rows.push_back(id);
+       if (const auto found = children.find(id); found != children.end()) {
+         for (const auto child : found->second) {
+           self(child, depth + 1);

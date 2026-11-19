@@ -54,14 +54,28 @@ class BuildStatusTests(unittest.TestCase):
         self.assertNotEqual(self.status(**args).returncode, 0)
         self.assertNotEqual(self.status(EVENT_NAME="workflow_dispatch", CURRENT_BRANCH="feature", **args).returncode, 0)
 
-    def test_workflow_always_checks_both_build_paths(self):
+    def test_workflow_checks_one_shared_build_path(self):
         workflow = (ROOT / ".github/workflows/build.yml").read_text()
         status = workflow.split("  build-status:\n", 1)[1].split("  publish-request:\n", 1)[0]
         self.assertIn("if: always()", status)
-        self.assertIn("needs: [detect, sync-testing, lint, test-pr, build]", status)
+        self.assertIn("needs: [detect, sync-testing, lint, build]", status)
+        self.assertIn("BUILD_RESULT: ${{ needs.build.result }}", status)
+        self.assertNotIn("test-pr:", workflow)
+        self.assertEqual(workflow.count("      - name: Build packages\n"), 1)
         condition = workflow.split("\n  build:\n", 1)[1].split("    runs-on:", 1)[0]
+        self.assertIn("always()", condition)
+        self.assertIn("needs.sync-testing.result == 'success'", condition)
+        self.assertIn("github.event_name != 'pull_request' && needs.detect.outputs.removed != ''", condition)
         self.assertNotIn("skip_autobump", condition)
         self.assertNotIn("publish_from_pr", condition)
+
+    def test_publication_requires_verified_build_and_lint(self):
+        workflow = (ROOT / ".github/workflows/build.yml").read_text()
+        request = workflow.split("  publish-request:\n", 1)[1].split("    runs-on:", 1)[0]
+        self.assertIn("needs: [detect, build, build-status]", request)
+        self.assertIn("needs.build-status.result == 'success'", request)
+        self.assertIn("needs.detect.outputs.publish_from_pr != 'true'", request)
+        self.assertIn("github.event_name != 'pull_request'", request)
 
     @unittest.skipUnless(shutil.which("jq"), "jq required by detector")
     def test_autobump_marker_only_delegates_publication(self):

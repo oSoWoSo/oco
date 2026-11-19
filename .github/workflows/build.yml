@@ -176,7 +176,7 @@ jobs:
           PACKAGES: ${{ needs.detect.outputs.packages }}
         run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-lint.sh"
 
-  test-pr:
+  build:
     name: ${{ matrix.config.arch }} on ${{ matrix.config.host }}
     permissions:
       contents: read
@@ -185,13 +185,13 @@ jobs:
     if: >-
       ${{
         always() &&
-        github.event_name == 'pull_request' &&
         needs.detect.result == 'success' &&
-        needs.detect.outputs.packages != '' &&
+        (needs.detect.outputs.packages != '' ||
+         (github.event_name != 'pull_request' && needs.detect.outputs.removed != '')) &&
         (needs.sync-testing.result == 'success' || needs.sync-testing.result == 'skipped')
       }}
     runs-on: ${{ matrix.config.runner }}
-    timeout-minutes: 240
+    timeout-minutes: 330
     container:
       image: ghcr.io/osowoso/oco-builder-${{ matrix.config.host }}:latest
       credentials:
@@ -205,16 +205,19 @@ jobs:
         BOOTSTRAP: '${{ matrix.config.host }}'
         TEST: '${{ matrix.config.test }}'
         NATIVE: '${{ matrix.config.native }}'
+        FORCE: '${{ inputs.force }}'
+    env:
+      AUTOBUMP_PR: ${{ github.event_name == 'pull_request' && startsWith(github.head_ref, 'autobump/') && github.event.pull_request.head.repo.full_name == github.repository }}
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.detect.outputs.matrix) }}
 
     steps:
-      - name: Checkout repo (PR head)
+      - name: Checkout build source
         uses: actions/checkout@v7
         with:
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: extra
 
       - name: Prepare container
@@ -223,14 +226,19 @@ jobs:
       - name: Merge templates and edit shlibs
         run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-merge-templates.sh"
 
-      - name: Snapshot existing binaries
-        if: startsWith(github.head_ref, 'autobump/') && github.event.pull_request.head.repo.full_name == github.repository
+      - name: Snapshot existing packages
+        if: needs.detect.outputs.packages != ''
         run: |
-          python3 extra/src/autobump-binaries.py snapshot \
-            --binpkgs /void-packages/hostdir/binpkgs \
-            --snapshot "$RUNNER_TEMP/autobump-before.json"
+          ls /void-packages/hostdir/binpkgs/*.xbps 2>/dev/null | xargs -r -n1 basename > /tmp/pre-build-pkgs.txt || touch /tmp/pre-build-pkgs.txt
+          if [ "$AUTOBUMP_PR" = true ]; then
+            python3 extra/src/autobump-binaries.py snapshot \
+              --binpkgs /void-packages/hostdir/binpkgs \
+              --snapshot "$RUNNER_TEMP/autobump-before.json"
+          fi
 
       - name: Build packages
+        id: build
+        if: needs.detect.outputs.packages != ''
         env:
           PACKAGES: ${{ needs.detect.outputs.packages }}
           RESULT_FILE: ${{ runner.temp }}/results.tsv
@@ -249,8 +257,32 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-summary.sh"
 
+      - name: Upload per-arch build results
+        if: always() && github.event_name != 'pull_request' && needs.detect.outputs.packages != ''
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-results-${{ matrix.config.arch }}
+          path: ${{ runner.temp }}/results.tsv
+          if-no-files-found: ignore
+
+      - name: Stage newly built packages
+        if: github.event_name != 'pull_request' && steps.build.outputs.built == 'true'
+        working-directory: /void-packages/hostdir/binpkgs/
+        env:
+          ARCH: ${{ matrix.config.arch }}
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-stage-packages.sh"
+
+      - name: Upload newly built packages
+        if: github.event_name != 'pull_request' && steps.build.outputs.built == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-packages-${{ matrix.config.arch }}
+          path: ${{ runner.temp }}/packages/${{ matrix.config.arch }}/*.xbps
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Collect new autobump binaries
-        if: success() && startsWith(github.head_ref, 'autobump/') && github.event.pull_request.head.repo.full_name == github.repository
+        if: success() && env.AUTOBUMP_PR == 'true'
         env:
           TARGET_ARCH: ${{ matrix.config.arch }}
           TARGET_HOST: ${{ matrix.config.host }}
@@ -263,7 +295,7 @@ jobs:
             --output "$RUNNER_TEMP/autobump-out"
 
       - name: Upload autobump binaries
-        if: success() && startsWith(github.head_ref, 'autobump/') && github.event.pull_request.head.repo.full_name == github.repository
+        if: success() && env.AUTOBUMP_PR == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: autobump-bin-${{ matrix.config.arch }}-${{ matrix.config.host }}
@@ -275,7 +307,7 @@ jobs:
     name: 🏗️ build gate
     permissions:
       contents: read
-    needs: [detect, lint, test-pr]
+    needs: [detect, lint, build]
     if: always() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -285,7 +317,7 @@ jobs:
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           DETECT_RESULT: ${{ needs.detect.result }}
           LINT_RESULT: ${{ needs.lint.result }}
-          TEST_RESULT: ${{ needs.test-pr.result }}
+          TEST_RESULT: ${{ needs.build.result }}
           PACKAGES: ${{ needs.detect.outputs.packages }}
           REMOVED: ${{ needs.detect.outputs.removed }}
         run: |
@@ -347,92 +379,9 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  build:
-    name: ${{ matrix.config.arch }} on ${{ matrix.config.host }}
-    needs: detect
-    if: (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch') && (needs.detect.outputs.packages != '' || needs.detect.outputs.removed != '')
-    runs-on: ${{ matrix.config.runner }}
-    timeout-minutes: 330
-    container:
-      image: ghcr.io/osowoso/oco-builder-${{ matrix.config.host }}:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.BOT || github.token }}
-      options: --platform ${{ matrix.config.platform }} --privileged
-      volumes:
-        - /dev:/dev
-      env:
-        ARCH: '${{ matrix.config.arch }}'
-        BOOTSTRAP: '${{ matrix.config.host }}'
-        TEST: '${{ matrix.config.test }}'
-        NATIVE: '${{ matrix.config.native }}'
-        FORCE: '${{ inputs.force }}'
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.detect.outputs.matrix) }}
-
-    steps:
-      - name: Checkout this repo
-        uses: actions/checkout@v7
-        with:
-          token: ${{ secrets.BOT || github.token }}
-          path: extra
-
-      - name: Prepare container
-        run: oco-prepare
-
-      - name: Merge templates and edit shlibs
-        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-merge-templates.sh"
-
-      - name: Snapshot existing packages
-        if: needs.detect.outputs.packages != ''
-        run: |
-          ls /void-packages/hostdir/binpkgs/*.xbps 2>/dev/null | xargs -r -n1 basename > /tmp/pre-build-pkgs.txt || touch /tmp/pre-build-pkgs.txt
-
-      - name: Build packages
-        id: build
-        if: needs.detect.outputs.packages != ''
-        env:
-          PACKAGES: ${{ needs.detect.outputs.packages }}
-          RESULT_FILE: ${{ runner.temp }}/results.tsv
-        shell: bash
-        run: |
-          set -o pipefail
-          sh "${GITHUB_WORKSPACE}/extra/src/build-packages.sh" 2>&1 \
-            | tee "$RUNNER_TEMP/build-log.txt"
-
-      - name: Summarize failed build
-        if: failure() && matrix.config.arch == 'x86_64'
-        env:
-          BUILD_LOG: ${{ runner.temp }}/build-log.txt
-        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-summary.sh"
-
-      - name: Upload per-arch build results
-        if: always() && needs.detect.outputs.packages != ''
-        uses: actions/upload-artifact@v7
-        with:
-          name: build-results-${{ matrix.config.arch }}
-          path: ${{ runner.temp }}/results.tsv
-          if-no-files-found: ignore
-      - name: Stage newly built packages
-        if: steps.build.outputs.built == 'true'
-        working-directory: /void-packages/hostdir/binpkgs/
-        env:
-          ARCH: ${{ matrix.config.arch }}
-        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-stage-packages.sh"
-
-      - name: Upload newly built packages
-        if: steps.build.outputs.built == 'true'
-        uses: actions/upload-artifact@v7
-        with:
-          name: build-packages-${{ matrix.config.arch }}
-          path: ${{ runner.temp }}/packages/${{ matrix.config.arch }}/*.xbps
-          if-no-files-found: ignore
-          retention-days: 14
-
   build-status:
     name: Verify build result
-    needs: [detect, sync-testing, lint, test-pr, build]
+    needs: [detect, sync-testing, lint, build]
     if: always()
     runs-on: ubuntu-latest
     permissions:
@@ -448,7 +397,7 @@ jobs:
           DETECT_RESULT: ${{ needs.detect.result }}
           SYNC_RESULT: ${{ needs.sync-testing.result }}
           LINT_RESULT: ${{ needs.lint.result }}
-          BUILD_RESULT: ${{ github.event_name == 'pull_request' && needs.test-pr.result || needs.build.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
           PACKAGES: ${{ needs.detect.outputs.packages }}
           REMOVED: ${{ needs.detect.outputs.removed }}
           SKIP_PUSH_PR: ${{ needs.detect.outputs.skip_push_pr }}
@@ -456,10 +405,11 @@ jobs:
 
   publish-request:
     name: Prepare Surfer publication request
-    needs: [detect, build]
+    needs: [detect, build, build-status]
     if: >-
       ${{
         needs.build.result == 'success' &&
+        needs.build-status.result == 'success' &&
         needs.detect.outputs.publish_from_pr != 'true' &&
         github.event_name != 'pull_request' &&
         (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch')

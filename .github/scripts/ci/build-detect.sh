@@ -155,7 +155,7 @@ else
 fi
 
 # A push to a branch that already has an open pull request will be built by the
-# pull_request (synchronize) event, which runs the identical matrix in test-pr.
+# pull_request (synchronize) event, which runs the same shared build matrix.
 # Skip the redundant push-event build so a branch with a PR only runs CI once.
 if [ "$EVENT_NAME" = "push" ] && [ -n "$CURRENT_BRANCH" ] && [ "$CURRENT_BRANCH" != "OCO" ]; then
 	if [ -n "${GH_TOKEN:-}" ] && command -v jq >/dev/null 2>&1 && command -v gh >/dev/null 2>&1; then

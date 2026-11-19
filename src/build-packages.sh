@@ -1,5 +1,5 @@
 #!/bin/sh
-# Shared build loop used by both test-pr and build CI jobs.
+# Build loop used by the shared PR/push/dispatch CI matrix.
 # Required env: PACKAGES, ARCH, BOOTSTRAP, TEST, NATIVE, FORCE
 # Writes built=true/false to GITHUB_OUTPUT when that variable is set.
 # When RESULT_FILE is set, records source-template results and actual XBPS

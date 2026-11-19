@@ -106,6 +106,10 @@ jobs:
       BRANCH_PREFIX: ${{ inputs.base == 'testing' && 'T-autobump' || 'autobump' }}
     steps:
       - name: Decide operating mode
+        # Runs before checkout so the repo (extra/) may not exist yet; it only
+        # inspects workflow inputs, so run it in the workspace root instead of
+        # the job default working-directory (extra).
+        working-directory: ${{ github.workspace }}
         id: mode
         run: |
           if [ "${{ github.event_name }}" = "issues" ]; then

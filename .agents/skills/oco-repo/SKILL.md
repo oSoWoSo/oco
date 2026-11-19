@@ -11,7 +11,7 @@ oco is the **vOid Community repOsitory**: a collection of `xbps-src` template fi
 
 - Editing or adding a template under `srcpkgs/`.
 - Fixing a failing template build (local `xbps-src` or CI `build.yml`).
-- Regenerating `README.md`, template list, `build.yml` after template changes.
+- Regenerating `README.md` and the template list after template changes.
 - Managing package groups / autobump packs.
 - Debugging CI workflows (build, autobump, scan, feed, sync).
 - Working with shlibs (`shlibs_append`, `shlibs_remove`).
@@ -21,8 +21,7 @@ oco is the **vOid Community repOsitory**: a collection of `xbps-src` template fi
 ```
 oco/
 ├── srcpkgs/<pkg>/template      # one template per package
-├── src/build.yml.in            # template for CI build workflow (DO NOT edit build.yml directly)
-├── .github/workflows/          # build.yml is generated from src/build.yml.in
+├── .github/workflows/          # hand-maintained CI workflows (no .yml.in generator)
 ├── .github/autobump-packs.tsv  # package groups for autobump
 ├── .github/autobump-dependencies.tsv
 ├── .github/scripts/            # CI helpers (build-detect, autobump-*, osv-advisory, …)
@@ -36,9 +35,9 @@ oco/
 
 ## Golden rules (from project memory)
 
-1. **Never edit `.github/workflows/build.yml` directly.** It is generated from `src/build.yml.in` via `./ocoman -u`. Edit the `.in` file, then regenerate.
+1. **Edit `.github/workflows/*.yml` directly.** Workflow templates (`src/*.yml.in`) and their generator have been removed; `./ocoman -u` only updates repository metadata.
 2. **One commit per template**, message `<pkgname> <version>`.
-3. After adding a template, run `./ocoman -u` to regenerate the template list/table and `build.yml`.
+3. After adding a template, run `./ocoman -u` to regenerate the template list/table.
 4. When changing an upstream shlib from void-packages, reflect it in `shlibs_remove` and `shlibs_append`.
 5. New shlib → add only to `shlibs_append`.
 6. `CLAUDE.md` is not tracked; remote default branch is `OCO`.
@@ -48,7 +47,7 @@ oco/
 
 ### Regenerate repo metadata
 ```sh
-./ocoman -u          # update list, README, build.yml
+./ocoman -u          # update list and README
 ./ocoman -uw         # update + rebuild website
 ./ocoman -h          # full help
 ```
@@ -107,7 +106,6 @@ Pitfalls to check when a build fails:
 - **Missing build deps**: add to `hostmakedepends` / `makedepends` / `depends`.
 - **shlib changes**: if upstream void-packages changed a shlib, update `shlibs_remove`/`shlibs_append`; new shlib → `shlibs_append` only.
 - **`nocross` builds**: some templates set `nocross=yes`; cross-build matrix may fail. Note project memory: nocross builds are currently broken in some contexts.
-- **`__TEMPLATE_OPTIONS__` placeholder** in `src/build.yml.in` blocks `yaml.safe_load` — be aware when parsing.
 - **Architecture gating**: templates may use `case "$XBPS_TARGET_MACHINE" in …` for arch-specific sources.
 - **Revision bumps**: autobump only revision-bumps known direct consumers of changed packages; missing deps surface at build time.
 - **Tests**: CI builds with tests enabled; a template's `do_check()` must pass. Disable only with justification.
@@ -124,11 +122,11 @@ Pitfalls to check when a build fails:
 3. Check dependencies resolve: `./xbps-src show-build-deps <pkg>` (used by CI autobump).
 4. For arch-specific failures, crossbuild: build for the failing arch explicitly.
 5. Inspect `hostdir/` / `masterdir-*/` for leftover state; clean with `./xbps-src clean <pkg>` or remove build dir.
-6. Check CI: `.github/workflows/build.yml` (generated) detects changed templates under `srcpkgs/` and builds affected packages with required build deps in `oco-builder`.
+6. Check CI: `.github/workflows/build.yml` detects changed templates under `srcpkgs/` and builds affected packages with required build deps in `oco-builder`.
 
 ### Debugging CI
 
-- Workflows: `build.yml` (generated), `bump.yml` (📦 bumper; replaces the deprecated `autobump.yml`), `scan.yml`, `update.yml`, `feed-update.yml`, `vur-check.yml`, `write-surfer.yml`, `mirror-*`, `sync-codeberg-to-github.yml`.
+- Workflows: `build.yml`, `bump.yml` (📦 bumper; the only autobump entry point), `autobump-release.yml`, `scan.yml`, `update.yml`, `feed-update.yml`, `vur-check.yml`, `write-surfer.yml`, `mirror-*`, `sync-codeberg-to-github.yml`.
 - Validate workflow syntax locally with `act` (see `act-workflows` skill), especially `concurrency.queue`.
 - `tooling.yml` runs `node --check src/main.js` and helper tests (bats + python) under `tests/`.
 - CI uses `oco-builder` image; confirm image tag references (memory: check whether CI always resolves newest image).
@@ -160,14 +158,13 @@ Tests cover helpers: `test_autobump_batch.py`, `test_detect_update.bats`, `test_
 
 - [ ] Template lints cleanly (`xlint`).
 - [ ] Builds for at least x86_64 (ideally aarch64-musl too).
-- [ ] `./ocoman -u` run if template added/removed (README + build.yml regenerated).
+- [ ] `./ocoman -u` run if template added/removed (README regenerated).
 - [ ] shlibs updated if applicable.
 - [ ] Commit message `<pkgname> <version>`, one template per commit.
-- [ ] No direct edits to generated `build.yml`.
+- [ ] Workflow changes validated with actionlint and helper tests.
 
 ## Quick diagnostics
 
-- "template not found in CI": ensure it's under `srcpkgs/` and `build.yml` regenerated.
+- "template not found in CI": ensure it's under `srcpkgs/` and package detection includes it.
 - "stale repodata / orphan files": Surfer upload handles orphan cleanup; see project memory on CLI transport.
 - "permission denied on autobump branch": ruleset 23215878 — do not delete `autobump/*`.
-- "yaml.safe_load fails on build.yml.in": `__TEMPLATE_OPTIONS__` placeholder — known limitation.

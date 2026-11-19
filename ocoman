@@ -364,7 +364,7 @@ usage() {
 	  -o, --add-oco        Add OCO remote + branch to an existing void-packages checkout
 	  tv <pkg...>          Copy template(s) from OCO to master, commit "New package: name-ver"
 	  to <pkg...>          Copy template(s) from master to OCO, commit "name ver"
-	  -u, --update         Update list, README, and build.yml
+	  -u, --update         Update list and README
 	  -F, --feeds          Check that every template has a feed.opml entry
 
 	  -l, --shlibs         Apply shlibs patches to an existing checkout

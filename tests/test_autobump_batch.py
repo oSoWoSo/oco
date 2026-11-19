@@ -14,7 +14,7 @@ from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
-    "autobump_batch", ROOT / ".github/scripts/autobump-batch.py"
+    "autobump_batch", ROOT / "tools/autobump/autobump-batch.py"
 )
 batch = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(batch)
@@ -33,22 +33,21 @@ class BatchPlanTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.tmp, True)
-        (self.tmp / "src").mkdir()
-        (self.tmp / ".github" / "scripts").mkdir(parents=True)
-        for script in ("autobump-batch.py", "bump-template.sh", "bump-revision.sh",
-                       "detect-update.sh"):
-            shutil.copy(ROOT / ".github" / "scripts" / script,
-                        self.tmp / ".github" / "scripts" / script)
+        (self.tmp / "config").mkdir()
+        shutil.copytree(ROOT / "tools/autobump", self.tmp / "tools/autobump")
+        (self.tmp / "tools/updates").mkdir(parents=True)
+        shutil.copy(ROOT / "tools/updates/detect-update.sh",
+                    self.tmp / "tools/updates/detect-update.sh")
 
     def build_repo(self, templates: dict, blacklist: list[str] | None = None) -> None:
         for name, body in templates.items():
             write_template(self.tmp, name, body)
-        (self.tmp / "src" / "autobump-blacklist").write_text(
+        (self.tmp / "config" / "autobump-blacklist").write_text(
             "\n".join(blacklist or []) + "\n", encoding="utf-8")
 
     def fake_detector(self, updates: dict) -> None:
         """Replace detect-update.sh with a script that reports fixed versions."""
-        script = self.tmp / ".github" / "scripts" / "detect-update.sh"
+        script = self.tmp / "tools" / "updates" / "detect-update.sh"
         script.write_text(
             "#!/bin/sh\n"
             'pkg="$1"\n'
@@ -73,7 +72,7 @@ class BatchPlanTests(unittest.TestCase):
 
 
     def configure_pack(self, *packages: str) -> None:
-        (self.tmp / ".github" / "autobump-packs.tsv").write_text(
+        (self.tmp / "config" / "autobump-packs.tsv").write_text(
             "".join(f"test\t{package}\n" for package in packages), encoding="utf-8")
 
     def test_ungrouped_target_skips_dependency_resolver(self):
@@ -111,7 +110,7 @@ class BatchPlanTests(unittest.TestCase):
         self.assertEqual(
             {package: kind for package, _version, kind, _order in rows},
             {"alpha": "version", "broken": "revision", "consumer": "revision"})
-        manifest = (self.tmp / ".github" / "autobump-dependencies.tsv").read_text()
+        manifest = (self.tmp / "config" / "autobump-dependencies.tsv").read_text()
         self.assertIn("broken\t", manifest)
         self.assertIn("alpha\n", manifest)
         self.assertTrue(any("broken" in str(call) for call in stderr.write.call_args_list))
@@ -151,7 +150,7 @@ class BatchPlanTests(unittest.TestCase):
     def test_manifest_rejects_duplicate_rows(self):
         self.build_repo({"alpha": "pkgname=alpha\nversion=1.0\nrevision=1\n"})
         self.configure_pack("alpha")
-        manifest = self.tmp / ".github" / "autobump-dependencies.tsv"
+        manifest = self.tmp / "config" / "autobump-dependencies.tsv"
         digest = batch.hashlib.sha256(
             (self.tmp / "srcpkgs/alpha/template").read_bytes()).hexdigest()
         manifest.write_text(
@@ -200,7 +199,7 @@ class BatchPlanTests(unittest.TestCase):
         self.assertEqual(graph["user"], {"real"})
         cached_graph = repository.cached_dependencies()
         self.assertEqual(cached_graph["user"], {"real"})
-        manifest_row = (self.tmp / ".github" / "autobump-dependencies.tsv").read_text()
+        manifest_row = (self.tmp / "config" / "autobump-dependencies.tsv").read_text()
         manifest_rows = [
             line.split("\t") for line in manifest_row.splitlines()[1:]
         ]
@@ -251,7 +250,7 @@ class BatchPlanTests(unittest.TestCase):
             "consumer": "pkgname=consumer\nversion=1.0\nrevision=1\n",
             "unrelated": "pkgname=unrelated\nversion=1.0\nrevision=1\n",
         })
-        (self.tmp / ".github" / "autobump-packs.tsv").write_text(
+        (self.tmp / "config" / "autobump-packs.tsv").write_text(
             "sonic\tsonic-*\n", encoding="utf-8")
         resolver = self.tmp / "xbps-src"
         resolver.write_text(
@@ -391,11 +390,8 @@ class BatchApplyTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.tmp, True)
-        (self.tmp / "src").mkdir()
-        (self.tmp / ".github" / "scripts").mkdir(parents=True)
-        for script in ("autobump-batch.py", "bump-template.sh", "bump-revision.sh"):
-            shutil.copy(ROOT / ".github" / "scripts" / script,
-                        self.tmp / ".github" / "scripts" / script)
+        (self.tmp / "config").mkdir()
+        shutil.copytree(ROOT / "tools/autobump", self.tmp / "tools/autobump")
 
     def test_revision_bump_leaves_version_and_checksum_alone(self):
         template = write_template(self.tmp, "consumer", (
@@ -424,7 +420,7 @@ class BatchApplyTests(unittest.TestCase):
                        "pkgname=alpha\nversion=1.0\nrevision=1\n")
         write_template(self.tmp, "consumer",
                        "pkgname=consumer\nversion=1.0\nrevision=1\ndepends=\"alpha\"\n")
-        (self.tmp / "src" / "autobump-blacklist").write_text("# none\n", encoding="utf-8")
+        (self.tmp / "config" / "autobump-blacklist").write_text("# none\n", encoding="utf-8")
 
         rows = [("alpha", "1.1", "version", 0), ("consumer", "", "revision", 1)]
         plan_file = self.tmp / "plan.tsv"
@@ -447,7 +443,7 @@ class HelperTests(unittest.TestCase):
             write_template(root, "consumer",
                            "pkgname=consumer\nversion=1.0\nrevision=7\n")
             result = subprocess.run(
-                ["bash", str(ROOT / ".github/scripts/bump-revision.sh"), "consumer", str(root)],
+                ["bash", str(ROOT / "tools/autobump/bump-revision.sh"), "consumer", str(root)],
                 check=False, capture_output=True, text=True,
             )
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -457,7 +453,7 @@ class HelperTests(unittest.TestCase):
     def test_bump_revision_refuses_a_missing_template(self):
         with tempfile.TemporaryDirectory() as tmp:
             result = subprocess.run(
-                ["bash", str(ROOT / ".github/scripts/bump-revision.sh"), "ghost", tmp],
+                ["bash", str(ROOT / "tools/autobump/bump-revision.sh"), "ghost", tmp],
                 check=False, capture_output=True, text=True,
             )
             self.assertEqual(result.returncode, 2)
@@ -476,7 +472,7 @@ class HelperTests(unittest.TestCase):
             # accept the third argument and fail on the download, not on
             # the usage line.
             result = subprocess.run(
-                ["bash", str(ROOT / ".github/scripts/bump-template.sh"),
+                ["bash", str(ROOT / "tools/autobump/bump-template.sh"),
                  "demo", "1.1", str(root)],
                 check=False, capture_output=True, text=True,
             )
@@ -494,7 +490,7 @@ class HelperTests(unittest.TestCase):
                 "skip_extraction=yes\n"
             ))
             result = subprocess.run(
-                ["bash", str(ROOT / ".github/scripts/bump-template.sh"),
+                ["bash", str(ROOT / "tools/autobump/bump-template.sh"),
                  "desktop", "1.1", str(root)],
                 check=False, capture_output=True, text=True,
             )
@@ -525,7 +521,7 @@ class HelperTests(unittest.TestCase):
             # must reach the fetch stage (then fail with rc 2), not die on
             # the stale vopt_if before parsing $distfiles.
             result = subprocess.run(
-                ["bash", str(ROOT / ".github/scripts/bump-template.sh"),
+                ["bash", str(ROOT / "tools/autobump/bump-template.sh"),
                  "demo", "1.1", str(root)],
                 check=False, capture_output=True, text=True,
             )

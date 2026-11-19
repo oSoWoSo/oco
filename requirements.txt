@@ -1,2 +1,2 @@
-# Runtime dependencies for .github workflows and src/ scripts
+# Runtime dependencies for workflows and tools/ scripts
 feedparser==6.0.14

@@ -23,6 +23,8 @@ If you dont wish to build the packages locally,
 https://repo.osowoso.org repository provides prebuilt binaries.  
 Pick your architecture there and you will see
 
+For CI maintenance, see the [workflow map and local validation guide](.github/CI.md).
+
 ## Structure (PRs accepted on Codeberg and GitHub 🤗)
 - Codeberg repository with templates  
 https://codeberg.org/oSoWoSo/oco
@@ -114,7 +116,7 @@ When you add new shlib add it only to `shlibe_append`
 
 ### Updating package groups
 `./bump.sh <group> <operation>` manages the package groups defined in  
-`.github/autobump-packs.tsv` against the void-packages checkout at `~/void` by  
+`config/autobump-packs.tsv` against the void-packages checkout at `~/void` by
 default. Add a group and its package-name glob patterns to that file to make  
 the group available to both the helper and CI autobumping. Set `XBPS_DISTDIR`  
 (or `CLONE_DEST`) to use another checkout; `sourceDir` and `destinationDir`  
@@ -141,7 +143,7 @@ package in a configured pack has an upstream update, CI checks the whole pack
 for newer versions and revision-bumps only known direct consumers of changed  
 packages. The resulting PR uses the ordinary template-change build workflow;  
 XBPS can discover any remaining build-time dependencies there. Add a pattern  
-row to `.github/autobump-packs.tsv` when introducing another pack.
+row to `config/autobump-packs.tsv` when introducing another pack.
 
 The GitHub build workflow detects changed templates under `srcpkgs/` and builds  
 the affected packages with their required build dependencies in `oco-builder`  

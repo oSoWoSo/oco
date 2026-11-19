@@ -1,12 +1,12 @@
 #!/bin/sh
-# Tests for .github/scripts/ci/build-summary.sh: pastes the failure markers
+# Tests for .github/scripts/build-summary.sh: pastes the failure markers
 # from a saved x86_64 build log into the GitHub step summary. Aligned with
 # the other helper tests run from tests/run.sh.
 
 set -u
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "$0")/.." && pwd)
-SUMMARY_SH="$SCRIPT_DIR/.github/scripts/ci/build-summary.sh"
+SUMMARY_SH="$SCRIPT_DIR/.github/scripts/build-summary.sh"
 TMP_DIR=$(mktemp -d)
 trap 'rm -rf "$TMP_DIR"' EXIT INT TERM
 

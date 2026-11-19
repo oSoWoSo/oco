@@ -13,7 +13,7 @@ from urllib.request import Request
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
-    "codeberg_status", ROOT / ".github/scripts/ci/codeberg-status.py"
+    "codeberg_status", ROOT / ".github/scripts/codeberg-status.py"
 )
 status = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(status)

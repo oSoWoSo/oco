@@ -83,4 +83,4 @@ jobs:
           SRHT_REPO: ${{ vars.SRHT_REPO || 'git@git.sr.ht:~osowoso/oco' }}
           SRHT_SSH_KEY: ${{ secrets.SRHT_SSH_KEY }}
           SRHT_KNOWN_HOSTS: ${{ secrets.SRHT_KNOWN_HOSTS || 'git.sr.ht ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMZvRd4EtM7R+IHVMWmDkVU3VLQTSwQDSAvW0t2Tkj60' }}
-        run: bash .github/scripts/ci/push-mirror.sh
+        run: bash .github/scripts/push-mirror.sh

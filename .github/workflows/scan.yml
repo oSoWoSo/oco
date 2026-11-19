@@ -40,12 +40,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.BOT }}
           SCAN_PKG: ${{ inputs.pkg }}
-        run: bash .github/scripts/ci/scan-detect.sh
+        run: bash .github/scripts/scan-detect.sh
       - name: Open issues
         if: steps.scan.outputs.count != ''
         env:
           GH_TOKEN: ${{ secrets.WORKFLOWS }}
-        run: bash .github/scripts/ci/scan-issues.sh
+        run: bash .github/scripts/scan-issues.sh
 
       - name: Summary
-        run: bash .github/scripts/ci/scan-summary.sh
+        run: bash .github/scripts/scan-summary.sh

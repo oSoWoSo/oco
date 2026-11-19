@@ -44,12 +44,12 @@ jobs:
 
       - name: Check package updates
         env:
-          OPML_PATH: ${{ github.workspace }}/src/feed.opml
+          OPML_PATH: ${{ github.workspace }}/config/feed.opml
           GH_TOKEN: ${{ secrets.BOT }}
           GITHUB_TOKEN: ${{ secrets.BOT }}
           CODEBERG_TOKEN: ${{ secrets.CODEBERG }}
           GITLAB_TOKEN: ${{ secrets.GITLAB }}
           DRY_RUN: ${{ inputs.dry_run }}
         run: |
-          python3 src/feedsparser.py | tee -a summary
+          python3 tools/updates/feedsparser.py | tee -a summary
           cat summary >> ${GITHUB_STEP_SUMMARY}

@@ -1,48 +1,22 @@
 #!/usr/bin/env bash
-# Keep symlink aliases out of src/autobump-blacklist.
-# Aliases are forbidden from autobump automatically, so listing one here is
-# redundant and listing it instead of its real target would silently exclude
-# the wrong package.
-# Usage: lint-autobump-symlinks.sh [repo-root]
-# Exit:  0 clean, 1 on error.
+set -euo pipefail
 
-set -uo pipefail
+output=$(mktemp)
+trap 'rm -f "$output"' EXIT
 
-root=${1:-$(git rev-parse --show-toplevel 2>/dev/null || pwd)}
-cd "$root" || exit 1
-
-list=src/autobump-blacklist
-errors=0
-
-err() { printf 'error: %s\n' "$*" >&2; errors=$((errors + 1)); }
-
-if [ ! -f "$list" ]; then
-  err "$list not found"
-  exit 1
+if tools/autobump/lint-autobump-symlinks.sh >"$output" 2>&1; then
+  status=0
+else
+  status=$?
 fi
 
-mapfile -t pkgs < <(grep -vE '^\s*(#|$)' "$list")
+cat "$output"
+if [ "$status" -ne 0 ] && [ -n "${GITHUB_STEP_SUMMARY:-}" ] &&
+    ! grep -Fq '<!-- lint-autobump-symlinks -->' "$GITHUB_STEP_SUMMARY"; then
+  {
+    printf '<!-- lint-autobump-symlinks -->\n### error:  \n'
+    grep -i 'error:' "$output" | cut -d' ' -f2 | cut -d'/' -f2 || true
+  } >> "$GITHUB_STEP_SUMMARY"
+fi
 
-for pkg in "${pkgs[@]}"; do
-  path="srcpkgs/$pkg"
-
-  if [ -L "$path" ]; then
-    err "$path is a symlink to $(readlink "$path"); aliases are already excluded from autobump"
-    continue
-  fi
-
-  if [ ! -d "$path" ]; then
-    err "$path not exist (listed in $list)"
-    continue
-  fi
-
-  if [ ! -f "$path/template" ]; then
-    err "$path no such template"
-    continue
-  fi
-done
-
-printf 'checked %d package(s) from %s: %d error(s)\n' \
-  "${#pkgs[@]}" "$list" "$errors"
-
-[ "$errors" -eq 0 ]
+exit "$status"

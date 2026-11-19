@@ -58,7 +58,7 @@ on:
           - OCO
           - testing
       force:
-        description: 'Bump even when the package is in src/autobump-blacklist (pkg dispatch only)'
+        description: 'Bump even when the package is in config/autobump-blacklist (pkg dispatch only)'
         required: false
         default: false
         type: boolean
@@ -147,21 +147,21 @@ jobs:
 
       - name: Merge OCO templates into XBPS checkout
         if: steps.mode.outputs.mode == 'autobump' || steps.mode.outputs.mode == 'lint' || steps.mode.outputs.mode == 'group'
-        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-merge-templates.sh"
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/build-merge-templates.sh"
         working-directory: ${{ github.workspace }}
 
       # ---- Single-template mode (pkg dispatch or package-update issue) ----
       - name: Extract template from issue body
         id: template
         if: steps.mode.outputs.mode == 'autobump' || steps.mode.outputs.mode == 'lint'
-        run: bash .github/scripts/ci/autobump-template.sh
+        run: bash .github/scripts/autobump-template.sh
 
       - name: Skip if dismissed or already handled
         id: marker
         if: steps.mode.outputs.mode == 'autobump' || steps.mode.outputs.mode == 'lint'
         env:
           GH_TOKEN: ${{ secrets.BOT }}
-        run: bash .github/scripts/ci/autobump-marker.sh
+        run: bash .github/scripts/autobump-marker.sh
 
       - name: Blacklist check
         id: blacklist
@@ -169,14 +169,14 @@ jobs:
         env:
           FORCE: ${{ inputs.force }}
           REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
-        run: bash .github/scripts/ci/autobump-blacklist.sh
+        run: bash .github/scripts/autobump-blacklist.sh
 
       - name: Lint the single template
         id: lint-single
         if: steps.mode.outputs.mode == 'lint' && steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true'
         env:
           PACKAGES: ${{ steps.template.outputs.template }}
-        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-lint.sh"
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/build-lint.sh"
         working-directory: ${{ github.workspace }}
 
       - name: Plan the dependency batch
@@ -186,14 +186,14 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.BOT }}
           FORCE: ${{ inputs.force }}
-        run: bash .github/scripts/ci/autobump-plan.sh
+        run: bash .github/scripts/autobump-plan.sh
 
       - name: Skip when the batch is already open
         id: existing
         if: steps.mode.outputs.mode == 'autobump' && steps.marker.outputs.handled == 'false' && steps.plan.outputs.bumped == 'true'
         env:
           GH_TOKEN: ${{ secrets.BOT }}
-        run: bash .github/scripts/ci/autobump-existing.sh
+        run: bash .github/scripts/autobump-existing.sh
 
       - name: Apply the batch
         id: apply
@@ -201,24 +201,24 @@ jobs:
         timeout-minutes: 30
         env:
           GH_TOKEN: ${{ secrets.BOT }}
-        run: bash .github/scripts/ci/autobump-apply.sh
+        run: bash .github/scripts/autobump-apply.sh
 
       - name: Check OSV advisories (informational)
         id: osv
         if: steps.mode.outputs.mode == 'autobump' && steps.apply.outputs.bumped == 'true'
         continue-on-error: true
-        run: bash .github/scripts/ci/autobump-osv.sh
+        run: bash .github/scripts/autobump-osv.sh
 
       - name: Nothing to bump
         if: steps.mode.outputs.mode == 'autobump' && steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.plan.outputs.bumped != 'true'
-        run: bash .github/scripts/ci/autobump-nothing.sh
+        run: bash .github/scripts/autobump-nothing.sh
 
       - name: Create branch + push
         id: branch
         if: steps.mode.outputs.mode == 'autobump' && steps.marker.outputs.handled == 'false' && steps.existing.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.apply.outputs.bumped == 'true'
         env:
           VERSION: ${{ steps.plan.outputs.version }}
-        run: bash .github/scripts/ci/autobump-branch.sh
+        run: bash .github/scripts/autobump-branch.sh
 
       - name: Open PR
         id: pr
@@ -226,14 +226,14 @@ jobs:
         env:
           GH_TOKEN: ${{ inputs.automerge && secrets.BOT || secrets.WORKFLOWS }}
           AUTOMERGE: ${{ inputs.automerge }}
-        run: bash .github/scripts/ci/autobump-pr.sh
+        run: bash .github/scripts/autobump-pr.sh
 
       - name: Consolidate related package PRs
         if: steps.mode.outputs.mode == 'autobump' && steps.pr.outputs.number != '' && steps.existing.outputs.handled == 'false'
         env:
           GH_TOKEN: ${{ secrets.BOT }}
           BATCH_PR: ${{ steps.pr.outputs.number }}
-        run: bash .github/scripts/ci/autobump-consolidate.sh
+        run: bash .github/scripts/autobump-consolidate.sh
 
       - name: Comment on issue
         if: github.event_name != 'workflow_dispatch' && steps.mode.outputs.mode == 'autobump' && steps.marker.outputs.handled == 'false' && steps.blacklist.outputs.in_list == 'true' && steps.apply.outputs.bumped == 'true'
@@ -241,7 +241,7 @@ jobs:
           GH_TOKEN: ${{ secrets.WORKFLOWS }}
           PR_NUMBER: ${{ steps.pr.outputs.number || steps.existing.outputs.number }}
           REQUEST_VER: ${{ steps.marker.outputs.request_ver }}
-        run: bash .github/scripts/ci/autobump-comment.sh
+        run: bash .github/scripts/autobump-comment.sh
 
       # ---- Group mode (workflow_dispatch without pkg) ----
       - name: Resolve paths

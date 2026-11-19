@@ -44,7 +44,7 @@ assert_rc() {
 	fi
 }
 
-. "$SCRIPT_DIR/src/pkg-helpers.sh"
+. "$SCRIPT_DIR/lib/pkg-helpers.sh"
 
 # ocoman's _r() prints ANSI colours from RED/NC, which it only defines when
 # NO_COLOR is unset. The awk extractor pulls _r() and fatal() but not that
@@ -90,7 +90,7 @@ export SURF_PATH_PREFIX=''
 # variable". Sections clear it to force a fresh credential check.
 _SURF_READY="${_SURF_READY:-}"
 
-REPODATA_STRIP_PY="$SCRIPT_DIR/src/repodata-strip.py"
+REPODATA_STRIP_PY="$SCRIPT_DIR/tools/repository/repodata-strip.py"
 
 echo '== pkg_name =='
 it 'plain name'
@@ -570,7 +570,7 @@ open("index.plist","wb").write(plistlib.dumps({
 }, fmt=plistlib.FMT_XML))
 '
 		tar -cf x86_64-repodata index.plist
-		python3 "$SCRIPT_DIR/src/repodata-list.py" x86_64-repodata | sort | tr '\n' ','
+		python3 "$SCRIPT_DIR/tools/repository/repodata-list.py" x86_64-repodata | sort | tr '\n' ','
 	) >"$_wd/out"
 	it 'lists all package names'
 	assert_eq "$(cat "$_wd/out")" 'alpha,alpha-devel,zeta,'
@@ -579,7 +579,7 @@ open("index.plist","wb").write(plistlib.dumps({
 		cd "$_wd" || exit 1
 		python3 -c 'import plistlib; open("index.plist","wb").write(plistlib.dumps({}, fmt=plistlib.FMT_XML))'
 		tar -cf empty-repodata index.plist
-		python3 "$SCRIPT_DIR/src/repodata-list.py" empty-repodata
+		python3 "$SCRIPT_DIR/tools/repository/repodata-list.py" empty-repodata
 	) >"$_wd/out"
 	_rc=$?
 	it 'empty index: rc 0'
@@ -587,13 +587,13 @@ open("index.plist","wb").write(plistlib.dumps({
 	it 'empty index: no output'
 	assert_eq "$(cat "$_wd/out")" ''
 
-	python3 "$SCRIPT_DIR/src/repodata-list.py" >/dev/null 2>&1
+	python3 "$SCRIPT_DIR/tools/repository/repodata-list.py" >/dev/null 2>&1
 	_rc=$?
 	it 'missing arg: rc 2'
 	assert_rc "$_rc" 2
 
 	echo bogus >"$_wd/garbage"
-	python3 "$SCRIPT_DIR/src/repodata-list.py" "$_wd/garbage" >/dev/null 2>&1
+	python3 "$SCRIPT_DIR/tools/repository/repodata-list.py" "$_wd/garbage" >/dev/null 2>&1
 	_rc=$?
 	it 'garbage input: rc 1'
 	assert_rc "$_rc" 1
@@ -609,14 +609,14 @@ open("index.plist","wb").write(plistlib.dumps({
 '
 			tar -cf zst.tar index.plist
 			zstd -q -o zst-repodata zst.tar
-			python3 "$SCRIPT_DIR/src/repodata-list.py" zst-repodata | sort | tr '\n' ','
+			python3 "$SCRIPT_DIR/tools/repository/repodata-list.py" zst-repodata | sort | tr '\n' ','
 		) >"$_wd/out"
 		it 'zstd input: lists all entries'
 		assert_eq "$(cat "$_wd/out")" 'zst-a,zst-b,'
 
 		(
 			cd "$_wd" || exit 1
-			python3 "$SCRIPT_DIR/src/repodata-strip.py" zst-repodata zst-a >/dev/null
+			python3 "$SCRIPT_DIR/tools/repository/repodata-strip.py" zst-repodata zst-a >/dev/null
 			head -c 4 zst-repodata | od -An -tx1 | tr -d ' \n'
 		) >"$_wd/out"
 		it 'zstd strip: output is still zstd'
@@ -624,7 +624,7 @@ open("index.plist","wb").write(plistlib.dumps({
 
 		(
 			cd "$_wd" || exit 1
-			python3 "$SCRIPT_DIR/src/repodata-list.py" zst-repodata | tr '\n' ','
+			python3 "$SCRIPT_DIR/tools/repository/repodata-list.py" zst-repodata | tr '\n' ','
 		) >"$_wd/out"
 		it 'zstd strip: surviving entry is correct'
 		assert_eq "$(cat "$_wd/out")" 'zst-b,'
@@ -653,7 +653,7 @@ with open("index.plist", "wb") as f:
     }, fmt=plistlib.FMT_XML))
 '
 		tar -cf x86_64-repodata index.plist
-		python3 "$SCRIPT_DIR/src/repodata-strip.py" \
+		python3 "$SCRIPT_DIR/tools/repository/repodata-strip.py" \
 			x86_64-repodata beta nope >/dev/null
 		tar -xOf x86_64-repodata index.plist | python3 -c '
 import sys, plistlib
@@ -684,7 +684,7 @@ with open("stage.plist", "wb") as f:
 '
                 tar -cf staging-repodata index.plist index-meta.plist stage.plist
                 zstd -q -o x86_64-repodata staging-repodata
-                python3 "$SCRIPT_DIR/src/repodata-clean-stage.py" x86_64-repodata >/dev/null
+                python3 "$SCRIPT_DIR/tools/repository/repodata-clean-stage.py" x86_64-repodata >/dev/null
                 python3 -c '
 import plistlib, subprocess, zstandard, tarfile, io
 p = subprocess.run(["zstd", "-dc", "--", "x86_64-repodata"], capture_output=True, check=True)
@@ -700,12 +700,12 @@ print("members=" + ",".join(sorted(members)) + "; index=" + ",".join(sorted(plis
                 cd "$_wd" || exit 1
                 tar -cf nometa index.plist
                 zstd -q -o plain-repodata nometa
-                python3 "$SCRIPT_DIR/src/repodata-clean-stage.py" plain-repodata
+                python3 "$SCRIPT_DIR/tools/repository/repodata-clean-stage.py" plain-repodata
         ) >"$_wd/out"
         it 'no stage member is a no-op'
         assert_eq "$(cat "$_wd/out")" '  no stage.plist present; nothing to do'
 
-        python3 "$SCRIPT_DIR/src/repodata-clean-stage.py" >/dev/null 2>&1
+        python3 "$SCRIPT_DIR/tools/repository/repodata-clean-stage.py" >/dev/null 2>&1
         _rc=$?
         it 'missing arg: rc 2'
         assert_rc "$_rc" 2
@@ -802,7 +802,7 @@ version=0.4.8.11
 homepage=https://example.org/tor
 short_desc="An overlay network"
 EOF
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/feed.xml" "$_gf_wd/results" 42 2026-09-10 "$_gf_wd/srcpkgs" >/dev/null
 
 	it 'first run: one item per ok pkg'
@@ -831,7 +831,7 @@ EOF
 	python3 -c 'import sys, xml.etree.ElementTree as ET; ET.parse(sys.argv[1])' "$_gf_wd/feed.xml"
 	assert_rc $? 0
 
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/feed.xml" "$_gf_wd/results" 99 2026-09-11 "$_gf_wd/srcpkgs" >/dev/null
 	it 'same-version rebuild: no new item'
 	assert_eq "$(grep -c '<item>' "$_gf_wd/feed.xml")" '1'
@@ -843,7 +843,7 @@ EOF
 	assert_rc $? 0
 
 	printf 'tor\t0.4.8.12\tok\n' >"$_gf_wd/results/build-results-x86_64/results.tsv"
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/feed.xml" "$_gf_wd/results" 100 2026-09-12 "$_gf_wd/srcpkgs" >/dev/null
 	it 'version bump adds new item'
 	assert_eq "$(grep -c '<item>' "$_gf_wd/feed.xml")" '2'
@@ -854,7 +854,7 @@ EOF
 	grep -q 'tor-0.4.8.12' "$_gf_wd/feed.xml"
 	assert_rc $? 0
 
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/feed.xml" "$_gf_wd/empty" 100 2026-09-12 "$_gf_wd/srcpkgs" 2>/dev/null >/dev/null
 	it 'no results dir: item count unchanged'
 	assert_eq "$(grep -c '<item>' "$_gf_wd/feed.xml")" '2'
@@ -865,7 +865,7 @@ EOF
 		printf 'pkg%s\t%s.0\tok\n' "$_i" "$_i" >>"$_gf_wd/cap/build-results-x86_64/results.tsv"
 		_i=$((_i + 1))
 	done
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/cap.xml" "$_gf_wd/cap" 100 2026-09-12 "$_gf_wd/srcpkgs" >/dev/null
 	it 'cap: feed limited to 1000 items'
 	assert_eq "$(grep -c '<item>' "$_gf_wd/cap.xml")" '1000'
@@ -884,11 +884,11 @@ print(" ".join(i.findtext("title", "").split()[0]
 	printf 'alpha\t1.0\tok\n' >"$_gf_wd/ts/a/build-results-x86_64/results.tsv"
 	printf 'bravo\t1.0\tok\n' >"$_gf_wd/ts/b/build-results-x86_64/results.tsv"
 	printf 'charlie\t1.0\tok\n' >"$_gf_wd/ts/c/build-results-x86_64/results.tsv"
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/ts.xml" "$_gf_wd/ts/a" 200 2026-09-20T08:00:00Z "$_gf_wd/srcpkgs" >/dev/null
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/ts.xml" "$_gf_wd/ts/b" 201 2026-09-20T12:00:00Z "$_gf_wd/srcpkgs" >/dev/null
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/ts.xml" "$_gf_wd/ts/c" 202 2026-09-20T06:00:00Z "$_gf_wd/srcpkgs" >/dev/null
 	it 'ISO run date: pubDate keeps the time of day'
 	grep -q '<pubDate>Sun, 20 Sep 2026 08:00:00 +0000</pubDate>' "$_gf_wd/ts.xml"
@@ -901,7 +901,7 @@ print(" ".join(i.findtext("title", "").split()[0]
 
 	mkdir -p "$_gf_wd/leg/build-results-x86_64"
 	printf 'legacy\t1.0\tok\n' >"$_gf_wd/leg/build-results-x86_64/results.tsv"
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/leg.xml" "$_gf_wd/leg" 300 2026-09-20 "$_gf_wd/srcpkgs" >/dev/null
 	it 'legacy date-only run date means midnight UTC'
 	grep -q '<pubDate>Sun, 20 Sep 2026 00:00:00 +0000</pubDate>' "$_gf_wd/leg.xml"
@@ -911,9 +911,9 @@ print(" ".join(i.findtext("title", "").split()[0]
 		"$_gf_wd/mix/new/build-results-x86_64"
 	printf 'zzz\t1.0\tok\n' >"$_gf_wd/mix/old/build-results-x86_64/results.tsv"
 	printf 'aaa\t1.0\tok\n' >"$_gf_wd/mix/new/build-results-x86_64/results.tsv"
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/mix.xml" "$_gf_wd/mix/old" 400 2026-09-20T08:00:00Z "$_gf_wd/srcpkgs" >/dev/null
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/mix.xml" "$_gf_wd/mix/new" 401 2026-09-21 "$_gf_wd/srcpkgs" >/dev/null
 	it 'legacy midnight item still sorts by its own date'
 	assert_eq "$(_titles "$_gf_wd/mix.xml")" 'aaa zzz'
@@ -922,9 +922,9 @@ print(" ".join(i.findtext("title", "").split()[0]
 		"$_gf_wd/off/b/build-results-x86_64"
 	printf 'zzz\t1.0\tok\n' >"$_gf_wd/off/a/build-results-x86_64/results.tsv"
 	printf 'aaa\t1.0\tok\n' >"$_gf_wd/off/b/build-results-x86_64/results.tsv"
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/off.xml" "$_gf_wd/off/a" 500 2026-09-20T09:00:00Z "$_gf_wd/srcpkgs" >/dev/null
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/off.xml" "$_gf_wd/off/b" 501 2026-09-20T12:00:00+02:00 "$_gf_wd/srcpkgs" >/dev/null
 	it 'numeric offset: kept in pubDate'
 	grep -q '<pubDate>Sun, 20 Sep 2026 12:00:00 +0200</pubDate>' "$_gf_wd/off.xml"
@@ -934,7 +934,7 @@ print(" ".join(i.findtext("title", "").split()[0]
 
 	mkdir -p "$_gf_wd/junk/build-results-x86_64"
 	printf 'junked\t1.0\tok\n' >"$_gf_wd/junk/build-results-x86_64/results.tsv"
-	python3 "$SCRIPT_DIR/src/gen-feed.py" update \
+	python3 "$SCRIPT_DIR/tools/website/gen-feed.py" update \
 		"$_gf_wd/junk.xml" "$_gf_wd/junk" 600 "not-a-date" "$_gf_wd/srcpkgs" >/dev/null
 	it 'unparsable run date: falls back to now instead of aborting'
 	grep -q "<pubDate>[A-Za-z]*, [0-9][0-9] [A-Za-z]* $(date -u +%Y) " \
@@ -955,8 +955,8 @@ echo '== build workflow package detection =='
 # immutable-before-SHA failure paths deterministic and network-free.
 _detect_wd=$(mktemp -d)
 mkdir -p "$_detect_wd/bin" "$_detect_wd/srcpkgs/alpha" \
-	"$_detect_wd/srcpkgs/beta" "$_detect_wd/srcpkgs/alias-parent" "$_detect_wd/src"
-cp "$SCRIPT_DIR/src/pkg-helpers.sh" "$_detect_wd/src/pkg-helpers.sh"
+	"$_detect_wd/srcpkgs/beta" "$_detect_wd/srcpkgs/alias-parent" "$_detect_wd/lib"
+cp "$SCRIPT_DIR/lib/pkg-helpers.sh" "$_detect_wd/lib/pkg-helpers.sh"
 : >"$_detect_wd/srcpkgs/alpha/template"
 : >"$_detect_wd/srcpkgs/beta/template"
 : >"$_detect_wd/srcpkgs/alias-parent/template"
@@ -995,7 +995,7 @@ EOF
 chmod +x "$_detect_wd/bin/git" "$_detect_wd/bin/gh" "$_detect_wd/bin/jq"
 
 # Run the real Detect changed packages script rather than a reimplementation.
-cp "$SCRIPT_DIR/.github/scripts/ci/build-detect.sh" "$_detect_wd/detect.sh"
+cp "$SCRIPT_DIR/.github/scripts/build-detect.sh" "$_detect_wd/detect.sh"
 
 _run_detect_case() {
 	_case_name=$1 _before=$2 _ref=${3:-refs/heads/OCO} _event=${4:-push} _target=${5:-production} _branch=${6:-OCO}
@@ -1231,7 +1231,7 @@ ok, fail = m.collect_results(sys.argv[2])
 print("zok=" + ",".join(sorted(ok.get("zen-browser-bin", []))))
 print("zfail=" + ",".join(sorted(fail.get("z-fail", []))))
 print("bump=" + ",".join(sorted(ok.get("bump", []))))
-' "$SCRIPT_DIR/src/close-update-issues.py" "$_cui_wd/results")" "$(printf 'zok=1.22.1\nzfail=1.0\nbump=3.2.1')"
+' "$SCRIPT_DIR/tools/updates/close-update-issues.py" "$_cui_wd/results")" "$(printf 'zok=1.22.1\nzfail=1.0\nbump=3.2.1')"
 
 	it 'issue body: hidden markers + heading fallback parsed'
 	assert_eq "$(python3 -c '
@@ -1241,7 +1241,7 @@ m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 body = "**Package:** `zen-browser-bin`\n\n**Upstream version:** `1.22.1`\n\n<!-- package-update:zen-browser-bin -->\n<!-- upstream-version:1.22.1 -->"
 print(m.extract_pkg_version(body))
-' "$SCRIPT_DIR/src/close-update-issues.py")" "('zen-browser-bin', '1.22.1')"
+' "$SCRIPT_DIR/tools/updates/close-update-issues.py")" "('zen-browser-bin', '1.22.1')"
 
 	it 'issue body: scan format is parsed by both package/version marker and heading parsers'
 	assert_eq "$(python3 -c '
@@ -1251,7 +1251,7 @@ m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 body = "**Package:** `foo`\n**Upstream version:** `2.0`\n<!-- package-update:foo -->\n<!-- upstream-version:2.0 -->"
 print(m.extract_pkg_version(body))
-' "$SCRIPT_DIR/src/close-update-issues.py")" "('foo', '2.0')"
+' "$SCRIPT_DIR/tools/updates/close-update-issues.py")" "('foo', '2.0')"
 	it 'linked package template heading is parsed without hidden markers'
 	assert_eq "$(python3 -c '
 import importlib.util, sys
@@ -1260,7 +1260,7 @@ m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 body = "**Package:** [`llama.cpp`](https://github.com/oSoWoSo/oco/blob/OCO/srcpkgs/llama.cpp/template)\n**Upstream version:** `2.0`"
 print(m.extract_pkg_version(body))
-' "$SCRIPT_DIR/src/close-update-issues.py")" "('llama.cpp', '2.0')"
+' "$SCRIPT_DIR/tools/updates/close-update-issues.py")" "('llama.cpp', '2.0')"
 
 	it 'autobump skip/done marker is bound to requested version'
 	assert_eq "$(python3 -c '
@@ -1272,7 +1272,7 @@ comments = [{"body": "<!-- autobump:skip for 1.2 -->"}]
 print("%s,%s,%s" % (m.has_skip_marker(comments, "1.2"),
                     m.has_skip_marker(comments, "1.3"),
                     m.has_skip_marker(comments, "")))
-' "$SCRIPT_DIR/src/close-update-issues.py")" 'True,False,False'
+' "$SCRIPT_DIR/tools/updates/close-update-issues.py")" 'True,False,False'
 	it 'close_reason: exact build closes, older issue superseded'
 	assert_eq "$(python3 -c '
 import importlib.util, sys
@@ -1286,7 +1286,7 @@ print(m.close_reason(ok, fail, "demo", "1.9", {"demo": "2.0"}))
 print(m.close_reason(ok, fail, "demo", "2.1", {}))
 print(m.close_reason(ok, fail, "broken", "1.0", {}))
 print(m.close_reason(ok, fail, "demo", "2.0", {"demo": "2.0"}))
-' "$SCRIPT_DIR/src/close-update-issues.py")" "$(printf 'built at 2.0\nsuperseded by 2.0\nNone\nNone\nbuilt at 2.0')"
+' "$SCRIPT_DIR/tools/updates/close-update-issues.py")" "$(printf 'built at 2.0\nsuperseded by 2.0\nNone\nNone\nbuilt at 2.0')"
 
 	it 'autobump:no marker remains version-independent'
 	assert_eq "$(python3 -c '
@@ -1295,7 +1295,7 @@ spec = importlib.util.spec_from_file_location("cui", sys.argv[1])
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 print(m.has_skip_marker([{"body": "<!-- autobump:no -->"}], "1.2"))
-' "$SCRIPT_DIR/src/close-update-issues.py")" 'True'
+' "$SCRIPT_DIR/tools/updates/close-update-issues.py")" 'True'
 
 	it 'issue body: no markers returns None,None'
 	assert_eq "$(python3 -c '
@@ -1304,7 +1304,7 @@ spec = importlib.util.spec_from_file_location("cui", sys.argv[1])
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 print(m.extract_pkg_version("no markers here"))
-' "$SCRIPT_DIR/src/close-update-issues.py")" '(None, None)'
+' "$SCRIPT_DIR/tools/updates/close-update-issues.py")" '(None, None)'
 
 	it 'results: missing dir yields empty maps, no crash'
 	assert_eq "$(python3 -c '
@@ -1313,14 +1313,14 @@ spec = importlib.util.spec_from_file_location("cui", sys.argv[1])
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 print(m.collect_results(sys.argv[2]) == ({}, {}))
-' "$SCRIPT_DIR/src/close-update-issues.py" "$_cui_wd/nope")" "True"
+' "$SCRIPT_DIR/tools/updates/close-update-issues.py" "$_cui_wd/nope")" "True"
 
 	it 'cli: --help exits 0'
-	python3 "$SCRIPT_DIR/src/close-update-issues.py" --help >/dev/null 2>&1
+	python3 "$SCRIPT_DIR/tools/updates/close-update-issues.py" --help >/dev/null 2>&1
 	assert_rc $? 0
 
 	it 'cli: results_dir required unless --list-stale'
-	python3 "$SCRIPT_DIR/src/close-update-issues.py" \
+	python3 "$SCRIPT_DIR/tools/updates/close-update-issues.py" \
 		--repo o/r --list-stale --token "" >/dev/null 2>&1
 	assert_rc $? 2
 
@@ -1334,7 +1334,7 @@ cases = [("157.0.1.1", "157.0-1"), ("157.0.1.1", "157.0.1-1"),
          ("1.0", "1.0.0"), ("1.0", "1.0.00"), ("1.0", "1.0-rc1"),
          ("1.9", "1.10"), ("1.23.2", "1.23.1")]
 print(";".join(str(m.cmp_versions(a, b)) for a, b in cases))
-' "$SCRIPT_DIR/src/close-update-issues.py")" '1;0;0;0;1;-1;1'
+' "$SCRIPT_DIR/tools/updates/close-update-issues.py")" '1;0;0;0;1;-1;1'
 
 	it 'shipped_versions: keys on dir name, pkgname and symlink target'
 	assert_eq "$(python3 -c '
@@ -1344,7 +1344,7 @@ m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 sv = m.shipped_versions(sys.argv[2])
 print(sorted(k for k in sv if k.startswith("fcitx5-lotus")))
-' "$SCRIPT_DIR/src/close-update-issues.py" "$SCRIPT_DIR/srcpkgs")" \
+' "$SCRIPT_DIR/tools/updates/close-update-issues.py" "$SCRIPT_DIR/srcpkgs")" \
 		"['fcitx5-lotus', 'fcitx5-lotus-settings']"
 else
 	echo '  (skipped: python3 not on PATH)'
@@ -1730,7 +1730,25 @@ unset FAKE_SURFER_ARGV FAKE_SURFER_SCRIPT FAKE_SURFER_COUNT
 echo '== detect-update.sh =='
 python3 "$SCRIPT_DIR/tests/test_detect_update.py" || _FAIL=$((_FAIL + 1))
 
-python3 "$SCRIPT_DIR/tests/test_build_status.py" || _FAIL=$((_FAIL + 1))
+python3 "$SCRIPT_DIR/tests/test_build_gate.py" || _FAIL=$((_FAIL + 1))
+
+echo '== repository paths, layout, and website publication boundary =='
+python3 "$SCRIPT_DIR/tests/test_paths.py" || _FAIL=$((_FAIL + 1))
+python3 "$SCRIPT_DIR/tests/test_repository_layout.py" || _FAIL=$((_FAIL + 1))
+
+echo '== Bats integration tests =='
+if command -v bats >/dev/null 2>&1; then
+	bats --print-output-on-failure "$SCRIPT_DIR"/tests/*.bats || _FAIL=$((_FAIL + 1))
+else
+	echo 'ERROR: bats is required; install it to run branch and VUR integration tests' >&2
+	_FAIL=$((_FAIL + 1))
+fi
+
+echo '== build dependency repositories =='
+python3 "$SCRIPT_DIR/tests/test_build_repositories.py" || _FAIL=$((_FAIL + 1))
+
+echo '== surfer-publish.py =='
+python3 "$SCRIPT_DIR/tests/test_surfer_publish.py" || _FAIL=$((_FAIL + 1))
 
 echo '== autobump-batch.py =='
 python3 "$SCRIPT_DIR/tests/test_autobump_batch.py" || _FAIL=$((_FAIL + 1))

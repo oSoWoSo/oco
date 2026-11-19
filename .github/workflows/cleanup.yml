@@ -45,7 +45,7 @@ jobs:
         if: inputs.repository_prefix == '' && github.ref != 'refs/heads/OCO'
         env:
           REF: ${{ github.ref }}
-        run: bash .github/scripts/ci/guard-oco-ref.sh
+        run: bash .github/scripts/guard-oco-ref.sh
 
       - name: Create cleanup request
         env:
@@ -54,7 +54,7 @@ jobs:
           SHA: ${{ github.sha }}
           RUN_ID: ${{ github.run_id }}
           RUNNER_TEMP: ${{ runner.temp }}
-        run: bash .github/scripts/ci/cleanup-request.sh
+        run: bash .github/scripts/cleanup-request.sh
 
 
       - uses: actions/upload-artifact@v7

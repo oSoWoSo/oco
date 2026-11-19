@@ -9,7 +9,7 @@ from urllib.error import URLError
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
-    "osv_advisory", ROOT / ".github/scripts/osv-advisory.py"
+    "osv_advisory", ROOT / "tools/autobump/osv-advisory.py"
 )
 osv = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(osv)
@@ -247,7 +247,7 @@ def test_report_escapes_untrusted_fields():
 
 
 def test_repository_mappings_have_template_evidence_and_valid_identity_schema():
-    mapping_path = ROOT / ".github/osv-identities.json"
+    mapping_path = ROOT / "config/osv-identities.json"
     data = json.loads(mapping_path.read_text(encoding="utf-8"))
     packages = data["packages"]
     counts = {kind: sum(entry.get("type") == kind for entry in packages.values())

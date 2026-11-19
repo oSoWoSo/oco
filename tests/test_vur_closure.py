@@ -18,7 +18,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-HELPER = ROOT / ".github/scripts/ci/vur-closure.py"
+HELPER = ROOT / ".github/scripts/vur-closure.py"
 
 
 def run_helper(root: Path, changed: str, upstream: Path | None = None) -> subprocess.CompletedProcess:
@@ -41,20 +41,20 @@ class ClosureTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.tmp, True)
-        (self.tmp / ".github").mkdir(parents=True)
+        (self.tmp / "config").mkdir(parents=True)
         (self.tmp / "srcpkgs").mkdir()
         self.upstream = self.tmp / "upstream.txt"
         self.upstream.write_text("", encoding="utf-8")
 
     def set_packs(self, *pairs: tuple[str, str]) -> None:
-        (self.tmp / ".github" / "autobump-packs.tsv").write_text(
+        (self.tmp / "config" / "autobump-packs.tsv").write_text(
             "".join(f"{pack}\t{member}\n" for pack, member in pairs), encoding="utf-8")
 
     def set_manifest(self, *rows: tuple[str, list[str]]) -> None:
         body = ["# autobump-dependencies-v1"]
         for pkg, deps in rows:
             body.append(f"{pkg}\t{len(deps):x}\t{' '.join(deps)}")
-        (self.tmp / ".github" / "autobump-dependencies.tsv").write_text(
+        (self.tmp / "config" / "autobump-dependencies.tsv").write_text(
             "\n".join(body) + "\n", encoding="utf-8")
 
     def test_changed_template_is_carried_even_when_upstream(self):

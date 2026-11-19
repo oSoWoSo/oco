@@ -1,0 +1,123 @@
+name: 🔀 PR mirrors
+
+# Event adapters only: PR lifecycle is implemented by mirror-pr.py, and status
+# writes by codeberg-status.py. Never check out a PR head in these trusted jobs.
+on:
+  repository_dispatch:
+    types: [codeberg_pr]
+  pull_request_target:
+    types: [opened, reopened, synchronize, edited, closed]
+    branches: [OCO, testing]
+  workflow_run:
+    workflows: ["🏗️ build"]
+    types: [completed]
+    branches: ['mirror/codeberg/**']
+
+permissions:
+  contents: read
+
+jobs:
+  from-codeberg:
+    name: Mirror Codeberg PR to GitHub
+    if: github.event_name == 'repository_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Checkout trusted default-branch revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Mirror Codeberg PR to GitHub
+        env:
+          SOURCE_FORGE: codeberg
+          EVENT_ACTION: ${{ github.event.client_payload.action }}
+          PR_NUMBER: ${{ github.event.client_payload.number }}
+          TARGET_TOKEN: ${{ secrets.BOT }}
+          TARGET_API_ROOT: https://api.github.com/repos/oSoWoSo/oco
+          TARGET_GIT_URL: https://github.com/oSoWoSo/oco.git
+          TARGET_GIT_USERNAME: oSoWoSo-bot
+        run: python3 .github/scripts/mirror-pr.py
+
+  to-codeberg:
+    name: Mirror GitHub PR to Codeberg
+    if: github.event_name == 'pull_request_target'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout trusted base revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          persist-credentials: false
+      - name: Mirror PR to Codeberg
+        env:
+          SOURCE_FORGE: github
+          EVENT_ACTION: ${{ github.event.action }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_HEAD_REPO_URL: ${{ github.event.pull_request.head.repo.clone_url }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          PR_MERGE_COMMIT_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          TARGET_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+          TARGET_API_ROOT: https://codeberg.org/api/v1/repos/oSoWoSo/oco
+          TARGET_GIT_URL: https://codeberg.org/oSoWoSo/oco.git
+          TARGET_GIT_USERNAME: oSoWoSo
+        run: python3 .github/scripts/mirror-pr.py
+
+  report:
+    name: Report build result to Codeberg
+    if: github.event_name == 'workflow_run' && startsWith(github.event.workflow_run.head_branch, 'mirror/codeberg/pr-')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout trusted default-branch revision
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Read triggering build context
+        id: context
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const run = context.payload.workflow_run;
+            if (!/^mirror\/codeberg\/pr-(\d+)$/.test(run.head_branch)) {
+              core.setOutput('skip', 'true');
+              return;
+            }
+            const state = run.conclusion === 'success' ? 'success'
+              : ['skipped', 'cancelled'].includes(run.conclusion) ? 'error' : 'failure';
+            const description = state === 'success' ? 'GitHub Actions checks passed'
+              : state === 'failure' ? 'GitHub Actions checks failed'
+              : 'GitHub Actions build did not complete';
+            core.setOutput('skip', 'false');
+            core.setOutput('head_sha', run.head_sha);
+            core.setOutput('state', state);
+            core.setOutput('description', description);
+            core.setOutput('run_url', run.html_url);
+      - name: Post result to Codeberg
+        if: steps.context.outputs.skip == 'false'
+        env:
+          CODEBERG_TOKEN: ${{ secrets.CODEBERG_TOKEN }}
+          COMMIT_SHA: ${{ steps.context.outputs.head_sha }}
+          STATUS_STATE: ${{ steps.context.outputs.state }}
+          STATUS_DESCRIPTION: ${{ steps.context.outputs.description }}
+          TARGET_URL: ${{ steps.context.outputs.run_url }}
+        run: python3 .github/scripts/codeberg-status.py

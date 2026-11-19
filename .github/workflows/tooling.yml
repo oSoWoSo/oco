@@ -11,17 +11,13 @@ on:
     paths:
       - 'ocoman'
       - '.gitignore'
-      - 'src/build.yml.in'
-      - 'src/bump.yml.in'
-      - 'src/autobump.yml.in'
-      - 'src/autobump-blacklist'
-      - 'src/*.sh'
-      - 'src/*.py'
-      - 'src/*.js'
-      - 'src/*.css'
-      - 'src/*.html'
+      - 'config/**'
+      - 'lib/**'
+      - 'tools/**'
+      - 'website/**'
       - 'srcpkgs/**'
-      - '.github/osv-identities.json'
+      - '.github/actionlint.yaml'
+      - 'requirements.txt'
       - '.github/scripts/**'
       - 'tests/**'
       - '.github/workflows/**'
@@ -29,22 +25,22 @@ on:
     paths:
       - 'ocoman'
       - '.gitignore'
-      - 'src/build.yml.in'
-      - 'src/bump.yml.in'
-      - 'src/autobump.yml.in'
-      - 'src/autobump-blacklist'
-      - 'src/*.sh'
-      - 'src/*.py'
-      - 'src/*.js'
-      - 'src/*.css'
-      - 'src/*.html'
+      - 'config/**'
+      - 'lib/**'
+      - 'tools/**'
+      - 'website/**'
       - 'srcpkgs/**'
-      - '.github/osv-identities.json'
+      - '.github/actionlint.yaml'
+      - 'requirements.txt'
       - '.github/scripts/**'
       - 'tests/**'
       - '.github/workflows/**'
+  workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: tooling-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   helper-tests:
@@ -55,9 +51,18 @@ jobs:
       - uses: actions/checkout@v7
         with:
           token: ${{ secrets.BOT || github.token }}
+      - name: Lint autobump template symlinks
+        run: bash .github/scripts/lint-autobump-symlinks.sh
       - name: Check website JavaScript syntax
-        run: node --check src/main.js
-      - name: Install feed update runtime deps
-        run: python3 -m pip install -r requirements.txt
+        run: node --check website/public/main.js
+      - name: Check workflow syntax
+        uses: docker://rhysd/actionlint:1.7.12
+        with:
+          args: -color -shellcheck= -pyflakes=
+      - name: Install test dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y zstd bats
+          python3 -m pip install -r tests/requirements.txt
       - name: Run helper tests
         run: sh tests/run.sh

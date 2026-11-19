@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Tests for the package-update issue filing logic (src/feedsparser.py).
+"""Tests for the package-update issue filing logic (tools/updates/feedsparser.py).
 
 These cover the pieces that regressed when the autobump whitelist
-(`src/autobump-pkgs`) was replaced by `src/autobump-blacklist`:
+(`src/autobump-pkgs`) was replaced by `config/autobump-blacklist`:
 eligibility now follows `autobump-blacklist.sh` (blacklist + symlink
 aliases) and stale `<!-- autobump:no -->` markers get repaired.
 """
@@ -15,7 +15,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
-    "feedsparser", ROOT / "src" / "feedsparser.py"
+    "feedsparser", ROOT / "tools" / "updates" / "feedsparser.py"
 )
 fs = None
 _IMPORT_ERR = None
@@ -47,8 +47,8 @@ def make_tree(top: Path, blacklist=(), symlinks=()) -> Path:
         (top / "srcpkgs" / name).symlink_to(
             top / "srcpkgs" / "glaze"
         )
-    (top / "src").mkdir()
-    (top / "src" / "autobump-blacklist").write_text(
+    (top / "config").mkdir()
+    (top / "config" / "autobump-blacklist").write_text(
         "\n".join(blacklist) + "\n",
         encoding="utf-8",
     )
@@ -75,7 +75,7 @@ class BlacklistTests(unittest.TestCase):
             symlinks=(),
         )
         fs.SRC_PKGS = self.top / "srcpkgs"
-        fs.AUTOBUMP_BLACKLIST = self.top / "src" / "autobump-blacklist"
+        fs.AUTOBUMP_BLACKLIST = self.top / "config" / "autobump-blacklist"
 
     def test_blacklist_loaded(self):
         self.assertIn(
@@ -109,7 +109,7 @@ class MarkersTests(unittest.TestCase):
         self.addCleanup(_rmtree, self._tmp)
         self.top = make_tree(self._tmp, blacklist=("glaze",))
         fs.SRC_PKGS = self.top / "srcpkgs"
-        fs.AUTOBUMP_BLACKLIST = self.top / "src" / "autobump-blacklist"
+        fs.AUTOBUMP_BLACKLIST = self.top / "config" / "autobump-blacklist"
         fs.DRY_RUN = False
 
     def test_make_body_head_up_only(self):
@@ -201,7 +201,7 @@ class SupersedeIssuesTests(unittest.TestCase):
         self.addCleanup(_rmtree, self._tmp)
         self.top = make_tree(self._tmp)
         fs.SRC_PKGS = self.top / "srcpkgs"
-        fs.AUTOBUMP_BLACKLIST = self.top / "src" / "autobump-blacklist"
+        fs.AUTOBUMP_BLACKLIST = self.top / "config" / "autobump-blacklist"
         fs.DRY_RUN = False
 
     def test_keeps_one_and_closes_older_as_not_planned(self):

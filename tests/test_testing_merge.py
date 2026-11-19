@@ -5,7 +5,7 @@ from pathlib import Path
 import importlib.util
 
 ROOT = Path(__file__).resolve().parents[1]
-spec = importlib.util.spec_from_file_location("testing_merge", ROOT / "src/testing-merge.py")
+spec = importlib.util.spec_from_file_location("testing_merge", ROOT / "tools/autobump/testing-merge.py")
 tm = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(tm)
 

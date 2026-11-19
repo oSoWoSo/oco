@@ -2,59 +2,64 @@
 set -euo pipefail
 
 BRANCH="${BRANCH_PREFIX:-autobump}/${TEMPLATE}"
-plan="$RUNNER_TEMP/autobump-plan.tsv"
-snapshot="$RUNNER_TEMP/autobump-templates"
-manifest_snapshot="$RUNNER_TEMP/autobump-dependencies.tsv"
-manifest="config/autobump-dependencies.tsv"
-
-git config user.name "oSoWoSo-bot"
-git config user.email "mail@osowoso.org"
-
-# Keep the bumped templates aside: the branch is cut from the
-# current base (OCO, or testing for the T-autobump prefix), so the
-# bump has to be replayed onto it.
-rm -rf "$snapshot"
-rm -f "$manifest_snapshot"
-mkdir -p "$snapshot"
-while IFS=$'\t' read -r package _version _kind _order; do
-	[[ -n $package ]] || continue
-	mkdir -p "$snapshot/$package"
-	cp "srcpkgs/$package/template" "$snapshot/$package/template"
-done <"$plan"
-if [[ -f $manifest ]]; then
-	mv "$manifest" "$manifest_snapshot"
-fi
-
 BASE_REF="${BASE_REF:-OCO}"
+plan="$RUNNER_TEMP/autobump-plan.tsv"
+source_root=$(git rev-parse --show-toplevel)
+source_manifest="$source_root/config/autobump-dependencies.tsv"
+[[ -s "$plan" ]] || { echo '::error::Missing or empty autobump plan'; exit 1; }
+
+# Never replace the workflow's own checkout: the base may predate the layout
+# migration, and subsequent workflow steps still need the dispatched tooling.
+work=$(mktemp -d "$RUNNER_TEMP/autobump-branch.XXXXXX")
+branch_tree="$work/tree"
+cleanup() {
+	git -C "$source_root" worktree remove --force "$branch_tree" >/dev/null 2>&1 || true
+	rm -rf "$work"
+}
+trap cleanup EXIT
+
 git fetch --no-tags --depth=1 origin "+refs/heads/${BASE_REF}:refs/remotes/origin/${BASE_REF}"
-# The runner may be checked out on any branch (e.g. the PR head that
-# triggered workflow_dispatch), so the worktree holds the uncommitted bumps
-# it snapshotted above. Force the move so git does not refuse to replace a
-# template it would overwrite; the snapshot is replayed right after.
-git checkout -f -B "$BRANCH" "refs/remotes/origin/${BASE_REF}"
-if [[ -f $manifest_snapshot ]]; then
-	mkdir -p "$(dirname "$manifest")"
-	cp "$manifest_snapshot" "$manifest"
+git worktree add --detach "$branch_tree" "refs/remotes/origin/${BASE_REF}"
+git -C "$branch_tree" config user.name "oSoWoSo-bot"
+git -C "$branch_tree" config user.email "mail@osowoso.org"
+
+# During migration the dispatched tooling and target base can have different
+# layouts. Read/write metadata in the base's layout; never add the refactor to
+# an unrelated package PR. Fail rather than silently omitting pack validation.
+if [[ -f "$branch_tree/config/autobump-packs.tsv" ]]; then
+	pack_listing="config/autobump-packs.tsv"
+	manifest="config/autobump-dependencies.tsv"
+elif [[ -f "$branch_tree/.github/autobump-packs.tsv" ]]; then
+	pack_listing=".github/autobump-packs.tsv"
+	manifest=".github/autobump-dependencies.tsv"
+else
+	echo "::error::${BASE_REF} has no autobump pack configuration"
+	exit 1
 fi
 
-# Commit the plan's package sequence so reviewers can follow the batch.
+# Commit only the planned package changes on top of the freshly fetched base.
 while IFS=$'\t' read -r package version kind _order; do
 	[[ -n $package ]] || continue
 	tpl="srcpkgs/$package/template"
-	cp "$snapshot/$package/template" "$tpl"
-	git add "$tpl"
-	if git diff --cached --quiet; then
+	mkdir -p "$branch_tree/srcpkgs/$package"
+	cp "$source_root/$tpl" "$branch_tree/$tpl"
+	git -C "$branch_tree" add -f -- "$tpl"
+	if git -C "$branch_tree" diff --cached --quiet; then
 		echo "::error::rebase onto ${BASE_REF} left ${tpl} unchanged; nothing to bump"
 		exit 1
 	fi
 	if [[ $kind == version ]]; then
-		git commit -m "$package $version"
+		git -C "$branch_tree" commit -m "$package $version"
 	else
-		git commit -m "$package: raise revision for updated dependencies"
+		git -C "$branch_tree" commit -m "$package: raise revision for updated dependencies"
 	fi
 done <"$plan"
-if [[ -f $manifest_snapshot && -f $manifest ]]; then
-	python3 - "$plan" "$manifest" <<'PY'
+if [[ -f $source_manifest ]]; then
+	mkdir -p "$branch_tree/$(dirname "$manifest")"
+	cp "$source_manifest" "$branch_tree/$manifest"
+	(
+	cd "$branch_tree"
+	python3 - "$plan" "$manifest" "$pack_listing" <<'PY'
 import hashlib
 from pathlib import Path
 import sys
@@ -66,7 +71,7 @@ packages = {
     for line in plan.read_text(encoding="utf-8").splitlines()
     if line
 }
-pack_listing = Path("config/autobump-packs.tsv")
+pack_listing = Path(sys.argv[3])
 pack_packages = {
     fields[1]
     for line in pack_listing.read_text(encoding="utf-8").splitlines()
@@ -94,13 +99,14 @@ manifest.write_text(
     encoding="utf-8",
 )
 PY
-	git add "$manifest"
-	git commit --amend --no-edit
+	)
+	git -C "$branch_tree" add -f -- "$manifest"
+	git -C "$branch_tree" commit --amend --no-edit
 fi
 
-# README is no longer generated here; package list lives on the website.
-
-git push --force "https://x-access-token:${OCO_TOKEN}@github.com/${GH_REPO}.git" "HEAD:${BRANCH}"
+# Only this isolated package tree is pushed. The original checkout, templates,
+# helper files, and metadata remain available to the rest of the workflow.
+git -C "$branch_tree" push --force "https://x-access-token:${OCO_TOKEN}@github.com/${GH_REPO}.git" "HEAD:refs/heads/${BRANCH}"
 
 echo "VERSION=$VERSION" >>"$GITHUB_ENV"
 echo "BRANCH=$BRANCH" >>"$GITHUB_ENV"

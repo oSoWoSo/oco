@@ -2,49 +2,44 @@
 
 setup() {
   TEST_DIR="$(mktemp -d)"
-  export TEST_DIR
-  export ORIGIN="$TEST_DIR/origin.git"
-  export WORK="$TEST_DIR/work"
+  export TEST_DIR ORIGIN="$TEST_DIR/origin.git" WORK="$TEST_DIR/work"
   export RUNNER_TEMP="$TEST_DIR/runner"
-  mkdir -p "$WORK" "$RUNNER_TEMP"
+  mkdir -p "$WORK" "$RUNNER_TEMP" "$TEST_DIR/bin"
   git init --bare -q "$ORIGIN"
   git -C "$WORK" init -qb OCO
   git -C "$WORK" config user.name test
   git -C "$WORK" config user.email test@example.invalid
-  mkdir -p "$WORK/srcpkgs/alpha" "$WORK/.github"
-  cat >"$WORK/srcpkgs/alpha/template" <<'EOF'
-pkgname=alpha
-version=1.0
-revision=1
-EOF
+  mkdir -p "$WORK/srcpkgs/alpha" "$WORK/config"
+  printf 'pkgname=alpha\nversion=1.0\nrevision=1\n' >"$WORK/srcpkgs/alpha/template"
   printf 'test\talpha\n' >"$WORK/config/autobump-packs.tsv"
   printf 'base README\n' >"$WORK/README.md"
   git -C "$WORK" add .
   git -C "$WORK" commit -qm base
   git -C "$WORK" remote add origin "$ORIGIN"
   git -C "$WORK" push -q origin OCO
-  mkdir -p "$TEST_DIR/bin"
   export REAL_GIT="$(command -v git)"
+  # All pushes are restricted to the local fixture, including the script's
+  # GitHub URL. Exercise actual Git commits/refs without any remote writes.
   cat >"$TEST_DIR/bin/git" <<'EOF'
 #!/usr/bin/env bash
-if [[ ${1:-} == push ]]; then
-  printf '%s\n' "$*" >>"$PUSH_LOG"
-  exit 0
+args=()
+if [[ ${1:-} == -C ]]; then
+  args=(-C "$2")
+  shift 2
 fi
-exec "$REAL_GIT" "$@"
+if [[ ${1:-} == push ]]; then
+  [[ ${MOCK_PUSH_FAIL:-false} != true ]] || exit 41
+  printf 'local push\n' >>"$PUSH_LOG"
+  exec "$REAL_GIT" "${args[@]}" push --force "$ORIGIN" "${@: -1}"
+fi
+exec "$REAL_GIT" "${args[@]}" "$@"
 EOF
   chmod +x "$TEST_DIR/bin/git"
-  cat >"$WORK/ocoman" <<'EOF'
-#!/usr/bin/env bash
-[[ ${1:-} == -u ]] || exit 2
-printf 'regenerated README\n' >README.md
-EOF
-  chmod +x "$WORK/ocoman"
-  export PATH="$TEST_DIR/bin:$PATH"
-  export PUSH_LOG="$TEST_DIR/push.log"
+  export PATH="$TEST_DIR/bin:$PATH" PUSH_LOG="$TEST_DIR/push.log"
   export TEMPLATE=alpha VERSION=1.1 OCO_TOKEN=fake GH_REPO=test/repo
   export GITHUB_ENV="$TEST_DIR/github-env" GITHUB_OUTPUT="$TEST_DIR/github-output"
   export BRANCH_SCRIPT="$BATS_TEST_DIRNAME/../.github/scripts/autobump-branch.sh"
+  cd "$WORK"
 }
 
 teardown() {
@@ -52,71 +47,87 @@ teardown() {
 }
 
 prepare_bump() {
-  cat >"$WORK/srcpkgs/alpha/template" <<'EOF'
-pkgname=alpha
-version=1.1
-revision=1
-EOF
+  printf 'pkgname=alpha\nversion=1.1\nrevision=1\n' >srcpkgs/alpha/template
   printf 'alpha\t1.1\tversion\t0\n' >"$RUNNER_TEMP/autobump-plan.tsv"
 }
 
-@test "pack cache survives OCO reset and is amended with refreshed template hash" {
-  prepare_bump
-  digest="$(sha256sum "$WORK/srcpkgs/alpha/template")"
-  digest="${digest%% *}"
-  printf '# autobump-dependencies-v1\nalpha\t%s\t\n' "$digest" >"$WORK/config/autobump-dependencies.tsv"
+prepare_cache() {
+  printf '# autobump-dependencies-v1\nalpha\tstale-hash\t\n' >config/autobump-dependencies.tsv
+}
 
-  cd "$WORK"
-  run env RUNNER_TEMP="$RUNNER_TEMP" TEMPLATE="$TEMPLATE" VERSION="$VERSION" \
-    OCO_TOKEN="$OCO_TOKEN" GH_REPO="$GH_REPO" GITHUB_ENV="$GITHUB_ENV" \
-    GITHUB_OUTPUT="$GITHUB_OUTPUT" PATH="$PATH" PUSH_LOG="$PUSH_LOG" \
-    REAL_GIT="$REAL_GIT" bash "$BRANCH_SCRIPT"
-  [ "$status" -eq 0 ]
-  [ "$(git rev-list --count origin/OCO..HEAD)" -eq 1 ]
-  [ -n "$(git show HEAD:config/autobump-dependencies.tsv)" ]
-  committed_hash="$(git show HEAD:config/autobump-dependencies.tsv | awk -F '\t' '$1 == "alpha" { print $2 }')"
-  actual_hash="$(sha256sum srcpkgs/alpha/template)"
-  actual_hash="${actual_hash%% *}"
-  [ "$committed_hash" = "$actual_hash" ]
-  [ "$(git show HEAD:config/autobump-dependencies.tsv | awk -F '\t' '$1 == "alpha" { print $3 }')" = "" ]
+assert_pushed() {
+  ref="refs/heads/${1:-autobump/alpha}"
+  [ "$(git --git-dir="$ORIGIN" rev-list --count "OCO..$ref")" -eq 1 ]
+  git --git-dir="$ORIGIN" show "$ref:srcpkgs/alpha/template" | grep -qx 'version=1.1'
   [ -s "$PUSH_LOG" ]
+  [ "$(git worktree list --porcelain | grep -c '^worktree ')" -eq 1 ]
+}
+
+@test "pack cache is committed with the refreshed template hash without changing the caller" {
+  prepare_bump
+  prepare_cache
+  before=$(git status --porcelain)
+  run bash "$BRANCH_SCRIPT"
+  [ "$status" -eq 0 ]
+  assert_pushed
+  [ "$(git branch --show-current)" = OCO ]
+  [ "$(git status --porcelain)" = "$before" ]
+  committed_hash=$(git --git-dir="$ORIGIN" show "$ref:config/autobump-dependencies.tsv" | awk -F '\t' '$1 == "alpha" { print $2 }')
+  actual_hash=$(sha256sum srcpkgs/alpha/template)
+  [ "$committed_hash" = "${actual_hash%% *}" ]
+  grep -q stale-hash config/autobump-dependencies.tsv
 }
 
 @test "singleton plan does not create a dependency manifest" {
   prepare_bump
-  cd "$WORK"
-  run env RUNNER_TEMP="$RUNNER_TEMP" TEMPLATE="$TEMPLATE" VERSION="$VERSION" \
-    OCO_TOKEN="$OCO_TOKEN" GH_REPO="$GH_REPO" GITHUB_ENV="$GITHUB_ENV" \
-    GITHUB_OUTPUT="$GITHUB_OUTPUT" PATH="$PATH" PUSH_LOG="$PUSH_LOG" \
-    REAL_GIT="$REAL_GIT" bash "$BRANCH_SCRIPT"
+  run bash "$BRANCH_SCRIPT"
   [ "$status" -eq 0 ]
-  [ ! -e config/autobump-dependencies.tsv ]
-  ! git show HEAD:config/autobump-dependencies.tsv >/dev/null 2>&1
-  [ "$(git rev-list --count origin/OCO..HEAD)" -eq 1 ]
+  assert_pushed
+  ! git --git-dir="$ORIGIN" show "$ref:config/autobump-dependencies.tsv" >/dev/null 2>&1
 }
 
-@test "branch checkouts cleanly when the runner is on a different branch" {
+@test "dispatch tooling survives branching onto an older-layout OCO base" {
+  mkdir .github
+  git mv config/autobump-packs.tsv .github/autobump-packs.tsv
+  git commit -qm 'legacy base'
+  git push -q origin OCO
+  git checkout -qb WIP/CI
+  git mv .github/autobump-packs.tsv config/autobump-packs.tsv
+  mkdir -p .github/scripts
+  printf 'workflow helper\n' >.github/scripts/next-step.sh
+  git add . && git commit -qm 'new layout'
   prepare_bump
-  # The apply step edits the worktree template while the workflow is checked
-  # out on the dispatch source (e.g. a PR head), not OCO. The branch script
-  # must force its way onto the fresh OCO ref without refusing to overwrite
-  # the local edit, and commit the bumped snapshot on top.
-  git -C "$WORK" fetch -q origin OCO
-  git -C "$WORK" checkout -qb "pr/alpha"
-  sed -i -E 's/^(revision=).*/\12/' "$WORK/srcpkgs/alpha/template"
-  git -C "$WORK" add .
-  git -C "$WORK" commit -qm "feature work"
-  sed -i -E 's/^(revision=).*/\13/' "$WORK/srcpkgs/alpha/template"
-  [ -n "$(git -C "$WORK" status --short)" ]
-
-  cd "$WORK"
-  run env RUNNER_TEMP="$RUNNER_TEMP" TEMPLATE="$TEMPLATE" VERSION="$VERSION" \
-    OCO_TOKEN="$OCO_TOKEN" GH_REPO="$GH_REPO" GITHUB_ENV="$GITHUB_ENV" \
-    GITHUB_OUTPUT="$GITHUB_OUTPUT" PATH="$PATH" PUSH_LOG="$PUSH_LOG" \
-    REAL_GIT="$REAL_GIT" bash "$BRANCH_SCRIPT"
+  prepare_cache
+  before=$(git status --porcelain)
+  run bash "$BRANCH_SCRIPT"
   [ "$status" -eq 0 ]
-  [ "$(git branch --show-current)" = "autobump/alpha" ]
-  [ "$(git rev-list --count origin/OCO..HEAD)" -eq 1 ]
-  git show HEAD:srcpkgs/alpha/template | grep -qx 'version=1.1'
-  [ -s "$PUSH_LOG" ]
+  assert_pushed
+  [ "$(git branch --show-current)" = WIP/CI ]
+  [ "$(git status --porcelain)" = "$before" ]
+  [ -f .github/scripts/next-step.sh ]
+  git --git-dir="$ORIGIN" show "$ref:.github/autobump-dependencies.tsv" | grep -q '^alpha'
+  ! git --git-dir="$ORIGIN" cat-file -e "$ref:config" 2>/dev/null
+  ! git --git-dir="$ORIGIN" cat-file -e "$ref:.github/scripts/next-step.sh" 2>/dev/null
+}
+
+@test "testing-targeted branches use the requested base and prefix" {
+  git branch testing
+  git push -q origin testing
+  export BASE_REF=testing BRANCH_PREFIX=T-autobump
+  prepare_bump
+  run bash "$BRANCH_SCRIPT"
+  [ "$status" -eq 0 ]
+  assert_pushed T-autobump/alpha
+  [ "$(git branch --show-current)" = OCO ]
+}
+
+@test "failed push cleans its worktree and preserves the workflow checkout" {
+  prepare_bump
+  before=$(git status --porcelain)
+  export MOCK_PUSH_FAIL=true
+  run bash "$BRANCH_SCRIPT"
+  [ "$status" -eq 41 ]
+  [ "$(git branch --show-current)" = OCO ]
+  [ "$(git status --porcelain)" = "$before" ]
+  [ "$(git worktree list --porcelain | grep -c '^worktree ')" -eq 1 ]
 }

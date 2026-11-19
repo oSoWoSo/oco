@@ -19,6 +19,8 @@ on:
       - 'src/*.html'
       - 'srcpkgs/**'
       - '.github/osv-identities.json'
+      - '.github/actionlint.yaml'
+      - 'requirements.txt'
       - '.github/scripts/**'
       - 'tests/**'
       - '.github/workflows/**'
@@ -34,6 +36,8 @@ on:
       - 'src/*.html'
       - 'srcpkgs/**'
       - '.github/osv-identities.json'
+      - '.github/actionlint.yaml'
+      - 'requirements.txt'
       - '.github/scripts/**'
       - 'tests/**'
       - '.github/workflows/**'
@@ -57,7 +61,14 @@ jobs:
         run: bash .github/scripts/ci/lint-autobump-symlinks.sh
       - name: Check website JavaScript syntax
         run: node --check src/main.js
-      - name: Install feed update runtime deps
-        run: python3 -m pip install -r requirements.txt
+      - name: Check workflow syntax
+        uses: docker://rhysd/actionlint:1.7.12
+        with:
+          args: -color -shellcheck= -pyflakes=
+      - name: Install test dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y zstd
+          python3 -m pip install -r tests/requirements.txt
       - name: Run helper tests
         run: sh tests/run.sh

@@ -135,7 +135,8 @@ jobs:
     if: >-
       ${{
         always() &&
-        github.event_name == 'pull_request' &&
+        (github.event_name == 'pull_request' || github.event_name == 'push' ||
+         github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch') &&
         needs.detect.result == 'success' &&
         needs.detect.outputs.packages != '' &&
         (needs.sync-testing.result == 'success' || needs.sync-testing.result == 'skipped')
@@ -156,11 +157,11 @@ jobs:
         TEST: '1'
         NATIVE: 'false'
     steps:
-      - name: Checkout repo (PR head)
+      - name: Checkout repo to lint
         uses: actions/checkout@v7
         with:
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           path: extra
 
       - name: Prepare container

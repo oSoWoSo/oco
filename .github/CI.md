@@ -29,6 +29,14 @@ Same-repository OCO autobump PRs additionally upload binaries with checksums and
 provenance for the trusted release workflow. The release gate keeps its existing
 `🏗️ build gate` check name; `Verify build result` rejects skipped/missing builds.
 Ordinary publication also requires successful lint and build verification.
+The `🏗️ build gate` job is PR-only (it guards PR release eligibility); manual
+and push runs use `Verify build result` as their required verification instead.
+
+`sync-testing` is intentionally skipped outside testing-targeted builds. All
+jobs in the ordinary publication chain use `!cancelled()` plus explicit successful
+dependency results. Without a status function, GitHub's implicit `success()` can
+skip publication because of that skipped ancestor even after verification passes.
+Do not remove these guards or replace them with unqualified `always()` writes.
 
 ### Binary dependency reuse on testing
 

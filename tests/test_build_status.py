@@ -77,6 +77,34 @@ class BuildStatusTests(unittest.TestCase):
         self.assertIn("needs.detect.outputs.publish_from_pr != 'true'", request)
         self.assertIn("github.event_name != 'pull_request'", request)
 
+    def test_publication_chain_overrides_skipped_ancestor_without_ignoring_failures(self):
+        # A successful manual/push build still has a skipped sync-testing
+        # ancestor. Every downstream publication job needs a status function,
+        # not just result comparisons (which retain implicit success()).
+        workflow = (ROOT / ".github/workflows/build.yml").read_text()
+        expected = {
+            "publish-request": ("detect", "build", "build-status"),
+            "publish": ("detect", "publish-request"),
+            "close-update-issues": ("detect", "publish"),
+        }
+        for job, dependencies in expected.items():
+            with self.subTest(job=job):
+                block = workflow.split(f"\n  {job}:\n", 1)[1]
+                condition = block.split("    if:", 1)[1].split("    runs-on:", 1)[0].split("    uses:", 1)[0]
+                self.assertIn("!cancelled()", condition)
+                for dependency in dependencies:
+                    self.assertIn(f"needs.{dependency}.result == 'success'", condition)
+        closer = workflow.split("\n  close-update-issues:\n", 1)[1]
+        self.assertIn("needs.detect.outputs.publish_target == 'production'", closer)
+
+    def test_pr_release_gate_stays_pr_only_but_general_verification_always_runs(self):
+        workflow = (ROOT / ".github/workflows/build.yml").read_text()
+        gate = workflow.split("\n  build-gate:\n", 1)[1].split("    runs-on:", 1)[0]
+        self.assertIn("if: always() && github.event_name == 'pull_request'", gate)
+        status = workflow.split("\n  build-status:\n", 1)[1].split("    runs-on:", 1)[0]
+        self.assertIn("if: always()", status)
+        self.assertNotIn("github.event_name == 'pull_request'", status)
+
     @unittest.skipUnless(shutil.which("jq"), "jq required by detector")
     def test_autobump_marker_only_delegates_publication(self):
         with tempfile.TemporaryDirectory() as tmp:

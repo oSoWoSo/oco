@@ -417,8 +417,12 @@ jobs:
   publish-request:
     name: Prepare Surfer publication request
     needs: [detect, build, build-status]
+    # sync-testing is intentionally skipped outside testing. A status function
+    # overrides GitHub's implicit success() across that skipped ancestor.
     if: >-
       ${{
+        !cancelled() &&
+        needs.detect.result == 'success' &&
         needs.build.result == 'success' &&
         needs.build-status.result == 'success' &&
         needs.detect.outputs.publish_from_pr != 'true' &&
@@ -455,6 +459,7 @@ jobs:
 
   publish:
     needs: [detect, publish-request]
+    if: ${{ !cancelled() && needs.detect.result == 'success' && needs.publish-request.result == 'success' }}
     uses: ./.github/workflows/write-surfer.yml
     with:
       destination: ${{ needs.detect.outputs.publish_target }}
@@ -465,7 +470,7 @@ jobs:
   close-update-issues:
     name: Close resolved update issues
     needs: [detect, publish]
-    if: needs.detect.outputs.publish_target == 'production'
+    if: ${{ !cancelled() && needs.detect.result == 'success' && needs.publish.result == 'success' && needs.detect.outputs.publish_target == 'production' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

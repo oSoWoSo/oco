@@ -72,6 +72,11 @@ permissions:
   packages: read
   issues: write
 
+env:
+  # The dependency channel follows the source/base branch, not the upload
+  # destination. An OCO build dispatched to testing must still use production.
+  BUILD_REPOSITORY_CHANNEL: ${{ (github.ref == 'refs/heads/testing' || (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'testing')) && 'testing' || 'production' }}
+
 jobs:
   detect:
     name: detect
@@ -168,6 +173,9 @@ jobs:
       - name: Prepare container
         run: oco-prepare
 
+      - name: Select binary dependency repositories
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-repositories.sh"
+
       - name: Merge templates and edit shlibs
         run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-merge-templates.sh"
 
@@ -222,6 +230,9 @@ jobs:
 
       - name: Prepare container
         run: oco-prepare
+
+      - name: Select binary dependency repositories
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-repositories.sh"
 
       - name: Merge templates and edit shlibs
         run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-merge-templates.sh"

@@ -30,6 +30,29 @@ provenance for the trusted release workflow. The release gate keeps its existing
 `🏗️ build gate` check name; `Verify build result` rejects skipped/missing builds.
 Ordinary publication also requires successful lint and build verification.
 
+### Binary dependency reuse on testing
+
+The builder image already enables the production OCO binary repository. Before
+lint/build, `build-repositories.sh` additionally configures xbps-src as follows:
+
+- Builds from `refs/heads/testing`, including manual dispatch, and PRs targeting
+  `testing`: **testing binaries first, then existing production/Void fallbacks**.
+- OCO builds and PRs targeting OCO: production/Void only. Dispatching an OCO
+  build with a testing **upload destination** does not enable testing dependencies.
+- Other branches: production/Void only; publishing a feature branch to testing
+  does not make it a canonical testing source.
+
+Both bootstrap/host and cross-target architecture configurations are updated,
+including glibc/musl and optional per-architecture overrides. Local binary
+repositories retain their existing higher priority. The CI host's `/etc/xbps.d`
+is not changed, so build-tool updates do not pull from testing. Testing uses the
+same signing keys already provided by the builder image for production.
+
+This enables xbps-src's normal reuse of compatible **binary dependencies**; it
+does not skip compiling requested source targets, bypass checks, or reuse PR
+workflow artifacts. Missing/incompatible binaries fall back to the usual
+xbps-src dependency handling. No changes to publication routing are involved.
+
 ### Why an autobump OCO run skips publishing
 
 `autobump-release.yml` verifies the successful PR run, validates the artifacts,

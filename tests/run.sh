@@ -1732,6 +1732,9 @@ python3 "$SCRIPT_DIR/tests/test_detect_update.py" || _FAIL=$((_FAIL + 1))
 
 python3 "$SCRIPT_DIR/tests/test_build_status.py" || _FAIL=$((_FAIL + 1))
 
+echo '== build dependency repositories =='
+python3 "$SCRIPT_DIR/tests/test_build_repositories.py" || _FAIL=$((_FAIL + 1))
+
 echo '== surfer-publish.py =='
 python3 "$SCRIPT_DIR/tests/test_surfer_publish.py" || _FAIL=$((_FAIL + 1))
 

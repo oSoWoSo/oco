@@ -126,7 +126,16 @@ webhook relay dispatches `codeberg_pr` and `codeberg_push` events. Never execute
 PR-controlled scripts with forge or publishing tokens. Automatic deletion of
 `autobump/*` branches is prohibited by repository rules.
 
-## Local validation
+## Validation before merge
+
+For tooling or CI changes, include a package update in the same PR. Use a
+template we actually want to update, or bump the revision of `srcpkgs/vbm/template`
+as a build probe. Inspect the resulting package build to verify that the changed
+workflows and tooling work together before merging. Local tests complement this
+PR build; they do not replace it. PR builds do not publish to production, so
+publication-specific changes also require destination-appropriate verification.
+
+### Local checks
 
 Install the `zstd` and `bats` command-line tools, then run:
 

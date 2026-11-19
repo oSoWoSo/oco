@@ -46,6 +46,7 @@ oco/
 5. New shlib → add only to `shlibs_append`.
 6. The remote default branch is `OCO`.
 7. Remote writes (`gh workflow run`, pushes) are user-only actions — never perform without explicit request.
+8. For tooling or CI changes, include a package update in the same PR: use a template we actually want to update, or bump `srcpkgs/vbm/template` as a build probe. Check the real package build with the changed tooling before merging; local tests alone are not sufficient.
 
 ## Core commands
 
@@ -168,6 +169,7 @@ Tests cover helpers: `test_autobump_batch.py`, `test_detect_update.bats`, `test_
 - [ ] shlibs updated if applicable.
 - [ ] Commit message `<pkgname> <version>`, one template per commit.
 - [ ] Workflow changes validated with actionlint and helper tests.
+- [ ] Tooling/CI PR includes an intended package update or a `vbm` revision bump; inspect the resulting PR build before merging.
 
 ## Quick diagnostics
 

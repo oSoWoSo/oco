@@ -79,7 +79,7 @@ class PathTests(unittest.TestCase):
         failures = []
         for name in names:
             file = ROOT / name
-            if not file.is_file() or file.is_symlink() or name.startswith('PROPOSAL/'):
+            if not file.is_file() or file.is_symlink():
                 continue
             try:
                 text = file.read_text()

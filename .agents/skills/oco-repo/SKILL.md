@@ -21,7 +21,7 @@ oco is the **vOid Community repOsitory**: a collection of `xbps-src` template fi
 ```
 oco/
 ├── srcpkgs/<pkg>/template      # one template per package
-├── .github/workflows/          # hand-maintained CI workflows (no .yml.in generator)
+├── .github/workflows/          # hand-maintained CI workflows
 ├── config/autobump-packs.tsv  # package groups for autobump
 ├── config/autobump-dependencies.tsv
 ├── .github/scripts/            # CI helpers (build-detect, autobump-*, osv-advisory, …)
@@ -30,21 +30,21 @@ oco/
 ├── shlibs_append               # shlibs to add to void-packages/common/shlibs
 ├── shlibs_remove               # shlibs to remove
 ├── tests/                      # bats + python tests for helpers
-├── website/public/             # allowlisted public assets only
+├── website/public/             # static website assets
 ├── website/templates/          # private site-generation inputs
 ├── config/                     # package groups, blacklists, feeds, OSV mapping
 ├── lib/                        # shared shell helpers
 └── tools/                      # build, autobump, repository, updates, website, community tools
 ```
 
-## Golden rules (from project memory)
+## Working rules
 
-1. **Edit `.github/workflows/*.yml` directly.** Workflow templates (`src/*.yml.in`) and their generator have been removed; `./ocoman -u` only updates repository metadata.
+1. **Edit `.github/workflows/*.yml` directly.** `./ocoman -u` updates repository metadata and the package list.
 2. **One commit per template**, message `<pkgname> <version>`.
 3. After adding a template, run `./ocoman -u` to regenerate the template list/table.
 4. When changing an upstream shlib from void-packages, reflect it in `shlibs_remove` and `shlibs_append`.
 5. New shlib → add only to `shlibs_append`.
-6. `CLAUDE.md` is not tracked; remote default branch is `OCO`.
+6. The remote default branch is `OCO`.
 7. Remote writes (`gh workflow run`, pushes) are user-only actions — never perform without explicit request.
 
 ## Core commands
@@ -60,8 +60,6 @@ oco/
 ```sh
 xlint <pkgname>      # run from void-packages checkout with OCO srcpkgs copied in
 ```
-`xlint` is `/usr/bin/xlint` on this machine.
-
 ### Build a package locally
 ```sh
 # from void-packages checkout ($XBPS_DISTDIR, default ~/void)
@@ -138,13 +136,13 @@ Pitfalls to check when a build fails:
 
 ## Autobump system
 
-- There is no autobump whitelist; all non-blacklisted real templates are eligible.
+- All non-blacklisted real templates are eligible for autobumping.
 - Blacklist: `config/autobump-blacklist`.
 - Packs: `config/autobump-packs.tsv` (group + glob patterns).
 - Dependencies: `config/autobump-dependencies.tsv`.
 - Autobump dispatch: `ocoman autobump <pkg> [--force]` (force ignores blacklist), dispatches the 📦 bumper workflow.
 - CI: the 📦 bumper workflow (`bump.yml`) runs in `oco-builder`, resolves graph via `xbps-src show-build-deps` without compiling; checks whole pack for newer versions; revision-bumps known direct consumers. It answers `package-update` issues and dispatches single templates.
-- Ruleset 23215878 blocks deletion of `autobump/*` branches.
+- Repository rules prohibit deleting `autobump/*` branches.
 
 ## Shlibs
 
@@ -175,4 +173,4 @@ Tests cover helpers: `test_autobump_batch.py`, `test_detect_update.bats`, `test_
 
 - "template not found in CI": ensure it's under `srcpkgs/` and package detection includes it.
 - "stale repodata / orphan files": Surfer upload handles orphan cleanup; see project memory on CLI transport.
-- "permission denied on autobump branch": ruleset 23215878 — do not delete `autobump/*`.
+- "permission denied on autobump branch": check repository rules; do not delete `autobump/*`.

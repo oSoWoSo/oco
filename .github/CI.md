@@ -1,205 +1,150 @@
-# CI map
+# CI guide
 
-Workflows in `workflows/` are maintained directly. There is no `src/*.yml.in`
-workflow generator. `./ocoman -u` updates repository metadata, not workflows.
+Workflow definitions live in `.github/workflows/`. Edit them directly.
+`./ocoman -u` updates repository metadata and the package list.
 
-## Repository layout and website boundary
+## Repository layout
 
-`src/` is retired. Files are grouped by purpose:
-
-```text
-website/public/      Static public assets (CSS, JavaScript, icons, testing guide)
-website/templates/   Site templates and fragments; never uploaded
-config/              Autobump packs/dependencies/blacklist, feeds, OSV identities
-lib/                 Shared shell libraries, signing-key handling, asset allowlist
-tools/autobump/      Batch planning, version helpers, PR artifact validation/merge
-tools/build/         Build loop and XBPS result collection
-tools/repository/    Repodata utilities and publication manifest contract
-tools/updates/       Feed issue handling, issue closing, version detection
-tools/website/       Manual and published-feed generation
-tools/community/     Community repository comparison
-.github/scripts/     CI event adapters and orchestration helpers (no ci/ nesting)
-.github/workflows/   GitHub workflow definitions
-```
-
-`lib/website.sh` defines the explicit public-file allowlist. Site builds stage
-only these static files from `website/public/`, then generate the index, manual,
-and architecture pages. Root asset uploads enumerate the allowlist plus generated
-public documents; they never glob the source tree or even every file in `docs/`.
-This also prevents stale scripts/config already present in a local `docs/`
-directory from being uploaded again. Website templates are not public assets.
-Production/testing publication prefixes are unchanged.
-
-Existing unwanted files on the remote host are **not automatically deleted** by
-this layout migration. Removing those needs a separately reviewed cleanup list;
-package repositories, signing metadata, and legitimate site/feed files must be
-preserved. Local runtime upstream state now lives under `.cache/oco/`.
-
-## Package lifecycle
-
-```text
-feed-update / scan -> package-update issue -> bump -> autobump PR
-                                                     |
-                                      build: detect -> lint + build matrix
-                                                     |
-                                               shared build gate
-                                                     |
-                  OCO autobump: autobump-release -> validate -> merge
-                                                     |
-                                          publication request -> write-surfer
-                                                     |
-                                              close resolved issues
-
-ordinary push / manual build -> same build matrix -> status -> publication request
-                                                               |
-                                                          write-surfer
-```
-
-`build.yml` uses **one architecture matrix job** for PRs, pushes, and dispatches.
-PRs check out their exact head SHA and never invoke the publication writer.
-Same-repository OCO autobump PRs additionally upload binaries with checksums and
-provenance for the trusted release workflow. One always-running `🏗️ build gate`
-checks detection, testing-base synchronization, lint, and all architecture builds
-for PRs, pushes, and dispatches. It rejects skipped/missing required builds.
-Autobump PRs additionally require nonempty packages and no removals. Only eligible
-same-repository OCO autobump PRs produce the release plan after verification.
-The bumper creates package commits in an isolated temporary Git worktree, never
-by checking out OCO/testing over its running workflow checkout. During the layout
-migration it writes dependency metadata at the target base's own location
-(`config/` or legacy `.github/`) without including refactor changes in package PRs.
-The worktree is removed on success or failure; subsequent steps keep their tooling.
-Ordinary publication depends on this same gate; there is no separate verification
-job. Its existing `🏗️ build gate` check name is preserved.
-
-`sync-testing` is intentionally skipped outside testing-targeted builds. All
-jobs in the ordinary publication chain use `!cancelled()` plus explicit successful
-dependency results. Without a status function, GitHub's implicit `success()` can
-skip publication because of that skipped ancestor even after verification passes.
-Do not remove these guards or replace them with unqualified `always()` writes.
-
-### Binary dependency reuse on testing
-
-The builder image already enables the production OCO binary repository. Before
-lint/build, `build-repositories.sh` additionally configures xbps-src as follows:
-
-- Builds from `refs/heads/testing`, including manual dispatch, and PRs targeting
-  `testing`: **testing binaries first, then existing production/Void fallbacks**.
-- OCO builds and PRs targeting OCO: production/Void only. Dispatching an OCO
-  build with a testing **upload destination** does not enable testing dependencies.
-- Other branches: production/Void only; publishing a feature branch to testing
-  does not make it a canonical testing source.
-
-Both bootstrap/host and cross-target architecture configurations are updated,
-including glibc/musl and optional per-architecture overrides. Local binary
-repositories retain their existing higher priority. The CI host's `/etc/xbps.d`
-is not changed, so build-tool updates do not pull from testing. Testing uses the
-same signing keys already provided by the builder image for production.
-
-This enables xbps-src's normal reuse of compatible **binary dependencies**; it
-does not skip compiling requested source targets, bypass checks, or reuse PR
-workflow artifacts. Missing/incompatible binaries fall back to the usual
-xbps-src dependency handling. No changes to publication routing are involved.
-
-### Why an autobump OCO run skips publishing
-
-`autobump-release.yml` verifies the successful PR run, validates the artifacts,
-merges the exact tested PR revision, and publishes those verified binaries.
-The resulting OCO push still rebuilds and verifies the merged source, but does
-**not** publish a second time. Its detect summary explains this delegation and
-links to the release workflow and source PR build. Release run titles identify
-the source build run ID. Check the release run, not the skipped OCO publish job,
-for the actual publication result.
-
-### One publication contract and writer
-
-All request producers use `tools/repository/surfer-publish.py --create` to write and validate
-the same `surfer-publication` manifest:
-
-- build: staged binaries, per-architecture results, optional removals;
-- autobump release: verified PR binaries and results, merged source SHA;
-- cleanup: named purges or automatic orphan reconciliation;
-- metadata update: main-index refresh only.
-
-`write-surfer.yml` is the **only remote package/site writer** used by these
-workflows. It checks destination/ref restrictions, validates the request before
-checking out its source, validates again against that source, and serializes
-writes per destination with `concurrency.queue: max`. Do not replace this with
-ordinary single-pending concurrency: that can discard pending publications.
-
-Production remains restricted to trusted OCO runs. Testing publications from
-sparse feature branches skip canonical orphan pruning. Removal-only requests
-do not request feed updates, because there are no build results to feed.
-
-## Workflow inventory
-
-| Workflow | Responsibility / reason for separation |
+| Directory | Contents |
 |---|---|
-| `build.yml` | Detect, lint, compile, gate, and publish ordinary builds |
-| `bump.yml` | The only bumper entry point: single package, issue, and group operations |
-| `autobump-release.yml` | Trusted `workflow_run` boundary for PR artifact validation, merge, and release |
-| `testing-merge.yml` | Trusted completion hook for testing-targeted autobump PRs; no production release |
-| `sync-testing.yml` | Reusable testing-base rebase; failure blocks dependent lint/build jobs |
-| `write-surfer.yml` | Reusable serialized publication writer |
-| `cleanup.yml` | Manual/reusable purge request; delegates writes to `write-surfer` |
-| `update.yml` | Regenerate metadata and request main-index refresh |
-| `tooling.yml` | Helper tests, symlink lint, JavaScript syntax, workflow syntax; also manually runnable |
-| `check-workflows.yml` | Scheduled/manual external action **version** audit (not workflow syntax lint) |
-| `feed-update.yml` | Scheduled feed-driven update issues and repair of existing issues |
-| `scan.yml` | Manual direct upstream version scan; separate update source, shared issue lifecycle |
-| `vur-check.yml` | External VUR CI integration, independent of local XBPS matrix |
-| `mirror.yml` | Both PR mirror directions and build-result reporting; event-specific jobs/permissions |
-| `sync.yml` | Outbound branch mirrors, with independent host retries/concurrency |
-| `sync-codeberg-to-github.yml` | Inbound Codeberg push/manual fast-forward, with explicit force opt-in |
+| `.github/workflows/` | GitHub Actions workflows |
+| `.github/scripts/` | CI event handling and orchestration |
+| `tools/autobump/` | Update planning, version helpers, release validation and merging |
+| `tools/build/` | Package builds and XBPS result collection |
+| `tools/repository/` | Repository metadata and publication manifests |
+| `tools/updates/` | Feed handling, update issues and version detection |
+| `tools/website/` | Manual and published-feed generation |
+| `tools/community/` | Community repository comparison |
+| `lib/` | Shared shell helpers, signing-key handling and website asset allowlist |
+| `config/` | Package groups, dependency manifests, blacklists, feeds and OSV identities |
+| `website/public/` | Static website assets |
+| `website/templates/` | Site-generation templates and fragments |
 
-PR mirror jobs only check out trusted default/base revisions, never PR heads.
-The webhook relay still dispatches `codeberg_pr` and `codeberg_push`; no webhook
-or secret migration is needed. Consolidation must not broaden the permissions
-of `pull_request_target` or execute PR scripts with forge/publishing tokens.
+Local upstream-check state lives in `.cache/oco/`.
 
-Removed: the deprecated `autobump.yml`, disabled `build-void.yml_`, standalone
-symlink-lint workflow, and three separate PR-mirror/status wrappers. Their active
-responsibilities live in `bump.yml`, `tooling.yml`, and `mirror.yml` respectively.
+## Package updates and builds
+
+1. `feed-update.yml` and `scan.yml` open package-update issues.
+2. `bump.yml` plans updates and opens package PRs against `OCO` or `testing`.
+3. `build.yml` detects affected packages, lints templates and runs the architecture matrix.
+4. The `🏗️ build gate` checks detection, testing-base synchronization, lint and build results.
+5. Successful builds can produce a publication request for `write-surfer.yml`.
+
+The bumper creates package commits in a temporary Git worktree using the target
+base's metadata layout. Its workflow checkout stays available to subsequent
+steps. The temporary worktree is cleaned up on both success and failure.
+
+PR builds use the exact PR head SHA and never invoke the publication writer.
+Same-repository OCO autobump PRs also produce binaries, checksums and provenance
+for `autobump-release.yml`. These PRs must contain packages and must not remove
+packages. Only eligible PRs produce a release plan.
+
+`autobump-release.yml` validates the successful PR build and its artifacts,
+merges the tested revision and requests publication of the verified binaries.
+The resulting OCO push verifies the merged source but delegates publication to
+that release run. The build summary links to the release and source PR build.
+Check the release run for the publication result.
+
+Testing-targeted autobump PRs are handled by `testing-merge.yml` without a
+production release. `sync-testing.yml` synchronizes their base before building.
+
+### Binary dependencies
+
+Builds from `refs/heads/testing` and PRs targeting `testing` prefer testing binary
+dependencies, followed by production OCO and Void repositories. Other builds use
+production OCO and Void repositories.
+
+`build-repositories.sh` configures bootstrap/host and cross-target XBPS
+repositories, including glibc/musl variants. Local binary repositories retain
+higher priority. The CI host's `/etc/xbps.d` is not changed.
+
+Requested package targets still compile and run checks. Missing or incompatible
+binary dependencies use normal xbps-src dependency handling. The dependency
+channel follows the source branch or PR base, not the publication destination.
+
+## Publication
+
+Production and testing are separate destinations:
+
+- Production: `https://repo.osowoso.org/<architecture>/`
+- Testing: `https://repo.osowoso.org/testing/<architecture>/`
+
+All request producers use `tools/repository/surfer-publish.py --create` to create
+and validate a `surfer-publication` manifest. Requests can contain package
+binaries and results, package removals, or site-update instructions.
+
+`write-surfer.yml` is the shared remote writer. It checks destination and source
+restrictions, validates the request before and after checking out its source,
+and queues writes per destination with `concurrency.queue: max`. Preserve this
+queue so pending publications cannot be discarded.
+
+Production requires a trusted OCO source. Testing publications from sparse
+feature branches do not prune canonical packages. Removal-only requests do not
+update the build feed.
+
+The ordinary publication chain uses `!cancelled()` and explicit successful
+dependency results. Keep these conditions: `sync-testing` is intentionally
+skipped outside testing-targeted builds, and GitHub's implicit `success()` can
+otherwise skip dependent publication jobs. Publication requires a successful
+build gate.
+
+### Website files
+
+`lib/website.sh` defines the files eligible for staging and root website uploads.
+The site builder adds generated indexes, the manual and architecture pages.
+Package publication updates the build feed as requested by the manifest.
+
+Scripts, configuration, signing secrets, generation templates and development
+documentation are not website payloads. Neither the source tree nor `docs/` is
+uploaded as a directory. Remote cleanup requires an explicit review of paths;
+package repositories, signing metadata and public documents must be preserved.
+
+## Workflows
+
+| Workflow | Responsibility |
+|---|---|
+| `build.yml` | Detect, lint, compile, gate and request publication |
+| `bump.yml` | Package, issue and group update PRs |
+| `autobump-release.yml` | Validate PR artifacts, merge and release |
+| `testing-merge.yml` | Merge successful testing-targeted autobump PRs |
+| `sync-testing.yml` | Synchronize testing bases before lint/build |
+| `write-surfer.yml` | Serialized package and website publication |
+| `cleanup.yml` | Request named purges or orphan reconciliation |
+| `update.yml` | Regenerate metadata and request a main-index refresh |
+| `tooling.yml` | Helper tests, symlink lint, JavaScript and workflow syntax checks |
+| `check-workflows.yml` | Audit external action versions |
+| `feed-update.yml` | Create and maintain feed-driven update issues |
+| `scan.yml` | Check upstream versions directly |
+| `vur-check.yml` | External VUR CI integration |
+| `mirror.yml` | PR mirroring and build-result reporting |
+| `sync.yml` | Outbound branch mirrors |
+| `sync-codeberg-to-github.yml` | Inbound fast-forward synchronization with explicit force opt-in |
+
+PR mirror jobs check out trusted default/base revisions, not PR heads. The
+webhook relay dispatches `codeberg_pr` and `codeberg_push` events. Never execute
+PR-controlled scripts with forge or publishing tokens. Automatic deletion of
+`autobump/*` branches is prohibited by repository rules.
 
 ## Local validation
+
+Install the `zstd` and `bats` command-line tools, then run:
 
 ```sh
 python3 -m venv /tmp/oco-tests
 /tmp/oco-tests/bin/pip install -r tests/requirements.txt
-# Install the zstd and bats CLIs with your system package manager too.
 PATH="/tmp/oco-tests/bin:$PATH" sh tests/run.sh
 
 actionlint -shellcheck= -pyflakes=
 ```
 
-Tooling CI runs the same tests and pinned actionlint 1.7.12. `tests/run.sh` also
-requires and runs every Bats suite (branch/worktree behavior, update detection,
-and VUR overlays); missing Bats is an error, not an unreported coverage gap.
-`tests/test_paths.py` audits repository-owned literal paths in tracked files,
-Python `Path` joins, retired source paths, and local website links. Optional inputs
-and intentional fixtures have narrowly scoped exceptions. External package source
-paths are not repository-owned; dynamically constructed paths and checkout
-transitions still require integration tests. The audit is not a proof of every
-possible runtime path.
+The test runner includes shell, Python, JavaScript and Bats suites. Bats covers
+branch/worktree operations, update detection and VUR overlays. Missing Bats is
+an error.
 
- The actionlint
-configuration narrowly ignores its unsupported `concurrency.queue` diagnostic
-in the three queued writer/merge workflows, not other syntax errors. Remove the
-exception when actionlint supports the GitHub feature.
+`tests/test_paths.py` checks repository-owned file references, Python `Path`
+joins, directory boundaries and local website links. Optional inputs and test
+fixtures have scoped exceptions. Dynamic paths, XBPS builds and remote
+publication also need integration testing.
 
-## Using `PROPOSAL/`
-
-The proposal is an older architectural reference, **not a drop-in replacement**.
-Adopt its useful principles: thin event adapters, one build path, shared domain
-logic that can be tested locally, explicit trust boundaries, and one writer.
-
-Do not silently import its behavior removals: it replaces issue/PR autobumps,
-drops feeds/OSV/issue closing and other features, changes forge synchronization
-to polling, prunes branches, and changes publication/index repair. In particular,
-automatic deletion of `autobump/*` conflicts with the current repository rules.
-Those are separate migrations requiring explicit decisions and integration tests,
-not prerequisites for deduplicating the existing CI.
-
-This refactor retains `ocoman`/`bump.sh`, forge credentials, and existing package
-management features. File locations are now grouped as documented above. Real
-XBPS builds and remote publication still need CI verification after deployment;
-local fixture tests do not substitute for those integration checks.
+Tooling CI uses actionlint 1.7.12. `.github/actionlint.yaml` exempts only its
+unsupported `concurrency.queue` diagnostic in the three queued workflows.

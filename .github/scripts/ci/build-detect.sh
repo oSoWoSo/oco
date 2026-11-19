@@ -34,6 +34,16 @@ if [ "$EVENT_NAME" = push ] && [ "$GITHUB_REF" = refs/heads/OCO ]; then
 			exit 1
 		fi
 		echo "Autobump merge #${_associated} publishes PR artifacts; OCO build remains required"
+		_pr_run=$(printf '%s\n' "$_message" | sed -n 's/^OCO-Autobump-Run: //p' | head -n1)
+		{
+			echo '### Publication runs separately'
+			echo
+			echo 'This autobump merge is rebuilt here, but its tested PR binaries are published by the autobump release workflow. Skipped publish jobs in this run are expected; they are not an upload failure.'
+			echo
+			echo "- [Autobump release runs](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/workflows/autobump-release.yml)"
+			echo "- [Source PR build #${_pr_run}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${_pr_run})"
+			echo
+		} >> "$GITHUB_STEP_SUMMARY"
 		publish_from_pr=true
 	fi
 fi

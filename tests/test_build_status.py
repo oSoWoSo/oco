@@ -120,6 +120,10 @@ class BuildStatusTests(unittest.TestCase):
             self.assertEqual(outputs["publish_from_pr"], "true")
             self.assertEqual(outputs["skip_push_pr"], "false")
             self.assertTrue(json.loads(outputs["matrix"])["config"])
+            summary = (repo / "summary").read_text()
+            self.assertIn("Skipped publish jobs in this run are expected", summary)
+            self.assertIn("/actions/workflows/autobump-release.yml", summary)
+            self.assertIn("/actions/runs/123", summary)
 
 
 if __name__ == "__main__":

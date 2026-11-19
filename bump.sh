@@ -199,7 +199,6 @@ _bump_single() {
 	local pkg="$1" batch root plan
 	if command -v python3 >/dev/null 2>&1; then
 		batch="$XBPS_DISTDIR/tools/autobump/autobump-batch.py"
-		[[ -f "$batch" ]] || batch="$XBPS_DISTDIR/.github/autobump-batch.py"
 		[[ -f "$batch" ]] || return 1
 	else
 		return 1

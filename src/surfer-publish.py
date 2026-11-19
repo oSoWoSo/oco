@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate a surfer-publication artifact before any remote writes."""
+"""Create and validate the shared Surfer publication artifact contract."""
 
 import argparse
 import json
@@ -109,13 +109,55 @@ def validate(root, destination):
     return manifest
 
 
+def create(root, destination, source_sha, source_run_id, *, purge_packages=(),
+           update_arch_pages=False, update_feed=False, update_main_index=False):
+    """Describe staged payloads, then enforce the same contract as the writer."""
+    root = Path(root)
+    root.mkdir(parents=True, exist_ok=True)
+    packages = root / "packages"
+    results = root / "results"
+    manifest = {
+        "schema_version": 1,
+        "destination": destination,
+        "source_sha": source_sha,
+        "source_run_id": source_run_id,
+        "package_arches": sorted(p.name for p in packages.iterdir() if p.is_dir()) if packages.exists() else [],
+        "result_arches": sorted(p.stem for p in results.glob("*.tsv")),
+        "purge_packages": list(purge_packages),
+        "update_arch_pages": update_arch_pages,
+        "update_feed": update_feed,
+        "update_main_index": update_main_index,
+    }
+    (root / "manifest.json").write_text(json.dumps(manifest) + "\n", encoding="utf-8")
+    purge_file = root / "purge-packages.txt"
+    if manifest["purge_packages"]:
+        purge_file.write_text("\n".join(manifest["purge_packages"]) + "\n", encoding="utf-8")
+    else:
+        purge_file.unlink(missing_ok=True)
+    return validate(root, destination)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("artifact")
     parser.add_argument("--destination", required=True)
+    parser.add_argument("--create", action="store_true")
+    parser.add_argument("--source-sha")
+    parser.add_argument("--source-run-id")
+    parser.add_argument("--purge-packages", default="")
+    parser.add_argument("--update-arch-pages", action="store_true")
+    parser.add_argument("--update-feed", action="store_true")
+    parser.add_argument("--update-main-index", action="store_true")
     args = parser.parse_args()
     try:
-        manifest = validate(args.artifact, args.destination)
+        if args.create:
+            manifest = create(args.artifact, args.destination, args.source_sha, args.source_run_id,
+                              purge_packages=args.purge_packages.split(),
+                              update_arch_pages=args.update_arch_pages,
+                              update_feed=args.update_feed,
+                              update_main_index=args.update_main_index)
+        else:
+            manifest = validate(args.artifact, args.destination)
     except RequestError as exc:
         parser.error(str(exc))
     print(json.dumps(manifest, sort_keys=True))

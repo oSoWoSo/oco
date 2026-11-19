@@ -433,34 +433,7 @@ jobs:
           SOURCE_SHA: ${{ github.sha }}
           SOURCE_RUN_ID: ${{ github.run_id }}
           REMOVED: ${{ needs.detect.outputs.removed }}
-          RESULTS: ${{ needs.detect.outputs.packages != '' }}
-          SKIP_PRUNE: ${{ needs.detect.outputs.publish_target == 'testing' && needs.detect.outputs.canonical_publish != 'true' }}
-        run: |
-          set -eu
-          root="$RUNNER_TEMP/surfer-publication"
-          mkdir -p "$root/packages" "$root/results"
-          for dir in "$RUNNER_TEMP"/incoming/build-packages-*; do
-            [ -d "$dir" ] || continue
-            arch=${dir##*build-packages-}
-            mkdir -p "$root/packages/$arch"
-            cp "$dir"/*.xbps "$root/packages/$arch/" 2>/dev/null || rmdir "$root/packages/$arch"
-          done
-          for dir in "$RUNNER_TEMP"/incoming/build-results-*; do
-            [ -d "$dir" ] || continue
-            arch=${dir##*build-results-}
-            [ -f "$dir/results.tsv" ] && cp "$dir/results.tsv" "$root/results/$arch.tsv"
-          done
-          python3 - "$root" <<'PY'
-          import json, os, pathlib, sys
-          root = pathlib.Path(sys.argv[1])
-          arches = sorted(p.name for p in (root / "packages").iterdir() if p.is_dir())
-          results = sorted(p.stem for p in (root / "results").glob("*.tsv"))
-          purges = os.environ["REMOVED"].split()
-          manifest = {"schema_version": 1, "destination": os.environ["DESTINATION"], "source_sha": os.environ["SOURCE_SHA"], "source_run_id": os.environ["SOURCE_RUN_ID"], "package_arches": arches, "result_arches": results, "purge_packages": purges, "update_arch_pages": True, "update_feed": True, "update_main_index": True if os.environ["DESTINATION"] == "testing" else False}
-          (root / "manifest.json").write_text(json.dumps(manifest) + "\n")
-          if purges:
-              (root / "purge-packages.txt").write_text("\n".join(purges) + "\n")
-          PY
+        run: bash .github/scripts/ci/build-publication.sh
 
       - uses: actions/upload-artifact@v7
         with:

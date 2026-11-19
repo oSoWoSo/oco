@@ -23,12 +23,6 @@ for result in "$staging"/results/build-results-*; do
   cp "$result/results.tsv" "$root/results/$arch.tsv"
 done
 
-python3 - "$root" <<'PY'
-import json, os, pathlib, sys
-
-root = pathlib.Path(sys.argv[1])
-arches = sorted(p.name for p in (root / "packages").iterdir() if p.is_dir())
-results = sorted(p.stem for p in (root / "results").glob("*.tsv"))
-data = {"schema_version": 1, "destination": "production", "source_sha": os.environ["MERGE_SHA"], "source_run_id": os.environ["RUN_ID"], "package_arches": arches, "result_arches": results, "purge_packages": [], "update_arch_pages": True, "update_feed": True, "update_main_index": False}
-(root / "manifest.json").write_text(json.dumps(data) + "\n")
-PY
+python3 extra/src/surfer-publish.py "$root" --create --destination production \
+  --source-sha "$MERGE_SHA" --source-run-id "$RUN_ID" \
+  --update-arch-pages --update-feed

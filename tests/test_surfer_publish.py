@@ -3,7 +3,9 @@
 
 import importlib.util
 import json
+import os
 from pathlib import Path
+import subprocess
 import tempfile
 import unittest
 
@@ -112,6 +114,81 @@ class PublicationRequestTests(unittest.TestCase):
     def test_symlink_payload_is_rejected(self):
         (self.root / "link").symlink_to(self.root / "manifest.json")
         self.invalid()
+
+
+class PublicationCreationTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name) / "surfer-publication"
+
+    def create(self, **kwargs):
+        return validator.create(self.root, "production", "a" * 40, "123", **kwargs)
+
+    def script(self, name, **env):
+        result = subprocess.run(["bash", str(ROOT / ".github/scripts/ci" / name)],
+                                cwd=ROOT, env=dict(os.environ, RUNNER_TEMP=self.temp.name, **env),
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        return json.loads((self.root / "manifest.json").read_text())
+
+    def test_metadata_only_and_automatic_cleanup(self):
+        manifest = self.create(update_main_index=True)
+        self.assertTrue(manifest["update_main_index"])
+        self.assertEqual(manifest["package_arches"], [])
+        manifest = self.create()
+        self.assertFalse(manifest["update_main_index"])
+
+    def test_payloads_are_discovered_and_validated(self):
+        packages = self.root / "packages/x86_64"
+        packages.mkdir(parents=True)
+        (packages / "fixture-1_1.x86_64.xbps").write_bytes(b"binary")
+        results = self.root / "results"
+        results.mkdir()
+        (results / "x86_64.tsv").write_text("fixture\t1\tok\n")
+        manifest = self.create(update_feed=True, update_arch_pages=True)
+        self.assertEqual(manifest["package_arches"], ["x86_64"])
+        self.assertEqual(manifest["result_arches"], ["x86_64"])
+        self.assertEqual(validator.validate(self.root, "production"), manifest)
+
+    def test_invalid_requests_fail_at_creation(self):
+        for kwargs in ({"purge_packages": ["../escape"]}, {"update_feed": True}):
+            with self.subTest(kwargs=kwargs), self.assertRaises(validator.RequestError):
+                self.create(**kwargs)
+
+    def test_purge_list_is_updated_and_cleared(self):
+        self.create(purge_packages=["one", "two"])
+        self.assertEqual((self.root / "purge-packages.txt").read_text(), "one\ntwo\n")
+        self.create()
+        self.assertFalse((self.root / "purge-packages.txt").exists())
+
+    def test_cleanup_accepts_empty_production_prefix_and_empty_package_list(self):
+        manifest = self.script("cleanup-request.sh", PREFIX="", SHA="a" * 40,
+                               RUN_ID="123", PACKAGES="")
+        self.assertEqual(manifest["destination"], "production")
+        self.assertEqual(manifest["purge_packages"], [])
+
+    def test_removal_only_build_does_not_request_a_feed_update(self):
+        manifest = self.script("build-publication.sh", DESTINATION="production",
+                               SOURCE_SHA="a" * 40, SOURCE_RUN_ID="123", REMOVED="old")
+        self.assertFalse(manifest["update_feed"])
+        self.assertTrue(manifest["update_arch_pages"])
+        self.assertEqual(manifest["purge_packages"], ["old"])
+
+    def test_build_packages_and_results_are_assembled_for_testing(self):
+        incoming = Path(self.temp.name) / "incoming"
+        packages = incoming / "build-packages-x86_64"
+        packages.mkdir(parents=True)
+        (packages / "fixture-1_1.x86_64.xbps").write_bytes(b"binary")
+        results = incoming / "build-results-x86_64"
+        results.mkdir()
+        (results / "results.tsv").write_text("fixture\t1\tok\n")
+        manifest = self.script("build-publication.sh", DESTINATION="testing",
+                               SOURCE_SHA="a" * 40, SOURCE_RUN_ID="123", REMOVED="")
+        self.assertEqual(manifest["package_arches"], ["x86_64"])
+        self.assertTrue(manifest["update_feed"])
+        self.assertTrue(manifest["update_main_index"])
+        self.assertEqual(validator.validate(self.root, "testing"), manifest)
 
 
 if __name__ == "__main__":

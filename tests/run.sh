@@ -1730,6 +1730,8 @@ unset FAKE_SURFER_ARGV FAKE_SURFER_SCRIPT FAKE_SURFER_COUNT
 echo '== detect-update.sh =='
 python3 "$SCRIPT_DIR/tests/test_detect_update.py" || _FAIL=$((_FAIL + 1))
 
+python3 "$SCRIPT_DIR/tests/test_build_status.py" || _FAIL=$((_FAIL + 1))
+
 echo '== autobump-batch.py =='
 python3 "$SCRIPT_DIR/tests/test_autobump_batch.py" || _FAIL=$((_FAIL + 1))
 

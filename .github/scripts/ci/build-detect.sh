@@ -13,8 +13,10 @@ echo "DEBUG: PUSH_BEFORE=$PUSH_BEFORE"
 echo "DEBUG: PUSH_AFTER=$PUSH_AFTER"
 
 # Auto-merged autobump PRs are published from their successful PR
-# artifacts by autobump-release.yml. Never compile them again on OCO.
-skip_autobump=false
+# artifacts by autobump-release.yml. This only controls publication:
+# OCO pushes must still compile and report their own build result.
+publish_from_pr=false
+skip_push_pr=false
 if [ "$EVENT_NAME" = push ] && [ "$GITHUB_REF" = refs/heads/OCO ]; then
 	_message=$(git log -1 --format=%B "$PUSH_AFTER" 2>/dev/null || true)
 	if printf '%s\n' "$_message" | grep -Eq '^OCO-Autobump-Run: [0-9]+$'; then
@@ -31,11 +33,11 @@ if [ "$EVENT_NAME" = push ] && [ "$GITHUB_REF" = refs/heads/OCO ]; then
 			echo "::error::Autobump merge marker present, but no matching merged PR was verified"
 			exit 1
 		fi
-		echo "Autobump merge #${_associated} uses PR build artifacts; skip recompilation"
-		skip_autobump=true
+		echo "Autobump merge #${_associated} publishes PR artifacts; OCO build remains required"
+		publish_from_pr=true
 	fi
 fi
-echo "skip_autobump=$skip_autobump" >>"$GITHUB_OUTPUT"
+echo "publish_from_pr=$publish_from_pr" >>"$GITHUB_OUTPUT"
 
 # Fail closed: only an exact OCO ref may publish production, and
 # only ordinary OCO pushes are implicitly production. Dispatch must
@@ -166,6 +168,7 @@ if [ "$EVENT_NAME" = "push" ] && [ -n "$CURRENT_BRANCH" ] && [ "$CURRENT_BRANCH"
 		done
 		if [ -n "$_branch_pr" ]; then
 			echo "::notice::Branch ${CURRENT_BRANCH} has open PR #${_branch_pr}; skipping push-build (run by pull_request synchronize)"
+			skip_push_pr=true
 			packages=""
 			removed=""
 		fi
@@ -182,6 +185,7 @@ for _pkg in $packages; do
 done
 packages="${_filtered# }"
 
+echo "skip_push_pr=$skip_push_pr" >>"$GITHUB_OUTPUT"
 echo "Packages: ${packages:-<none>}"
 echo "Removed: ${removed:-<none>}"
 echo "packages=$packages" >>"$GITHUB_OUTPUT"

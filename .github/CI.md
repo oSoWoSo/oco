@@ -10,7 +10,7 @@ feed-update / scan -> package-update issue -> bump -> autobump PR
                                                      |
                                       build: detect -> lint + build matrix
                                                      |
-                                               build gate + status
+                                               shared build gate
                                                      |
                   OCO autobump: autobump-release -> validate -> merge
                                                      |
@@ -26,11 +26,13 @@ ordinary push / manual build -> same build matrix -> status -> publication reque
 `build.yml` uses **one architecture matrix job** for PRs, pushes, and dispatches.
 PRs check out their exact head SHA and never invoke the publication writer.
 Same-repository OCO autobump PRs additionally upload binaries with checksums and
-provenance for the trusted release workflow. The release gate keeps its existing
-`🏗️ build gate` check name; `Verify build result` rejects skipped/missing builds.
-Ordinary publication also requires successful lint and build verification.
-The `🏗️ build gate` job is PR-only (it guards PR release eligibility); manual
-and push runs use `Verify build result` as their required verification instead.
+provenance for the trusted release workflow. One always-running `🏗️ build gate`
+checks detection, testing-base synchronization, lint, and all architecture builds
+for PRs, pushes, and dispatches. It rejects skipped/missing required builds.
+Autobump PRs additionally require nonempty packages and no removals. Only eligible
+same-repository OCO autobump PRs produce the release plan after verification.
+Ordinary publication depends on this same gate; there is no separate verification
+job. Its existing `🏗️ build gate` check name is preserved.
 
 `sync-testing` is intentionally skipped outside testing-targeted builds. All
 jobs in the ordinary publication chain use `!cancelled()` plus explicit successful

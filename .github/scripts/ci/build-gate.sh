@@ -17,6 +17,16 @@ if [ "$EVENT_NAME" = push ] && [ "$CURRENT_BRANCH" != OCO ] && [ "$SKIP_PUSH_PR"
 	exit 0
 fi
 
+# Autobump PRs must actually build packages and may not remove packages.
+# Apply this before the ordinary metadata-only PR exemption below.
+if [ "$EVENT_NAME" = pull_request ]; then
+	if { [ "${BASE_REF:-}" = OCO ] && [[ ${HEAD_REF:-} == autobump/* ]]; } ||
+		{ [ "${BASE_REF:-}" = testing ] && [[ ${HEAD_REF:-} == T-autobump/* ]]; }; then
+		[ -n "$PACKAGES" ] && [ -z "$REMOVED" ] ||
+			fail "Autobump PR must build packages without removals"
+	fi
+fi
+
 if [ -z "$PACKAGES" ]; then
 	# PRs may change only workflow/docs files or remove a package. Pushes
 	# and dispatches must build something (or process package removals).

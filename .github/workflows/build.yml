@@ -318,39 +318,32 @@ jobs:
     name: 🏗️ build gate
     permissions:
       contents: read
-    needs: [detect, lint, build]
-    if: always() && github.event_name == 'pull_request'
+    needs: [detect, sync-testing, lint, build]
+    if: always()
     runs-on: ubuntu-latest
     steps:
-      - name: Verify required autobump build
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Verify builds and PR release eligibility
         env:
+          EVENT_NAME: ${{ github.event_name }}
+          CURRENT_BRANCH: ${{ github.ref_name }}
           HEAD_REF: ${{ github.event.pull_request.head.ref }}
           BASE_REF: ${{ github.event.pull_request.base.ref }}
           DETECT_RESULT: ${{ needs.detect.result }}
+          SYNC_RESULT: ${{ needs.sync-testing.result }}
           LINT_RESULT: ${{ needs.lint.result }}
-          TEST_RESULT: ${{ needs.build.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
           PACKAGES: ${{ needs.detect.outputs.packages }}
           REMOVED: ${{ needs.detect.outputs.removed }}
-        run: |
-          set -euo pipefail
-          # A required build is OCO<-autobump/* or testing<-T-autobump/*.
-          if [[ "$BASE_REF" == OCO && "$HEAD_REF" == autobump/* ]]; then
-            required=true
-          elif [[ "$BASE_REF" == testing && "$HEAD_REF" == T-autobump/* ]]; then
-            required=true
-          else
-            echo "Build not required for this PR"
-            exit 0
-          fi
-          [[ "$DETECT_RESULT" == success && "$LINT_RESULT" == success && "$TEST_RESULT" == success && -n "$PACKAGES" && -z "$REMOVED" ]] || {
-            echo "::error::Autobump package build/detection failed or no packages were detected"
-            exit 1
-          }
-          echo "All autobump architecture builds passed"
+          SKIP_PUSH_PR: ${{ needs.detect.outputs.skip_push_pr }}
+        run: bash .github/scripts/ci/build-gate.sh
 
       - name: Write autobump release plan
         if: >-
-          ${{ startsWith(github.event.pull_request.head.ref, 'autobump/') &&
+          ${{ github.event_name == 'pull_request' &&
+              startsWith(github.event.pull_request.head.ref, 'autobump/') &&
               github.event.pull_request.base.ref == 'OCO' &&
               github.event.pull_request.head.repo.full_name == github.repository }}
         env:
@@ -380,7 +373,8 @@ jobs:
 
       - name: Upload autobump release plan
         if: >-
-          ${{ startsWith(github.event.pull_request.head.ref, 'autobump/') &&
+          ${{ github.event_name == 'pull_request' &&
+              startsWith(github.event.pull_request.head.ref, 'autobump/') &&
               github.event.pull_request.base.ref == 'OCO' &&
               github.event.pull_request.head.repo.full_name == github.repository }}
         uses: actions/upload-artifact@v7
@@ -390,33 +384,9 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  build-status:
-    name: Verify build result
-    needs: [detect, sync-testing, lint, build]
-    if: always()
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - name: Reject missing or unsuccessful builds
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          CURRENT_BRANCH: ${{ github.ref_name }}
-          DETECT_RESULT: ${{ needs.detect.result }}
-          SYNC_RESULT: ${{ needs.sync-testing.result }}
-          LINT_RESULT: ${{ needs.lint.result }}
-          BUILD_RESULT: ${{ needs.build.result }}
-          PACKAGES: ${{ needs.detect.outputs.packages }}
-          REMOVED: ${{ needs.detect.outputs.removed }}
-          SKIP_PUSH_PR: ${{ needs.detect.outputs.skip_push_pr }}
-        run: bash .github/scripts/ci/build-status.sh
-
   publish-request:
     name: Prepare Surfer publication request
-    needs: [detect, build, build-status]
+    needs: [detect, build, build-gate]
     # sync-testing is intentionally skipped outside testing. A status function
     # overrides GitHub's implicit success() across that skipped ancestor.
     if: >-
@@ -424,7 +394,7 @@ jobs:
         !cancelled() &&
         needs.detect.result == 'success' &&
         needs.build.result == 'success' &&
-        needs.build-status.result == 'success' &&
+        needs.build-gate.result == 'success' &&
         needs.detect.outputs.publish_from_pr != 'true' &&
         github.event_name != 'pull_request' &&
         (github.event_name == 'push' || github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch')

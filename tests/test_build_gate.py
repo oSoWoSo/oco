@@ -11,14 +11,15 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 
 
-class BuildStatusTests(unittest.TestCase):
+class BuildGateTests(unittest.TestCase):
     def status(self, **overrides):
         env = dict(os.environ, EVENT_NAME="push", CURRENT_BRANCH="OCO",
                    DETECT_RESULT="success", SYNC_RESULT="skipped",
                    LINT_RESULT="success", BUILD_RESULT="success",
-                   PACKAGES="fixture", REMOVED="", SKIP_PUSH_PR="false")
+                   PACKAGES="fixture", REMOVED="", SKIP_PUSH_PR="false",
+                   HEAD_REF="", BASE_REF="")
         env.update(overrides)
-        return subprocess.run(["bash", str(ROOT / ".github/scripts/ci/build-status.sh")],
+        return subprocess.run(["bash", str(ROOT / ".github/scripts/ci/build-gate.sh")],
                               env=env, text=True, capture_output=True)
 
     def test_successful_build(self):
@@ -56,11 +57,13 @@ class BuildStatusTests(unittest.TestCase):
 
     def test_workflow_checks_one_shared_build_path(self):
         workflow = (ROOT / ".github/workflows/build.yml").read_text()
-        status = workflow.split("  build-status:\n", 1)[1].split("  publish-request:\n", 1)[0]
+        status = workflow.split("  build-gate:\n", 1)[1].split("  publish-request:\n", 1)[0]
         self.assertIn("if: always()", status)
         self.assertIn("needs: [detect, sync-testing, lint, build]", status)
         self.assertIn("BUILD_RESULT: ${{ needs.build.result }}", status)
         self.assertNotIn("test-pr:", workflow)
+        self.assertNotIn("build-status:", workflow)
+        self.assertEqual(workflow.count("run: bash .github/scripts/ci/build-gate.sh"), 1)
         self.assertEqual(workflow.count("      - name: Build packages\n"), 1)
         condition = workflow.split("\n  build:\n", 1)[1].split("    runs-on:", 1)[0]
         self.assertIn("always()", condition)
@@ -72,8 +75,8 @@ class BuildStatusTests(unittest.TestCase):
     def test_publication_requires_verified_build_and_lint(self):
         workflow = (ROOT / ".github/workflows/build.yml").read_text()
         request = workflow.split("  publish-request:\n", 1)[1].split("    runs-on:", 1)[0]
-        self.assertIn("needs: [detect, build, build-status]", request)
-        self.assertIn("needs.build-status.result == 'success'", request)
+        self.assertIn("needs: [detect, build, build-gate]", request)
+        self.assertIn("needs.build-gate.result == 'success'", request)
         self.assertIn("needs.detect.outputs.publish_from_pr != 'true'", request)
         self.assertIn("github.event_name != 'pull_request'", request)
 
@@ -83,7 +86,7 @@ class BuildStatusTests(unittest.TestCase):
         # not just result comparisons (which retain implicit success()).
         workflow = (ROOT / ".github/workflows/build.yml").read_text()
         expected = {
-            "publish-request": ("detect", "build", "build-status"),
+            "publish-request": ("detect", "build", "build-gate"),
             "publish": ("detect", "publish-request"),
             "close-update-issues": ("detect", "publish"),
         }
@@ -97,13 +100,28 @@ class BuildStatusTests(unittest.TestCase):
         closer = workflow.split("\n  close-update-issues:\n", 1)[1]
         self.assertIn("needs.detect.outputs.publish_target == 'production'", closer)
 
-    def test_pr_release_gate_stays_pr_only_but_general_verification_always_runs(self):
+    def test_shared_gate_always_runs_and_release_plan_stays_pr_only(self):
         workflow = (ROOT / ".github/workflows/build.yml").read_text()
-        gate = workflow.split("\n  build-gate:\n", 1)[1].split("    runs-on:", 1)[0]
-        self.assertIn("if: always() && github.event_name == 'pull_request'", gate)
-        status = workflow.split("\n  build-status:\n", 1)[1].split("    runs-on:", 1)[0]
-        self.assertIn("if: always()", status)
-        self.assertNotIn("github.event_name == 'pull_request'", status)
+        gate = workflow.split("\n  build-gate:\n", 1)[1].split("\n  publish-request:\n", 1)[0]
+        header = gate.split("    runs-on:", 1)[0]
+        self.assertIn("if: always()", header)
+        self.assertIn("name: 🏗️ build gate", header)
+        self.assertNotIn("github.event_name == 'pull_request'", header)
+        for name in ("Write autobump release plan", "Upload autobump release plan"):
+            condition = gate.split(f"      - name: {name}\n", 1)[1].split("        env:", 1)[0].split("        uses:", 1)[0]
+            self.assertIn("github.event.pull_request.head.ref, 'autobump/'", condition)
+            self.assertIn("github.event.pull_request.base.ref == 'OCO'", condition)
+            self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", condition)
+
+    def test_autobump_prs_cannot_use_the_metadata_only_exemption_or_remove_packages(self):
+        for base, head in (("OCO", "autobump/fixture"), ("testing", "T-autobump/fixture")):
+            with self.subTest(base=base):
+                args = dict(EVENT_NAME="pull_request", BASE_REF=base, HEAD_REF=head)
+                self.assertEqual(self.status(**args).returncode, 0)
+                self.assertNotEqual(self.status(PACKAGES="", **args).returncode, 0)
+                self.assertNotEqual(self.status(REMOVED="old", **args).returncode, 0)
+                self.assertNotEqual(self.status(BUILD_RESULT="skipped", **args).returncode, 0)
+                self.assertNotEqual(self.status(LINT_RESULT="failure", **args).returncode, 0)
 
     @unittest.skipUnless(shutil.which("jq"), "jq required by detector")
     def test_autobump_marker_only_delegates_publication(self):

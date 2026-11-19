@@ -60,12 +60,6 @@ jobs:
           name: ${{ inputs.artifact_name }}
           path: publication
 
-      - name: Checkout validator
-        uses: actions/checkout@v7
-        with:
-          path: validator
-          persist-credentials: false
-
       - name: Validate request
         id: request
         env:

@@ -137,7 +137,16 @@ elif [ "$EVENT_NAME" = "push" ] || [ "$EVENT_NAME" = "pull_request" ]; then
 			cut -d/ -f2 | sort -u | tr '\n' ' ' | sed 's/ $//')
 		removed=$(printf '%s\n' "$_diff" |
 			awk '$1=="D"{print $2} $1~/^R/{print $2}' |
-			cut -d/ -f2 | sort -u | tr '\n' ' ' | sed 's/ $//')
+			cut -d/ -f2 | sort -u |
+			while IFS= read -r _pkg; do
+				[ -z "$_pkg" ] && continue
+				# A deletion of a file INSIDE a still-present package
+				# (e.g. a removed patch) is a modification, not a
+				# package removal. Only report the package as removed
+				# when its srcpkgs directory is actually gone.
+				[ -d "srcpkgs/$_pkg" ] || printf '%s\n' "$_pkg"
+			done |
+			tr '\n' ' ' | sed 's/ $//')
 	fi
 else
 	packages=$(all_packages)

@@ -106,6 +106,7 @@ jobs:
       BRANCH_PREFIX: ${{ inputs.base == 'testing' && 'T-autobump' || 'autobump' }}
     steps:
       - name: Decide operating mode
+        working-directory: ${{ github.workspace }}
         id: mode
         run: |
           if [ "${{ github.event_name }}" = "issues" ]; then

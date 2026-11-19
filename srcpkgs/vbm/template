@@ -1,7 +1,7 @@
 # Template file for 'vbm'
 pkgname=vbm
 version=1.0.2
-revision=1
+revision=2
 short_desc="XBPS package management helper for VoidLinux"
 maintainer="zenobit <zen@osowoso.org>"
 license="GPL-3.0-or-later"

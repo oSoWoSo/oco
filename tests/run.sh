@@ -1732,8 +1732,17 @@ python3 "$SCRIPT_DIR/tests/test_detect_update.py" || _FAIL=$((_FAIL + 1))
 
 python3 "$SCRIPT_DIR/tests/test_build_gate.py" || _FAIL=$((_FAIL + 1))
 
-echo '== repository layout and website publication boundary =='
+echo '== repository paths, layout, and website publication boundary =='
+python3 "$SCRIPT_DIR/tests/test_paths.py" || _FAIL=$((_FAIL + 1))
 python3 "$SCRIPT_DIR/tests/test_repository_layout.py" || _FAIL=$((_FAIL + 1))
+
+echo '== Bats integration tests =='
+if command -v bats >/dev/null 2>&1; then
+	bats --print-output-on-failure "$SCRIPT_DIR"/tests/*.bats || _FAIL=$((_FAIL + 1))
+else
+	echo 'ERROR: bats is required; install it to run branch and VUR integration tests' >&2
+	_FAIL=$((_FAIL + 1))
+fi
 
 echo '== build dependency repositories =='
 python3 "$SCRIPT_DIR/tests/test_build_repositories.py" || _FAIL=$((_FAIL + 1))

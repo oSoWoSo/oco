@@ -62,7 +62,7 @@ jobs:
       - name: Install test dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y zstd
+          sudo apt-get install -y zstd bats
           python3 -m pip install -r tests/requirements.txt
       - name: Run helper tests
         run: sh tests/run.sh

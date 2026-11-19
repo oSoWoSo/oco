@@ -9,8 +9,8 @@ Issues carry version markers that the autobump workflow keys off:
     `<!-- package-update:NAME -->`       identifies the template
     `<!-- upstream-version:VERSION -->`  the upstream version requested
     `<!-- autobump:no -->`               marks templates excluded from
-                                         the automated bump (`config/autobump-
-                                         blacklist` or symlink aliases);
+                                         the automated bump
+                                         (`config/autobump-blacklist` or symlink aliases);
                                          the 📦 bumper workflow then treats
                                          the issue as a head-up only.
 

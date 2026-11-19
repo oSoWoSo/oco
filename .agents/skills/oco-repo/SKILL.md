@@ -157,7 +157,7 @@ Pitfalls to check when a build fails:
 ```sh
 python3 -m venv /tmp/oco-tests
 /tmp/oco-tests/bin/pip install -r tests/requirements.txt
-# zstd CLI must also be installed.
+# zstd and bats CLIs must also be installed.
 PATH="/tmp/oco-tests/bin:$PATH" sh tests/run.sh   # or individual bats/python
 ```
 Tests cover helpers: `test_autobump_batch.py`, `test_detect_update.bats`, `test_vur_check.bats`, `test_mirror_pr.py`, `test_surfer_publish.py`, `test_osv_advisory.py`, etc. Run `tooling` workflow locally to validate.

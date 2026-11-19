@@ -63,6 +63,11 @@ checks detection, testing-base synchronization, lint, and all architecture build
 for PRs, pushes, and dispatches. It rejects skipped/missing required builds.
 Autobump PRs additionally require nonempty packages and no removals. Only eligible
 same-repository OCO autobump PRs produce the release plan after verification.
+The bumper creates package commits in an isolated temporary Git worktree, never
+by checking out OCO/testing over its running workflow checkout. During the layout
+migration it writes dependency metadata at the target base's own location
+(`config/` or legacy `.github/`) without including refactor changes in package PRs.
+The worktree is removed on success or failure; subsequent steps keep their tooling.
 Ordinary publication depends on this same gate; there is no separate verification
 job. Its existing `🏗️ build gate` check name is preserved.
 
@@ -160,13 +165,23 @@ responsibilities live in `bump.yml`, `tooling.yml`, and `mirror.yml` respectivel
 ```sh
 python3 -m venv /tmp/oco-tests
 /tmp/oco-tests/bin/pip install -r tests/requirements.txt
-# Install the zstd CLI with your system package manager too.
+# Install the zstd and bats CLIs with your system package manager too.
 PATH="/tmp/oco-tests/bin:$PATH" sh tests/run.sh
 
 actionlint -shellcheck= -pyflakes=
 ```
 
-Tooling CI runs the same tests and pinned actionlint 1.7.12. The actionlint
+Tooling CI runs the same tests and pinned actionlint 1.7.12. `tests/run.sh` also
+requires and runs every Bats suite (branch/worktree behavior, update detection,
+and VUR overlays); missing Bats is an error, not an unreported coverage gap.
+`tests/test_paths.py` audits repository-owned literal paths in tracked files,
+Python `Path` joins, retired source paths, and local website links. Optional inputs
+and intentional fixtures have narrowly scoped exceptions. External package source
+paths are not repository-owned; dynamically constructed paths and checkout
+transitions still require integration tests. The audit is not a proof of every
+possible runtime path.
+
+ The actionlint
 configuration narrowly ignores its unsupported `concurrency.queue` diagnostic
 in the three queued writer/merge workflows, not other syntax errors. Remove the
 exception when actionlint supports the GitHub feature.

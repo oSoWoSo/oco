@@ -23,6 +23,8 @@ If you dont wish to build the packages locally,
 https://repo.osowoso.org repository provides prebuilt binaries.  
 Pick your architecture there and you will see
 
+For CI maintenance, see the [workflow map and local validation guide](.github/CI.md).
+
 ## Structure (PRs accepted on Codeberg and GitHub 🤗)
 - Codeberg repository with templates  
 https://codeberg.org/oSoWoSo/oco

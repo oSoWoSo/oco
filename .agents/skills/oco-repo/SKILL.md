@@ -126,8 +126,9 @@ Pitfalls to check when a build fails:
 
 ### Debugging CI
 
-- Workflows: `build.yml`, `bump.yml` (📦 bumper; the only autobump entry point), `autobump-release.yml`, `scan.yml`, `update.yml`, `feed-update.yml`, `vur-check.yml`, `write-surfer.yml`, `mirror-*`, `sync-codeberg-to-github.yml`.
-- Validate workflow syntax locally with `act` (see `act-workflows` skill), especially `concurrency.queue`.
+- Read `.github/CI.md` for the workflow inventory, trust boundaries, and publication flow.
+- Workflows: `build.yml`, `bump.yml` (📦 bumper; the only autobump entry point), `autobump-release.yml`, `scan.yml`, `update.yml`, `feed-update.yml`, `vur-check.yml`, `write-surfer.yml`, `mirror.yml`, `sync-codeberg-to-github.yml`.
+- Validate syntax with `actionlint -shellcheck= -pyflakes=`. `.github/actionlint.yaml` narrowly exempts the unsupported `concurrency.queue` diagnostic; keep queuing on the three serialized merge/write jobs.
 - `tooling.yml` runs `node --check src/main.js` and helper tests (bats + python) under `tests/`.
 - CI uses `oco-builder` image; confirm image tag references (memory: check whether CI always resolves newest image).
 
@@ -150,7 +151,10 @@ Pitfalls to check when a build fails:
 ## Tests
 
 ```sh
-cd tests && ./run.sh          # or individual bats/python
+python3 -m venv /tmp/oco-tests
+/tmp/oco-tests/bin/pip install -r tests/requirements.txt
+# zstd CLI must also be installed.
+PATH="/tmp/oco-tests/bin:$PATH" sh tests/run.sh   # or individual bats/python
 ```
 Tests cover helpers: `test_autobump_batch.py`, `test_detect_update.bats`, `test_vur_check.bats`, `test_mirror_pr.py`, `test_surfer_publish.py`, `test_osv_advisory.py`, etc. Run `tooling` workflow locally to validate.
 

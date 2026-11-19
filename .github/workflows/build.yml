@@ -134,7 +134,9 @@ jobs:
     needs: [detect, sync-testing]
     if: >-
       ${{
+        always() &&
         github.event_name == 'pull_request' &&
+        needs.detect.result == 'success' &&
         needs.detect.outputs.packages != '' &&
         (needs.sync-testing.result == 'success' || needs.sync-testing.result == 'skipped')
       }}
@@ -180,7 +182,9 @@ jobs:
     needs: [detect, sync-testing]
     if: >-
       ${{
+        always() &&
         github.event_name == 'pull_request' &&
+        needs.detect.result == 'success' &&
         needs.detect.outputs.packages != '' &&
         (needs.sync-testing.result == 'success' || needs.sync-testing.result == 'skipped')
       }}

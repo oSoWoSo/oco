@@ -90,9 +90,10 @@ build gate.
 
 ### Website files
 
-`lib/website.sh` defines the files eligible for staging and root website uploads.
-The site builder adds generated indexes, the manual and architecture pages.
-Package publication updates the build feed as requested by the manifest.
+`lib/website.sh` allows these static files for staging and root website uploads:
+`favicon.ico`, `main.js`, `manual.css`, `manual.js`, `style.css` and `testing.html`.
+The site builder adds `index.html`, `manual.html`, `Manual.md` and architecture
+pages. Package publication updates `feed.xml` as requested by the manifest.
 
 Scripts, configuration, signing secrets, generation templates and development
 documentation are not website payloads. Neither the source tree nor `docs/` is

@@ -30,8 +30,8 @@ class WebsiteBoundaryTests(unittest.TestCase):
         (self.root / "website/public/private.conf").write_text("not public")
         result = self.shell('website_stage_assets "$2" "$2/docs"')
         self.assertEqual(result.returncode, 0, result.stderr)
-        expected = set((ROOT / "website/public").iterdir())
-        self.assertEqual({p.name for p in self.docs.iterdir()}, {p.name for p in expected})
+        expected = {"favicon.ico", "main.js", "manual.css", "manual.js", "style.css", "testing.html"}
+        self.assertEqual({p.name for p in self.docs.iterdir()}, expected)
         self.assertFalse((self.docs / "main-index-template.html").exists())
 
     def test_symlink_assets_are_rejected(self):
@@ -46,7 +46,8 @@ class WebsiteBoundaryTests(unittest.TestCase):
         self.docs.mkdir()
         for name in ("main.js", "index.html", "manual.html", "Manual.md", "testing.html",
                      "autobump-release.py", "feed.opml", "autobump-blacklist",
-                     "main-index-template.html", "private.pem"):
+                     "main-index-template.html", "private.pem", "CNAME", "gallery.js",
+                     "favicon.jpg", "CI.md", "SKILL.md", ".env", "requirements.txt"):
             (self.docs / name).write_text("fixture")
         source = (ROOT / "ocoman").read_text()
         function = re.search(r"^_upload_website_assets\(\) \{.*?^\}", source, re.M | re.S).group()

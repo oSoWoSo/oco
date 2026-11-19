@@ -1,7 +1,7 @@
 #!/bin/sh
 # Explicit public asset boundary. Templates, tools and config are never payloads.
 website_static_files() {
-	printf '%s\n' CNAME favicon.ico favicon.jpg gallery.js main.js manual.css manual.js style.css testing.html
+	printf '%s\n' favicon.ico main.js manual.css manual.js style.css testing.html
 }
 
 website_public_files() {

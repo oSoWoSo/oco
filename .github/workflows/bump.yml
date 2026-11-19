@@ -8,7 +8,7 @@ run-name: >-
   }}
 on:
   issues:
-    types: [opened, labeled, edited]
+    types: [labeled, edited]
   workflow_dispatch:
     inputs:
       pkg:

@@ -120,7 +120,7 @@ jobs:
           PUSH_AFTER: ${{ github.event.after }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: bash "${GITHUB_WORKSPACE}/.github/scripts/ci/build-detect.sh"
+        run: bash "${GITHUB_WORKSPACE}/.github/scripts/build-detect.sh"
 
   sync-testing:
     name: 🔄 sync testing base
@@ -174,15 +174,15 @@ jobs:
         run: oco-prepare
 
       - name: Select binary dependency repositories
-        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-repositories.sh"
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/build-repositories.sh"
 
       - name: Merge templates and edit shlibs
-        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-merge-templates.sh"
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/build-merge-templates.sh"
 
       - name: Lint templates
         env:
           PACKAGES: ${{ needs.detect.outputs.packages }}
-        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-lint.sh"
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/build-lint.sh"
 
   build:
     name: ${{ matrix.config.arch }} on ${{ matrix.config.host }}
@@ -232,17 +232,17 @@ jobs:
         run: oco-prepare
 
       - name: Select binary dependency repositories
-        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-repositories.sh"
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/build-repositories.sh"
 
       - name: Merge templates and edit shlibs
-        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-merge-templates.sh"
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/build-merge-templates.sh"
 
       - name: Snapshot existing packages
         if: needs.detect.outputs.packages != ''
         run: |
           ls /void-packages/hostdir/binpkgs/*.xbps 2>/dev/null | xargs -r -n1 basename > /tmp/pre-build-pkgs.txt || touch /tmp/pre-build-pkgs.txt
           if [ "$AUTOBUMP_PR" = true ]; then
-            python3 extra/src/autobump-binaries.py snapshot \
+            python3 extra/tools/autobump/autobump-binaries.py snapshot \
               --binpkgs /void-packages/hostdir/binpkgs \
               --snapshot "$RUNNER_TEMP/autobump-before.json"
           fi
@@ -256,7 +256,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          sh "${GITHUB_WORKSPACE}/extra/src/build-packages.sh" 2>&1 \
+          sh "${GITHUB_WORKSPACE}/extra/tools/build/build-packages.sh" 2>&1 \
             | tee "$RUNNER_TEMP/build-log.txt"
 
       - name: Summarize failed build
@@ -266,7 +266,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           GH_TOKEN: ${{ secrets.BOT || github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-summary.sh"
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/build-summary.sh"
 
       - name: Upload per-arch build results
         if: always() && github.event_name != 'pull_request' && needs.detect.outputs.packages != ''
@@ -281,7 +281,7 @@ jobs:
         working-directory: /void-packages/hostdir/binpkgs/
         env:
           ARCH: ${{ matrix.config.arch }}
-        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/ci/build-stage-packages.sh"
+        run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/build-stage-packages.sh"
 
       - name: Upload newly built packages
         if: github.event_name != 'pull_request' && steps.build.outputs.built == 'true'
@@ -298,7 +298,7 @@ jobs:
           TARGET_ARCH: ${{ matrix.config.arch }}
           TARGET_HOST: ${{ matrix.config.host }}
         run: |
-          python3 extra/src/autobump-binaries.py collect \
+          python3 extra/tools/autobump/autobump-binaries.py collect \
             --binpkgs /void-packages/hostdir/binpkgs \
             --snapshot "$RUNNER_TEMP/autobump-before.json" \
             --arch "$TARGET_ARCH" --host "$TARGET_HOST" \
@@ -338,7 +338,7 @@ jobs:
           PACKAGES: ${{ needs.detect.outputs.packages }}
           REMOVED: ${{ needs.detect.outputs.removed }}
           SKIP_PUSH_PR: ${{ needs.detect.outputs.skip_push_pr }}
-        run: bash .github/scripts/ci/build-gate.sh
+        run: bash .github/scripts/build-gate.sh
 
       - name: Write autobump release plan
         if: >-
@@ -418,7 +418,7 @@ jobs:
           SOURCE_SHA: ${{ github.sha }}
           SOURCE_RUN_ID: ${{ github.run_id }}
           REMOVED: ${{ needs.detect.outputs.removed }}
-        run: bash .github/scripts/ci/build-publication.sh
+        run: bash .github/scripts/build-publication.sh
 
       - uses: actions/upload-artifact@v7
         with:
@@ -455,5 +455,5 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.WORKFLOWS }}
           GH_REPO: ${{ github.repository }}
-        run: python3 src/close-update-issues.py results --repo "$GH_REPO" --token "$GH_TOKEN"
+        run: python3 tools/updates/close-update-issues.py results --repo "$GH_REPO" --token "$GH_TOKEN"
 

@@ -11,14 +11,11 @@ on:
     paths:
       - 'ocoman'
       - '.gitignore'
-      - 'src/autobump-blacklist'
-      - 'src/*.sh'
-      - 'src/*.py'
-      - 'src/*.js'
-      - 'src/*.css'
-      - 'src/*.html'
+      - 'config/**'
+      - 'lib/**'
+      - 'tools/**'
+      - 'website/**'
       - 'srcpkgs/**'
-      - '.github/osv-identities.json'
       - '.github/actionlint.yaml'
       - 'requirements.txt'
       - '.github/scripts/**'
@@ -28,14 +25,11 @@ on:
     paths:
       - 'ocoman'
       - '.gitignore'
-      - 'src/autobump-blacklist'
-      - 'src/*.sh'
-      - 'src/*.py'
-      - 'src/*.js'
-      - 'src/*.css'
-      - 'src/*.html'
+      - 'config/**'
+      - 'lib/**'
+      - 'tools/**'
+      - 'website/**'
       - 'srcpkgs/**'
-      - '.github/osv-identities.json'
       - '.github/actionlint.yaml'
       - 'requirements.txt'
       - '.github/scripts/**'
@@ -58,9 +52,9 @@ jobs:
         with:
           token: ${{ secrets.BOT || github.token }}
       - name: Lint autobump template symlinks
-        run: bash .github/scripts/ci/lint-autobump-symlinks.sh
+        run: bash .github/scripts/lint-autobump-symlinks.sh
       - name: Check website JavaScript syntax
-        run: node --check src/main.js
+        run: node --check website/public/main.js
       - name: Check workflow syntax
         uses: docker://rhysd/actionlint:1.7.12
         with:

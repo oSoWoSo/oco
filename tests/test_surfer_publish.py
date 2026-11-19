@@ -10,7 +10,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-spec = importlib.util.spec_from_file_location("surfer_publish", ROOT / "src/surfer-publish.py")
+spec = importlib.util.spec_from_file_location("surfer_publish", ROOT / "tools/repository/surfer-publish.py")
 validator = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(validator)
 
@@ -126,7 +126,7 @@ class PublicationCreationTests(unittest.TestCase):
         return validator.create(self.root, "production", "a" * 40, "123", **kwargs)
 
     def script(self, name, **env):
-        result = subprocess.run(["bash", str(ROOT / ".github/scripts/ci" / name)],
+        result = subprocess.run(["bash", str(ROOT / ".github/scripts" / name)],
                                 cwd=ROOT, env=dict(os.environ, RUNNER_TEMP=self.temp.name, **env),
                                 capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

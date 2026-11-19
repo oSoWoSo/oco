@@ -39,7 +39,7 @@ load_push_template() {
     /^push_template\(\) \{/ {p=1; print; next}
     p && /pushed_branches\+=\("\$\{template\}"\)/ {print; print "}"; p=0; next}
     p {print}
-  ' "$BATS_TEST_DIRNAME/../.github/scripts/ci/vur-check.sh")"
+  ' "$BATS_TEST_DIRNAME/../.github/scripts/vur-check.sh")"
   eval "$body"
   # Override the push/commit stubs so push_template() can run to the point
   # where files are staged.

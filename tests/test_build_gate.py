@@ -19,7 +19,7 @@ class BuildGateTests(unittest.TestCase):
                    PACKAGES="fixture", REMOVED="", SKIP_PUSH_PR="false",
                    HEAD_REF="", BASE_REF="")
         env.update(overrides)
-        return subprocess.run(["bash", str(ROOT / ".github/scripts/ci/build-gate.sh")],
+        return subprocess.run(["bash", str(ROOT / ".github/scripts/build-gate.sh")],
                               env=env, text=True, capture_output=True)
 
     def test_successful_build(self):
@@ -63,7 +63,7 @@ class BuildGateTests(unittest.TestCase):
         self.assertIn("BUILD_RESULT: ${{ needs.build.result }}", status)
         self.assertNotIn("test-pr:", workflow)
         self.assertNotIn("build-status:", workflow)
-        self.assertEqual(workflow.count("run: bash .github/scripts/ci/build-gate.sh"), 1)
+        self.assertEqual(workflow.count("run: bash .github/scripts/build-gate.sh"), 1)
         self.assertEqual(workflow.count("      - name: Build packages\n"), 1)
         condition = workflow.split("\n  build:\n", 1)[1].split("    runs-on:", 1)[0]
         self.assertIn("always()", condition)
@@ -127,8 +127,8 @@ class BuildGateTests(unittest.TestCase):
     def test_autobump_marker_only_delegates_publication(self):
         with tempfile.TemporaryDirectory() as tmp:
             repo = Path(tmp)
-            (repo / "src").mkdir()
-            shutil.copy(ROOT / "src/pkg-helpers.sh", repo / "src/pkg-helpers.sh")
+            (repo / "lib").mkdir()
+            shutil.copy(ROOT / "lib/pkg-helpers.sh", repo / "lib/pkg-helpers.sh")
             tpl = repo / "srcpkgs/fixture/template"
             tpl.parent.mkdir(parents=True)
             tpl.write_text("pkgname=fixture\nversion=1\nrevision=1\n")
@@ -158,7 +158,7 @@ class BuildGateTests(unittest.TestCase):
                        GITHUB_REF_NAME="OCO", GITHUB_REPOSITORY="example/oco",
                        GITHUB_SERVER_URL="https://github.com", GITHUB_OUTPUT=str(repo / "output"),
                        GITHUB_STEP_SUMMARY=str(repo / "summary"))
-            result = subprocess.run(["bash", str(ROOT / ".github/scripts/ci/build-detect.sh")],
+            result = subprocess.run(["bash", str(ROOT / ".github/scripts/build-detect.sh")],
                                     cwd=repo, env=env, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             outputs = dict(line.split("=", 1) for line in (repo / "output").read_text().splitlines())

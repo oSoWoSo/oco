@@ -22,15 +22,19 @@ oco is the **vOid Community repOsitory**: a collection of `xbps-src` template fi
 oco/
 ├── srcpkgs/<pkg>/template      # one template per package
 ├── .github/workflows/          # hand-maintained CI workflows (no .yml.in generator)
-├── .github/autobump-packs.tsv  # package groups for autobump
-├── .github/autobump-dependencies.tsv
+├── config/autobump-packs.tsv  # package groups for autobump
+├── config/autobump-dependencies.tsv
 ├── .github/scripts/            # CI helpers (build-detect, autobump-*, osv-advisory, …)
 ├── bump.sh                     # local package-group helper
 ├── ocoman                      # repo manager (regenerate, init, upload, …)
 ├── shlibs_append               # shlibs to add to void-packages/common/shlibs
 ├── shlibs_remove               # shlibs to remove
 ├── tests/                      # bats + python tests for helpers
-└── src/                        # nvchecker configs, autobump templates
+├── website/public/             # allowlisted public assets only
+├── website/templates/          # private site-generation inputs
+├── config/                     # package groups, blacklists, feeds, OSV mapping
+├── lib/                        # shared shell helpers
+└── tools/                      # build, autobump, repository, updates, website, community tools
 ```
 
 ## Golden rules (from project memory)
@@ -84,7 +88,7 @@ Destination override: `CLONE_DEST`, `CLONE_TEMP`, `CLONE_DEPTH`, `OCO_BRANCH`, `
 ```
 Operations: `--lint`, `--build`, `--bump`, `--copy`, `--install`, `--order`, `--all`.
 Env: `XBPS_DISTDIR` or `CLONE_DEST` (default `~/void`); `sourceDir`, `destinationDir` override srcpkgs dirs.
-`--order`/`--build` use `xbps-src sort-dependencies` (no compile). Add a group + glob patterns to `.github/autobump-packs.tsv` to make it available to CI.
+`--order`/`--build` use `xbps-src sort-dependencies` (no compile). Add a group + glob patterns to `config/autobump-packs.tsv` to make it available to CI.
 
 ### Trigger CI build for a package
 ```sh
@@ -129,15 +133,15 @@ Pitfalls to check when a build fails:
 - Read `.github/CI.md` for the workflow inventory, trust boundaries, and publication flow.
 - Workflows: `build.yml`, `bump.yml` (📦 bumper; the only autobump entry point), `autobump-release.yml`, `scan.yml`, `update.yml`, `feed-update.yml`, `vur-check.yml`, `write-surfer.yml`, `mirror.yml`, `sync-codeberg-to-github.yml`.
 - Validate syntax with `actionlint -shellcheck= -pyflakes=`. `.github/actionlint.yaml` narrowly exempts the unsupported `concurrency.queue` diagnostic; keep queuing on the three serialized merge/write jobs.
-- `tooling.yml` runs `node --check src/main.js` and helper tests (bats + python) under `tests/`.
+- `tooling.yml` runs `node --check website/public/main.js` and helper tests (bats + python) under `tests/`.
 - CI uses `oco-builder` image; confirm image tag references (memory: check whether CI always resolves newest image).
 
 ## Autobump system
 
-- Whitelist: `src/autobump-pkgs`.
-- Blacklist: `src/autobump-blacklist`.
-- Packs: `.github/autobump-packs.tsv` (group + glob patterns).
-- Dependencies: `.github/autobump-dependencies.tsv`.
+- There is no autobump whitelist; all non-blacklisted real templates are eligible.
+- Blacklist: `config/autobump-blacklist`.
+- Packs: `config/autobump-packs.tsv` (group + glob patterns).
+- Dependencies: `config/autobump-dependencies.tsv`.
 - Autobump dispatch: `ocoman autobump <pkg> [--force]` (force ignores blacklist), dispatches the 📦 bumper workflow.
 - CI: the 📦 bumper workflow (`bump.yml`) runs in `oco-builder`, resolves graph via `xbps-src show-build-deps` without compiling; checks whole pack for newer versions; revision-bumps known direct consumers. It answers `package-update` issues and dispatches single templates.
 - Ruleset 23215878 blocks deletion of `autobump/*` branches.

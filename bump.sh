@@ -198,7 +198,7 @@ _build_one() {
 _bump_single() {
 	local pkg="$1" batch root plan
 	if command -v python3 >/dev/null 2>&1; then
-		batch="$XBPS_DISTDIR/.github/scripts/autobump-batch.py"
+		batch="$XBPS_DISTDIR/tools/autobump/autobump-batch.py"
 		[[ -f "$batch" ]] || batch="$XBPS_DISTDIR/.github/autobump-batch.py"
 		[[ -f "$batch" ]] || return 1
 	else
@@ -211,7 +211,7 @@ _bump_single() {
 	else
 		root="$XBPS_DISTDIR"
 	fi
-	if [[ ! -f "$root/.github/autobump-packs.tsv" && -f "$(dirname "$root")/.github/autobump-packs.tsv" ]]; then
+	if [[ ! -f "$root/config/autobump-packs.tsv" && -f "$(dirname "$root")/config/autobump-packs.tsv" ]]; then
 		root="$(dirname "$root")"
 	fi
 	if [[ -L "$sourceDir/$pkg" ]]; then
@@ -748,9 +748,9 @@ HELP
 	fi
 }
 
-# Groups are defined declaratively in .github/autobump-packs.tsv (single source of truth).
+# Groups are defined declaratively in config/autobump-packs.tsv (single source of truth).
 _groups_file() {
-	echo "${groupsFile:-$(dirname "$destinationDir")/.github/autobump-packs.tsv}"
+	echo "${groupsFile:-$(dirname "$destinationDir")/config/autobump-packs.tsv}"
 }
 
 show_packs() {

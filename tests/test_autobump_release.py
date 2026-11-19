@@ -12,7 +12,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
-    "autobump_release", ROOT / "src/autobump-release.py"
+    "autobump_release", ROOT / "tools/autobump/autobump-release.py"
 )
 release = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(release)
@@ -250,8 +250,8 @@ class CheckPrTests(unittest.TestCase):
             (root / "srcpkgs" / member).mkdir()
             (root / "srcpkgs" / member / "template").write_text(
                 f"pkgname={member}\nversion=1.0\nrevision=1\n", encoding="utf-8")
-        (root / ".github").mkdir(parents=True)
-        (root / ".github" / "autobump-packs.tsv").write_text(
+        (root / "config").mkdir(parents=True)
+        (root / "config" / "autobump-packs.tsv").write_text(
             "\n".join(f"{pack}\t{member}" for member in members) + "\n",
             encoding="utf-8")
         return root

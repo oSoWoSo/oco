@@ -19,7 +19,10 @@
 !/.agents
 !/.agents/**
 **/__pycache__/
-!/src
+!/website
+!/config
+!/tools
+!/lib
 !/requirements.txt
 
 # Repository signing keys

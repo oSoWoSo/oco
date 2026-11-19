@@ -41,7 +41,7 @@ jobs:
           TARGET_API_ROOT: https://api.github.com/repos/oSoWoSo/oco
           TARGET_GIT_URL: https://github.com/oSoWoSo/oco.git
           TARGET_GIT_USERNAME: oSoWoSo-bot
-        run: python3 .github/scripts/ci/mirror-pr.py
+        run: python3 .github/scripts/mirror-pr.py
 
   to-codeberg:
     name: Mirror GitHub PR to Codeberg
@@ -75,7 +75,7 @@ jobs:
           TARGET_API_ROOT: https://codeberg.org/api/v1/repos/oSoWoSo/oco
           TARGET_GIT_URL: https://codeberg.org/oSoWoSo/oco.git
           TARGET_GIT_USERNAME: oSoWoSo
-        run: python3 .github/scripts/ci/mirror-pr.py
+        run: python3 .github/scripts/mirror-pr.py
 
   report:
     name: Report build result to Codeberg
@@ -120,4 +120,4 @@ jobs:
           STATUS_STATE: ${{ steps.context.outputs.state }}
           STATUS_DESCRIPTION: ${{ steps.context.outputs.description }}
           TARGET_URL: ${{ steps.context.outputs.run_url }}
-        run: python3 .github/scripts/ci/codeberg-status.py
+        run: python3 .github/scripts/codeberg-status.py

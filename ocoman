@@ -16,11 +16,11 @@ echo "SCRIPT_DIR = $SCRIPT_DIR"
 # --- Repo management ---
 SRCPKGS='srcpkgs'
 TEMPLATES_LIST='/tmp/oco-templates-list'
-REPODATA_LIST_PY="${SCRIPT_DIR}/src/repodata-list.py"
-REPODATA_STRIP_PY="${SCRIPT_DIR}/src/repodata-strip.py"
-REPODATA_CLEAN_STAGE_PY="${SCRIPT_DIR}/src/repodata-clean-stage.py"
+REPODATA_LIST_PY="${SCRIPT_DIR}/tools/repository/repodata-list.py"
+REPODATA_STRIP_PY="${SCRIPT_DIR}/tools/repository/repodata-strip.py"
+REPODATA_CLEAN_STAGE_PY="${SCRIPT_DIR}/tools/repository/repodata-clean-stage.py"
 README="${SCRIPT_DIR}/README.md"
-FEED_OPML="${SCRIPT_DIR}/src/feed.opml"
+FEED_OPML="${SCRIPT_DIR}/config/feed.opml"
 NVCONF="${SCRIPT_DIR}/.nvchecker/nvchecker.toml"
 
 SURFER_URL='https://repo.osowoso.org'
@@ -52,8 +52,9 @@ OCO_SITE_BRANCH="${OCO_SITE_BRANCH:-OCO}"
 SIGNED_BY='oSoWoSo <mail@osowoso.org>'
 ARCHES='x86_64 x86_64-musl aarch64 aarch64-musl'
 
-# shellcheck source=src/pkg-helpers.sh
-. "${SCRIPT_DIR}/src/pkg-helpers.sh"
+# shellcheck source=lib/pkg-helpers.sh
+. "${SCRIPT_DIR}/lib/pkg-helpers.sh"
+. "${SCRIPT_DIR}/lib/website.sh"
 
 # --- Init / clone (env-overridable) ---
 VOID_URL='https://github.com/void-linux/void-packages'
@@ -377,7 +378,7 @@ usage() {
 	  -t, --test <pkg...>  Without <pkg> gum menu to choose, then trigger GitHub CI build
 	  autobump <pkg> [--force]
 	                      Autobump a package via the 📦 bumper workflow_dispatch
-	                      (--force ignores src/autobump-blacklist)
+	                      (--force ignores config/autobump-blacklist)
 
 	Compound: $prog -uw   (update + build)
 
@@ -608,7 +609,7 @@ _build_manual() {
 	command -v python3 >/dev/null 2>&1 || fatal 'python3 not installed!'
 	# The generator synchronizes root Manual.md before rendering; errors abort
 	# before the publishing phase rather than silently publishing a stale manual.
-	python3 "${SCRIPT_DIR}/src/gen-manual.py" "${SCRIPT_DIR}" "${SCRIPT_DIR}/docs/manual.html" $ARCHES \
+	python3 "${SCRIPT_DIR}/tools/website/gen-manual.py" "${SCRIPT_DIR}" "${SCRIPT_DIR}/docs/manual.html" $ARCHES \
 		|| fatal 'Failed to synchronize/generate the XBPS manual!'
 	rm -f "${SCRIPT_DIR}/docs/manual-index-template.html"
 	_g 'Generated: docs/manual.html'
@@ -630,13 +631,13 @@ _build_main_index() {
 	fi
 
 	pandoc README.md -f gfm > "$_readme_tmp"
-	cp src/svg-color.html "$_svg_tmp"
+	cp website/templates/svg-color.html "$_svg_tmp"
 
 	sed \
 		-e "s|__CSS_URL__|style.css|g" \
 		-e 's|__FAVICON__|<link rel="icon" href="favicon.ico" />|g' \
 		-e "s|__GIT_BRANCH__|${OCO_SITE_BRANCH}|g" \
-		src/main-index-template.html \
+		website/templates/main-index-template.html \
 	| awk \
 		-v nav_arch="$_nav_arch_tmp" \
 		-v readme="$_readme_tmp" \
@@ -815,7 +816,7 @@ feed_urls_from_homepage() {
 
 # Usage: feed_opml_has <pkg>
 # Returns 0 when an <outline> with title="<pkg>" exists under the
-# package-update folder of src/feed.opml, 1 otherwise (also when the file is missing)
+# package-update folder of config/feed.opml, 1 otherwise (also when the file is missing)
 feed_opml_has() {
 	_fun_pkg="$1"
 	[ -f "$FEED_OPML" ] || return 1
@@ -829,14 +830,14 @@ feed_opml_has() {
 
 # Usage: check_feeds
 # Verify every (non-symlink) template has a feed.opml <outline>.
-# Templates listed in a feed blacklist file (src/feed-blacklist, or
-# src/feeds-blacklist / src/feed_blacklist) that lack a feed produce a
+# Templates listed in a feed blacklist file (config/feed-blacklist, or
+# config/feeds-blacklist / config/feed_blacklist) that lack a feed produce a
 # warning; any other template without a feed produces an error and a
 # non-zero exit status.
 check_feeds() {
 	_cf_failed=0
 	_cf_blacklist_files=''
-	for _f in "$SCRIPT_DIR/src/feed-blacklist" "$SCRIPT_DIR/src/feeds-blacklist" "$SCRIPT_DIR/src/feed_blacklist" "$SCRIPT_DIR/src/autobump-blacklist"; do
+	for _f in "$SCRIPT_DIR/config/feed-blacklist" "$SCRIPT_DIR/config/feeds-blacklist" "$SCRIPT_DIR/config/feed_blacklist" "$SCRIPT_DIR/config/autobump-blacklist"; do
 		[ -f "$_f" ] && _cf_blacklist_files="$_cf_blacklist_files $_f"
 	done
 
@@ -864,7 +865,7 @@ feeds_check() { check_feeds "$@"; }
 feed_check() { check_feeds "$@"; }
 
 # Suggest missing feed.opml <outline> entries for templates that were
-# added or modified. Prints draft lines to stdout only when src/feed.opml
+# added or modified. Prints draft lines to stdout only when config/feed.opml
 # exists (i.e. local runs; CI checkout has no feed.opml -> silent skip).
 # Subpackage symlinks and already-present packages are skipped.
 suggest_feeds() {
@@ -906,7 +907,7 @@ $_feed_line"
 # --- Web ---
 
 generate_arch_pages() {
-	_template="${SCRIPT_DIR}/src/arch-index-template.html"
+	_template="${SCRIPT_DIR}/website/templates/arch-index-template.html"
 	[ -f "$_template" ] || fatal "arch-index-template.html not found!"
 
 	_pkg_list=$(list_templates)
@@ -971,7 +972,7 @@ generate_arch_pages() {
 			printf '</tbody>\n</table>\n'
 		} > "$_pkg_tmp"
 
-		cp "${SCRIPT_DIR}/src/svg-color.html" "$_svg_tmp" 2>/dev/null || touch "$_svg_tmp"
+		cp "${SCRIPT_DIR}/website/templates/svg-color.html" "$_svg_tmp" 2>/dev/null || touch "$_svg_tmp"
 
 		sed \
 			-e "s|__ARCH__|${_arch}|g" \
@@ -1003,6 +1004,20 @@ generate_arch_pages() {
 	done
 }
 
+_upload_website_assets() {
+	if surf_auth_check; then
+		echo '==> Uploading website assets'
+		_ws_failed=0
+		for _asset in $(website_public_files); do
+			_file="${SCRIPT_DIR}/docs/$_asset"
+			[ -f "$_file" ] || continue
+			[ ! -L "$_file" ] || fatal "Refusing to upload website symlink: $_file"
+			upload_file "$_file" "/" || _ws_failed=1
+		done
+		[ "$_ws_failed" -eq 0 ] || fatal 'Some website asset uploads failed'
+	fi
+}
+
 build_site() {
 	_title="${1:-Void Community Repository}"
 
@@ -1010,27 +1025,14 @@ build_site() {
 		fatal 'pandoc not installed!'
 	fi
 
-	if [ -f docs/CNAME ]; then
-		cp docs/CNAME src/
-	fi
 	rm -rf docs && mkdir -p docs
-	cp -r src/* docs/
-	rm -f docs/toggle.html docs/toc.html docs/svg-color.html docs/footer.html
+	website_stage_assets "$SCRIPT_DIR" "${SCRIPT_DIR}/docs" || fatal 'Could not stage website assets'
 
 	_build_manual
 	_build_main_index "$_title"
 	generate_arch_pages
 	_g "Finished"
-
-	if surf_auth_check; then
-		echo '==> Uploading website assets'
-		_ws_failed=0
-		for _file in "${SCRIPT_DIR}/docs"/*; do
-			[ -f "$_file" ] || continue
-			upload_file "$_file" "/" || _ws_failed=1
-		done
-		[ "$_ws_failed" -eq 0 ] || echo '==> Warning: some website asset uploads failed'
-	fi
+	_upload_website_assets
 }
 
 build_main() {
@@ -1040,26 +1042,12 @@ build_main() {
 		fatal 'pandoc not installed!'
 	fi
 
-	if [ -f docs/CNAME ]; then
-		cp docs/CNAME src/
-	fi
-	mkdir -p docs
-	cp -r src/* docs/
-	rm -f docs/toggle.html docs/toc.html docs/svg-color.html docs/footer.html
+	website_stage_assets "$SCRIPT_DIR" "${SCRIPT_DIR}/docs" || fatal 'Could not stage website assets'
 
 	_build_manual
 	_build_main_index "$_title"
 	_g "Finished"
-
-	if surf_auth_check; then
-		echo '==> Uploading website assets'
-		_ws_failed=0
-		for _file in "${SCRIPT_DIR}/docs"/*; do
-			[ -f "$_file" ] || continue
-			upload_file "$_file" "/" || _ws_failed=1
-		done
-		[ "$_ws_failed" -eq 0 ] || echo '==> Warning: some website asset uploads failed'
-	fi
+	_upload_website_assets
 }
 
 # --- Named targets ---
@@ -1336,7 +1324,7 @@ do_upload() {
 		echo '==> Signing repository'
 		# Restrictive umask before write avoids a world-readable window
 		# between create-with-default-umask and chmod 600.
-		. "${SCRIPT_DIR}/src/oco-key.sh"
+		. "${SCRIPT_DIR}/lib/oco-key.sh"
 		oco_key_write private.pem || fatal '==> Error: failed to write signing key'
 		xbps-rindex -s --signedby "$SIGNED_BY" --privkey private.pem "$PWD" \
 			|| fatal '==> Error: xbps-rindex failed to sign repository'
@@ -1425,8 +1413,9 @@ do_upload() {
 # --- Check upstream ---
 
 check_upstream() {
-	IGNORE_FILE="${SCRIPT_DIR}/src/ignore-pkgs"
-	STATE_FILE="${SCRIPT_DIR}/src/upstream-state"
+	IGNORE_FILE="${SCRIPT_DIR}/config/ignore-pkgs"
+	STATE_FILE="${SCRIPT_DIR}/.cache/oco/upstream-state"
+	mkdir -p "${SCRIPT_DIR}/.cache/oco"
 
 	_ignores=''
 	if [ -f "$IGNORE_FILE" ]; then
@@ -1859,7 +1848,7 @@ do_autobump() {
 	echo "  Repository: $_repo"
 	echo "  Branch:     $_ref"
 	echo "  Package:    $_pkg"
-	[ "$_force" = 1 ] && echo '  Force:      yes (ignore src/autobump-blacklist)'
+	[ "$_force" = 1 ] && echo '  Force:      yes (ignore config/autobump-blacklist)'
 	echo ''
 
 	if [ "$_force" = 1 ]; then

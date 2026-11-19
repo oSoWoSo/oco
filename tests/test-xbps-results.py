@@ -18,10 +18,10 @@ def load(name, path):
     return module
 
 
-collector = load("collect_xbps_results", "src/collect-xbps-results.py")
-feed = load("gen_feed", "src/gen-feed.py")
-closer = load("close_update_issues", "src/close-update-issues.py")
-release = load("autobump_release", "src/autobump-release.py")
+collector = load("collect_xbps_results", "tools/build/collect-xbps-results.py")
+feed = load("gen_feed", "tools/website/gen-feed.py")
+closer = load("close_update_issues", "tools/updates/close-update-issues.py")
+release = load("autobump_release", "tools/autobump/autobump-release.py")
 
 
 def make_xbps(path: Path, *, pkgname: str, sourcepkg: str, version: str,

@@ -9,7 +9,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DETECTOR = ROOT / ".github/scripts/detect-update.sh"
+DETECTOR = ROOT / "tools/updates/detect-update.sh"
 
 
 class DetectUpdateTests(unittest.TestCase):

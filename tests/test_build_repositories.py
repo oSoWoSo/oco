@@ -8,7 +8,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / ".github/scripts/ci/build-repositories.sh"
+SCRIPT = ROOT / ".github/scripts/build-repositories.sh"
 CONFIGS = {
     "repos-remote.conf": "x86_64",
     "repos-remote-musl.conf": "x86_64-musl",

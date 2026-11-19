@@ -47,7 +47,7 @@ teardown() {
 }
 
 @test "root runs update-check as builder with readable token credentials" {
-  run bash "$BATS_TEST_DIRNAME/../.github/scripts/detect-update.sh" fixture "$REPO"
+  run bash "$BATS_TEST_DIRNAME/../tools/updates/detect-update.sh" fixture "$REPO"
   [ "$status" -eq 0 ]
   [ "$(cat "$SUDO_ARGS")" = "$(printf '%s\n' -Eu builder "$XBPS_SRC" update-check fixture)" ]
   [ "$(cat "$ENGINE_ARGS")" = "$(printf '%s\n' update-check fixture)" ]
@@ -57,7 +57,7 @@ teardown() {
 @test "non-root update-check runs directly without sudo" {
   export FAKE_EUID=1000
   unset GH_TOKEN
-  run bash "$BATS_TEST_DIRNAME/../.github/scripts/detect-update.sh" fixture "$REPO"
+  run bash "$BATS_TEST_DIRNAME/../tools/updates/detect-update.sh" fixture "$REPO"
   [ "$status" -eq 0 ]
   [ ! -e "$SUDO_ARGS" ]
   [ "$(cat "$ENGINE_ARGS")" = "$(printf '%s\n' update-check fixture)" ]

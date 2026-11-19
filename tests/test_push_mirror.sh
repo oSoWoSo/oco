@@ -1,12 +1,12 @@
 #!/bin/sh
-# Tests for .github/scripts/ci/push-mirror.sh: one helper pushes the checked-out
+# Tests for .github/scripts/push-mirror.sh: one helper pushes the checked-out
 # HEAD to the host named by $HOST, with an optional --force. Aligned with the
 # other helper tests run from tests/run.sh.
 
 set -u
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "$0")/.." && pwd)
-PUSH_SH="$SCRIPT_DIR/.github/scripts/ci/push-mirror.sh"
+PUSH_SH="$SCRIPT_DIR/.github/scripts/push-mirror.sh"
 
 # Isolated HOME: the script writes ~/.ssh there for the SSH hosts.
 HOME_DIR=$(mktemp -d)

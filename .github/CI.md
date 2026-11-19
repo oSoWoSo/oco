@@ -3,6 +3,38 @@
 Workflows in `workflows/` are maintained directly. There is no `src/*.yml.in`
 workflow generator. `./ocoman -u` updates repository metadata, not workflows.
 
+## Repository layout and website boundary
+
+`src/` is retired. Files are grouped by purpose:
+
+```text
+website/public/      Static public assets (CSS, JavaScript, icons, testing guide)
+website/templates/   Site templates and fragments; never uploaded
+config/              Autobump packs/dependencies/blacklist, feeds, OSV identities
+lib/                 Shared shell libraries, signing-key handling, asset allowlist
+tools/autobump/      Batch planning, version helpers, PR artifact validation/merge
+tools/build/         Build loop and XBPS result collection
+tools/repository/    Repodata utilities and publication manifest contract
+tools/updates/       Feed issue handling, issue closing, version detection
+tools/website/       Manual and published-feed generation
+tools/community/     Community repository comparison
+.github/scripts/     CI event adapters and orchestration helpers (no ci/ nesting)
+.github/workflows/   GitHub workflow definitions
+```
+
+`lib/website.sh` defines the explicit public-file allowlist. Site builds stage
+only these static files from `website/public/`, then generate the index, manual,
+and architecture pages. Root asset uploads enumerate the allowlist plus generated
+public documents; they never glob the source tree or even every file in `docs/`.
+This also prevents stale scripts/config already present in a local `docs/`
+directory from being uploaded again. Website templates are not public assets.
+Production/testing publication prefixes are unchanged.
+
+Existing unwanted files on the remote host are **not automatically deleted** by
+this layout migration. Removing those needs a separately reviewed cleanup list;
+package repositories, signing metadata, and legitimate site/feed files must be
+preserved. Local runtime upstream state now lives under `.cache/oco/`.
+
 ## Package lifecycle
 
 ```text
@@ -75,7 +107,7 @@ for the actual publication result.
 
 ### One publication contract and writer
 
-All request producers use `src/surfer-publish.py --create` to write and validate
+All request producers use `tools/repository/surfer-publish.py --create` to write and validate
 the same `surfer-publication` manifest:
 
 - build: staged binaries, per-architecture results, optional removals;
@@ -152,7 +184,7 @@ automatic deletion of `autobump/*` conflicts with the current repository rules.
 Those are separate migrations requiring explicit decisions and integration tests,
 not prerequisites for deduplicating the existing CI.
 
-This refactor does not replace `ocoman`/`bump.sh`, move templates/assets/config,
-change forge credentials, or remove existing package-management features. Real
+This refactor retains `ocoman`/`bump.sh`, forge credentials, and existing package
+management features. File locations are now grouped as documented above. Real
 XBPS builds and remote publication still need CI verification after deployment;
 local fixture tests do not substitute for those integration checks.

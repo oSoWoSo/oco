@@ -15,7 +15,7 @@ from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
-    "mirror_pr", ROOT / ".github/scripts/ci/mirror-pr.py"
+    "mirror_pr", ROOT / ".github/scripts/mirror-pr.py"
 )
 mirror = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(mirror)

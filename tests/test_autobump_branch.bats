@@ -17,7 +17,7 @@ pkgname=alpha
 version=1.0
 revision=1
 EOF
-  printf 'test\talpha\n' >"$WORK/.github/autobump-packs.tsv"
+  printf 'test\talpha\n' >"$WORK/config/autobump-packs.tsv"
   printf 'base README\n' >"$WORK/README.md"
   git -C "$WORK" add .
   git -C "$WORK" commit -qm base
@@ -44,7 +44,7 @@ EOF
   export PUSH_LOG="$TEST_DIR/push.log"
   export TEMPLATE=alpha VERSION=1.1 OCO_TOKEN=fake GH_REPO=test/repo
   export GITHUB_ENV="$TEST_DIR/github-env" GITHUB_OUTPUT="$TEST_DIR/github-output"
-  export BRANCH_SCRIPT="$BATS_TEST_DIRNAME/../.github/scripts/ci/autobump-branch.sh"
+  export BRANCH_SCRIPT="$BATS_TEST_DIRNAME/../.github/scripts/autobump-branch.sh"
 }
 
 teardown() {
@@ -64,7 +64,7 @@ EOF
   prepare_bump
   digest="$(sha256sum "$WORK/srcpkgs/alpha/template")"
   digest="${digest%% *}"
-  printf '# autobump-dependencies-v1\nalpha\t%s\t\n' "$digest" >"$WORK/.github/autobump-dependencies.tsv"
+  printf '# autobump-dependencies-v1\nalpha\t%s\t\n' "$digest" >"$WORK/config/autobump-dependencies.tsv"
 
   cd "$WORK"
   run env RUNNER_TEMP="$RUNNER_TEMP" TEMPLATE="$TEMPLATE" VERSION="$VERSION" \
@@ -73,12 +73,12 @@ EOF
     REAL_GIT="$REAL_GIT" bash "$BRANCH_SCRIPT"
   [ "$status" -eq 0 ]
   [ "$(git rev-list --count origin/OCO..HEAD)" -eq 1 ]
-  [ -n "$(git show HEAD:.github/autobump-dependencies.tsv)" ]
-  committed_hash="$(git show HEAD:.github/autobump-dependencies.tsv | awk -F '\t' '$1 == "alpha" { print $2 }')"
+  [ -n "$(git show HEAD:config/autobump-dependencies.tsv)" ]
+  committed_hash="$(git show HEAD:config/autobump-dependencies.tsv | awk -F '\t' '$1 == "alpha" { print $2 }')"
   actual_hash="$(sha256sum srcpkgs/alpha/template)"
   actual_hash="${actual_hash%% *}"
   [ "$committed_hash" = "$actual_hash" ]
-  [ "$(git show HEAD:.github/autobump-dependencies.tsv | awk -F '\t' '$1 == "alpha" { print $3 }')" = "" ]
+  [ "$(git show HEAD:config/autobump-dependencies.tsv | awk -F '\t' '$1 == "alpha" { print $3 }')" = "" ]
   [ -s "$PUSH_LOG" ]
 }
 
@@ -90,8 +90,8 @@ EOF
     GITHUB_OUTPUT="$GITHUB_OUTPUT" PATH="$PATH" PUSH_LOG="$PUSH_LOG" \
     REAL_GIT="$REAL_GIT" bash "$BRANCH_SCRIPT"
   [ "$status" -eq 0 ]
-  [ ! -e .github/autobump-dependencies.tsv ]
-  ! git show HEAD:.github/autobump-dependencies.tsv >/dev/null 2>&1
+  [ ! -e config/autobump-dependencies.tsv ]
+  ! git show HEAD:config/autobump-dependencies.tsv >/dev/null 2>&1
   [ "$(git rev-list --count origin/OCO..HEAD)" -eq 1 ]
 }
 

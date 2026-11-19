@@ -45,5 +45,5 @@ jobs:
           GH_TOKEN: ${{ secrets.WORKFLOWS }}
         run: |
           set -euo pipefail
-          python3 oco/src/testing-merge.py \
+          python3 oco/tools/autobump/testing-merge.py \
             --run-id "$RUN_ID" --head-sha "$HEAD_SHA" --head-repo "$HEAD_REPO"

@@ -1,8 +1,8 @@
 # Template file for 'luciole-git'
 pkgname=luciole-git
 version=0.1.0.20261119
-revision=1
-_commit=98d4e20a540da55bd4222d17ef7ea836e21c76a6
+revision=2
+_commit=0b37f2cc760c241ce2cf78dbdc4744f18a5b66b7
 build_style=meson
 configure_args="-Dbuild_revision=${_commit}"
 make_check_args="--exclude=operation-activity --exclude=thumbnail --exclude=archive-service --print-errorlogs"
@@ -12,8 +12,7 @@ makedepends="acl-devel cairo-devel fontconfig-devel freetype-devel
  libcurl-devel libglib-devel libglvnd-devel liblzma-devel libpng-devel
  librsvg-devel libxkbcommon-devel libxml2-devel pango-devel stb
  tomlplusplus-devel wayland-devel wayland-protocols"
-depends="adwaita-icon-theme dconf glib-networking gsettings-desktop-schemas
- gvfs hicolor-icon-theme shared-mime-info"
+depends="gsettings-desktop-schemas hicolor-icon-theme"
 checkdepends="7zip dbus ffmpeg ffmpegthumbnailer libwebp-devel poppler
  python3"
 short_desc="Native Wayland file manager using Noctalia rendering and controls"
@@ -21,7 +20,7 @@ maintainer="Coolllyn <leanhduc673@gmail.com>"
 license="MIT"
 homepage="https://github.com/noctalia-dev/luciole"
 distfiles="https://github.com/noctalia-dev/luciole/archive/${_commit}.tar.gz"
-checksum="12bff2bad3e62b4f06c66909bdad6dbf97e0fddb56bce224b58dc69da99cfefc"
+checksum="e70efcd6e9a8aba3a899102ce1f0b73df3653f3a711ab2c5cf6fd99e76c8c61e"
 
 # chroot HOME=/tmp collides with hardcoded /tmp paths in upstream tests
 make_check_pre="env HOME=/tmp/luciole-check-home"

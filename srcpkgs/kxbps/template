@@ -4,11 +4,12 @@ version=0.13.0
 revision=1
 build_style=cargo
 build_helper="qmake6"
+
 hostmakedepends="gettext lld qt6-base qt6-declarative-host-tools"
-makedepends="qt6-base-devel qt6-declarative-devel kf6-kirigami-devel kf6-ki18n-devel
- kf6-kstatusnotifieritem-devel"
-depends="kf6-kirigami kf6-kstatusnotifieritem kf6-qqc2-desktop-style kf6-sonnet
- polkit qt6-svg xbps"
+makedepends="qt6-base-devel qt6-declarative-devel kf6-kirigami-devel
+ kf6-ki18n-devel kf6-kstatusnotifieritem-devel"
+depends="kf6-kirigami kf6-kstatusnotifieritem kf6-qqc2-desktop-style
+ kf6-sonnet polkit qt6-svg xbps"
 short_desc="Native KDE Plasma front end for the xbps package manager"
 maintainer="zenobit <zen@osowos.org>"
 license="GPL-3.0-or-later"
@@ -16,13 +17,19 @@ homepage="https://github.com/Khame/kxbps"
 distfiles="https://github.com/Khame/kxbps/archive/refs/tags/v${version}.tar.gz"
 checksum=3c237e69f67a8e3c4c054a41c9756578ae4e34da68754cdcbdfe4fcbdadc7b0a
 
-pre_build() {
-	export QMAKE="${XBPS_WRAPPERDIR}/qmake6"
+pre_patch() {
+	mkdir -p .cargo
+	cargo vendor --locked --versioned-dirs >.cargo/vendor.toml
+	cat .cargo/vendor.toml >>.cargo/config.toml
+	local checksum_file=vendor/cxx-qt-lib-0.10.0/.cargo-checksum.json
+	local package_checksum
+	package_checksum=$(grep -o '"package":[[:space:]]*[^}]*' "$checksum_file")
+	printf '{"files":{},%s}\n' "$package_checksum" >"$checksum_file"
+}
 
+pre_build() {
 	if [ "$CROSS_BUILD" ]; then
-		# The C++ shims' KDE and QML integration includes are hardcoded.
-		vsed -i -e "s|/usr/include/|${XBPS_CROSS_BASE}/usr/include/|g" \
-			kxbps-qt/build.rs
+		export QMAKE="${XBPS_WRAPPERDIR}/qmake6"
 	fi
 }
 

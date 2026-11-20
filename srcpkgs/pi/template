@@ -1,9 +1,9 @@
 # Template file for 'pi'
 pkgname=pi
 version=1.5.2
-revision=1
+revision=2
 hostmakedepends="nodejs jq"
-depends="nodejs"
+depends="nodejs fd ripgrep"
 short_desc="AI agent toolkit: unified LLM API, agent loop, TUI, coding agent CLI"
 maintainer="zenobit <zen@osowoso.org>"
 license="MIT"

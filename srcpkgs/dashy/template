@@ -1,6 +1,6 @@
 # Template file for 'dashy'
 pkgname=dashy
-version=4.9.19
+version=4.9.20
 revision=1
 hostmakedepends="nodejs yarn"
 depends="nodejs"
@@ -10,7 +10,7 @@ license="MIT"
 homepage="https://dashy.to"
 changelog="https://github.com/Lissy93/dashy/releases/tag/${version}"
 distfiles="https://github.com/Lissy93/dashy/archive/refs/tags/${version}.tar.gz"
-checksum=ebbe0b3c77fa6ef47fac74b4c9cfb73a2277807f217714a4f63faf493dcbc236
+checksum=1c8a2e08e03390d992ebb6e3ec827a2d8fb91475d2b31fb8b4879e6fdbafce5c
 system_accounts="_dashy"
 _dashy_homedir="/var/lib/dashy"
 _dashy_descr="Dashy dashboard service user"

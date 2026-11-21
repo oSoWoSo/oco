@@ -1,8 +1,8 @@
 # Template file for 'luciole-git'
 pkgname=luciole-git
 version=0.1.0.20261121
-revision=2
-_commit=cad8bb874564232c87a6056058ed7665eacf4db8
+revision=3
+_commit=bae75c541ce1d863438d013f1f157b0db85e87df
 build_style=meson
 configure_args="-Dbuild_revision=${_commit}"
 make_check_args="--exclude=operation-activity --exclude=thumbnail --exclude=archive-service --print-errorlogs"
@@ -20,7 +20,7 @@ maintainer="Coolllyn <leanhduc673@gmail.com>"
 license="MIT"
 homepage="https://github.com/noctalia-dev/luciole"
 distfiles="https://github.com/noctalia-dev/luciole/archive/${_commit}.tar.gz"
-checksum="a51bb9aba787d257781b458bfd38c547587f3621ee969f07ae322fcd2b021474"
+checksum="c19c3e0ebd4712c13e92167206aa3eb4d2a11a7d19277779527e11a7583916df"
 
 # chroot HOME=/tmp collides with hardcoded /tmp paths in upstream tests
 make_check_pre="env HOME=/tmp/luciole-check-home"

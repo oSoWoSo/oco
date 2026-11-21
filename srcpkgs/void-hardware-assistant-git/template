@@ -1,7 +1,7 @@
 # Template file for 'void-hardware-assistant-git'
 pkgname=void-hardware-assistant-git
 version=0.0.0
-revision=1
+revision=2
 _commit=6fb315b0ae52d6c6c76c89b7b32f1f6abaed2211
 archs="x86_64 aarch64"
 depends="python3-gobject gtk4 libadwaita pciutils python3-cups cups avahi nss-mdns dbus polkit"

@@ -1,6 +1,6 @@
 # Template file for 'kxbps'
 pkgname=kxbps
-version=0.12.3
+version=0.13.0
 revision=1
 build_style=cargo
 build_helper="qmake6"
@@ -14,7 +14,7 @@ maintainer="zenobit <zen@osowos.org>"
 license="GPL-3.0-or-later"
 homepage="https://github.com/Khame/kxbps"
 distfiles="https://github.com/Khame/kxbps/archive/refs/tags/v${version}.tar.gz"
-checksum=0f69b9c6f9011e02264ca9c3d15fa54f1532e8dd1eced80a33c706ceb8de274e
+checksum=3c237e69f67a8e3c4c054a41c9756578ae4e34da68754cdcbdfe4fcbdadc7b0a
 
 pre_build() {
 	export QMAKE="${XBPS_WRAPPERDIR}/qmake6"

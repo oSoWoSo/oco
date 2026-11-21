@@ -1,7 +1,7 @@
 # Template file for 'noctalia-greeter'
 pkgname=noctalia-greeter
-version=1.7.0
-revision=2
+version=1.7.1
+revision=1
 build_style=meson
 hostmakedepends="pkgconf wayland-devel"
 makedepends="wlroots0.20-devel libinput-devel MesaLib-devel libglvnd-devel
@@ -16,7 +16,7 @@ license="MIT"
 homepage="https://github.com/noctalia-dev/noctalia-greeter"
 changelog="https://github.com/noctalia-dev/noctalia-greeter/releases"
 distfiles="https://github.com/noctalia-dev/noctalia-greeter/archive/refs/tags/v${version}.tar.gz"
-checksum="5b092784c0147bb6739efc2e8146d2d07e3572a59d7a370e93092f9f56d4fcc8"
+checksum="79344d9629393ab3f4d605068eec94d2bfe8e12402618e1521f46111e27ff6ed"
 
 post_patch() {
 	vsed -i -e 's/greeter:greeter/_greeter:_greeter/g' \
@@ -26,4 +26,5 @@ post_patch() {
 post_install() {
 	vlicense LICENSE
 	vlicense assets/fonts/tabler-icons-license.txt tabler-icons.LICENSE
+	vlicense third_party/wuffs/LICENSE-MIT wuffs.LICENSE
 }

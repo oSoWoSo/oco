@@ -1,6 +1,6 @@
 # Template file for 'SysMan'
 pkgname=SysMan
-version=0.025
+version=0.026
 revision=1
 build_style=gnu-makefile
 build_helper=go
@@ -12,7 +12,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="AGPL-3.0-only"
 homepage="https://codeberg.org/oSoWoSo/SysMan"
 distfiles="https://codeberg.org/oSoWoSo/SysMan/archive/v${version}.tar.gz"
-checksum=bf2fd30c487e0da9b88a25a8e534756cdec7c3ab1d6dec66dc99a372439605fe
+checksum=2be68addc0c99dfeb44fb35743c4d20b3c59ad76cac39ecfb0b8cc960e7a456b
 conflicts=SysMan-tui
 
 do_build() {

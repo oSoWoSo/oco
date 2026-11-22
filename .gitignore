@@ -162,6 +162,9 @@
 !/srcpkgs/gama
 !/srcpkgs/gh-dash
 !/srcpkgs/gh-lazy
+!/srcpkgs/ghc
+!/srcpkgs/ghc-devel
+!/srcpkgs/ghc-doc
 !/srcpkgs/ghgrab
 !/srcpkgs/glaze
 !/srcpkgs/glaze7

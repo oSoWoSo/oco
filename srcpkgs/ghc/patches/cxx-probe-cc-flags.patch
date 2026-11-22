@@ -1,0 +1,16 @@
+The bindist configure script may add a language standard flag to CC
+(e.g. cc -std=gnu23 with GCC 14 and recent Autoconf). Allow word splitting
+when invoking CC, as in Autoconf's normal compiler probes, rather than
+looking for an executable whose name contains the flag.
+
+--- a/m4/fp_find_cxx_std_lib.m4
++++ b/m4/fp_find_cxx_std_lib.m4
+@@ -61,7 +61,7 @@
+         try_libs() {
+             dnl Try to link a plain object with CC manually
+             AC_MSG_CHECKING([for linkage against '${3}'])
+-            if "$CC" -o actest actest.o ${1} 2>/dev/null; then
++            if $CC -o actest actest.o ${1} 2>/dev/null; then
+                 CXX_STD_LIB_LIBS="${3}"
+                 p="`"$CXX" --print-file-name ${2}`"
+                 d="`dirname "$p"`"

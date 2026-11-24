@@ -1,7 +1,7 @@
 # Template file for 'brave-browser-bin'
 pkgname=brave-browser-bin
-version=1.99.57
-revision=2
+version=1.100.59
+revision=1
 archs="x86_64 aarch64"
 hostmakedepends="unzip"
 depends="desktop-file-utils hicolor-icon-theme hwids xdg-utils"
@@ -14,10 +14,10 @@ distfiles="https://github.com/brave/brave-browser/releases/download/v${version}/
  https://github.com/brave/brave-browser/releases/download/v${version}/brave-browser-${version}-linux-arm64.zip
  https://github.com/brave/brave-browser/releases/download/v${version}/brave-origin-${version}-linux-amd64.zip
  https://github.com/brave/brave-browser/releases/download/v${version}/brave-origin-${version}-linux-arm64.zip"
-checksum="734bd9e1d24bc0a94c03b0a43845107dd8a29f572c652023cf7177f5fc3a5f38
- 1bdad41be7adc541fb82b5265ed1e8c3d4a36c964ea1ad9254f9f64305285473
- d59a4b6368d6b6e48c086b984c3b26287c850a580d4907128ead545f3428b65b
- ac6c445db7f254b4e24344ba91536384586cc740328afc4b37c6381b6afcc28b"
+checksum="54ef4f65ba3b6fa6ed767820e005d606196fc9b78b65cc6da68cfea2eb7c0a75
+ a532fae8c0244d5476375e3a1a9b8d1edf2d7317978bd376e1206e0f64689933
+ 1b07d2dca20d8bc49dc00c9f22e8b9138feb71ca12b450cf8607f7d6497e9ad7
+ ddab46f891964af8eacc3da4a84bd7624fb1d35f664fa89157f0a6ee91f61aa2"
 replaces="brave-browser-arm-bin>=0"
 skip_extraction=yes
 nostrip=yes

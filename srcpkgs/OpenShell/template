@@ -1,6 +1,6 @@
 # Template file for 'OpenShell'
 pkgname=OpenShell
-version=0.1.9
+version=0.1.10
 revision=1
 build_style=cargo
 # sqlite-devel on host: sqlx-macros is a proc-macro loaded by rustc on the
@@ -13,7 +13,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="Apache-2.0"
 homepage="https://github.com/NVIDIA/OpenShell"
 distfiles="https://github.com/NVIDIA/OpenShell/archive/refs/tags/v${version}.tar.gz"
-checksum=b23e5620f6cef35f0f72932a054d97fa0bd8f8f4ef4e7c9c90a293e17b9790d6
+checksum=bd17cfc1ebf79892ba4a8ea806af098aad25b22ac13d643a06bd09fd0e0f2c3f
 
 # Tests need seccomp/DBus/container runtimes; musl test code doesn't compile
 # (upstream libc::ioctl/msghdr type mismatch); prover z3 tests flaky in xbps-src

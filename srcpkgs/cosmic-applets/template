@@ -1,6 +1,6 @@
 # Template file for 'cosmic-applets'
 pkgname=cosmic-applets
-version=1.11.0
+version=1.12.0
 revision=1
 build_style=cargo
 hostmakedepends="pkg-config just"
@@ -10,7 +10,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="GPL-3.0-only"
 homepage="https://github.com/pop-os/cosmic-applets"
 distfiles="https://github.com/pop-os/cosmic-applets/archive/refs/tags/epoch-${version}.tar.gz"
-checksum=d2ad09b72a2dcba2a17f12e557f0e21dc60171eefa54390e4b67bb058f9180e2
+checksum=4aeceb0da95c1a08fc4e84d5433e4d7899d07082e95faa7f2e8b32f46b025012
 
 do_install() {
 	just targetdir="target/${RUST_TARGET}" rootdir="${DESTDIR}" \

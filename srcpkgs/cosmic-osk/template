@@ -1,6 +1,6 @@
 # Template file for 'cosmic-osk'
 pkgname=cosmic-osk
-version=1.11.0
+version=1.12.0
 revision=1
 build_style=cargo
 hostmakedepends="pkg-config just"
@@ -10,7 +10,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="GPL-3.0-only"
 homepage="https://github.com/pop-os/cosmic-osk"
 distfiles="https://github.com/pop-os/cosmic-osk/archive/refs/tags/epoch-${version}.tar.gz"
-checksum=bdb94386f451e672c2512ddb65bd0c8691921d5488595d0988fd935ce7e43bb6
+checksum=bca637910ecd77ede3a82c48ad6f9447ed17d179626daec6ebeec8d54e13a5e1
 
 pre_build() {
 	cargo fetch --locked

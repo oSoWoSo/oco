@@ -11,6 +11,7 @@ import importlib.util
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import Mock, patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -301,6 +302,66 @@ class SupersedeIssuesTests(unittest.TestCase):
         )
 
         self.assertEqual([issue["number"] for issue in obsolete], [1])
+
+
+class PackIssuesTests(unittest.TestCase):
+    def setUp(self):
+        _skip_if_missing()
+        self.gh = Mock(return_value="https://github.com/test/repo/issues/42\n")
+
+    def publish(self, updates, issues=()):
+        fs.publish_pack_issues("test/repo", "package-update", {"cosmic": updates}, issues, self.gh)
+
+    def test_two_feed_members_open_one_pack_issue(self):
+        packages = ("cosmic-first", "cosmic-second")
+        packs = {"cosmic": ["cosmic-*"]}
+        current = {pkg: {"version": fs.XbpsVersion("1.0")} for pkg in packages}
+        updates = {}
+        for pkg, version in zip(packages, ("2.0", "2.1")):
+            result = {"name": pkg, "version": fs.XbpsVersion(version), "version_text": version}
+            with patch.object(fs, "find_packages_for_feed", return_value=([pkg], False)):
+                fs.process_feed(result, current, {}, [], {}, set(), packs, updates)
+        fs.publish_pack_issues("test/repo", "package-update", updates, [], self.gh)
+        self.assertEqual(self.gh.call_count, 2)  # One create, then one label.
+        create, label = [call.args[0] for call in self.gh.call_args_list]
+        self.assertEqual(create[:6], ["issue", "create", "--repo", "test/repo", "--title", "cosmic"])
+        self.assertIn("<!-- pack-update:cosmic -->", create[-1])
+        self.assertIn("<!-- pack-member:cosmic-first 2.0 -->", create[-1])
+        self.assertIn("<!-- pack-member:cosmic-second 2.1 -->", create[-1])
+        self.assertEqual(label[-2:], ["--add-label", "package-update"])
+
+    def test_open_pack_issue_is_reused_for_new_members_or_versions(self):
+        issue = make_issue("<!-- pack-update:cosmic -->\n<!-- pack-member:cosmic-first 2.0 -->")
+        self.publish({"cosmic-second": "2.1", "cosmic-first": "1.9"}, [issue])
+        self.gh.assert_called_once()
+        args = self.gh.call_args.args[0]
+        self.assertEqual(args[:4], ["api", "repos/test/repo/issues/1", "--method", "PATCH"])
+        self.assertIn("<!-- pack-member:cosmic-first 2.0 -->", args[-1])
+        self.assertIn("<!-- pack-member:cosmic-second 2.1 -->", args[-1])
+
+    def test_same_or_older_versions_do_not_edit_or_reopen_a_pack_issue(self):
+        for state in ("OPEN", "CLOSED"):
+            issue = make_issue("<!-- pack-update:cosmic -->\n<!-- pack-member:cosmic-first 2.0 -->")
+            issue["state"] = state
+            self.publish({"cosmic-first": "2.0"}, [issue])
+            self.publish({"cosmic-first": "1.0"}, [issue])
+            self.gh.assert_not_called()
+        self.publish({"cosmic-first": "2.1"}, [issue])
+        self.assertEqual(self.gh.call_args_list[0].args[0][:2], ["issue", "create"])
+
+    def test_closer_requires_all_members_and_at_least_one_relevant_build(self):
+        spec = importlib.util.spec_from_file_location(
+            "close_issues", ROOT / "tools/updates/close-update-issues.py")
+        closer = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(closer)
+        requests = {"cosmic-first": "2.0", "cosmic-second": "2.1"}
+        built = {"cosmic-first": {"2.1"}}
+        self.assertIsNone(closer.pack_close_reason(requests, {"cosmic-second": "2.0"}, built, {}))
+        self.assertIsNone(closer.pack_close_reason(requests, {"cosmic-second": "2.1"}, built,
+                                                  {"cosmic-second": {"2.1"}}))
+        self.assertIsNone(closer.pack_close_reason(requests, requests, {}, {}))
+        self.assertEqual(closer.pack_close_reason(requests, {"cosmic-second": "2.1"}, built, {}),
+                         "built all requested updates")
 
 
 if __name__ == "__main__":

@@ -30,6 +30,9 @@ import re
 import subprocess
 import sys
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from autobump_packs import load_packs, pack_for
+
 
 PACKAGE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9+._-]*$")
 VERSION = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._+~-]*$")
@@ -140,32 +143,11 @@ class Repository:
         return target if target in self.templates else None
 
     def pack_members(self, package: str) -> set[str]:
-        """Return real templates in any configured pack containing package."""
-        listing = self.root / "config" / "autobump-packs.tsv"
-        if not listing.is_file():
-            return set()
-        packs: dict[str, list[str]] = {}
-        for number, line in enumerate(listing.read_text(encoding="utf-8").splitlines(), 1):
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            fields = line.split()
-            if len(fields) != 2:
-                raise ValueError(f"malformed pack rule on line {number}: {line!r}")
-            pack, pattern = fields
-            packs.setdefault(pack, []).append(pattern)
-        matched = {
-            pack for pack, patterns in packs.items()
-            if any(fnmatch.fnmatchcase(package, pattern) for pattern in patterns)
-        }
-        return {
-            name for name in self.templates
-            if any(
-                fnmatch.fnmatchcase(name, pattern)
-                for pack in matched
-                for pattern in packs[pack]
-            )
-        }
+        """Return real templates in the target's canonical pack."""
+        packs = load_packs(self.root)
+        patterns = packs.get(pack_for(package, packs), ())
+        return {name for name in self.templates
+                if any(fnmatch.fnmatchcase(name, pattern) for pattern in patterns)}
 
     def dependency_manifest(self) -> Path:
         return self.root / "config" / "autobump-dependencies.tsv"

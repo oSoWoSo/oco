@@ -20,8 +20,8 @@ permissions:
   contents: read
   issues: write
 concurrency:
-  group: scan-updates
-  cancel-in-progress: false
+  group: package-update
+  queue: max
 
 jobs:
   scan:

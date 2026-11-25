@@ -3,6 +3,9 @@ set -euo pipefail
 
 workflow_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/workflows/scan.yml"
 
+python3 tools/updates/pack_issues.py out/found >out/singleton-updates
+[[ -s out/singleton-updates ]] || exit 0
+
 gh issue list --repo "$GITHUB_REPOSITORY" --state open \
   --label package-update --limit 1000 --json body,title >out/open-issues.json
 
@@ -60,4 +63,4 @@ EOF
     --body-file out/issue.md)
 
   echo "$pkg -> ${issue:-FAILED}"
-done <out/found
+done <out/singleton-updates

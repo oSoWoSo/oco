@@ -30,6 +30,15 @@ Local upstream-check state lives in `.cache/oco/`.
 4. The `🏗️ build gate` checks detection, testing-base synchronization, lint and build results.
 5. Successful builds can produce a publication request for `write-surfer.yml`.
 
+A package in more than one configured pack uses the first matching pack in
+`config/autobump-packs.tsv` for automatic updates. The feed and scan share one
+open issue titled after the pack, with a requested version for each member.
+The bumper queues requests by pack and base branch. It uses one PR titled after
+the pack on `autobump/<pack>` (or `T-autobump/<pack>` for `testing`) and skips
+pushing when the open PR already has the same template changes. An open PR on
+an older member-named branch is reused until it closes. Pack issues stay open
+until all requested versions are satisfied.
+
 The bumper creates package commits in a temporary Git worktree using the target
 base's metadata layout. Its workflow checkout stays available to subsequent
 steps. The temporary worktree is cleaned up on both success and failure.

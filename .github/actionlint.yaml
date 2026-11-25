@@ -1,8 +1,17 @@
 # GitHub supports concurrency.queue, but actionlint 1.7.12 does not yet know it.
 # Keep production writers/merges queued (never drop pending releases). Limit the
-# compatibility exception to that exact diagnostic in these three workflows.
+# compatibility exception to that exact diagnostic in the queued workflows.
 paths:
   .github/workflows/autobump-release.yml:
+    ignore:
+      - '^unexpected key "queue" for "concurrency" section\.'
+  .github/workflows/bump.yml:
+    ignore:
+      - '^unexpected key "queue" for "concurrency" section\.'
+  .github/workflows/feed-update.yml:
+    ignore:
+      - '^unexpected key "queue" for "concurrency" section\.'
+  .github/workflows/scan.yml:
     ignore:
       - '^unexpected key "queue" for "concurrency" section\.'
   .github/workflows/testing-merge.yml:

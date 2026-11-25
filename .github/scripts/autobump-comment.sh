@@ -11,7 +11,7 @@ if [[ -n ${PR_NUMBER:-} ]]; then
 	}
 
 	{
-		printf 'PR opened: **%s** -> #%s.\n\n' "$TEMPLATE" "$PR_NUMBER"
+		printf 'Bump PR for **%s**: #%s.\n\n' "${PACK:-$TEMPLATE}" "$PR_NUMBER"
 		printf 'This pull request batches updated packages and the direct consumers that need rebuilding:\n\n'
 		while IFS=$'\t' read -r package version kind _order; do
 			[[ -n $package ]] || continue

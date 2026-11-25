@@ -2,6 +2,10 @@
 set -euo pipefail
 
 : "${XBPS_SRC:?XBPS_SRC is required for pack dependency resolution}"
+if [[ $(python3 tools/autobump/autobump_packs.py "$TEMPLATE") != "${PACK:-}" ]]; then
+	echo "::error::pack configuration changed while the bump was queued; retry the request"
+	exit 1
+fi
 # Pack members are checked for upstream updates; direct consumers are
 # revision-bumped only when the target belongs to a configured pack.
 plan="$RUNNER_TEMP/autobump-plan.tsv"
@@ -19,9 +23,7 @@ echo "bumped=true" >>"$GITHUB_OUTPUT"
 echo "packages=$(cut -f1 "$plan" | paste -sd' ' -)" >>"$GITHUB_OUTPUT"
 echo "count=$(cut -f1 "$plan" | wc -l)" >>"$GITHUB_OUTPUT"
 
-# The branch is named after the target only: autobump/<template>.
-# Every version bump reuses the same branch, so the newest version
-# always force-pushes over an older one.
+# Single-package PRs still carry the upstream version in their title.
 version=$(awk -F '\t' -v pkg="$TEMPLATE" '$1 == pkg { print $2; exit }' "$plan")
 if [[ -z $version ]]; then
 	version=$(awk -F '\t' '$3 == "version" { print $2; exit }' "$plan")

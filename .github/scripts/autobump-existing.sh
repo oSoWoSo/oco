@@ -1,38 +1,53 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Reuse an open autobump PR only when it already contains every
-# package in this plan. Branches are stable (<prefix>/<template>), so
-# an open PR on the exact branch this run would update is never a reason
-# to skip: the newest version force-pushes over the old one in place.
-# Partial single-package PRs must be folded into the complete dependency
-# batch instead of suppressing it.
-target_branch="${BRANCH_PREFIX:-autobump}/${TEMPLATE}"
-existing_number=""
-while IFS=$'\t' read -r number ref; do
-  [[ -n $number ]] || continue
-  [[ $ref != "$target_branch" ]] || continue
-  files=$(gh api "repos/${GH_REPO}/pulls/${number}/files?per_page=100" \
-    --jq '.[].filename')
-  covered=true
-  while IFS=$'\t' read -r package _version _kind _order; do
-    [[ -n $package ]] || continue
-    if ! printf '%s\n' "$files" | grep -qxF "srcpkgs/$package/template"; then
-      covered=false
-      break
-    fi
-  done <"$RUNNER_TEMP/autobump-plan.tsv"
-  if [[ $covered == true ]]; then
-    existing_number=$number
+prefix=${BRANCH_PREFIX:-autobump}
+branch="$prefix/${PACK:-$TEMPLATE}"
+open_prs=$(gh api --paginate --method GET "repos/${GH_REPO}/pulls" \
+  -f state=open -f base="${BASE_REF:-OCO}" -F per_page=100 \
+  --jq '.[] | select(.head.repo.full_name == .base.repo.full_name) | [.number, .head.sha, .user.login, .head.ref, .title] | @tsv')
+existing=
+while IFS= read -r row; do
+  IFS=$'\t' read -r _number _sha _author ref _title <<<"$row"
+  if [[ $ref == "$branch" ]]; then
+    existing=$row
     break
   fi
-done <<<"$(gh api "repos/${GH_REPO}/pulls?state=open&per_page=100" \
-  --jq '.[] | select(.head.ref | startswith("'"${BRANCH_PREFIX:-autobump}"'/")) | "\(.number)\t\(.head.ref)"')"
-
-if [[ -n $existing_number ]]; then
-  echo "::notice::the complete batch is already covered by open pull request #${existing_number}"
-  echo "number=$existing_number" >>"$GITHUB_OUTPUT"
-  echo "handled=true" >>"$GITHUB_OUTPUT"
-else
-  echo "handled=false" >>"$GITHUB_OUTPUT"
+  # Let in-flight member-named PRs finish on their original branch. New
+  # batches use the canonical branch once the old PR is no longer open.
+  if [[ -n ${PACK:-} && -z $existing && $ref == "$prefix/"* ]]; then
+    member=${ref#*/}
+    if [[ -f srcpkgs/$member/template && ! -L srcpkgs/$member &&
+          $(python3 tools/autobump/autobump_packs.py "$member") == "$PACK" ]]; then
+      existing=$row
+    fi
+  fi
+done <<<"$open_prs"
+if [[ -z $existing ]]; then
+  echo 'handled=false' >>"$GITHUB_OUTPUT"
+  exit 0
 fi
+IFS=$'\t' read -r number sha author ref title <<<"$existing"
+if [[ ${AUTOMERGE:-false} == true && $author != oSoWoSo-bot ]]; then
+  echo "::error::PR #${number} is owned by ${author}; close it before requesting a bot-created auto-merge PR"
+  exit 1
+fi
+
+echo "number=$number" >>"$GITHUB_OUTPUT"
+echo "branch=$ref" >>"$GITHUB_OUTPUT"
+mapfile -t paths < <(awk -F '\t' '{print "srcpkgs/" $1 "/template"}' "$RUNNER_TEMP/autobump-plan.tsv" | LC_ALL=C sort)
+files=$(gh api --paginate "repos/${GH_REPO}/pulls/${number}/files?per_page=100" \
+  --jq '.[].filename')
+templates=$(awk '/^srcpkgs\/[^/]+\/template$/' <<<"$files" | LC_ALL=C sort)
+if [[ $templates == "$(printf '%s\n' "${paths[@]}")" ]]; then
+  git fetch --no-tags --depth=1 origin "$sha"
+  if git diff --quiet "$sha" -- "${paths[@]}"; then
+    echo "::notice::no template changes since open PR #${number}; skipping push"
+    echo 'handled=true' >>"$GITHUB_OUTPUT"
+    if [[ -n ${PACK:-} && $title != "$PACK" ]]; then
+      echo 'retitle=true' >>"$GITHUB_OUTPUT"
+    fi
+    exit 0
+  fi
+fi
+echo 'handled=false' >>"$GITHUB_OUTPUT"

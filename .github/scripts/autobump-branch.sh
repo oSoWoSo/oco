@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BRANCH="${BRANCH_PREFIX:-autobump}/${TEMPLATE}"
+BRANCH="${BRANCH:-${BRANCH_PREFIX:-autobump}/${PACK:-$TEMPLATE}}"
 BASE_REF="${BASE_REF:-OCO}"
 plan="$RUNNER_TEMP/autobump-plan.tsv"
 source_root=$(git rev-parse --show-toplevel)

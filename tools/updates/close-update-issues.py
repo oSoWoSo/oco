@@ -23,6 +23,8 @@ satisfied.
 The package and requested version come from the hidden markers
 `<!-- package-update:NAME -->` and `<!-- upstream-version:VERSION -->`,
 falling back to the `**Package:**` and `**Upstream version:**` headings.
+Pack issues use `<!-- pack-update:NAME -->` and one `<!-- pack-member:PKG VERSION -->`
+marker per request, and stay open until all requests are satisfied.
 
 `--list-stale` instead reports every open issue against the version the
 repository currently ships, and never writes to GitHub. It exists because an
@@ -43,12 +45,16 @@ deduplicated), but if duplicates exist all matching ones are closed.
 import argparse
 import json
 import os
+from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
 import urllib.error
 import urllib.request
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from pack_issues import PACK_RE, pack_members
 
 PKG_RE = re.compile(r"<!-- package-update:(\S+?) -->")
 VER_RE = re.compile(r"<!-- upstream-version:(\S+?) -->")
@@ -277,7 +283,18 @@ def list_stale(repo: str, token: str, srcpkgs: str) -> int:
     stale = 0
     for issue in issues:
         number = issue.get("number", "?")
-        pkg, ver = extract_pkg_version(issue.get("body") or "")
+        body = issue.get("body") or ""
+        pack = PACK_RE.search(body)
+        if pack:
+            requests = pack_members(body)
+            if requests and all(
+                pkg.casefold() in shipped and _cmpver(shipped[pkg.casefold()], ver) >= 0
+                for pkg, ver in requests.items()
+            ):
+                stale += 1
+                print(f"  #{number}: {pack[1]} -- STALE (all requested versions shipped)")
+            continue
+        pkg, ver = extract_pkg_version(body)
         if not pkg:
             continue
         have = shipped.get(pkg.casefold())
@@ -313,6 +330,19 @@ def close_reason(ok: dict[str, set[str]], fail: dict[str, set[str]],
     if newest and _cmpver(newest, ver) > 0:
         return f"superseded by {newest}"
     return None
+
+
+def pack_close_reason(requests: dict[str, str], shipped: dict[str, str],
+                      ok: dict[str, set[str]], fail: dict[str, set[str]]) -> str | None:
+    built = False
+    for pkg, ver in requests.items():
+        key = pkg.casefold()
+        successful = ok.get(key, set()) - fail.get(key, set())
+        if any(_cmpver(version, ver) >= 0 for version in successful):
+            built = True
+        elif key in ok or key in fail or key not in shipped or _cmpver(shipped[key], ver) < 0:
+            return None
+    return "built all requested updates" if built else None
 
 
 def extract_pkg_version(body: str) -> tuple[str | None, str | None]:
@@ -384,12 +414,8 @@ def main() -> int:
     # are closed as superseded.
     newest_built: dict[str, str] = {}
     for issue in issues:
-        number = issue.get("number", "?")
-        title = (issue.get("title") or "").strip()
         pkg, ver = extract_pkg_version(issue.get("body") or "")
         if not pkg or not ver:
-            unparsed += 1
-            print(f"  #{number}: {title}: no package/-version markers, kept open")
             continue
         key = pkg.lower()
         built = ver in ok.get(key, set())
@@ -398,19 +424,26 @@ def main() -> int:
             if current is None or _cmpver(ver, current) > 0:
                 newest_built[key] = ver
 
+    shipped = shipped_versions(args.srcpkgs)
     closed = kept = unparsed = 0
     for issue in issues:
         number = issue.get("number", "?")
-        title = (issue.get("title") or "").strip()
-        pkg, ver = extract_pkg_version(issue.get("body") or "")
-        if not pkg or not ver:
-            unparsed += 1
-            print(f"  #{number}: {title}: no package/-version markers, kept open")
-            continue
-        reason = close_reason(ok, fail, pkg, ver, newest_built)
+        body = issue.get("body") or ""
+        pack = PACK_RE.search(body)
+        if pack:
+            pkg, ver = pack[1], None
+            reason = pack_close_reason(pack_members(body), shipped, ok, fail)
+        else:
+            pkg, ver = extract_pkg_version(body)
+            if not pkg or not ver:
+                unparsed += 1
+                print(f"  #{number}: no package/version markers, kept open")
+                continue
+            reason = close_reason(ok, fail, pkg, ver, newest_built)
         if reason is None:
             kept += 1
-            print(f"  #{number}: {pkg}@{ver} not built (or failed), kept open")
+            request = f"{pkg}@{ver}" if ver else pkg
+            print(f"  #{number}: {request} not built (or failed), kept open")
             continue
 
         print(f"  #{number}: {pkg} {reason} -> closing")
@@ -427,8 +460,9 @@ def main() -> int:
             continue
         closed += 1
         print(f"  #{number}: {pkg} {reason} -> closed")
-        marker = "resolved:v" + ver
-        comment = f"Resolved: **{pkg}** {reason}. <!-- {marker} -->"
+        comment = f"Resolved: **{pkg}** {reason}."
+        if ver:
+            comment += f" <!-- resolved:v{ver} -->"
         for _ in range(3):
             if api(args.repo, token, "POST",
                    f"/issues/{number}/comments", {"body": comment}) is not None:

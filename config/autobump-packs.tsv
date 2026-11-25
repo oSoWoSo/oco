@@ -1,4 +1,5 @@
 # Group<TAB>package-name. One row per active bump.sh packageList entry.
+# The first matching group is canonical for autobumps; list full groups before subsets.
 cosmic	xdg-desktop-portal-cosmic
 cosmic	cosmic-osk
 cosmic	cosmic-viewer

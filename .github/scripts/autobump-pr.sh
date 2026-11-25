@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+if [[ ${RETITLE:-false} == true ]]; then
+	gh api "repos/${GH_REPO}/pulls/${EXISTING_PR}" --method PATCH -f title="$PACK" >/dev/null
+	echo "number=$EXISTING_PR" >>"$GITHUB_OUTPUT"
+	exit 0
+fi
+
 plan="$RUNNER_TEMP/autobump-plan.tsv"
 
 printf '### Packages\n\n' >"$RUNNER_TEMP/pr-body.md"
@@ -19,10 +25,10 @@ while IFS=$'\t' read -r package version kind _order; do
 done <"$plan"
 
 printf '\n### Planned XBPS dependency order (pre-build)\n\n' >>"$RUNNER_TEMP/pr-body.md"
-while IFS=$'\t' read -r package _version _kind order; do
+while IFS='|' read -r package _version _kind order; do
 	[[ -n $package ]] || continue
 	printf '%s. `%s`\n' "$((order + 1))" "$package" >>"$RUNNER_TEMP/pr-body.md"
-done <"$plan"
+done < <(tr '\t' '|' <"$plan")
 printf '\nResolved with `xbps-src show-build-deps` before building; build-time discovery can add more dependencies.\n' \
 	>>"$RUNNER_TEMP/pr-body.md"
 
@@ -33,7 +39,11 @@ printf 'changed package, so the repository stops serving binaries linked\n' \
 printf 'against the old dependency.\n' >>"$RUNNER_TEMP/pr-body.md"
 
 if [[ -n ${ISSUE_NUMBER:-} ]]; then
-	printf '\nCloses #%s\n' "$ISSUE_NUMBER" >>"$RUNNER_TEMP/pr-body.md"
+	if [[ -n ${PACK:-} ]]; then
+		printf '\nTracks #%s\n' "$ISSUE_NUMBER" >>"$RUNNER_TEMP/pr-body.md"
+	else
+		printf '\nCloses #%s\n' "$ISSUE_NUMBER" >>"$RUNNER_TEMP/pr-body.md"
+	fi
 fi
 printf '\n' >>"$RUNNER_TEMP/pr-body.md"
 if [[ -s $RUNNER_TEMP/osv-report.md ]]; then
@@ -43,33 +53,15 @@ else
 		>>"$RUNNER_TEMP/pr-body.md"
 fi
 
-existing=$(gh api "repos/${GH_REPO}/pulls?state=open&per_page=100" \
-	--jq ".[] | select(.head.ref == \"${BRANCH}\") | [.number, .user.login] | @tsv" |
-	sed -n '1p')
-if [[ -n $existing ]]; then
-	IFS=$'\t' read -r existing_number existing_author <<<"$existing"
-	if [[ ${AUTOMERGE:-false} == true && $existing_author != oSoWoSo-bot ]]; then
-		echo "::error::PR #${existing_number} is owned by ${existing_author}; close it before requesting a bot-created auto-merge PR"
-		exit 1
-	fi
-	echo "number=$existing_number" >>"$GITHUB_OUTPUT"
-	echo "PR #${existing_number} already open by ${existing_author}"
-	exit 0
+title="${PACK:-$TEMPLATE $VERSION}"
+if [[ -n ${EXISTING_PR:-} ]]; then
+	number=$(gh api "repos/${GH_REPO}/pulls/${EXISTING_PR}" \
+		--method PATCH -f title="$title" -F body=@"$RUNNER_TEMP/pr-body.md" --jq '.number')
+else
+	number=$(gh api "repos/${GH_REPO}/pulls" \
+		--method POST -f title="$title" -f head="$BRANCH" -f base="${BASE_REF:-OCO}" \
+		-F body=@"$RUNNER_TEMP/pr-body.md" --jq '.number')
 fi
-
-count=$(wc -l <"$plan")
-title="${TEMPLATE} ${VERSION}"
-if [[ $count -gt 1 ]]; then
-	title="$title + $((count - 1)) more"
-fi
-
-number=$(gh api "repos/${GH_REPO}/pulls" \
-	--method POST \
-	-f title="$title" \
-	-f head="$BRANCH" \
-	-f base="${BASE_REF:-OCO}" \
-	-F body=@"$RUNNER_TEMP/pr-body.md" \
-	--jq '.number')
 
 echo "number=$number" >>"$GITHUB_OUTPUT"
 echo "PR: #${number}"

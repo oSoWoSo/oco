@@ -3,10 +3,17 @@ set -euo pipefail
 
 handled=false
 
-request_ver=$(printf '%s\n' "${ISSUE_BODY:-}" |
-  sed -n 's|.*<!-- upstream-version:\([^>]*\) -->.*|\1|p' | sed -n '1p')
-[[ -n $request_ver ]] || request_ver=$(printf '%s\n' "${ISSUE_BODY:-}" |
-  sed -n 's|.*\*\*Upstream version:\*\*[^`]*`\([^`]*\)`.*|\1|p' | sed -n '1p')
+members=$(sed -n '/^<!-- pack-member:.* -->$/p' <<<"${ISSUE_BODY:-}")
+if [[ -n $members ]]; then
+  # A new member or version invalidates the old handled marker.
+  digest=$(printf '%s\n' "$members" | LC_ALL=C sort | sha256sum)
+  request_ver="pack-${digest%% *}"
+else
+  request_ver=$(printf '%s\n' "${ISSUE_BODY:-}" |
+    sed -n 's|.*<!-- upstream-version:\([^>]*\) -->.*|\1|p' | sed -n '1p')
+  [[ -n $request_ver ]] || request_ver=$(printf '%s\n' "${ISSUE_BODY:-}" |
+    sed -n 's|.*\*\*Upstream version:\*\*[^`]*`\([^`]*\)`.*|\1|p' | sed -n '1p')
+fi
 echo "request_ver=$request_ver" >>"$GITHUB_OUTPUT"
 
 if [[ -n ${ISSUE_BODY:-} ]] && printf '%s\n' "$ISSUE_BODY" | grep -q '<!-- autobump:no -->'; then
@@ -34,10 +41,6 @@ if [[ -n ${ISSUE_NUMBER:-} ]]; then
     echo "Already handled for $request_ver: skipping"
     handled=true
   fi
-else
-  # The open-pull-request check needs the batch plan, so it runs
-  # in its own step once the plan is known.
-  :
 fi
 
 echo "handled=$handled" >>"$GITHUB_OUTPUT"

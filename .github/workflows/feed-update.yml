@@ -12,7 +12,7 @@ on:
 
 concurrency:
   group: package-update
-  cancel-in-progress: true
+  queue: max
 
 permissions:
   contents: read

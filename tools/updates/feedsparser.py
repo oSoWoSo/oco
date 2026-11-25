@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """File `package-update` issues from `config/feed.opml` against OCO templates.
 
-Every feed that resolves to a template opens (or updates) a
-`package-update` issue when the upstream feed reports a newer version
-than the template ships, and closes it once the repository catches up.
+Newer releases for autobump-eligible pack members are collected into a
+single issue per pack. Other templates get individual `package-update`
+issues, which are closed once the repository catches up.
 
-Issues carry version markers that the autobump workflow keys off:
+Individual issues carry version markers that the autobump workflow keys off:
     `<!-- package-update:NAME -->`       identifies the template
     `<!-- upstream-version:VERSION -->`  the upstream version requested
     `<!-- autobump:no -->`               marks templates excluded from
@@ -18,7 +18,7 @@ Open issues are repaired in place: when a stale `autobump:no` marker no
 longer matches the template's current eligibility the body is rewritten,
 which re-triggers the 📦 bumper workflow on its `edited` event.
 
-There is at most one open `package-update` issue per template. When a
+There is at most one open individual `package-update` issue per template. When a
 second open issue exists for the same template, only the one tracking
 the newest upstream version is kept; the older ones are closed as
 obsolete (`not planned`) so they do not look like their update shipped.
@@ -38,6 +38,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import feedparser
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from pack_issues import load_packs, pack_for, publish_pack_issues, record_update, version_key
 
 
 FOLDER_NAME = "package-update"
@@ -139,14 +142,6 @@ VERSION_RE = re.compile(
     r"(?:[-+._][0-9A-Za-z.-]+)?)"
 )
 
-SEPARATOR_RANK = {
-    ".": 0,
-    "_": 0,
-    "+": 0,
-    "-": 0,
-    "~": 1,
-}
-
 
 def log(state, name, detail=""):
     print(f"{state:<8} {name:<26} {detail}".rstrip())
@@ -172,43 +167,6 @@ def run_gh(args):
         )
 
     return result.stdout
-
-
-def version_key(text):
-    """Sort key with the same semantics detect-update.sh applies.
-    """
-
-    tokens = re.split(
-        r"([.\-_+~]+)",
-        text.strip().lstrip("vV"),
-    )
-
-    key = []
-    rank = 0
-
-    for index, token in enumerate(tokens):
-        if index % 2:
-            rank = max(
-                SEPARATOR_RANK[separator]
-                for separator in token
-            )
-            continue
-
-        if not token:
-            continue
-
-        if token.isdigit():
-            key.append((1, int(token), rank))
-        else:
-            key.append((0, 0, token))
-
-        rank = 0
-
-    # 1.0 == 1.0.0 for xbps.
-    while key and key[-1] == (1, 0, 0):
-        key.pop()
-
-    return key
 
 
 class XbpsVersion:
@@ -1353,6 +1311,8 @@ def process_feed(
     issues,
     stats,
     blacklist,
+    packs,
+    pack_updates,
 ):
     feed_name = result["name"]
 
@@ -1405,6 +1365,11 @@ def process_feed(
         repository_version = (
             repository_package["version"]
         )
+
+        pack = pack_for(package, packs)
+        if pack and autobump_eligible(package, blacklist) and upstream > repository_version:
+            record_update(pack_updates.setdefault(pack, {}), package, result["version_text"])
+            continue
 
         open_issue = find_open_issue(
             issues,
@@ -1578,6 +1543,8 @@ def main():
         "error": 0,
     }
 
+    packs = load_packs(OCO_DIR)
+    pack_updates = {}
     for result in sorted(
         results,
         key=lambda item:
@@ -1597,8 +1564,9 @@ def main():
             issues,
             stats,
             blacklist,
+            packs,
+            pack_updates,
         )
-
 
         after = (
             stats["create"],
@@ -1610,6 +1578,7 @@ def main():
         if after != before:
             issues = load_issues()
 
+    publish_pack_issues(TARGET_REPO, ISSUE_LABEL, pack_updates, issues, run_gh, dry_run=DRY_RUN)
     print()
 
     log(

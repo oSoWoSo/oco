@@ -75,6 +75,17 @@ class BatchPlanTests(unittest.TestCase):
         (self.tmp / "config" / "autobump-packs.tsv").write_text(
             "".join(f"test\t{package}\n" for package in packages), encoding="utf-8")
 
+    def test_overlapping_pack_members_plan_the_same_canonical_batch(self):
+        self.build_repo({name: f"pkgname={name}\nversion=1.0\nrevision=1\n"
+                         for name in ("alpha", "beta", "gamma")})
+        (self.tmp / "config" / "autobump-packs.tsv").write_text(
+            "full\talpha\nfull\tb*\nsubset\tbeta\nsubset\tgamma\n", encoding="utf-8")
+        self.fake_detector({"alpha": "1.1", "beta": "2.0", "gamma": "3.0"})
+        alpha = self.plan("alpha")
+        beta = self.plan("beta")
+        self.assertEqual(alpha, beta)
+        self.assertEqual({row[:2] for row in alpha[0]}, {("alpha", "1.1"), ("beta", "2.0")})
+
     def test_ungrouped_target_skips_dependency_resolver(self):
         self.build_repo({
             "plain": "pkgname=plain\nversion=1.0\nrevision=1\n",

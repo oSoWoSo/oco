@@ -1,0 +1,17 @@
+# Template file for 'nyala'
+pkgname=nyala
+version=0.2.1
+revision=1
+build_style=go
+go_import_path="github.com/wimpysworld/nyala"
+go_package="./cmd/nyala"
+short_desc="Browser for the terminal"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/wimpysworld/nyala"
+distfiles="https://github.com/wimpysworld/nyala/archive/refs/tags/v${version}.tar.gz"
+checksum=864fc9981ee9005ba0d49af3fca0045b5e30a46b058616d0084e10ad5770c9a7
+
+post_install() {
+	vlicense LICENSE
+}

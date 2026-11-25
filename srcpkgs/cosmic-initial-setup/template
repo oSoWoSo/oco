@@ -1,6 +1,6 @@
 # Template file for 'cosmic-initial-setup'
 pkgname=cosmic-initial-setup
-version=1.11.0
+version=1.12.0
 revision=1
 build_style=cargo
 hostmakedepends="pkg-config just rust-std"
@@ -11,7 +11,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="GPL-3.0-only"
 homepage="https://github.com/pop-os/cosmic-initial-setup"
 distfiles="https://github.com/pop-os/cosmic-initial-setup/archive/refs/tags/epoch-${version}.tar.gz"
-checksum=4075b2199e634794bea201a12a8732f3dc9355e585191a7fd0be666fe63fe2e5
+checksum=1002f38c8c1f1e552e7fe14b02bac65709b66545c887b33aa8bb998e8c72860d
 
 _crabtime_host_build_env() {
 	if [ -z "$CROSS_BUILD" ]; then

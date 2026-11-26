@@ -1,7 +1,7 @@
 # Template file for 'pi'
 pkgname=pi
 version=1.6.1
-revision=1
+revision=2
 hostmakedepends="nodejs jq"
 depends="nodejs fd ripgrep"
 short_desc="AI agent toolkit: unified LLM API, agent loop, TUI, coding agent CLI"
@@ -67,7 +67,8 @@ do_install() {
 	vcopy examples "${_libdir}"
 	vcopy node_modules "${_libdir}"
 	vinstall package.json 644 "${_libdir}"
-	vbin "${FILESDIR}/pi"
+	# Conflicts with cln over /usr/bin/pi (so renamed)
+	vbin "${FILESDIR}/pi-agent"
 }
 
 post_install() {

@@ -456,13 +456,6 @@
       "source_template": "srcpkgs/glaze7/template",
       "source_url": "https://github.com/stephenberry/glaze/archive/refs/tags/v${version}.tar.gz"
     },
-    "hister": {
-      "type": "git",
-      "repo": "https://github.com/asciimoo/hister.git",
-      "version_tag": "v{version}",
-      "source_template": "srcpkgs/hister/template",
-      "source_url": "https://github.com/asciimoo/hister/archive/refs/tags/v${version}.tar.gz"
-    },
     "hyprcursor": {
       "type": "git",
       "repo": "https://github.com/hyprwm/hyprcursor.git",
@@ -721,6 +714,13 @@
       "version_tag": "v{version}",
       "source_template": "srcpkgs/noctalia-greeter/template",
       "source_url": "https://github.com/noctalia-dev/noctalia-greeter/archive/refs/tags/v${version}.tar.gz"
+    },
+    "nogon": {
+      "type": "git",
+      "repo": "https://github.com/asciimoo/nogon.git",
+      "version_tag": "v{version}",
+      "source_template": "srcpkgs/nogon/template",
+      "source_url": "https://github.com/asciimoo/nogon/archive/refs/tags/v${version}.tar.gz"
     },
     "nvchecker": {
       "type": "git",

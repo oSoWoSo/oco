@@ -1,4 +1,4 @@
-# autobump-dependencies-v1
+# name	hash	dependants
 Bottles	6d221258c7a069c1560d91138adec246b8eec5f0110fa4dd1708f2b61e499575	fvs2 python3-patool umu-launcher vkbasalt-cli
 BoxBuddy	9db158b7e19fe6ecffaa9c37f29b9521ef02c8dad2a569145d1d59d916ad5608	distrobox
 Community-Repositories-Collection	8f1081b0139350f01e8c74bc8e6a77141fd6742a5b750687c8d7becba07291ef	

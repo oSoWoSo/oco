@@ -161,7 +161,7 @@ class Repository:
             return {}
         rows: dict[str, tuple[str, set[str]]] = {}
         lines = path.read_text(encoding="utf-8").splitlines()
-        if not lines or lines[0] != "# autobump-dependencies-v1":
+        if not lines or lines[0] != "# name\thash\tdependants":
             raise ValueError(f"invalid dependency manifest header: {path}")
         for number, line in enumerate(lines[1:], 2):
             fields = line.split("\t")
@@ -182,7 +182,7 @@ class Repository:
 
     def _write_manifest(self, rows: dict[str, tuple[str, set[str]]]) -> None:
         path = self.dependency_manifest()
-        lines = ["# autobump-dependencies-v1"]
+        lines = ["# name\thash\tdependants"]
         for package in sorted(rows):
             digest, dependencies = rows[package]
             lines.append(f"{package}\t{digest}\t{' '.join(sorted(dependencies))}")

@@ -51,7 +51,7 @@ class ClosureTests(unittest.TestCase):
             "".join(f"{pack}\t{member}\n" for pack, member in pairs), encoding="utf-8")
 
     def set_manifest(self, *rows: tuple[str, list[str]]) -> None:
-        body = ["# autobump-dependencies-v1"]
+        body = ["# name\thash\tdependants"]
         for pkg, deps in rows:
             body.append(f"{pkg}\t{len(deps):x}\t{' '.join(deps)}")
         (self.tmp / "config" / "autobump-dependencies.tsv").write_text(

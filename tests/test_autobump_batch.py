@@ -165,7 +165,7 @@ class BatchPlanTests(unittest.TestCase):
         digest = batch.hashlib.sha256(
             (self.tmp / "srcpkgs/alpha/template").read_bytes()).hexdigest()
         manifest.write_text(
-            f"# autobump-dependencies-v1\nalpha\t{digest}\t\nalpha\t{digest}\t\n")
+            f"# name\thash\tdependants\nalpha\t{digest}\t\nalpha\t{digest}\t\n")
         self.fake_detector({})
         with self.assertRaisesRegex(ValueError, "duplicate dependency manifest"):
             self.plan("alpha")

@@ -52,7 +52,7 @@ prepare_bump() {
 }
 
 prepare_cache() {
-  printf '# autobump-dependencies-v1\nalpha\tstale-hash\t\n' >config/autobump-dependencies.tsv
+  printf '# name\thash\tdependants\nalpha\tstale-hash\t\n' >config/autobump-dependencies.tsv
 }
 
 assert_pushed() {
@@ -234,7 +234,7 @@ EOF
   mkdir -p .github src srcpkgs/beta
   git mv config/autobump-packs.tsv .github/autobump-packs.tsv
   printf 'testing\tbeta\n' >.github/autobump-packs.tsv
-  printf '# autobump-dependencies-v1\n' >.github/autobump-dependencies.tsv
+  printf '# name\thash\tdependants\n' >.github/autobump-dependencies.tsv
   legacy_config=src
   printf 'alpha\n' >"$legacy_config/autobump-blacklist"
   printf 'pkgname=beta\nversion=1.0\nrevision=1\n' >srcpkgs/beta/template

@@ -45,6 +45,9 @@ https://git.sr.ht/~osowoso/oco
 - repo.or.cz mirror (pulled hourly, so repo could be bit behind other mirrors)  
 https://repo.or.cz/oco.git
 
+## oSoWoSo chat rooms
+- [on SimpleX-chat](https://smp10.simplex.im/g#rg4Sryn9kAgLt5I4u9SdL4b34MQgR141e7y1LiOV7sI)
+
 ## What we don't build? (From source)
 Browsers: It's waste of energy and when you finish building is maybe already new version out  
 We provide repackaged binaries, they all have `-bin` after <pkgname>  

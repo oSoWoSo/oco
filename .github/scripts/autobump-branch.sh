@@ -83,7 +83,7 @@ if not packages.intersection(pack_packages):
     raise SystemExit(0)
 rows = {}
 lines = manifest.read_text(encoding="utf-8").splitlines()
-if not lines or lines[0] != "# autobump-dependencies-v1":
+if not lines or lines[0] != "# name\thash\tdependants":
     raise SystemExit("invalid dependency manifest header while refreshing hashes")
 for line in lines[1:]:
     package, digest, dependencies = line.split("\t")
@@ -94,7 +94,7 @@ for package in packages:
         digest, dependencies = rows[package]
         rows[package] = (hashlib.sha256(template.read_bytes()).hexdigest(), dependencies)
 manifest.write_text(
-    "# autobump-dependencies-v1\n"
+    "# name\thash\tdependants\n"
     + "".join(f"{package}\t{rows[package][0]}\t{rows[package][1]}\n" for package in sorted(rows)),
     encoding="utf-8",
 )

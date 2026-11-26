@@ -1,29 +1,5 @@
 #!/usr/bin/env bash
-# Push OCO template(s) to oSoWoSo/VUR so VUR's official build.yaml (the
-# void-packages checks) runs against them, then report the run results back
-# as commit statuses on the OCO PR (GitHub + Codeberg).
-#
-# All templates changed by a PR are pushed on ONE branch (ci-pr-<N>) together
-# with every OCO-only template they need at build time (their autobump packs
-# and OCO-only dependency stack).  Per-template branches failed because the
-# official CI died on the very first missing OCO-only host dependency
-# (`host dependency 'X' does not exist!`); grouping them on one branch makes
-# xbps-src resolve and build the whole dependency stack in one run.  Nothing
-# is edited in VUR itself: we branch off VUR master (= void-packages master,
-# hourly sync) and push only srcpkgs/ changes that build.yaml already tests.
-#
-# Two modes:
-#   - workflow_dispatch: tests the single TEMPLATE input.
-#   - pull_request: tests every srcpkgs/* template changed between the PR
-#     base and head (diff PR_BASE_SHA..PR_HEAD_SHA).
-#
-# Every push to a ci-** branch in VUR triggers the official build.yaml
-# (it runs on push to ci-* branches touching srcpkgs/**); we wait for that
-# run and post its outcome as ci/vur (PR) or ci/vur/<template> (dispatch) on
-# the PR head SHA on both forges.
-#
-# Required env: VUR_TOKEN. Plus, for PR events: PR_BASE_SHA, PR_HEAD_SHA,
-# HEAD_SHA, GITHUB_TOKEN, CODEBERG_TOKEN, PR_NUMBER.
+# Push OCO templates to VUR and report results as commit statuses.
 set -euo pipefail
 
 VUR_REPO="${VUR_REPO:-oSoWoSo/VUR}"
@@ -33,9 +9,7 @@ EVENT_NAME="${EVENT_NAME:-workflow_dispatch}"
 # Overridable for tests; defaults to the live repository.
 VUR_GIT_URL="${VUR_GIT_URL:-}"
 
-# Skip when we lack a token with write access to VUR (fork PRs): the
-# read-only GITHUB_TOKEN cannot push branches. In pull_request events from
-# forks secrets.BOT is unavailable (empty), so VUR_TOKEN is empty here.
+# Skip when VUR_TOKEN missing (fork PRs).
 if [ -z "${VUR_TOKEN:-}" ]; then
         echo "::notice::VUR_TOKEN unavailable (fork pull request?); skipping VUR check"
         exit 0
@@ -108,12 +82,7 @@ cd "$WORK/vur"
 git config user.name "oSoWoSo-bot"
 git config user.email "mail@osowoso.org"
 
-# Now that we have VUR master, compute the templates to carry: the changed
-# ones plus every OCO-only template they need to build (their autobump packs
-# and OCO-only dependency stack).  The closure helper reads
-# config/autobump-packs.tsv and autobump-dependencies.tsv and compares
-# against the VUR master listing, so the branch carries exactly what the
-# changed templates require that void-packages does not have yet.
+# Compute templates to carry via vur-closure.py.
 ls srcpkgs > "$WORK/vur-template-dirs.txt"
 CARRY="$(python3 "${GITHUB_WORKSPACE}/.github/scripts/vur-closure.py" \
         --root "${GITHUB_WORKSPACE}" \
@@ -145,10 +114,7 @@ push_template() {
         pkgname="$(sed -n 's/^pkgname=//p' "$src/template" | head -n1 | tr -d '"' | tr -d ' ')"
         pkgname="${pkgname:-$template}"
 
-        # The test branch was already created once before the loop; this
-        # function only overlays the template into the current working tree.
-        # Track whether the package already exists upstream so the commit
-        # message can follow void-packages CONTRIBUTING.md.
+        # Track whether package exists upstream for commit message.
         if [ -e "srcpkgs/${template}/template" ]; then
                 upstream_template=1
         else
@@ -159,24 +125,13 @@ push_template() {
         rm -rf "srcpkgs/${template}"
         cp -a "$src" "srcpkgs/${template}"
 
-        # When ${template} is itself a symlink into a differently named package
-        # directory (e.g. CRC-* -> Community-Repositories-Collection), the
-        # copied directory normally only exists under `template`'s name, so
-        # aliases resolving to that real name would dangle. Carry it under
-        # its real name too -- but never clobber an upstream template that
-        # already provides that directory (e.g. libbtrfsutil ->
-        # btrfs-progs, which void-packages ships itself).
+        # Carry symlinked template under real name too, without clobbering upstream.
         if [ "${src##*/}" != "$template" ] && [ ! -e "srcpkgs/${src##*/}" ]; then
                 cp -a "$src" "srcpkgs/${src##*/}"
                 git add "srcpkgs/${src##*/}"
         fi
 
-        # xbps-src looks up srcpkgs/<subpkg>/template when it builds every
-        # function-defined subpackage listed in ${subpackages}, so any OCO
-        # srcpkgs symlink that aliases this template's directory (e.g.
-        # fcitx5-lotus-settings -> fcitx5-lotus) must land on the test branch
-        # too, or the VUR build aborts with "xbps-src: nonexistent file:
-        # srcpkgs/<subpkg>/template".
+        # Carry subpackage aliases (xbps-src resolves srcpkgs/<subpkg>/template).
         for _link in "${GITHUB_WORKSPACE}"/srcpkgs/*; do
                 [ -L "$_link" ] || continue
                 [ "${_link##*/}" != "$template" ] || continue
@@ -219,8 +174,7 @@ push_template() {
         append_shlibs
         remove_shlibs
 
-        # Only flag the template as pushed when THIS template staged anything
-        # (the global staged diff may already contain earlier templates).
+        # Flag pushed only if this template staged new changes.
         _before="$(git diff --cached --name-only)"
         git add "srcpkgs/${template}" common/shlibs
         _after="$(git diff --cached --name-only)"
@@ -228,14 +182,26 @@ push_template() {
                 echo "::notice::nothing to test: srcpkgs/${template} already matches void-packages"
                 return 1
         fi
+        # Carry OCO srcpkgs symlinks (e.g. *-devel aliases) so subpackages resolve.
+        for _link in "${GITHUB_WORKSPACE}"/srcpkgs/*; do
+                [ -L "$_link" ] || continue
+                _name="${_link##*/}"
+                _raw_target="$(readlink "$_link")"
+                # Skip non-relative targets.
+                case "$_raw_target" in
+                        /*|*/*|..|.) continue ;;
+                esac
+                if [ -e "srcpkgs/${_name}" ] || [ -L "srcpkgs/${_name}" ]; then
+                        continue
+                fi
+                ln -s "$_raw_target" "srcpkgs/${_name}"
+                git add "srcpkgs/${_name}"
+        done
+
         pushed_branches+=("${template}")
 }
 
-# Stage every carried template onto the single test branch.  Templates that
-# already match void-packages master are skipped (nothing to diff); the
-# branch is committed and pushed once, so VUR's build.yaml runs one complete
-# build over the whole dependency stack instead of one dying build per
-# template.
+# Stage all carried templates onto one test branch.
 git checkout --quiet -B "$BRANCH" origin/master
 for template in $CARRY; do
         push_template "$template" || continue
@@ -262,9 +228,7 @@ else
 fi
 git commit --quiet -m "$commit_msg"
 
-# Record the newest run already on the branch so the wait loop can tell our
-# fresh run apart from a stale completed one (the API can briefly lag behind
-# the push).
+# Record newest run id before push.
 before_run_id["$BRANCH"]="$(curl -fsS -H "Authorization: Bearer ${VUR_TOKEN}" \
         "${API_ROOT}/actions/workflows/build.yaml/runs?branch=${BRANCH}&per_page=1" \
         2>/dev/null | jq -r '.workflow_runs[0].id // 0')"
@@ -277,10 +241,7 @@ fi
 
 # --- Wait for build.yaml run on the pushed branch -------------------------
 
-# The build.yaml run triggered by our push is the newest one whose id is
-# greater than the run that existed on the branch before the push (the API
-# can briefly lag behind the push). It begins as 'queued' and moves to
-# 'completed'. Poll up to 30 minutes.
+# Poll for the build run triggered by our push.
 update_run_result() {
         local branch="$1" min_id="$2"
         curl -fsS -H "Authorization: Bearer ${VUR_TOKEN}" \

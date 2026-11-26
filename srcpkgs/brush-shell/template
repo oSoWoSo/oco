@@ -1,21 +1,29 @@
 # Template file for 'brush-shell'
 pkgname=brush-shell
-version=0.4.0
-revision=2
+version=0.5.0
+revision=1
 build_style=cargo
 build_helper="qemu"
 make_install_args="--path brush-shell"
 make_check_args="--lib --test brush-compat-tests --test brush-integration-tests
  --test brush-version-tests --test brush-completion-tests"
-checkdepends="bash-completion"
+checkdepends="bash-completion which"
 short_desc="Bash/POSIX-compatible shell written in Rust"
 maintainer="Coolllyn <leanhduc673@gmail.com>"
 license="MIT"
 homepage="https://github.com/reubeno/brush"
 changelog="https://raw.githubusercontent.com/reubeno/brush/main/CHANGELOG.md"
 distfiles="https://github.com/reubeno/brush/archive/refs/tags/brush-shell-v${version}.tar.gz"
-checksum=0cce607454972c18bc4a30d2f44a2c91fccf02c458475fda7720370a3dc8a4f0
+checksum=c55a57d399112d5509b17518e756acb613886702bccfe9243ba2020a664fc066
 register_shell="/usr/bin/brush"
+
+pre_patch() {
+	case "$XBPS_TARGET_MACHINE" in
+		*-musl)
+			patch -Np1 < "${FILESDIR}/musl-known-failures.patch"
+			;;
+	esac
+}
 
 post_build() {
 	cargo build --release --locked --package xtask --target ${RUST_TARGET}

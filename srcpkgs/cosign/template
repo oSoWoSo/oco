@@ -1,6 +1,6 @@
 # Template file for 'cosign'
 pkgname=cosign
-version=3.1.5
+version=3.1.6
 revision=1
 build_style=go
 build_helper="qemu"
@@ -15,7 +15,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="Apache-2.0"
 homepage="https://github.com/sigstore/cosign"
 distfiles="https://github.com/sigstore/cosign/archive/refs/tags/v${version}.tar.gz"
-checksum=eab9e35839fd50dd17d128b6c22cb0cf12e6f1e782fe598a321f7dbc467585ce
+checksum=ca0b3030158ab97ba6927c75f0586c3d2449651e95015890351174f6753da88d
 
 post_install() {
 	for shell in bash zsh fish; do

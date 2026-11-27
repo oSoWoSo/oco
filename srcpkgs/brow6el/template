@@ -15,7 +15,7 @@ short_desc="Minimalistic graphical terminal web browser using sixels"
 maintainer="zenobit <zen@osowoso.org>"
 license="MIT,BSD-3-Clause"
 homepage="https://brow6el.dev/"
-distfiles="https://tangled.org/janantos.tngl.sh/brow6el/archive/refs%2Ftags%2Fv${version}?format=tar.gz>brow6el-v0.3.6.tar.gz"
+distfiles="https://tangled.org/janantos.tngl.sh/brow6el/archive/refs%2Ftags%2Fv${version}?format=tar.gz>brow6el-v${version}.tar.gz"
 checksum=b6d0360807e57b087643293046ab578cd015256e8603d842d7ec4764bf3cffef
 
 pre_configure() {
@@ -40,8 +40,6 @@ do_install() {
 
 	# Install CEF libraries
 	vinstall build/libcef.so 755 usr/lib/brow6el
-	vinstall build/libEGL.so 755 usr/lib/brow6el
-	vinstall build/libGLESv2.so 755 usr/lib/brow6el
 	vinstall build/libvk_swiftshader.so 755 usr/lib/brow6el
 	vinstall build/libvulkan.so.1 755 usr/lib/brow6el
 

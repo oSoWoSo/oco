@@ -1,6 +1,6 @@
 # Template file for 'fresh'
 pkgname=fresh
-version=0.5.8
+version=0.5.9
 revision=1
 archs="~armv6* ~armv7*"
 build_style=cargo
@@ -15,7 +15,7 @@ maintainer="zenobit <zen@osowoso.org>"
 license="GPL-3.0-only"
 homepage="https://github.com/sinelaw/fresh"
 distfiles="https://github.com/sinelaw/fresh/archive/refs/tags/v${version}.tar.gz"
-checksum=b048bfa38b9b50a262f19ac49d254a1479926ddb74d496367649892ac8720495
+checksum=87cbbf4c0dd25ad1db7f59681319f324b3e1f6b472e41f6c04bab17ebe0ffda3
 
 _setup_env() {
 	export CFLAGS_${RUST_BUILD//-/_}="${CFLAGS_host}" \

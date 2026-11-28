@@ -2,7 +2,6 @@
 pkgname=DinosAmazingBashTui
 version=0.0.33
 revision=1
-noarch=yes
 depends="bash"
 short_desc="Pure bash TUI framework: build multi-page terminal UIs with XML + CSS"
 maintainer="zenobit <zen@osowoso.org>"

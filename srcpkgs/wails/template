@@ -2,8 +2,8 @@
 pkgname=wails
 version=3.1.0
 revision=1
-build_wrksrc=v3
 build_style=go
+build_wrksrc=v3
 go_import_path="github.com/wailsapp/wails/v3"
 go_package="./cmd/wails3"
 make_check_target="./cmd/wails3"

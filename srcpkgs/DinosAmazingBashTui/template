@@ -1,0 +1,30 @@
+# Template file for 'DinosAmazingBashTui'
+pkgname=DinosAmazingBashTui
+version=0.0.33
+revision=1
+noarch=yes
+depends="bash"
+short_desc="Pure bash TUI framework: build multi-page terminal UIs with XML + CSS"
+maintainer="zenobit <zen@osowoso.org>"
+license="MIT"
+homepage="https://github.com/DinosaursAreCute/DinosAmazingBashTui"
+distfiles="https://github.com/DinosaursAreCute/DinosAmazingBashTui/archive/refs/tags/v${version}.tar.gz"
+checksum=05c4a46b824f915f5343b552a43da06f14a08cb2220e01f9859f2d0910592405
+
+do_install() {
+	# /usr/lib/dabt as prefix, DABT relies on relative paths to find its 'lib/' and 'share/'
+	vmkdir /usr/lib/dabt
+	vcopy bin /usr/lib/dabt
+	vcopy lib /usr/lib/dabt
+	vcopy share /usr/lib/dabt
+	vcopy VERSION /usr/lib/dabt
+
+	vmkdir /usr/share/doc/dabt
+	vcopy docs /usr/share/doc/dabt
+	vcopy examples /usr/share/doc/dabt
+
+	vmkdir /usr/bin
+	ln -s /usr/lib/dabt/bin/dabt "${DESTDIR}/usr/bin/dabt"
+
+	vlicense LICENSE
+}

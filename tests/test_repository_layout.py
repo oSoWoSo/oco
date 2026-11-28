@@ -30,7 +30,7 @@ class WebsiteBoundaryTests(unittest.TestCase):
         (self.root / "website/public/private.conf").write_text("not public")
         result = self.shell('website_stage_assets "$2" "$2/docs"')
         self.assertEqual(result.returncode, 0, result.stderr)
-        expected = {"favicon.ico", "main.js", "manual.css", "manual.js", "style.css", "testing.html"}
+        expected = {"favicon.ico", "main.js", "manual.css", "manual.js", "opensearch.xml", "style.css", "testing.html"}
         self.assertEqual({p.name for p in self.docs.iterdir()}, expected)
         self.assertFalse((self.docs / "main-index-template.html").exists())
 

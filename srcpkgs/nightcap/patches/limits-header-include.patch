@@ -1,0 +1,11 @@
+diff --git a/src/compat/bionic_pthread_create_runtime.cc b/src/compat/bionic_pthread_create_runtime.cc
+index af5ff8e..a4fb7af 100644
+--- a/src/compat/bionic_pthread_create_runtime.cc
++++ b/src/compat/bionic_pthread_create_runtime.cc
+@@ -3,6 +3,7 @@
+ #include "compat/bionic_abi_exports.h"
+ 
+ #include <errno.h>
++#include <limits.h>
+ #include <stdio.h>
+ #include <unistd.h>

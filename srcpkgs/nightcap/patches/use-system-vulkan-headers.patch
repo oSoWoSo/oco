@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0e158e2..d8b7a83 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -115,7 +115,7 @@ set(VULKAN_HEADERS_ENABLE_TESTS OFF CACHE BOOL
+   "Build Khronos Vulkan-Headers tests" FORCE)
+ set(VULKAN_HEADERS_ENABLE_INSTALL OFF CACHE BOOL
+   "Install vendored Vulkan-Headers" FORCE)
+-add_subdirectory(third_party/Vulkan-Headers EXCLUDE_FROM_ALL)
++find_package(VulkanHeaders CONFIG REQUIRED)
+ 
+ include(CTest)
+ if(BUILD_TESTING)

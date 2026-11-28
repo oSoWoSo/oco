@@ -36,6 +36,10 @@ https://github.com/oSoWoSo/oco-builder
 https://repo.osowoso.org
 - Just built (RSS feed)  
 https://repo.osowoso.org/feed.xml
+- Packages (templates) search  
+https://repo.osowoso.org/?q=(package) - custom search could be also added to your browser
+
+### Mirrors
 - GitLab mirror (push only)  
 https://gitlab.com/osowoso/oco
 - Tangled mirror (push only)  
@@ -54,12 +58,12 @@ We provide repackaged binaries, they all have `-bin` after <pkgname>
 (You can use AppImages and manage them with [AM](https://github.com/ivan-hc/AM), or flatpaks. They are usualy always latest)
 
 ## How to use
-in https://repo.osowoso.org/`(architecture)`  
+in https://repo.osowoso.org  
 are easy to understand READMEs  
 Just pick your architecture
 
 ### Testing repository
-CI candidate packages are kept separate from production at  `https://repo.osowoso.org/testing/<architecture>/`  
+CI candidate packages are kept separate from production at  `https://repo.osowoso.org/testing/<architecture>`  
 Browse the [testing repository guide](https://repo.osowoso.org/testing.html) for target architectures,  
 publication rules, and install instructions.
 

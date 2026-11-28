@@ -277,14 +277,16 @@ jobs:
           if-no-files-found: ignore
 
       - name: Stage newly built packages
-        if: github.event_name != 'pull_request' && steps.build.outputs.built == 'true'
+        # PR builds keep uploading so reviewers without a capable build host
+        # can install the produced binaries from the run artifacts.
+        if: steps.build.outputs.built == 'true'
         working-directory: /void-packages/hostdir/binpkgs/
         env:
           ARCH: ${{ matrix.config.arch }}
         run: bash "${GITHUB_WORKSPACE}/extra/.github/scripts/build-stage-packages.sh"
 
       - name: Upload newly built packages
-        if: github.event_name != 'pull_request' && steps.build.outputs.built == 'true'
+        if: steps.build.outputs.built == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: build-packages-${{ matrix.config.arch }}

@@ -235,4 +235,12 @@ document.addEventListener('DOMContentLoaded', () => {
             reset();
         }
     });
+
+    // URL-driven search (?q=): lets Firefox custom search engines and shared
+    // links land on a page that is already searching for the given terms.
+    const urlQuery = new URL(window.location.href).searchParams.get('q');
+    if (urlQuery) {
+        input.value = urlQuery;
+        search();
+    }
 });

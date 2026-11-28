@@ -8,6 +8,7 @@
   <script src="main.js" defer></script>
   <script>window.OCO_SITE_BRANCH = "__GIT_BRANCH__";</script>
   <link rel="alternate" type="application/rss+xml" title="Void Community Repository - Package updates" href="feed.xml" />
+  <link rel="search" type="application/opensearchdescription+xml" title="Void Community Repository" href="opensearch.xml" />
   __FAVICON__
 </head>
 <body>
@@ -37,7 +38,7 @@ __NAV_ARCH_LINKS__
   <form role="search" id="package-search-form" hidden>
     <label for="package-query">Find a package <span>across all architectures</span></label>
     <div class="package-search-controls">
-      <input id="package-query" type="search" placeholder="Package name or description…" aria-describedby="package-search-status" aria-controls="package-search-results" autocomplete="off" />
+      <input id="package-query" name="q" type="search" placeholder="Package name or description…" aria-describedby="package-search-status" aria-controls="package-search-results" autocomplete="off" />
       <button type="submit">Search</button>
       <button type="button" id="package-search-clear" hidden>Clear</button>
     </div>

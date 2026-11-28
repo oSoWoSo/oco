@@ -5,7 +5,7 @@ revision=2
 build_style=cmake
 configure_args="-DLOTUS_UINPUT_PROXY_USER=_uinput_proxy -DINSTALL_RUNIT=ON
  -DRUNIT_SV_DIR=/usr/share/examples/sv $(vopt_bool settings BUILD_QML_SETTING)"
- hostmakedepends="extra-cmake-modules pkgconf gettext wayland-devel $(vopt_if settings qt6-base)"
+hostmakedepends="extra-cmake-modules pkgconf gettext wayland-devel $(vopt_if settings qt6-base)"
 makedepends="libfcitx5-devel libinput-devel eudev-libudev-devel libevdev-devel
  libnotify-devel libxcb-devel dbus-devel wayland-devel $(vopt_if settings qt6-declarative-devel)"
 depends="fcitx5 acl-progs"

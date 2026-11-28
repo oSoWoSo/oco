@@ -616,7 +616,7 @@ _build_manual() {
 }
 
 _build_main_index() {
-	_title="${1:-Void Community Repository}"
+	_title="${1:-vOid Community repOsitory}"
 
 	_nav_arch_tmp=$(mktemp)
 	_readme_tmp=$(mktemp)
@@ -1019,7 +1019,7 @@ _upload_website_assets() {
 }
 
 build_site() {
-	_title="${1:-Void Community Repository}"
+	_title="${1:-vOid Community repOsitory}"
 
 	if ! command -v pandoc >/dev/null 2>&1; then
 		fatal 'pandoc not installed!'
@@ -1036,7 +1036,7 @@ build_site() {
 }
 
 build_main() {
-	_title="${1:-Void Community Repository}"
+	_title="${1:-vOid Community repOsitory}"
 
 	if ! command -v pandoc >/dev/null 2>&1; then
 		fatal 'pandoc not installed!'

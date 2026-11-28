@@ -1,4 +1,4 @@
-# Void Community Repository - ${ARCH}
+# vOid Community repOsitory - ${ARCH}
 
 Binary package repository for Void Linux (${ARCH} architecture).
 
